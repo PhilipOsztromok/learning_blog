@@ -6,6 +6,10 @@
 
 require_once __DIR__ . '/includes/auth.php';
 
+// Prevent the browser from caching this page, which would cause stale CSRF tokens.
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
+
 if (isLoggedIn()) {
     header('Location: /anime/');
     exit;
@@ -15,13 +19,20 @@ $error = '';
 $next  = $_GET['next'] ?? '/anime/';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verifyCsrf();
-    $result = loginUser(trim($_POST['email'] ?? ''), $_POST['password'] ?? '');
-    if ($result['ok']) {
-        header('Location: ' . $next);
-        exit;
+    $token = $_POST['csrf_token'] ?? '';
+    if (!hash_equals(csrfToken(), $token)) {
+        // Stale token (e.g. browser back button reusing an old form).
+        // Silently regenerate and show the form again rather than hard-failing.
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        $error = 'Your session expired. Please try again.';
+    } else {
+        $result = loginUser(trim($_POST['email'] ?? ''), $_POST['password'] ?? '');
+        if ($result['ok']) {
+            header('Location: ' . $next);
+            exit;
+        }
+        $error = $result['error'];
     }
-    $error = $result['error'];
 }
 
 $pageTitle = 'Login';
