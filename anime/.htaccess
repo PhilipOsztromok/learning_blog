@@ -1,0 +1,61 @@
+# ============================================================
+# ANIME VAULT - Apache .htaccess
+# File: /var/www/html/anime/.htaccess
+# ============================================================
+
+Options -Indexes
+Options -MultiViews
+
+# ── Security headers ────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Adjust CSP as needed for your image/poster sources
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http:; connect-src 'self' https://api.jikan.moe;"
+</IfModule>
+
+# ── Protect sensitive files ─────────────────────────────────
+<FilesMatch "\.(sql|log|env|md|sh|gitignore)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block direct access to includes directory
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to includes/
+    RewriteRule ^includes/ - [F,L]
+
+    # Block access to admin for non-logged-in (PHP handles this, belt+braces)
+    # RewriteRule ^admin/ - [L]
+
+    # Clean URL rewrites (optional – enables /anime/show/slug style)
+    # Uncomment and adjust if you want pretty URLs
+    # RewriteCond %{REQUEST_FILENAME} !-f
+    # RewriteCond %{REQUEST_FILENAME} !-d
+    # RewriteRule ^show/([^/]+)/?$ /anime/show.php?slug=$1 [L,QSA]
+    # RewriteRule ^browse/?$ /anime/browse.php [L,QSA]
+
+    # Custom 404
+    ErrorDocument 404 /anime/404.php
+    ErrorDocument 403 /anime/403.php
+</IfModule>
+
+# ── Caching for static assets ────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css              "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/svg+xml        "access plus 1 year"
+    ExpiresByType image/jpeg           "access plus 6 months"
+    ExpiresByType image/png            "access plus 6 months"
+    ExpiresByType image/webp           "access plus 6 months"
+</IfModule>
+
+# ── Gzip compression ────────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript text/plain application/json
+</IfModule>
