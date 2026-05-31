@@ -1,0 +1,15 @@
+/* using margins to create a centralised
+   layout
+*/
+
+/* colour palette
+   	#59F8E8; Turquoise Blue
+	#03191E; Rich Black
+*/
+
+section {
+	background: #03191E;
+	color: #59F8E8;
+	width: 800px;
+	margin: 0 auto;
+}

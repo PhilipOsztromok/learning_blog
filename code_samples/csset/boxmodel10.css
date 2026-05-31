@@ -1,0 +1,16 @@
+/* using background colours to demonstrate 
+   the box model and how it works with
+   respect to margins
+*/
+
+p {
+	background: lightgreen;
+	border: 1px solid black;
+	margin: 0;
+}
+
+span {
+	background: yellow;
+	border: 1px solid black;
+	margin: 16px;
+}

@@ -1,0 +1,25 @@
+/* css for the html document demonstrating specificty*/
+
+section {
+  font-family: avenir, sans-serif;
+  font-size: 30px;
+  color: orange;
+}
+
+.example {
+	/* color: black; */
+}
+#example {
+	/* color: purple; */
+}
+section p {
+  color: lightgreen;
+}
+
+* {
+  color: lightblue;
+}
+
+p {
+	color: green;
+}

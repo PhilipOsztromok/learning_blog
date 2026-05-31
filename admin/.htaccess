@@ -1,0 +1,4 @@
+Options -Indexes
+
+# Prevent the admin directory appearing in rewrite rules for the main site
+RewriteEngine Off

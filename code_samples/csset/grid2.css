@@ -1,0 +1,14 @@
+/* CSS styles for my grid demo page */
+
+.grid-container {
+	display: grid;		
+}
+
+.grid-container div {
+	display: inline;
+	background: lightgreen;
+	text-align: center;
+	font-size: 36px;
+	padding: 36px;
+	border: solid black 1px;
+}

@@ -1,0 +1,236 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Learning Website</title>
+<link href="/styles/styles.css" rel="stylesheet" type="text/css">
+<link href="/webdevelopment/styles/styles.css" rel="stylesheet" type="text/css">
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+	
+<h1 class="courselink">JavaScript Essential Training</h1>
+<h2 class="lecturer">LinkedIn Learning : Morten Rand-Hendriksen</h2>	
+<h1 class="episodetitle">Code Samples</h1>
+	
+<article>
+    <h2 class="sectiontitle">Code Sample 2</h2>
+	<p>This is the code example for the practice exercise 05_04 in the exercise files.  </p>
+	<h2 class="sectiontitle">The HTML file</h2>
+	<pre class="codesample">
+	&lt;html lang="en"&gt;
+	  &lt;head&gt;
+		&lt;meta charset="UTF-8" /&gt;
+		&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+		&lt;title&gt;BackpackPacker&lt;/title&gt;
+		&lt;link
+		  href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&amp;family=Work+Sans:wght@100..900&amp;display=swap"
+		  rel="stylesheet"
+		/&gt;
+		&lt;link
+		  rel="stylesheet"
+		  href="../../assets/style.css"
+		  type="text/css"
+		  media="all"
+		/&gt;
+		&lt;script type="module" src="script.js"&gt;&lt;/script&gt;
+	  &lt;/head&gt;
+	  &lt;body&gt;
+		&lt;header class="siteheader"&gt;
+		  &lt;div class="site-title"&gt;BackpackPacker&lt;/div&gt;
+		  &lt;div class="site-description"&gt;All backpack packing, all the time.&lt;/div&gt;
+		&lt;/header&gt;
+		&lt;main class="maincontent"&gt;
+		  &lt;div class="page-header"&gt;
+			&lt;h2 class="page-header__heading"&gt;A pack for every purpose&lt;/h2&gt;
+			&lt;p&gt;
+			  If you're carrying a heavy load, you can't find a better tool than a
+			  backpack. Distributing the weight evenly across your shoulders, back,
+			  and hips, the backpack lets you use the natural frame of your body to
+			  literally &lt;em&gt;shoulder&lt;/em&gt; the weight while your legs do the
+			  carrying.
+			&lt;/p&gt;
+		  &lt;/div&gt;
+		  &lt;article class="backpack" id="pack01"&gt;
+			&lt;figure class="backpack__image"&gt;
+			  &lt;img src="../../assets/images/everyday.svg" alt="" loading="lazy" /&gt;
+			&lt;/figure&gt;
+			&lt;h1 class="backpack__name"&gt;Everyday Backpack&lt;/h1&gt;
+			&lt;ul class="backpack__features"&gt;
+			  &lt;li class="feature backpack__volume"&gt;Volume:&lt;span&gt; 30l&lt;/span&gt;&lt;/li&gt;
+			  &lt;li class="feature backpack__color"&gt;Color:&lt;span&gt; grey&lt;/span&gt;&lt;/li&gt;
+			  &lt;li class="feature backpack__age"&gt;Age:&lt;span&gt; 684 days old&lt;/span&gt;&lt;/li&gt;
+			  &lt;li class="feature backpack__pockets"&gt;
+				Number of pockets:&lt;span&gt; 15&lt;/span&gt;
+			  &lt;/li&gt;
+			  &lt;li class="feature backpack__strap" data-side="left"&gt;
+				Left strap length: &lt;span&gt;26 inches&lt;/span&gt;
+				&lt;form class="leftlength" data-children-count="1"&gt;
+				  &lt;input
+					type="number"
+					name="leftLength"
+					placeholder="New left length"
+				  /&gt;
+				  &lt;button&gt;Update&lt;/button&gt;
+				&lt;/form&gt;
+			  &lt;/li&gt;
+			  &lt;li class="feature backpack__strap" data-side="right"&gt;
+				Right strap length: &lt;span&gt;26 inches&lt;/span&gt;
+				&lt;form class="rightlength" data-children-count="1"&gt;
+				  &lt;input
+					type="number"
+					name="rightLength"
+					placeholder="New right length"
+				  /&gt;
+				  &lt;button&gt;Update&lt;/button&gt;
+				&lt;/form&gt;
+			  &lt;/li&gt;
+			  &lt;li class="feature backpack__lid"&gt;Lid status: &lt;span&gt;closed&lt;/span&gt;&lt;/li&gt;
+			&lt;/ul&gt;
+			&lt;button class="lid-toggle"&gt;Open lid&lt;/button&gt;
+		  &lt;/article&gt;
+		  &lt;article class="backpack" id="pack02"&gt;
+			&lt;figure class="backpack__image"&gt;
+			  &lt;img src="../../assets/images/frog.svg" alt="" loading="lazy" /&gt;
+			&lt;/figure&gt;
+			&lt;h1 class="backpack__name"&gt;Frog Backpack&lt;/h1&gt;
+			&lt;ul class="backpack__features"&gt;
+			  &lt;li class="feature backpack__volume"&gt;Volume:&lt;span&gt; 8l&lt;/span&gt;&lt;/li&gt;
+			  &lt;li class="feature backpack__color"&gt;Color:&lt;span&gt; green&lt;/span&gt;&lt;/li&gt;
+			  &lt;li class="feature backpack__age"&gt;Age:&lt;span&gt; 369 days old&lt;/span&gt;&lt;/li&gt;
+			  &lt;li class="feature backpack__pockets"&gt;
+				Number of pockets:&lt;span&gt; 3&lt;/span&gt;
+			  &lt;/li&gt;
+			  &lt;li class="feature backpack__strap" data-side="left"&gt;
+				Left strap length: &lt;span&gt;10 inches&lt;/span&gt;
+				&lt;form class="leftlength" data-children-count="1"&gt;
+				  &lt;input
+					type="number"
+					name="leftLength"
+					placeholder="New left length"
+				  /&gt;
+				  &lt;button&gt;Update&lt;/button&gt;
+				&lt;/form&gt;
+			  &lt;/li&gt;
+			  &lt;li class="feature backpack__strap" data-side="right"&gt;
+				Right strap length: &lt;span&gt;10 inches&lt;/span&gt;
+				&lt;form class="rightlength" data-children-count="1"&gt;
+				  &lt;input
+					type="number"
+					name="rightLength"
+					placeholder="New right length"
+				  /&gt;
+				  &lt;button&gt;Update&lt;/button&gt;
+				&lt;/form&gt;
+			  &lt;/li&gt;
+			  &lt;li class="feature backpack__lid"&gt;Lid status: &lt;span&gt;closed&lt;/span&gt;&lt;/li&gt;
+			&lt;/ul&gt;
+			&lt;button class="lid-toggle"&gt;Open lid&lt;/button&gt;
+		  &lt;/article&gt;
+		&lt;/main&gt;
+		&lt;footer class="sitefooter"&gt;
+		  &lt;p&gt;
+			Demo project for JavaScript Essential Training, a LinkedIn Learning
+			course.
+		  &lt;/p&gt;
+		&lt;/footer&gt;
+		&lt;!-- Code injected by live-server --&gt;
+	  &lt;/body&gt;
+	&lt;/html&gt;</pre>
+	
+	<h2 class="sectiontitle">The DOM Tree</h2>
+	<p>This is a list of all the elements tabulated to show the nesting levels and to assist in identifying different elements within the DOM tree for the exercise practice.  Note that where an element has a class, the classname has been provided, starting with a . and coloured dark red.  Similarly, an id starts with a # and is coloured dark green.</p>
+	<pre class="inset">
+	&bull;	html
+		&bull;	head
+			&bull;	meta
+			&bull;	meta
+			&bull;	title
+			&bull;	link
+			&bull;	link
+			&bull;	script
+		&bull;	body
+			&bull;	header <darkred>.siteheader</darkred>
+				&bull;	div <darkred>.site-title</darkred>
+				&bull;	div <darkred>.site-desription</darkred>
+			&bull;	main <darkred>.maincontent</darkred>
+				&bull;	div <darkred>.page-header</darkred>
+					&bull;	h2 <darkred>.page-header_heading</darkred>
+					&bull;	p
+				&bull;	article <darkgreen>#pack01</darkgreen>
+					&bull;	figure <darkred>.backpack__image</darkred>
+						&bull;	img
+					&bull;	h1 <darkred>.backpack__name</darkred>
+					&bull;	ul <darkred>.backpack__features</darkred>
+						&bull;	li <darkred>backpack__volume</darkred>
+							&bull;	span
+						&bull;	li <darkred>backpack__color</darkred>
+							&bull;	span
+						&bull;	li <darkred>backpack__age</darkred>
+							&bull;	span
+						&bull;	li <darkred>backpack__pockets</darkred>
+							&bull;	span
+						&bull;	li <darkred>backpack__strap</darkred>
+							&bull;	span
+							&bull;	form <darkred>.leftlength</darkred>
+								&bull;	input
+								&bull;	button
+						&bull;	li <darkred>backpack__strap</darkred>
+							&bull;	span
+							&bull;	form <darkred>.rightlength</darkred>
+								&bull;	input
+								&bull;	button
+						&bull;	li <darkred>backpack__lid</darkred>
+							&bull;	span
+					&bull;	button <darkred>.lid-toggle</darkred>
+				&bull;	article <darkgreen>#pack02</darkgreen>
+					&bull;	figure <darkred>.backpack__image</darkred>
+						&bull;	img
+					&bull;	h1 <darkred>.backpack__name</darkred>
+					&bull;	ul <darkred>.backpack__features</darkred>
+						&bull;	li <darkred>backpack__volume</darkred>
+							&bull;	span
+						&bull;	li <darkred>backpack__color</darkred>
+							&bull;	span
+						&bull;	li <darkred>backpack__age</darkred>
+							&bull;	span
+						&bull;	li <darkred>backpack__pockets</darkred>
+							&bull;	span
+						&bull;	li <darkred>backpack__strap</darkred>
+							&bull;	span
+							&bull;	form <darkred>.leftlength</darkred>
+								&bull;	input
+								&bull;	button
+						&bull;	li <darkred>backpack__strap</darkred>
+							&bull;	span
+							&bull;	form <darkred>.rightlength</darkred>
+								&bull;	input
+								&bull;	button
+						&bull;	li <darkred>backpack__lid</darkred>
+							&bull;	span
+					&bull;	button <darkred>.lid-toggle</darkred>
+			&bull;	footer <darkred>.sitefooter</darkred>
+				&bull;	p</pre>
+</article>
+
+<div class="btngroup">
+	<button class="button" onclick="window.location.href='javascriptessentialtraining2021.html'">
+			Course Contents 
+	</button>
+	<button class="button" onclick="window.location.href='/webdevelopment/webdevelopment.html'">
+			Web Development Page
+	</button>
+	<button class="button" onclick="window.location.href='/index.html'">
+			Home
+	</button>	
+</div>
+
+</body>
+</html>

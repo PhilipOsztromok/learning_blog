@@ -1,0 +1,32 @@
+/* CSS styles for my float demo page */
+
+section {
+	width: 1000px;
+}
+
+.header {
+	background: red;
+}
+
+.sidebar {
+	/*box-sizing: border-box;*/
+	background: lime;
+	width: 300px;
+	height: 600px;
+	float: left;
+	padding: 10px;
+}
+
+.main-content {
+	/*box-sizing: border-box;*/
+	background: yellow;
+	width: 700px;
+	height: 600px;
+	float: left;
+	padding: 10px;
+}
+
+.footer {
+	background: orange;
+	clear: both;
+}

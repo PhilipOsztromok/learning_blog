@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Learning Website</title>
+<link href="/styles/styles.css" rel="stylesheet" type="text/css">
+<link href="/webdevelopment/styles/styles.css" rel="stylesheet" type="text/css">
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+	
+<h1 class="courselink">JavaScript Essential Training</h1>
+<h2 class="lecturer">LinkedIn Learning : Morten Rand-Hendriksen</h2>	
+<h1 class="episodetitle">Code Samples</h1>
+	
+<article>
+    <h2 class="sectiontitle">Code Sample 1</h2>
+	<p>This is the code example for 05_02 in the exercise files.  </p>
+	<h2 class="sectiontitle">The HTML Document</h2>
+	<pre class="codesample">
+	&lt;!DOCTYPE html&gt;
+	&lt;html lang="en"&gt;
+	  &lt;head&gt;
+		&lt;meta charset="UTF-8" /&gt;
+		&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+		&lt;title&gt;BackpackPacker&lt;/title&gt;
+		&lt;link
+		  href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&amp;family=Work+Sans:wght@100..900&amp;display=swap"
+		  rel="stylesheet"
+		/&gt;
+		&lt;link
+		  rel="stylesheet"
+		  href="../assets/style.css"
+		  type="text/css"
+		  media="all"
+		/&gt;
+		&lt;script type="module" src="Backpack.js"&gt;&lt;/script&gt;
+		&lt;script type="module" src="script.js"&gt;&lt;/script&gt;
+	  &lt;/head&gt;
+	  &lt;body&gt;
+		&lt;header class="siteheader"&gt;
+		  &lt;div class="site-title"&gt;BackpackPacker&lt;/div&gt;
+		  &lt;div class="site-description"&gt;All backpack packing, all the time.&lt;/div&gt;
+		&lt;/header&gt;
+		&lt;main class="maincontent"&gt;&lt;/main&gt;
+		&lt;footer class="sitefooter"&gt;
+		  &lt;p&gt;
+			Demo project for JavaScript Essential Training, a LinkedIn Learning
+			course.
+		  &lt;/p&gt;
+		&lt;/footer&gt;
+	  &lt;/body&gt;
+	&lt;/html&gt;</pre>
+	<p>The only difference between these two HTML files is that in the second version, there is no HTML in the body.</p>
+	<h2 class="sectiontitle">The JavaScript file</h2>
+	<pre class="codesample">
+	/**
+	 * Traverse the DOM tree using querySelector() and querySelectorAll()
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll
+	 */
+
+	import Backpack from "./Backpack.js";
+
+	const everydayPack = new Backpack(
+	  "Everyday Backpack",
+	  30,
+	  "grey",
+	  15,
+	  26,
+	  26,
+	  false,
+	  "December 5, 2018 15:00:00 PST",
+	  "../assets/images/everyday.svg"
+	);
+
+	const main = document.querySelector(".maincontent");
+
+	const content = `
+	  &lt;article class="backpack" id="everyday"&gt;
+		&lt;figure class="backpack__image"&gt;
+		  &lt;img src=${everydayPack.image} alt="" /&gt;
+		&lt;/figure&gt;
+		&lt;h1 class="backpack__name"&gt;${everydayPack.name}&lt;/h1&gt;
+		&lt;ul class="backpack__features"&gt;
+		  &lt;li class="backpack__volume"&gt;Volume:&lt;span&gt; ${
+			everydayPack.volume
+		  }l&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="backpack__color"&gt;Color:&lt;span&gt; ${everydayPack.color}&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="backpack__age"&gt;Age:&lt;span&gt; ${everydayPack.backpackAge()} days old&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="backpack__pockets"&gt;Number of pockets:&lt;span&gt; ${
+			everydayPack.pocketNum
+		  }&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="backpack__strap"&gt;Left strap length:&lt;span&gt; ${
+			everydayPack.strapLength.left
+		  } inches&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="backpack__strap"&gt;Right strap length:&lt;span&gt; ${
+			everydayPack.strapLength.right
+		  } inches&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="backpack__lid"&gt;Lid status:&lt;span&gt; ${
+			everydayPack.lidOpen
+		  }&lt;/span&gt;&lt;/li&gt;
+		&lt;/ul&gt;
+	  &lt;/article&gt;
+	`;
+
+	main.innerHTML = content;</pre>
+</article>
+
+<div class="btngroup">
+	<button class="button" onclick="window.location.href='javascriptessentialtraining2021.html'">
+			Course Contents 
+	</button>
+	<button class="button" onclick="window.location.href='/webdevelopment/webdevelopment.html'">
+			Web Development Page
+	</button>
+	<button class="button" onclick="window.location.href='/index.html'">
+			Home
+	</button>	
+</div>
+
+</body>
+</html>

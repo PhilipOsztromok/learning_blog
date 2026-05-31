@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Learning Website</title>
+<link href="/styles/styles.css" rel="stylesheet" type="text/css">
+<link href="/webdevelopment/styles/styles.css" rel="stylesheet" type="text/css">
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body id="homebody">
+	<div class="header">
+		<h1>The script.js file from Challenge: Build an Advanced Function</h1>
+	</div>
+	<pre class="codesample">
+	import backpackObjectArray from "./components/data.js";
+
+	const article = document.querySelector("main");
+
+	// map() through the stuff array to make a new stuffItems array.
+	const packList = backpackObjectArray.map((item) =&gt; {
+	  const content = `
+		&lt;figure class="backpack__image"&gt;
+		  &lt;img src=${item.image} alt="" loading="lazy" /&gt;
+		&lt;/figure&gt;
+		&lt;h1 class="backpack__name"&gt;${item.name}&lt;/h1&gt;
+		&lt;ul class="backpack__features"&gt;
+		  &lt;li class="feature backpack__volume"&gt;Volume:&lt;span&gt; ${
+			item.volume
+		  }l&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="feature backpack__color"&gt;Color:&lt;span&gt; ${
+			item.color
+		  }&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="feature backpack__age"&gt;Age:&lt;span&gt; ${item.backpackAge()} days old&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="feature backpack__pockets"&gt;Number of pockets:&lt;span&gt; ${
+			item.pocketNum
+		  }&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="feature backpack__strap"&gt;Left strap length:&lt;span&gt; ${
+			item.strapLength.left
+		  } inches&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="feature backpack__strap"&gt;Right strap length:&lt;span&gt; ${
+			item.strapLength.right
+		  } inches&lt;/span&gt;&lt;/li&gt;
+		  &lt;li class="feature backpack__lid"&gt;Lid status:&lt;span&gt; ${
+			item.lidOpen ? "open" : "closed"
+		  }&lt;/span&gt;&lt;/li&gt;
+		&lt;/ul&gt;
+	  `;
+
+	  console.log("Item is :", item);
+	  console.log("Contents are: ", content);
+
+	  const backpack_div = document.createElement("div");
+	  backpack_div.innerHTML = content;
+	  return backpack_div;
+
+	});
+
+	packList.forEach((item) =&gt; {
+	  article.append(item)
+	});</pre>
+</body>
+</html>

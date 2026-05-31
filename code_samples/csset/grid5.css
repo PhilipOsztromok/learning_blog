@@ -1,0 +1,14 @@
+/* CSS styles for my grid demo page */
+
+.grid-container {
+	display: grid;
+	grid-template-columns: 200px repeat(2, 1fr);
+	grid-template-rows: 100px;
+}
+
+.grid-container div {
+	background: lightgreen;
+	text-align: center;
+	font-size: 36px;
+	border: solid black 1px;
+}

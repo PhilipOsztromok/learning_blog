@@ -1,0 +1,256 @@
+/* Site wide styles for pages other than home pages*/
+
+@import url("resets.css");
+
+body {
+	font-family: "Franklin Gothic Bold", "Arial Black", "sans-serif";
+	font-size: 12px;	
+}
+
+article {
+	line-height: 1.5;
+	padding: 32px 32px 132px 32px;
+}
+
+th, td {
+	padding: 3px 10px 3px 0;	
+	font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "DejaVu Sans", Verdana, "sans-serif";
+}
+
+/* General styles for the subject pages */
+
+p {
+	margin: 6px 0;
+}
+
+img {
+	max-width: 60%;
+	margin-left: 20%;
+	border: 2px solid black;
+}
+
+.courselink {
+	font-size: 72px;
+	color: antiquewhite;
+	background-color: black;
+	text-align: center;
+	padding: 30px 0;	
+}
+
+.courselink_small {
+	font-size: 36px;
+	color: antiquewhite;
+	background-color: black;
+	text-align: center;
+	padding: 30px 0;	
+}
+
+.lecturer {
+	font-size: 18px;
+	color: gold;
+	background-color: black;
+	text-align: center;
+	padding: 12px 0;
+}
+
+.episodetitle {
+	font-size: 18px;
+	color: antiquewhite;
+	background-color: black;
+	text-align: center;
+	padding-bottom: 12px;
+	margin-bottom: 12px;
+}
+
+.sectiontitle {
+	color: darkblue;
+	font-size: 20px;
+	padding: 6px;
+}
+
+.subsectiontitle {
+	color: darkblue;
+	font-size: 18px;
+	padding: 6px;
+}
+
+.inset {
+	padding: 16px 32px;
+	background: #85A3AB;
+	color: darkblue;
+}
+
+.inset-error {
+	padding: 16px 32px;
+	background: #85A3AB;
+	color: darkblue;
+	font-family: Baskerville, "Palatino Linotype", Palatino, "Century Schoolbook L", "Times New Roman", "serif";
+	font-weight: 800;
+	font-size: 18px;
+}
+
+.inset-overflow {
+	overflow: scroll;
+	padding: 16px 32px;
+	background: #85A3AB;
+	color: darkblue;
+}
+
+.inset-binary {
+	font-size: 24px;
+	padding: 16px 32px;
+	background: #85A3AB;
+	color: darkblue;
+}
+
+figcaption {
+	font-style: italic;
+	font-family: Constantia, "Lucida Bright", "DejaVu Serif", Georgia, "serif";
+}
+
+pre h1 {
+	font-size: 32px;
+}
+
+
+/* a few simple class rules to allow snippets of text to be changed colour */
+darkred {
+	color: darkred;
+}
+
+darkgreen {
+	color: darkgreen;
+}
+
+button:hover {
+	background: rgba(71, 72, 151, 80%);
+	clear: both;
+}
+
+button {
+	align-content: center;
+	background: #AAAE8E;
+	color:  #453F78;
+	text-decoration: none;
+	padding: 10px 10px;
+	margin: 10px;
+	border: thick 2px #3A5743;	
+	border-radius: 4px;
+	display: inline-block;
+}
+
+.button a {
+	font-size: 18px;
+}
+
+.button a:visit {
+	color:  #453F78;
+}
+
+.btngroup {
+	display: flex;
+	position: fixed;
+	width: 100%;
+	bottom: 0;
+	padding: 10px;
+	background: black;
+	margin-left: 0;
+}
+
+.smallbutton a {
+	font-size: 12px;
+}
+
+.smallbutton a:visit {
+	color:  #453F78;
+}
+
+.smallbtngroup {
+	display: flex;
+	position: fixed;
+	width: 100%;
+	bottom: 0;
+	padding: 10px;
+	background: black;
+	margin-left: 0;
+}
+
+@media (min-width: 1200px) {
+	.banner {
+		position: fixed;
+		top: 0;
+		width: 100%;
+		margin: 0;
+	}
+	
+	article {
+		margin-top: 190px;
+	}
+
+	.contents-article {
+		margin-top: 100;
+	}
+	
+}
+
+@media (max-width: 480px) {
+	body {
+	font-size: 12px;	
+	}
+
+	article {
+		line-height: 1.5;
+		padding: 16px;
+		margin-bottom: 10px;
+	}
+
+	.courselink {
+		font-size: 36px;
+		color: antiquewhite;
+		background-color: black;
+		text-align: center;
+		padding: 30px 0;	
+	}
+
+	.lecturer {
+		font-size: 12px;
+		color: gold;
+		background-color: black;
+		text-align: center;
+		padding-bottom: 12px;
+	}
+
+	.episodetitle {
+		font-size: 12px;
+		color: antiquewhite;
+		background-color: black;
+		text-align: center;
+		padding-bottom: 12px;
+		margin-bottom: 12px;
+	}
+
+	.sectiontitle {
+		color: darkblue;
+		font-size: 14px;
+		padding: 6px;
+	}
+
+	.inset {
+		padding: 16px 32px;
+		background: #85A3AB;
+		color: darkblue;
+	}
+
+	button {
+		align-content: center;
+		font-size: 12px;
+		background: #AAAE8E;
+		color:  #453F78;
+		text-decoration: none;
+		padding: 10px 10px;
+		margin: 10px;
+		border: thick 2px #3A5743;	
+		border-radius: 4px;
+		display: inline-block;
+	}
+}

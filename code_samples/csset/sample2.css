@@ -1,0 +1,62 @@
+/* web development styles */
+
+h2 {
+	background-color: #0072B5;
+	color: #9BB7D4;
+}
+
+body {
+	background-color: #9BB7D4;
+	color: #0072B5;
+}
+
+article p {
+	padding: 6px 12px;
+}
+
+button {
+	background-color: darkblue;
+	color: #9BB7D4;
+	border-color: gold;
+}
+
+.lecturer {
+	background-color: black;
+	/* color: #9BB7D4; */
+	color: gold;
+}
+
+.episodetitle {
+	color: black;
+}
+
+.sectiontitle {
+	color: black;
+}
+
+/* see the page on CSS Basics - this is to style
+the fake heading to show that we can have an id
+and a class with the same name but they are 
+different selectors
+*/
+
+#sectiontitle {
+	font-size: 20px;
+	padding: 10px 25px 10px 25px;
+	color: darkred;
+}
+
+.inset, pre {
+	background-color: #0072B5;
+	color: #9BB7D4;
+}
+
+.suffix {
+	color: black;
+}
+
+/*@media only screen and (max-width: 900px) {
+	body {
+		background-color: black;
+	}
+}*/

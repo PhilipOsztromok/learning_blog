@@ -1,0 +1,44 @@
+/* CSS styles for my z-index demo page */
+
+/* root element */
+html {
+  background: gray;
+}
+/* viewport */
+body {
+  background: white;
+  height: 400px;
+}
+.block1 {
+  position: relative;
+  background: pink;
+  z-index: 1;
+}
+.block2 {
+  background: red;
+  margin: -60px 0 0 20px;
+}
+.float {
+  background: lightblue;
+  float: left;
+  margin: -150px 0 0 100px;
+}
+.inline {
+  background: blue;
+  color: white;
+  padding: 10px 40px 10px 10px;
+}
+.position {
+  background: orange;
+  position: relative;
+  left: 180px;
+  top: -165px;
+  height: 110px;
+}
+
+/* shared div styles */
+div {
+  padding: 20px;
+  width: 200px;
+  height: 80px;
+}

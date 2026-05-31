@@ -1,0 +1,18 @@
+/* CSS styles for my flexbox demo page */
+
+.flexbox {
+	height: 900px;
+	background: yellow;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.greenbox {
+	flex: 0 0 400px;
+	align-items: center;
+	background: lime;
+	height: 400px;
+	align-items: center;
+	justify-content: center;
+}

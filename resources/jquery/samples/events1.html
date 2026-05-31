@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Learning Website</title>
+<link href="/styles/styles.css" rel="stylesheet" type="text/css">
+<link href="/webdevelopment/styles/styles.css" rel="stylesheet" type="text/css">
+<link href="../styles/samples.css" rel="stylesheet" type="text/css">
+<script type="module" src="/scripts/article.js" defer></script>
+<script type="text/javascript" src="/jQuery/jquery-3.6.3.js"></script>
+	
+
+<script type="text/javascript">
+	$("document").ready(function() {
+		$("#example").on("mousemove", onMouseOver);
+		$("#example").on("click", onMouseClick);
+		$("#example").on("mouseleave", onMouseLeave);
+	});
+
+	function onMouseOver(evt) {
+		$("#example").text(evt.type + ": " + evt.pageX + ", " + evt.pageY + "\n" +
+						  "Button: " + evt.which + " Key: " + evt.metaKey);
+	}
+	function onMouseClick(evt) {
+		$("#example").text(evt.type + ": " + evt.pageX + ", " + evt.pageY);
+		$("#example").off("mousemove", onMouseOver);
+	}
+	function onMouseLeave(evt) {
+		$("#example").text("mouseleave");
+	}
+</script>
+
+</head>
+<body>
+    <h1>jQuery Event Handling</h1>
+    <div id="content">
+
+        <p>jQuery normalizes an event structure across browsers and provides cross-browser consistency for properties such as
+            the event name, the page coordinates of the mouse, the element where the event originated along with any other
+            element related to the event, and information such as whether a meta-key or specific mouse button was pressed.</p>
+        <div id="example">
+        </div>
+    </div>
+</body>
+</html>

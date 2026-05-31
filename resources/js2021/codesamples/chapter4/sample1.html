@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Learning Website</title>
+<link href="/styles/styles.css" rel="stylesheet" type="text/css">
+<link href="/webdevelopment/styles/styles.css" rel="stylesheet" type="text/css">
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+	
+<h1 class="courselink">JavaScript Essential Training</h1>
+<h2 class="lecturer">LinkedIn Learning : Morten Rand-Hendriksen</h2>	
+<h1 class="episodetitle">Code Samples</h1>
+	
+<article>
+    <h2 class="sectiontitle">Code Sample 1</h2>
+	<p>This is the code example for 04_01 in the exercise files.  The HTML file shown below is our starting point.</p>
+	<h2 class="sectiontitle">The HTML Document - Start</h2>
+	<pre class="codesample">
+	&lt;!DOCTYPE html&gt;
+	&lt;html lang="en"&gt;
+	  &lt;head&gt;
+		&lt;meta charset="UTF-8" /&gt;
+		&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+		&lt;title&gt;String output&lt;/title&gt;
+		&lt;script type="module" src="Backpack.js"&gt;&lt;/script&gt;
+		&lt;script type="module" src="script.js"&gt;&lt;/script&gt;
+	  &lt;/head&gt;
+	  &lt;body&gt;
+		&lt;main&gt;
+		  &lt;article&gt;
+			&lt;h1&gt;Everyday Backpack&lt;/h1&gt;
+			&lt;ul&gt;
+			  &lt;li&gt;Volume:&lt;/li&gt;
+			  &lt;li&gt;Color:&lt;/li&gt;
+			  &lt;li&gt;Age:&lt;/li&gt;
+			  &lt;li&gt;Number of pockets:&lt;/li&gt;
+			  &lt;li&gt;Left strap length:&lt;/li&gt;
+			  &lt;li&gt;Right strap length:&lt;/li&gt;
+			  &lt;li&gt;Lid status:&lt;/li&gt;
+			&lt;/ul&gt;
+		  &lt;/article&gt;
+		&lt;/main&gt;
+	  &lt;/body&gt;
+	&lt;/html&gt;</pre>
+	<p>The HTML in the body is removed because we want the JavaScript file to add this content using a template literal.  This will allow us to add in some JavaScript expressions so that we can get the values of each property directly from a backpack object and display these along with the property names.</p>
+	<h2 class="sectiontitle">The HTML Document - Finish</h2>
+	<pre class="codesample">
+	&lt;!DOCTYPE html&gt;
+	&lt;html lang="en"&gt;
+	  &lt;head&gt;
+		&lt;meta charset="UTF-8" /&gt;
+		&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+		&lt;title&gt;String output&lt;/title&gt;
+		&lt;script type="module" src="Backpack.js"&gt;&lt;/script&gt;
+		&lt;script type="module" src="script.js"&gt;&lt;/script&gt;
+	  &lt;/head&gt;
+	  &lt;body&gt;
+	  &lt;/body&gt;
+	&lt;/html&gt;</pre>
+	<p>The only difference between these two HTML files is that in the second version, there is no HTML in the body.</p>
+	<h2 class="sectiontitle">The JavaScript file</h2>
+	<pre class="codesample">
+	/**
+	 * Use template literals to output HTML
+	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
+	 *
+	 */
+	// import { doc } from "prettier";
+	import Backpack from "./Backpack.js";
+
+	const everydayPack = new Backpack(
+	  "Everyday Backpack",
+	  30,
+	  "grey",
+	  15,
+	  26,
+	  26,
+	  false,
+	  "December 5, 2018 15:00:00 PST"
+	);
+
+	const content = `
+	  &lt;main&gt;
+	  &lt;article&gt;
+		&lt;h1&gt;${everydayPack.name}&lt;/h1&gt;
+		&lt;ul&gt;
+		  &lt;li&gt;Volume: ${everydayPack.volume}&lt;/li&gt;
+		  &lt;li&gt;Color: ${everydayPack.color}&lt;/li&gt;
+		  &lt;li&gt;Age: ${everydayPack.backpackAge()}&lt;/li&gt;
+		  &lt;li&gt;Number of pockets: ${everydayPack.pocketNum}&lt;/li&gt;
+		  &lt;li&gt;Left strap length: ${everydayPack.strapLength.left}&lt;/li&gt;
+		  &lt;li&gt;Right strap length: ${everydayPack.strapLength.right}&lt;/li&gt;
+		  &lt;li&gt;Lid status: ${everydayPack.lidOpen}&lt;/li&gt;
+		&lt;/ul&gt;
+	  &lt;/article&gt;
+	  &lt;/main&gt;
+	`;
+
+	document.body.innerHTML = content;</pre>
+	<p>Just a note on this, the line importing doc from prettier was enabled in the code from the exercise files, but it was giving me an error so I disabled it and this seems to have fixed the problem without causing any additional problems as far as I can tell.</p>
+</article>
+
+<div class="btngroup">
+	<button class="button" onclick="window.location.href='javascriptessentialtraining2021.html'">
+			Course Contents 
+	</button>
+	<button class="button" onclick="window.location.href='/webdevelopment/webdevelopment.html'">
+			Web Development Page
+	</button>
+	<button class="button" onclick="window.location.href='/index.html'">
+			Home
+	</button>	
+</div>
+
+</body>
+</html>

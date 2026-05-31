@@ -1,0 +1,13 @@
+/* CSS styles for my pseudo class selector demo page */
+
+p {
+	font-size: 20px;	
+}
+
+p:first-of-type {
+	color: red;
+}
+
+p:last-of-type {
+	color: blue;
+}

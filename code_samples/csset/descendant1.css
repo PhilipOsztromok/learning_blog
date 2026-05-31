@@ -1,0 +1,17 @@
+/* css for the html document demonstrating descendant selectors */
+
+a {
+	color: black;
+}
+
+section a {
+	color: green;
+}
+
+.content p a {
+	color: hotpink;
+}
+
+.content a {
+	color: orange;
+}

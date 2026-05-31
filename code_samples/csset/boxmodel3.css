@@ -1,0 +1,38 @@
+/* using background colours to demonstrate the box model */
+
+#a1 {
+	background: blue;
+	color: white;
+}
+
+#a2 {
+	background: orange;
+	display: inline;
+
+}
+
+#a3 {
+	background: black;
+	color: yellow;
+}
+
+#a4 {
+	background: green;
+	display: inline;
+}
+
+#a5 {
+	background: brown;
+}
+
+#a6 {
+	background: red;
+}
+#a7 {
+	background: yellow;
+}
+
+#a8 {
+	background: pink;
+	display: block;
+}

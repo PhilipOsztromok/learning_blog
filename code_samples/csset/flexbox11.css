@@ -1,0 +1,26 @@
+/* CSS styles for my flexbox demo page */
+
+.flex-container {
+  	background: lightsteelblue;
+  	margin-bottom: 10px;
+	width: 100%;
+	display: flex;
+}
+.flex-item {
+	box-sizing: border-box;
+	border: 1px solid midnightblue;
+	padding: 10px;
+	flex: 1 1 100px;
+}
+
+.demoheader {
+	font-size: 36px;
+	background-color: darkblue;
+	color: antiquewhite;
+}
+
+.demofooter {
+	font-size: 24px;
+	background-color: black;
+	color: white;
+}

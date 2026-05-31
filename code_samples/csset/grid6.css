@@ -1,0 +1,23 @@
+/* CSS styles for my grid demo page */
+
+img {
+	align-content: center;
+	height: 160px;
+}
+
+.thumbnails {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	grid-template-rows: 200px;
+	grid-rows-auto: 200px;
+}
+
+.thumbnails div {
+	background: lightgreen;
+	text-align: center;
+	border: solid black 1px;
+}
+
+.thumbnails p {
+	text-size: 16px;
+}

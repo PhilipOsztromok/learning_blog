@@ -1,0 +1,200 @@
+/* 
+	**	Styles for the sample pages created for 
+	**  the jQuery Essential Training Course
+*/
+
+
+
+article {
+	line-height: 1.5;
+	padding: 32px 32px 132px 32px;
+}
+
+p {
+	margin: 6px 0;
+}
+
+h2 {
+	font-size: 22px;
+	color: black;
+	background-color: aqua;
+	padding-top: 12px;
+	padding-bottom: 12px;
+}
+
+/*
+** Styles used in the jQuery Essential Training course materials
+*/
+body {
+    font-family: "Open Sans", sans-serif;
+    font-size: 12pt;
+    margin: 0;
+    line-height: 1.2em;
+}
+
+body > h1 {
+    background-color: #33d;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 100;
+    margin:0;
+    padding-left: 10pt;
+    padding-right: 10pt;
+    padding-top:25pt;
+    padding-bottom: 15pt;
+    box-shadow: 0px 5px 5px 0px rgba(171,171,171,1);
+}
+
+#content {
+    margin: 10pt;
+}
+
+#example {
+    border: 1px solid gray;
+    background-color: #b3c8d0;
+    font-size:14pt;
+    padding-left: 10pt;
+    padding-right: 10pt;
+    min-height: 200px;
+}
+
+.box {
+    border: 1px solid gray;
+    background-color: #b3c8d0;
+    font-size:14pt;
+    padding-left: 10pt;
+    padding-right: 10pt;
+    min-height: 200px;
+    width: 300px;
+}
+
+.box p {
+    margin: 0 1pt 0 2pt
+}
+
+.smallbox {
+    border: 1px solid gray;
+    background-color: #b3c8d0;
+    font-size:14pt;
+    padding-left: 10pt;
+    padding-right: 10pt;
+    margin-bottom: 10pt;
+    margin-right: 0;
+    margin-left: 0;
+    min-height: 150px;
+    width: 200px;
+}
+
+.inline {
+    display: inline-block;
+}
+
+code {
+    background-color: #e8e8e8;
+    border: 1px solid #a8a8a8;
+    border-radius: 3px;
+    padding: 1pt 2pt;
+    margin: 2pt;
+    font-family: "source-code-pro", Consolas, monospace;
+    font-size: .9em;
+}
+
+li {
+    line-height: 1.3em;
+}
+
+button {
+    font-size: 14pt;
+    margin: 8px;
+}
+
+#eventDetails {
+    border: 1px solid #aaa;
+    margin-top: 8pt;
+    padding: 2pt;
+}
+
+.lineitem {
+    width: 120px;
+    display: inline-block
+}
+
+@media (min-width: 1200px) {
+	.banner {
+		position: fixed;
+		top: 0;
+		width: 100%;
+		margin: 0;
+	}
+	
+	article {
+		margin-top: 190px;
+	}
+
+	.contents-article {
+		margin-top: 100;
+	}
+	
+}
+
+@media (max-width: 480px) {
+	body {
+	font-size: 12px;	
+	}
+
+	article {
+		line-height: 1.5;
+		padding: 16px;
+		margin-bottom: 10px;
+	}
+
+	.courselink {
+		font-size: 36px;
+		color: antiquewhite;
+		background-color: black;
+		text-align: center;
+		padding: 30px 0;	
+	}
+
+	.lecturer {
+		font-size: 12px;
+		color: gold;
+		background-color: black;
+		text-align: center;
+		padding-bottom: 12px;
+	}
+
+	.episodetitle {
+		font-size: 12px;
+		color: antiquewhite;
+		background-color: black;
+		text-align: center;
+		padding-bottom: 12px;
+		margin-bottom: 12px;
+	}
+
+	.sectiontitle {
+		color: darkblue;
+		font-size: 14px;
+		padding: 6px;
+	}
+
+	.inset {
+		padding: 16px 32px;
+		background: #85A3AB;
+		color: darkblue;
+	}
+
+	button {
+		align-content: center;
+		font-size: 12px;
+		background: #AAAE8E;
+		color:  #453F78;
+		text-decoration: none;
+		padding: 10px 10px;
+		margin: 10px;
+		border: thick 2px #3A5743;	
+		border-radius: 4px;
+		display: inline-block;
+	}
+}
