@@ -6,11 +6,16 @@
 
 require_once __DIR__ . '/db.php';
 
-session_start([
-    'cookie_httponly' => true,
-    'cookie_samesite' => 'Strict',
-    'cookie_secure'   => isset($_SERVER['HTTPS']),
-]);
+// SameSite=Lax allows the session cookie to be sent on same-site redirects
+// (e.g. /admin/ → /login.php), which Strict blocks and causes CSRF token
+// mismatches. Lax still protects against cross-site POST attacks.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start([
+        'cookie_httponly' => true,
+        'cookie_samesite' => 'Lax',
+        'cookie_secure'   => isset($_SERVER['HTTPS']),
+    ]);
+}
 
 define('SESSION_LIFETIME', 60 * 60 * 24 * 7); // 7 days
 
