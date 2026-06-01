@@ -60,55 +60,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_anime'])) {
 
     if (!$title) { $msg = 'error:Title is required.'; }
     else {
-        // Generate slug
-        $baseSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $title));
-        $baseSlug = trim($baseSlug, '-');
-        $slug     = $baseSlug;
-        // Ensure unique slug
-        $n = 1;
-        while (true) {
-            $check = $pdo->prepare("SELECT id FROM anime WHERE slug = ? AND id != ?");
-            $check->execute([$slug, $animeId]);
-            if (!$check->fetch()) break;
-            $slug = $baseSlug . '-' . (++$n);
+        try {
+            // Generate slug
+            $baseSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $title));
+            $baseSlug = trim($baseSlug, '-');
+            $slug     = $baseSlug;
+            // Ensure unique slug
+            $n = 1;
+            while (true) {
+                $check = $pdo->prepare("SELECT id FROM anime WHERE slug = ? AND id != ?");
+                $check->execute([$slug, $animeId]);
+                if (!$check->fetch()) break;
+                $slug = $baseSlug . '-' . (++$n);
+            }
+
+            if ($isEdit) {
+                $pdo->prepare(
+                    "UPDATE anime SET title=?,title_japanese=?,title_english=?,slug=?,synopsis=?,studio_id=?,
+                     type=?,status=?,episodes=?,duration_min=?,premiered_season=?,premiered_year=?,finished_year=?,
+                     age_rating=?,source=?,poster_url=?,banner_url=?,trailer_url=?,imdb_id=?,updated_at=NOW()
+                     WHERE id=?"
+                )->execute([$title,$titleJp,$titleEn,$slug,$synopsis,$studioId,$type,$status,$episodes,$duration,
+                            $season,$year,$finYear,$ageRating,$source,$posterUrl,$bannerUrl,$trailerUrl,$imdbId,$animeId]);
+            } else {
+                $pdo->prepare(
+                    "INSERT INTO anime (title,title_japanese,title_english,slug,synopsis,studio_id,type,status,
+                     episodes,duration_min,premiered_season,premiered_year,finished_year,age_rating,source,
+                     poster_url,banner_url,trailer_url,imdb_id,created_by)
+                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                )->execute([$title,$titleJp,$titleEn,$slug,$synopsis,$studioId,$type,$status,$episodes,$duration,
+                            $season,$year,$finYear,$ageRating,$source,$posterUrl,$bannerUrl,$trailerUrl,$imdbId,$user['id']]);
+                $animeId = (int)$pdo->lastInsertId();
+                $isEdit  = true;
+            }
+
+            // Update genres
+            $pdo->prepare("DELETE FROM anime_genres WHERE anime_id = ?")->execute([$animeId]);
+            if ($selGenres) {
+                $ins = $pdo->prepare("INSERT IGNORE INTO anime_genres (anime_id, genre_id) VALUES (?, ?)");
+                foreach ($selGenres as $gid) $ins->execute([$animeId, $gid]);
+            }
+
+            // Reload
+            $stmt = $pdo->prepare("SELECT * FROM anime WHERE id = ?");
+            $stmt->execute([$animeId]);
+            $show = $stmt->fetch();
+            $gstmt = $pdo->prepare("SELECT genre_id FROM anime_genres WHERE anime_id = ?");
+            $gstmt->execute([$animeId]);
+            $currentGenres = array_column($gstmt->fetchAll(), 'genre_id');
+
+            $msg = 'success:Anime saved successfully!';
+
+        } catch (PDOException $e) {
+            error_log('edit_anime.php PDO error: ' . $e->getMessage());
+            $msg = 'error:Database error — ' . htmlspecialchars($e->getMessage());
         }
-
-        if ($isEdit) {
-            $pdo->prepare(
-                "UPDATE anime SET title=?,title_japanese=?,title_english=?,slug=?,synopsis=?,studio_id=?,
-                 type=?,status=?,episodes=?,duration_min=?,premiered_season=?,premiered_year=?,finished_year=?,
-                 age_rating=?,source=?,poster_url=?,banner_url=?,trailer_url=?,imdb_id=?,updated_at=NOW()
-                 WHERE id=?"
-            )->execute([$title,$titleJp,$titleEn,$slug,$synopsis,$studioId,$type,$status,$episodes,$duration,
-                        $season,$year,$finYear,$ageRating,$source,$posterUrl,$bannerUrl,$trailerUrl,$imdbId,$animeId]);
-        } else {
-            $pdo->prepare(
-                "INSERT INTO anime (title,title_japanese,title_english,slug,synopsis,studio_id,type,status,
-                 episodes,duration_min,premiered_season,premiered_year,finished_year,age_rating,source,
-                 poster_url,banner_url,trailer_url,imdb_id,created_by)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-            )->execute([$title,$titleJp,$titleEn,$slug,$synopsis,$studioId,$type,$status,$episodes,$duration,
-                        $season,$year,$finYear,$ageRating,$source,$posterUrl,$bannerUrl,$trailerUrl,$imdbId,$user['id']]);
-            $animeId = (int)$pdo->lastInsertId();
-            $isEdit  = true;
-        }
-
-        // Update genres
-        $pdo->prepare("DELETE FROM anime_genres WHERE anime_id = ?")->execute([$animeId]);
-        if ($selGenres) {
-            $ins = $pdo->prepare("INSERT IGNORE INTO anime_genres (anime_id, genre_id) VALUES (?, ?)");
-            foreach ($selGenres as $gid) $ins->execute([$animeId, $gid]);
-        }
-
-        // Reload
-        $stmt = $pdo->prepare("SELECT * FROM anime WHERE id = ?");
-        $stmt->execute([$animeId]);
-        $show = $stmt->fetch();
-        $gstmt = $pdo->prepare("SELECT genre_id FROM anime_genres WHERE anime_id = ?");
-        $gstmt->execute([$animeId]);
-        $currentGenres = array_column($gstmt->fetchAll(), 'genre_id');
-
-        $msg = 'success:Anime saved successfully!';
     }
 }
 
