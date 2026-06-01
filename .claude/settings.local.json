@@ -15,7 +15,15 @@
       "PowerShell(cd \"C:\\\\Users\\\\emuba\\\\OneDrive\\\\My Learning\\\\WebSites\\\\website\"; $env:PATH -split \";\" | ForEach-Object { if \\(Test-Path \"$_\\\\gh.exe\"\\) { Write-Host \"Found at: $_\\\\gh.exe\" } })",
       "Bash(git stash *)",
       "Bash(cmd /c \"where gh\")",
-      "Bash(git credential *)"
+      "Bash(git credential *)",
+      "Skill(anthropic-skills:pdf)",
+      "Skill(anthropic-skills:pdf:*)",
+      "Bash(python3 -c \"import reportlab; print\\('reportlab OK'\\)\")",
+      "Bash(python3 -c \"import pypdf; print\\('pypdf OK'\\)\")",
+      "Bash(pip install *)",
+      "Bash(pip3 install *)",
+      "Bash(python3 -m pip install reportlab)",
+      "Bash(python3 generate_guide.py)"
     ]
   }
 }
