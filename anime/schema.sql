@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS anime (
     premiered_year  YEAR NULL,
     finished_year   YEAR NULL,
     rating          DECIMAL(3,1) NULL,            -- site average 0-10
-    age_rating      VARCHAR(20) NULL,             -- PG-13, R, etc.
+    age_rating      VARCHAR(50) NULL,             -- e.g. R - 17+ (violence & profanity)
     source          VARCHAR(80) NULL,             -- Manga, Light Novel, Original…
     poster_url      VARCHAR(500) NULL,
     banner_url      VARCHAR(500) NULL,
