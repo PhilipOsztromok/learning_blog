@@ -1157,6 +1157,294 @@ def appendix(s):
     return story
 
 
+def appendix_prompts(s):
+    """Appendix B — The real prompts used to build and debug Anime Vault."""
+    story = []
+    story += h1(s, 'Appendix B: The Real Development Conversation')
+    story += p(s, 'One of the most valuable things a student can study is not just the '
+                   'finished code, but the <i>process</i> that produced it — including the '
+                   'mistakes, the dead ends, and the corrections along the way. This appendix '
+                   'reproduces the actual prompts used during the creation and debugging of '
+                   'the Anime Vault project, organised by phase.')
+    story += p(s, 'Notice how the process is not linear. Files end up in the wrong place, '
+                   'bugs appear only under specific conditions, and initial diagnoses are '
+                   'sometimes wrong. This is normal professional development work.')
+
+    # ── helper to render a prompt/response exchange ──────────────────────────
+    def prompt_block(number, phase, prompt_text, response_summary, lesson=None):
+        items = []
+        # Prompt bubble
+        header_data = [[Paragraph(f'Prompt {number}', ParagraphStyle(
+            'pb_num', fontName='Helvetica-Bold', fontSize=8,
+            textColor=colors.white)),
+            Paragraph(phase, ParagraphStyle(
+            'pb_phase', fontName='Helvetica', fontSize=8,
+            textColor=HexColor('#aaaacc'), alignment=TA_LEFT))]]
+        header_t = Table(header_data, colWidths=[2.5*cm, None])
+        header_t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), DARK_MID),
+            ('TOPPADDING',    (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('LEFTPADDING',   (0,0), (-1,-1), 8),
+            ('RIGHTPADDING',  (0,0), (-1,-1), 8),
+        ]))
+
+        prompt_para = Paragraph(prompt_text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
+                                ParagraphStyle('prompt_text', fontName='Helvetica-Oblique',
+                                               fontSize=9.5, leading=14,
+                                               textColor=HexColor('#222222'),
+                                               backColor=HexColor('#f0f0f8'),
+                                               leftIndent=8, rightIndent=8,
+                                               spaceBefore=0, spaceAfter=0,
+                                               borderPad=8))
+
+        safe_response = response_summary.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        response_para = Paragraph(f'<b>Response:</b> {safe_response}',
+                                   ParagraphStyle('resp_text', fontName='Helvetica',
+                                                  fontSize=9, leading=13,
+                                                  textColor=HexColor('#333333'),
+                                                  leftIndent=8, rightIndent=8,
+                                                  spaceBefore=0, spaceAfter=0,
+                                                  borderPad=6))
+
+        inner = [[header_t], [prompt_para], [response_para]]
+        if lesson:
+            lesson_para = Paragraph(f'<b>&#x1F4A1; Lesson:</b> {lesson}',
+                                     ParagraphStyle('lesson_text', fontName='Helvetica',
+                                                    fontSize=9, leading=13,
+                                                    textColor=HexColor('#1a5c1a'),
+                                                    backColor=TIP_BG,
+                                                    leftIndent=8, rightIndent=8,
+                                                    spaceBefore=0, spaceAfter=0,
+                                                    borderPad=6))
+            inner.append([lesson_para])
+
+        outer = Table(inner, colWidths=[A4[0]-4*cm-1])
+        outer.setStyle(TableStyle([
+            ('BOX',           (0,0), (-1,-1), 1, LIGHT_GREY),
+            ('TOPPADDING',    (0,0), (-1,-1), 0),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+            ('LEFTPADDING',   (0,0), (-1,-1), 0),
+            ('RIGHTPADDING',  (0,0), (-1,-1), 0),
+            ('LINEBELOW',     (0,0), (0,0), 0.5, LIGHT_GREY),
+        ]))
+        items += [Spacer(1, 8), outer]
+        return items
+
+    # ── Phase 1: Discovery ───────────────────────────────────────────────────
+    story += h2(s, 'Phase 1: Problem Discovery')
+    story += p(s, 'The project already existed but the admin section was completely '
+                   'inaccessible. The first task was to diagnose why.')
+
+    story += prompt_block(1, 'Problem Discovery',
+        'I am seeing a 404 error when I try to access the admin page for my anime project. '
+        'I have tried http://osztromok.com/anime/admin/, http://osztromok.com/anime/admin/login '
+        'and http://osztromok.com/anime/admin/login.php. Each time I am getting a 404 response. '
+        'Can you troubleshoot the issue?',
+        'Explored the project file structure using Glob and discovered that the admin '
+        'folder existed at the wrong path: anime/mnt/user-data/outputs/anime/admin/index.php '
+        'instead of anime/admin/index.php. Identified that this was caused by AI-generated '
+        'files being saved with their full output path rather than placed in the correct location.',
+        'When saving AI-generated code files, always check the file path comment at the top '
+        'of each file (e.g. // File: /anime/admin/index.php) and place it in that exact location, '
+        'not wherever the download tool saved it.')
+
+    story += prompt_block(2, 'Problem Discovery — Scope Expansion',
+        'Yes please! (to fixing and moving all misplaced files)',
+        'Read all key files to understand the full picture, then discovered the problem was '
+        'much wider than one file: 11 files that belonged in anime/admin/ were at the anime/ '
+        'root, and header.php/footer.php that belonged in anime/includes/ were also misplaced. '
+        'Used PowerShell to move all files to their correct locations in one operation, '
+        'then deleted the empty mnt/ directory tree and a duplicate auth.php.',
+        'The same root cause — files placed in the wrong directory — had affected almost the '
+        'entire project. Systematic investigation (reading every file\'s path comment) revealed '
+        'the full extent before any fixes were made.')
+
+    # ── Phase 2: Version Control ─────────────────────────────────────────────
+    story += h2(s, 'Phase 2: Version Control Setup')
+
+    story += prompt_block(3, 'Version Control',
+        'Commit the working tree changes with a sensible message.',
+        'Discovered the anime/ folder had never been added to Git. Initialised a new '
+        'repository in the website/ folder, staged the anime/ directory, and created '
+        'the first commit with all 29 corrected files.',
+        'It is good practice to commit code to version control early — ideally before '
+        'making any changes — so you have a baseline to compare against and can roll back '
+        'if something goes wrong.')
+
+    story += prompt_block(4, 'Version Control',
+        'I have set up a repository on GitHub called learning_blog — are you able to '
+        'connect the website folder to that repository and then push the files?',
+        'Added the GitHub remote with git remote add origin and pushed with git push -u. '
+        'One warning appeared: a PDF file in the resources folder was 56 MB, slightly over '
+        'GitHub\'s recommended 50 MB limit. This was flagged but accepted.')
+
+    story += prompt_block(5, 'Version Control',
+        'Commit the working tree changes with a sensible message. (second request)',
+        'Found that the main website/ root files (admin panel, index.php, templates, '
+        'code samples, resources) had also never been committed. Staged everything except '
+        'config.php (which contained the database password) and committed 1,064 files.',
+        'config.php contained a plain-text database password. Files with credentials '
+        'should be excluded from Git via .gitignore and never committed to a repository, '
+        'especially a public one.')
+
+    # ── Phase 3: Authentication Bugs ─────────────────────────────────────────
+    story += h2(s, 'Phase 3: Authentication Bugs')
+
+    story += prompt_block(6, 'Auth — Investigation',
+        'I do have an outstanding issue with the admin page for the admin site. When I '
+        'try to login, the login page is asking for an email address and password but I '
+        'don\'t think the users table stores email addresses. Should login with an email '
+        'address work or is that an error?',
+        'Checked schema.sql and auth.php — the users table does have an email column and '
+        'loginUser() queries by email. The real problem identified was that the seed '
+        'admin account in schema.sql had a fake base64 string as its password hash '
+        'rather than a real bcrypt hash, meaning login would always fail.',
+        'The password hash in schema.sql was a placeholder. Always generate a real bcrypt '
+        'hash using php -r "echo password_hash(\'Password\', PASSWORD_BCRYPT);" before '
+        'using seed data on a live server.')
+
+    story += prompt_block(7, 'Auth — CSRF Error (First Report)',
+        'I do get an error when I login: Invalid CSRF token. I can get around this by '
+        'pressing the back arrow in the browser and sometimes also refresh so the error '
+        'is not fatal but is it possible to fix that?',
+        'Initial diagnosis (incorrect): assumed the problem was the browser back button '
+        'serving a cached form with a stale token. Applied two fixes: added Cache-Control: '
+        'no-store headers to login.php, and replaced the hard die() on CSRF failure with '
+        'a graceful recovery that regenerates the token and shows a user-friendly message.',
+        'Never assume you know the root cause from a brief description. The first diagnosis '
+        'here was wrong — the real cause was different and required a second investigation.')
+
+    story += prompt_block(8, 'Auth — CSRF Error (Correction)',
+        'Actually, that wasn\'t quite what was happening — I am visiting the login page '
+        'and inputting the password but I don\'t get a successful login, I get the CSRF '
+        'token straight away. I then press the back button and sometimes that takes me to '
+        'the last admin page I had been using.',
+        'Re-diagnosed: the session cookie was not persisting between the GET (form load) '
+        'and POST (form submit). Root cause identified as SameSite=Strict on the session '
+        'cookie, which blocks the cookie on redirected navigations (e.g. /admin/ redirecting '
+        'to /login.php). Fixed by changing to SameSite=Lax, which is the correct setting '
+        'for most websites. Also added a session_status() guard to prevent double session_start().',
+        'SameSite=Strict sounds more secure but is too aggressive for normal websites — it '
+        'prevents session cookies being sent after any redirect from another page, breaking '
+        'login flows. SameSite=Lax provides strong CSRF protection without this side effect.')
+
+    # ── Phase 4: Admin Panel Bugs ─────────────────────────────────────────────
+    story += h2(s, 'Phase 4: Admin Panel Bugs')
+
+    story += prompt_block(9, 'Admin — 500 Error',
+        '[Network request details showing POST to edit_anime.php returning HTTP 500 '
+        'with Content-Length: 0]',
+        'Content-Length: 0 with a 500 status means PHP crashed before sending any output, '
+        'with display_errors turned off in production. Reviewed edit_anime.php carefully '
+        'but could not identify the cause from code inspection alone. Added a try/catch '
+        'block around all database operations so future errors would surface as readable '
+        'messages in the admin UI rather than blank 500 responses, and also log to the '
+        'Apache error log via error_log().',
+        'In production PHP, display_errors is (correctly) turned off. This means unhandled '
+        'exceptions produce blank 500 responses with no visible clue. Always wrap database '
+        'operations in try/catch and use error_log() so errors are captured somewhere '
+        'accessible without being exposed to users.')
+
+    story += prompt_block(10, 'Admin — Column Too Short',
+        'Actually, it looks like the issue might be with the age rating — this is the '
+        'error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for '
+        'column \'age_rating\' at row 1. The error rating giving the problem is '
+        'R - 17+ (violence & profanity) so I guess it\'s the added information in '
+        'brackets that is causing the problem. Can we increase the max length of that field?',
+        'The age_rating column was VARCHAR(20) but the Jikan API returns the full MAL '
+        'rating string "R - 17+ (violence & profanity)" which is 30 characters. Updated '
+        'schema.sql to VARCHAR(50) and provided the ALTER TABLE command to run on the '
+        'live database.',
+        'Column sizes should reflect real-world data from all sources, including external '
+        'APIs. Before defining a VARCHAR length for a field that will be populated from '
+        'an API, make a test call and inspect what the API actually returns — not just '
+        'what you expect to type manually.')
+
+    # ── Phase 5: JavaScript File ─────────────────────────────────────────────
+    story += h2(s, 'Phase 5: Misplaced JavaScript File')
+
+    story += prompt_block(11, 'File Structure',
+        '/create-pr (triggered discovery of anime/admin/main.js as untracked file)',
+        'While preparing a PR, discovered an untracked file: anime/admin/main.js. '
+        'Checking its header comment revealed it should be at anime/js/main.js (matching '
+        'the path referenced in footer.php: <script src="/anime/js/main.js">). '
+        'Also found an identical copy at anime/main.js that had already been committed. '
+        'Created a feature branch, moved the file to the correct location, removed both '
+        'incorrect copies, and opened a PR.',
+        'The footer.php referenced /anime/js/main.js but the file existed at two wrong '
+        'locations and the JS was silently failing to load on every page. Checking browser '
+        'developer tools (Network tab) for 404 errors on JS and CSS files is a useful habit '
+        'to catch this kind of problem early.')
+
+    # ── Phase 6: Documentation ────────────────────────────────────────────────
+    story += h2(s, 'Phase 6: Documentation')
+
+    story += prompt_block(12, 'Documentation',
+        'Bearing in mind that I am a student of Web Development and I want to think of '
+        'you as being a teacher — would it be possible to produce a step by step guide '
+        'that someone might follow to create the Anime website? If possible, this should '
+        'include explanations for each step describing not just what is being done but '
+        'also why. Can you produce something like this in the form of a PDF as if it were '
+        'a book on web development and if possible, include an appendix with URLs for '
+        'useful websites?',
+        'Used the PDF skill with Python and ReportLab to generate a styled, book-format '
+        'PDF covering all eight aspects of the project with explanations, code samples, '
+        'tip/warning boxes, and a resource appendix with 25+ URLs.')
+
+    story += prompt_block(13, 'Documentation',
+        'Would it be possible to add another appendix showing the prompts that were used '
+        'during the entire creation process including any bug fixes or other amendments?',
+        'Added this appendix — Appendix B — to the PDF generator, reproducing all prompts '
+        'organised by phase with response summaries and lessons learned.',
+        'Documenting the journey, not just the destination, is one of the most valuable '
+        'things you can do as a learner. Revisiting why decisions were made and what went '
+        'wrong teaches more than any tutorial written with perfect hindsight.')
+
+    story += h2(s, 'Key Takeaways from the Process')
+    story += p(s, 'Looking across the entire conversation, a few patterns stand out:')
+
+    takeaways = [
+        ('File placement errors were the most common mistake.',
+         'Almost every file was placed in the wrong directory. This is particularly easy to '
+         'do when working with AI-generated code. The fix: always read the path comment at '
+         'the top of each file and place it accordingly.'),
+        ('The first diagnosis is not always correct.',
+         'The CSRF bug was initially diagnosed as a browser caching issue. The real cause '
+         '(SameSite=Strict blocking session cookies on redirects) was only found after the '
+         'user provided a more precise description. Never be afraid to correct an incorrect '
+         'diagnosis — it is part of the process.'),
+        ('Silent failures are the hardest to debug.',
+         'The 500 error with Content-Length: 0 gave no information at all. The fix was to '
+         'add error handling (try/catch + error_log) so that future errors produce useful '
+         'output rather than a blank screen.'),
+        ('External data does not match your assumptions.',
+         'The age_rating column was sized for short codes like "PG-13" but the API returned '
+         'full strings like "R - 17+ (violence & profanity)". Always test with real data '
+         'from all sources before choosing column sizes.'),
+        ('Version control should come first.',
+         'The Git repository was set up after the files were already in place. Ideally, '
+         'you initialise git init before writing any code, so every change is tracked '
+         'from the very beginning.'),
+    ]
+
+    for title, body in takeaways:
+        inner = [Paragraph(f'&#x2714; {title}', s['tip_title']),
+                 Paragraph(body, s['tip_body'])]
+        t = Table([[inner]], colWidths=[A4[0]-4*cm-1])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), LIGHT_BG),
+            ('LINEBEFORE', (0,0), (0,-1), 3, PINK),
+            ('TOPPADDING', (0,0), (-1,-1), 8),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+            ('LEFTPADDING', (0,0), (-1,-1), 10),
+            ('RIGHTPADDING', (0,0), (-1,-1), 10),
+        ]))
+        story += [Spacer(1, 6), t]
+
+    return story
+
+
 # ── Main build ────────────────────────────────────────────────────────────────
 def build():
     s = make_styles()
@@ -1185,6 +1473,7 @@ def build():
     story += chapter_security(s)
     story += chapter_deployment(s)
     story += appendix(s)
+    story += appendix_prompts(s)
 
     # Apply page templates
     from reportlab.platypus import NextPageTemplate
