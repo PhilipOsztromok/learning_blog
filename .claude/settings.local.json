@@ -14,7 +14,8 @@
       "Bash(git rm *)",
       "PowerShell(cd \"C:\\\\Users\\\\emuba\\\\OneDrive\\\\My Learning\\\\WebSites\\\\website\"; $env:PATH -split \";\" | ForEach-Object { if \\(Test-Path \"$_\\\\gh.exe\"\\) { Write-Host \"Found at: $_\\\\gh.exe\" } })",
       "Bash(git stash *)",
-      "Bash(cmd /c \"where gh\")"
+      "Bash(cmd /c \"where gh\")",
+      "Bash(git credential *)"
     ]
   }
 }
