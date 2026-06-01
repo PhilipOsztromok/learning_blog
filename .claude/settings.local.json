@@ -9,7 +9,9 @@
       "Bash(gh pr *)",
       "Bash(gh repo *)",
       "Bash(where gh *)",
-      "PowerShell(\\(Get-Command gh -ErrorAction SilentlyContinue\\).Source)"
+      "PowerShell(\\(Get-Command gh -ErrorAction SilentlyContinue\\).Source)",
+      "Bash(git checkout *)",
+      "Bash(git rm *)"
     ]
   }
 }
