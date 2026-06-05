@@ -1,0 +1,324 @@
+<!-- ============================================================
+     JAPANESE LESSON: Ichidan Verbs — いちだんどうし（一段動詞）
+     Level: Beginner-plus | Hiragana + Romaji + English
+     ============================================================ -->
+
+<style>
+  .jp-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .jp-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .jp-lesson h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.5rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .jp-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .jp-lesson p { margin-bottom: 1rem; }
+
+  .info-box {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+
+  .forms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .form-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .form-card .form-name { color: #4f8ef7; font-family: system-ui, -apple-system, sans-serif; font-weight: 600; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .form-card .form-rule { color: #e2e4ec; font-size: 0.95em; }
+  .form-card .form-desc { color: #7a7f96; font-size: 0.78em; font-style: italic; margin-top: 4px; }
+
+  /* Simple rule box — ichidan is much simpler */
+  .rule-box {
+    background: #1e2235;
+    border: 1px solid #4f8ef7;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    text-align: center;
+    font-size: 1.1em;
+  }
+  .rule-box .rule-jp { color: #c9a8ff; font-size: 1.3em; letter-spacing: 0.05em; }
+  .rule-box .rule-arrow { color: #4f8ef7; margin: 0 8px; }
+  .rule-box .rule-en { color: #7a7f96; font-size: 0.82em; font-style: italic; display: block; margin-top: 6px; }
+
+  .verb-table-wrap { overflow-x: auto; margin-bottom: 10px; }
+  .verb-table { width: 100%; border-collapse: collapse; font-family: system-ui, -apple-system, sans-serif; font-size: 0.85em; white-space: nowrap; }
+  .verb-table th { background: #1e2235; color: #4f8ef7; padding: 9px 12px; text-align: left; font-size: 0.78em; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #2a2d3a; }
+  .verb-table td { padding: 8px 12px; border-bottom: 1px solid #2a2d3a; color: #e2e4ec; }
+  .verb-table tr:nth-child(even) td { background: #1a1d27; }
+  .verb-table tr:hover td { background: #1e2235; }
+  .verb-table .num { color: #7a7f96; }
+  .verb-table .dict { color: #fff; font-size: 1em; }
+  .verb-table .neg { color: #f08080; }
+  .verb-table .te  { color: #7ecfa0; }
+  .verb-table .ta  { color: #a8d4ff; }
+  .verb-table .eng { color: #7a7f96; white-space: normal; }
+
+  .examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+  @media (max-width: 600px) { .examples-grid { grid-template-columns: 1fr; } }
+  .example-card { background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 6px; padding: 12px 14px; }
+  .example-card .ex-num { font-size: 0.72em; color: #4f8ef7; font-family: system-ui, sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .example-card .ex-jp { font-size: 1em; color: #e2e4ec; margin-bottom: 2px; }
+  .example-card .ex-romaji { font-size: 0.78em; color: #7a7f96; font-style: italic; margin-bottom: 2px; }
+  .example-card .ex-en { font-size: 0.82em; color: #a0a4b8; }
+  .example-card .ex-focus { color: #c9a8ff; font-weight: bold; }
+
+  .tip-box { background: #1a1d27; border-left: 3px solid #7c5cbf; padding: 14px 18px; border-radius: 0 6px 6px 0; margin-top: 24px; font-size: 0.88em; color: #a0a4b8; font-style: italic; }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+</style>
+
+<div class="jp-lesson">
+
+  <h2>✨ Ichidan Verbs — いちだんどうし（一段動詞）</h2>
+  <p class="section-intro">Group 2 verbs — the good news is these are beautifully regular. One simple rule covers almost every form. Master this group and conjugation suddenly feels easy.</p>
+
+  <div class="info-box">
+    <strong>What is an Ichidan verb?</strong> Ichidan (一段, "one-step") verbs are also called <em>る-verbs</em> or <em>Group 2 verbs</em>. They always end in <em>る</em>, and the syllable before that る is always an い-sound or え-sound (e.g. <em>た<strong>べ</strong>る</em>, <em>お<strong>き</strong>る</em>). To conjugate them, you simply drop the る and add the ending — just one step, hence the name. Compare this to godan verbs where the stem changes — ichidan verbs never change their stem at all.
+  </div>
+
+  <h3>The Golden Rule</h3>
+  <div class="rule-box">
+    <span class="rule-jp">Drop <span style="color:#f08080">る</span> <span class="rule-arrow">→</span> add your ending</span>
+    <span class="rule-en">たべ<span style="color:#f08080">る</span> → たべ + ます = たべます &nbsp;|&nbsp; たべ + ない = たべない &nbsp;|&nbsp; たべ + て = たべて</span>
+  </div>
+
+  <h3>The Key Forms</h3>
+  <div class="forms-grid">
+    <div class="form-card">
+      <div class="form-name">〜ます (Masu)</div>
+      <div class="form-rule">Polite present / future affirmative</div>
+      <div class="form-desc">たべる → たべます — "I eat / will eat"</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜ません (Masen)</div>
+      <div class="form-rule">Polite present / future negative</div>
+      <div class="form-desc">たべる → たべません — "I don't eat"</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜ない (Nai)</div>
+      <div class="form-rule">Plain / casual negative</div>
+      <div class="form-desc">たべる → たべない — "don't eat" (casual)</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜て (Te-form)</div>
+      <div class="form-rule">Connecting form / polite requests</div>
+      <div class="form-desc">たべる → たべて — "eat and…" / "please eat"</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜た (Ta-form)</div>
+      <div class="form-rule">Plain past tense</div>
+      <div class="form-desc">たべる → たべた — "ate" (casual past)</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜ました (Mashita)</div>
+      <div class="form-rule">Polite past affirmative</div>
+      <div class="form-desc">たべる → たべました — "I ate"</div>
+    </div>
+  </div>
+
+  <h2>📋 Verb List — どうしリスト</h2>
+  <p class="section-intro">20 ichidan verbs covering learning, food & drink, anime & manga, football, and travel. Notice how every form just drops る and adds the same endings.</p>
+
+  <div class="verb-table-wrap">
+    <table class="verb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Dictionary — じしょけい</th>
+          <th>Masu — ます</th>
+          <th>Masen — ません</th>
+          <th>Nai — ない</th>
+          <th>Te — て</th>
+          <th>Ta — た</th>
+          <th>English</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">1</td><td class="dict">たべる（食べる）</td><td>たべます</td><td class="neg">たべません</td><td class="neg">たべない</td><td class="te">たべて</td><td class="ta">たべた</td><td class="eng">to eat</td></tr>
+        <tr><td class="num">2</td><td class="dict">みる（見る）</td><td>みます</td><td class="neg">みません</td><td class="neg">みない</td><td class="te">みて</td><td class="ta">みた</td><td class="eng">to watch / see</td></tr>
+        <tr><td class="num">3</td><td class="dict">おきる（起きる）</td><td>おきます</td><td class="neg">おきません</td><td class="neg">おきない</td><td class="te">おきて</td><td class="ta">おきた</td><td class="eng">to wake up / get up</td></tr>
+        <tr><td class="num">4</td><td class="dict">ねる（寝る）</td><td>ねます</td><td class="neg">ねません</td><td class="neg">ねない</td><td class="te">ねて</td><td class="ta">ねた</td><td class="eng">to sleep</td></tr>
+        <tr><td class="num">5</td><td class="dict">でる（出る）</td><td>でます</td><td class="neg">でません</td><td class="neg">でない</td><td class="te">でて</td><td class="ta">でた</td><td class="eng">to exit / leave / appear</td></tr>
+        <tr><td class="num">6</td><td class="dict">おしえる（教える）</td><td>おしえます</td><td class="neg">おしえません</td><td class="neg">おしえない</td><td class="te">おしえて</td><td class="ta">おしえた</td><td class="eng">to teach / tell</td></tr>
+        <tr><td class="num">7</td><td class="dict">おぼえる（覚える）</td><td>おぼえます</td><td class="neg">おぼえません</td><td class="neg">おぼえない</td><td class="te">おぼえて</td><td class="ta">おぼえた</td><td class="eng">to memorise / remember</td></tr>
+        <tr><td class="num">8</td><td class="dict">わすれる（忘れる）</td><td>わすれます</td><td class="neg">わすれません</td><td class="neg">わすれない</td><td class="te">わすれて</td><td class="ta">わすれた</td><td class="eng">to forget</td></tr>
+        <tr><td class="num">9</td><td class="dict">しらべる（調べる）</td><td>しらべます</td><td class="neg">しらべません</td><td class="neg">しらべない</td><td class="te">しらべて</td><td class="ta">しらべた</td><td class="eng">to research / look up</td></tr>
+        <tr><td class="num">10</td><td class="dict">かんがえる（考える）</td><td>かんがえます</td><td class="neg">かんがえません</td><td class="neg">かんがえない</td><td class="te">かんがえて</td><td class="ta">かんがえた</td><td class="eng">to think / consider</td></tr>
+        <tr><td class="num">11</td><td class="dict">こたえる（答える）</td><td>こたえます</td><td class="neg">こたえません</td><td class="neg">こたえない</td><td class="te">こたえて</td><td class="ta">こたえた</td><td class="eng">to answer / respond</td></tr>
+        <tr><td class="num">12</td><td class="dict">うける（受ける）</td><td>うけます</td><td class="neg">うけません</td><td class="neg">うけない</td><td class="te">うけて</td><td class="ta">うけた</td><td class="eng">to take (a test) / receive</td></tr>
+        <tr><td class="num">13</td><td class="dict">きめる（決める）</td><td>きめます</td><td class="neg">きめません</td><td class="neg">きめない</td><td class="te">きめて</td><td class="ta">きめた</td><td class="eng">to decide</td></tr>
+        <tr><td class="num">14</td><td class="dict">はじめる（始める）</td><td>はじめます</td><td class="neg">はじめません</td><td class="neg">はじめない</td><td class="te">はじめて</td><td class="ta">はじめた</td><td class="eng">to begin / start</td></tr>
+        <tr><td class="num">15</td><td class="dict">かえる（変える）</td><td>かえます</td><td class="neg">かえません</td><td class="neg">かえない</td><td class="te">かえて</td><td class="ta">かえた</td><td class="eng">to change (something)</td></tr>
+        <tr><td class="num">16</td><td class="dict">みせる（見せる）</td><td>みせます</td><td class="neg">みせません</td><td class="neg">みせない</td><td class="te">みせて</td><td class="ta">みせた</td><td class="eng">to show</td></tr>
+        <tr><td class="num">17</td><td class="dict">つける（付ける）</td><td>つけます</td><td class="neg">つけません</td><td class="neg">つけない</td><td class="te">つけて</td><td class="ta">つけた</td><td class="eng">to turn on / attach</td></tr>
+        <tr><td class="num">18</td><td class="dict">つたえる（伝える）</td><td>つたえます</td><td class="neg">つたえません</td><td class="neg">つたえない</td><td class="te">つたえて</td><td class="ta">つたえた</td><td class="eng">to convey / communicate</td></tr>
+        <tr><td class="num">19</td><td class="dict">たすける（助ける）</td><td>たすけます</td><td class="neg">たすけません</td><td class="neg">たすけない</td><td class="te">たすけて</td><td class="ta">たすけた</td><td class="eng">to help / rescue</td></tr>
+        <tr><td class="num">20</td><td class="dict">いれる（入れる）</td><td>いれます</td><td class="neg">いれません</td><td class="neg">いれない</td><td class="te">いれて</td><td class="ta">いれた</td><td class="eng">to put in / insert</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>💬 Example Sentences — れいぶん</h2>
+  <p class="section-intro">One natural example sentence per verb. The highlighted part is the conjugated verb form in use.</p>
+
+  <div class="examples-grid">
+    <div class="example-card">
+      <div class="ex-num">① たべる — to eat</div>
+      <div class="ex-jp">しあいのまえにすしを<span class="ex-focus">たべます</span>。</div>
+      <div class="ex-romaji">Shiai no mae ni sushi wo tabemasu.</div>
+      <div class="ex-en">I eat sushi before the match.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">② みる — to watch</div>
+      <div class="ex-jp">まいにちアニメを<span class="ex-focus">みます</span>。</div>
+      <div class="ex-romaji">Mainichi anime wo mimasu.</div>
+      <div class="ex-en">I watch anime every day.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">③ おきる — to wake up</div>
+      <div class="ex-jp">あさしちじに<span class="ex-focus">おきます</span>。</div>
+      <div class="ex-romaji">Asa shichi-ji ni okimasu.</div>
+      <div class="ex-en">I wake up at 7am.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">④ ねる — to sleep</div>
+      <div class="ex-jp">アニメをみてから<span class="ex-focus">ねます</span>。</div>
+      <div class="ex-romaji">Anime wo mite kara nemasu.</div>
+      <div class="ex-en">I sleep after watching anime.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑤ でる — to leave / exit</div>
+      <div class="ex-jp">はちじにいえを<span class="ex-focus">でます</span>。</div>
+      <div class="ex-romaji">Hachi-ji ni ie wo demasu.</div>
+      <div class="ex-en">I leave the house at 8 o'clock.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑥ おしえる — to teach</div>
+      <div class="ex-jp">せんせいがにほんごを<span class="ex-focus">おしえます</span>。</div>
+      <div class="ex-romaji">Sensei ga nihongo wo oshiemasu.</div>
+      <div class="ex-en">The teacher teaches Japanese.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑦ おぼえる — to memorise</div>
+      <div class="ex-jp">あたらしいたんごを<span class="ex-focus">おぼえます</span>。</div>
+      <div class="ex-romaji">Atarashii tango wo oboemasu.</div>
+      <div class="ex-en">I memorise new vocabulary.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑧ わすれる — to forget</div>
+      <div class="ex-jp">きのうならったたんごを<span class="ex-focus">わすれません</span>。</div>
+      <div class="ex-romaji">Kinou naratta tango wo wasuremasen.</div>
+      <div class="ex-en">I don't forget the vocabulary I learned yesterday.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑨ しらべる — to research</div>
+      <div class="ex-jp">わからないたんごを<span class="ex-focus">しらべます</span>。</div>
+      <div class="ex-romaji">Wakaranai tango wo shirabemasu.</div>
+      <div class="ex-en">I look up words I don't understand.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑩ かんがえる — to think</div>
+      <div class="ex-jp">にほんりょこうのことを<span class="ex-focus">かんがえます</span>。</div>
+      <div class="ex-romaji">Nihon ryokou no koto wo kangaemasu.</div>
+      <div class="ex-en">I think about my trip to Japan.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑪ こたえる — to answer</div>
+      <div class="ex-jp">せんせいのしつもんに<span class="ex-focus">こたえます</span>。</div>
+      <div class="ex-romaji">Sensei no shitsumon ni kotaemasu.</div>
+      <div class="ex-en">I answer the teacher's question.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑫ うける — to take (a test)</div>
+      <div class="ex-jp">にほんごのしけんを<span class="ex-focus">うけます</span>。</div>
+      <div class="ex-romaji">Nihongo no shiken wo ukemasu.</div>
+      <div class="ex-en">I take a Japanese exam.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑬ きめる — to decide</div>
+      <div class="ex-jp">どのアニメをみるか<span class="ex-focus">きめます</span>。</div>
+      <div class="ex-romaji">Dono anime wo miru ka kimemasu.</div>
+      <div class="ex-en">I decide which anime to watch.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑭ はじめる — to start</div>
+      <div class="ex-jp">あしたからにほんごを<span class="ex-focus">はじめます</span>。</div>
+      <div class="ex-romaji">Ashita kara nihongo wo hajimemasu.</div>
+      <div class="ex-en">I start Japanese from tomorrow.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑮ かえる（変える）— to change</div>
+      <div class="ex-jp">りょこうのけいかくを<span class="ex-focus">かえます</span>。</div>
+      <div class="ex-romaji">Ryokou no keikaku wo kaemasu.</div>
+      <div class="ex-en">I change the travel plan.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑯ みせる — to show</div>
+      <div class="ex-jp">ともだちにすきなまんがを<span class="ex-focus">みせます</span>。</div>
+      <div class="ex-romaji">Tomodachi ni suki na manga wo misemasu.</div>
+      <div class="ex-en">I show my favourite manga to my friend.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑰ つける — to turn on</div>
+      <div class="ex-jp">アニメをみるためにテレビを<span class="ex-focus">つけます</span>。</div>
+      <div class="ex-romaji">Anime wo miru tame ni terebi wo tsukemasu.</div>
+      <div class="ex-en">I turn on the TV to watch anime.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑱ つたえる — to convey</div>
+      <div class="ex-jp">にほんごできもちを<span class="ex-focus">つたえます</span>。</div>
+      <div class="ex-romaji">Nihongo de kimochi wo tsutaemasu.</div>
+      <div class="ex-en">I convey my feelings in Japanese.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑲ たすける — to help</div>
+      <div class="ex-jp">チームメートを<span class="ex-focus">たすけます</span>。</div>
+      <div class="ex-romaji">Chiimumeeto wo tasukemasu.</div>
+      <div class="ex-en">I help my teammate.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑳ いれる — to put in</div>
+      <div class="ex-jp">コーヒーにさとうを<span class="ex-focus">いれます</span>。</div>
+      <div class="ex-romaji">Koohii ni satou wo iremasu.</div>
+      <div class="ex-en">I put sugar in my coffee.</div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>Ichidan vs. Godan — how to tell them apart:</strong> The rule is: if a verb ends in る AND the syllable before る contains an い or え sound, it is almost certainly ichidan. So <em>た<strong>べ</strong>る</em> (べ = え-row) and <em>お<strong>き</strong>る</em> (き = い-row) are ichidan. However, there are a handful of godan verbs that look like ichidan — notably <em>はしる</em> (to run), <em>しる</em> (to know), <em>かえる</em> (to return), and <em>きる</em> (to cut). These must simply be memorised. The verb <em>かえる</em> is a useful one to watch — <em>帰る</em> (to return/go home) is <strong>godan</strong>, while <em>変える</em> (to change something) is <strong>ichidan</strong>, even though they sound identical!
+  </div>
+
+</div><!-- /jp-lesson -->

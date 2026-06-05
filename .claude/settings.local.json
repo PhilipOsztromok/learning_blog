@@ -23,7 +23,10 @@
       "Bash(pip install *)",
       "Bash(pip3 install *)",
       "Bash(python3 -m pip install reportlab)",
-      "Bash(python3 generate_guide.py)"
+      "Bash(python3 generate_guide.py)",
+      "Bash(python -c \"import reportlab; print\\(reportlab.Version\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python generate_japanese_pdf.py)"
     ]
   }
 }

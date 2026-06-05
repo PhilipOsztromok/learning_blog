@@ -1,0 +1,336 @@
+<!-- ============================================================
+     JAPANESE LESSON: Godan Verbs — ごだんどうし（五段動詞）
+     Level: Beginner-plus | Hiragana + Romaji + English
+     ============================================================ -->
+
+<style>
+  .jp-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .jp-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .jp-lesson h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.5rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .jp-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .jp-lesson p { margin-bottom: 1rem; }
+
+  /* Info box */
+  .info-box {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+
+  /* Forms reference grid */
+  .forms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .form-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .form-card .form-name { color: #4f8ef7; font-family: system-ui, -apple-system, sans-serif; font-weight: 600; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .form-card .form-rule { color: #e2e4ec; font-size: 0.95em; }
+  .form-card .form-desc { color: #7a7f96; font-size: 0.78em; font-style: italic; margin-top: 4px; }
+
+  /* Conjugation pattern table */
+  .pattern-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-family: system-ui, -apple-system, sans-serif; font-size: 0.85em; }
+  .pattern-table th { background: #1e2235; color: #4f8ef7; padding: 8px 12px; text-align: left; font-size: 0.8em; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #2a2d3a; }
+  .pattern-table td { padding: 7px 12px; border-bottom: 1px solid #2a2d3a; color: #e2e4ec; }
+  .pattern-table tr:nth-child(even) td { background: #1a1d27; }
+  .pattern-table .jp { color: #c9a8ff; }
+  .pattern-table .special { color: #f08080; font-style: italic; }
+
+  /* Main verb table */
+  .verb-table-wrap { overflow-x: auto; margin-bottom: 10px; }
+  .verb-table { width: 100%; border-collapse: collapse; font-family: system-ui, -apple-system, sans-serif; font-size: 0.85em; white-space: nowrap; }
+  .verb-table th { background: #1e2235; color: #4f8ef7; padding: 9px 12px; text-align: left; font-size: 0.78em; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #2a2d3a; }
+  .verb-table td { padding: 8px 12px; border-bottom: 1px solid #2a2d3a; color: #e2e4ec; }
+  .verb-table tr:nth-child(even) td { background: #1a1d27; }
+  .verb-table tr:hover td { background: #1e2235; }
+  .verb-table .num { color: #7a7f96; }
+  .verb-table .dict { color: #fff; font-size: 1em; }
+  .verb-table .neg { color: #f08080; }
+  .verb-table .te  { color: #7ecfa0; }
+  .verb-table .ta  { color: #a8d4ff; }
+  .verb-table .eng { color: #7a7f96; white-space: normal; }
+
+  /* Example sentences */
+  .examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+  @media (max-width: 600px) { .examples-grid { grid-template-columns: 1fr; } }
+  .example-card { background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 6px; padding: 12px 14px; }
+  .example-card .ex-num { font-size: 0.72em; color: #4f8ef7; font-family: system-ui, sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .example-card .ex-jp { font-size: 1em; color: #e2e4ec; margin-bottom: 2px; }
+  .example-card .ex-romaji { font-size: 0.78em; color: #7a7f96; font-style: italic; margin-bottom: 2px; }
+  .example-card .ex-en { font-size: 0.82em; color: #a0a4b8; }
+  .example-card .ex-focus { color: #c9a8ff; font-weight: bold; }
+
+  /* Tip box */
+  .tip-box { background: #1a1d27; border-left: 3px solid #7c5cbf; padding: 14px 18px; border-radius: 0 6px 6px 0; margin-top: 24px; font-size: 0.88em; color: #a0a4b8; font-style: italic; }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+</style>
+
+<div class="jp-lesson">
+
+  <h2>⚙️ Godan Verbs — ごだんどうし（五段動詞）</h2>
+  <p class="section-intro">Group 1 verbs — the largest and most common verb group in Japanese. Master the stem-change rules here and you can conjugate hundreds of verbs.</p>
+
+  <div class="info-box">
+    <strong>What is a Godan verb?</strong> Godan (五段, "five-step") verbs are also called <em>う-verbs</em> or <em>Group 1 verbs</em>. Their dictionary forms end in one of: う、く、ぐ、す、つ、ぬ、ぶ、む、or る (when the syllable before る is NOT an い or え sound). To conjugate them, you change the final syllable to a different row of the hiragana chart — that "stepping through rows" is where the name comes from.
+  </div>
+
+  <h3>The Key Forms</h3>
+  <div class="forms-grid">
+    <div class="form-card">
+      <div class="form-name">〜ます (Masu)</div>
+      <div class="form-rule">Polite present / future affirmative</div>
+      <div class="form-desc">のむ → のみます — "I drink / will drink"</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜ません (Masen)</div>
+      <div class="form-rule">Polite present / future negative</div>
+      <div class="form-desc">のむ → のみません — "I don't drink"</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜ない (Nai)</div>
+      <div class="form-rule">Plain / casual negative</div>
+      <div class="form-desc">のむ → のまない — "don't drink" (casual)</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜て (Te-form)</div>
+      <div class="form-rule">Connecting form / polite requests</div>
+      <div class="form-desc">のむ → のんで — "drink and…" / "please drink"</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜た (Ta-form)</div>
+      <div class="form-rule">Plain past tense</div>
+      <div class="form-desc">のむ → のんだ — "drank" (casual past)</div>
+    </div>
+    <div class="form-card">
+      <div class="form-name">〜ました (Mashita)</div>
+      <div class="form-rule">Polite past affirmative</div>
+      <div class="form-desc">のむ → のみました — "I drank"</div>
+    </div>
+  </div>
+
+  <h3>Conjugation Pattern Reference</h3>
+  <table class="pattern-table">
+    <thead>
+      <tr><th>Dictionary ending</th><th>→ Masu stem</th><th>→ Nai stem</th><th>→ Te / Ta</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="jp">〜う</td><td class="jp">〜い</td><td class="jp">〜わ</td><td class="jp">〜って / 〜った</td><td class="jp">かう → かいます / かわない / かって</td></tr>
+      <tr><td class="jp">〜く</td><td class="jp">〜き</td><td class="jp">〜か</td><td class="jp">〜いて / 〜いた</td><td class="jp">かく → かきます / かかない / かいて</td></tr>
+      <tr><td class="jp">〜ぐ</td><td class="jp">〜ぎ</td><td class="jp">〜が</td><td class="jp">〜いで / 〜いだ</td><td class="jp">およぐ → およぎます / およがない / およいで</td></tr>
+      <tr><td class="jp">〜す</td><td class="jp">〜し</td><td class="jp">〜さ</td><td class="jp">〜して / 〜した</td><td class="jp">はなす → はなします / はなさない / はなして</td></tr>
+      <tr><td class="jp">〜つ</td><td class="jp">〜ち</td><td class="jp">〜た</td><td class="jp">〜って / 〜った</td><td class="jp">まつ → まちます / またない / まって</td></tr>
+      <tr><td class="jp">〜ぬ</td><td class="jp">〜に</td><td class="jp">〜な</td><td class="jp">〜んで / 〜んだ</td><td class="jp">しぬ → しにます / しなない / しんで</td></tr>
+      <tr><td class="jp">〜ぶ</td><td class="jp">〜び</td><td class="jp">〜ば</td><td class="jp">〜んで / 〜んだ</td><td class="jp">まなぶ → まなびます / まなばない / まなんで</td></tr>
+      <tr><td class="jp">〜む</td><td class="jp">〜み</td><td class="jp">〜ま</td><td class="jp">〜んで / 〜んだ</td><td class="jp">のむ → のみます / のまない / のんで</td></tr>
+      <tr><td class="jp">〜る (G1)</td><td class="jp">〜り</td><td class="jp">〜ら</td><td class="jp">〜って / 〜った</td><td class="jp">かえる → かえります / かえらない / かえって</td></tr>
+      <tr><td class="jp special">いく ⚠</td><td class="jp special">いき</td><td class="jp special">いか</td><td class="jp special">いって / いった</td><td class="jp special">special: te-form is いって not いいて!</td></tr>
+    </tbody>
+  </table>
+
+  <h2>📋 Verb List — どうしリスト</h2>
+  <p class="section-intro">20 godan verbs themed around things you care about — learning, football, manga & anime, food & drink, and travel.</p>
+
+  <div class="verb-table-wrap">
+    <table class="verb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Dictionary — じしょけい</th>
+          <th>Masu — ます</th>
+          <th>Masen — ません</th>
+          <th>Nai — ない</th>
+          <th>Te — て</th>
+          <th>Ta — た</th>
+          <th>English</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">1</td><td class="dict">よむ（読む）</td><td>よみます</td><td class="neg">よみません</td><td class="neg">よまない</td><td class="te">よんで</td><td class="ta">よんだ</td><td class="eng">to read</td></tr>
+        <tr><td class="num">2</td><td class="dict">かく（書く）</td><td>かきます</td><td class="neg">かきません</td><td class="neg">かかない</td><td class="te">かいて</td><td class="ta">かいた</td><td class="eng">to write / draw</td></tr>
+        <tr><td class="num">3</td><td class="dict">きく（聞く）</td><td>ききます</td><td class="neg">ききません</td><td class="neg">きかない</td><td class="te">きいて</td><td class="ta">きいた</td><td class="eng">to listen / hear / ask</td></tr>
+        <tr><td class="num">4</td><td class="dict">のむ（飲む）</td><td>のみます</td><td class="neg">のみません</td><td class="neg">のまない</td><td class="te">のんで</td><td class="ta">のんだ</td><td class="eng">to drink</td></tr>
+        <tr><td class="num">5</td><td class="dict">はなす（話す）</td><td>はなします</td><td class="neg">はなしません</td><td class="neg">はなさない</td><td class="te">はなして</td><td class="ta">はなした</td><td class="eng">to speak / talk</td></tr>
+        <tr><td class="num">6</td><td class="dict">まつ（待つ）</td><td>まちます</td><td class="neg">まちません</td><td class="neg">またない</td><td class="te">まって</td><td class="ta">まった</td><td class="eng">to wait</td></tr>
+        <tr><td class="num">7</td><td class="dict">かう（買う）</td><td>かいます</td><td class="neg">かいません</td><td class="neg">かわない</td><td class="te">かって</td><td class="ta">かった</td><td class="eng">to buy</td></tr>
+        <tr><td class="num">8</td><td class="dict">いく（行く）</td><td>いきます</td><td class="neg">いきません</td><td class="neg">いかない</td><td class="te">いって ⚠</td><td class="ta">いった</td><td class="eng">to go</td></tr>
+        <tr><td class="num">9</td><td class="dict">かえる（帰る）</td><td>かえります</td><td class="neg">かえりません</td><td class="neg">かえらない</td><td class="te">かえって</td><td class="ta">かえった</td><td class="eng">to return / go home</td></tr>
+        <tr><td class="num">10</td><td class="dict">のる（乗る）</td><td>のります</td><td class="neg">のりません</td><td class="neg">のらない</td><td class="te">のって</td><td class="ta">のった</td><td class="eng">to ride / board</td></tr>
+        <tr><td class="num">11</td><td class="dict">とまる（泊まる）</td><td>とまります</td><td class="neg">とまりません</td><td class="neg">とまらない</td><td class="te">とまって</td><td class="ta">とまった</td><td class="eng">to stay overnight</td></tr>
+        <tr><td class="num">12</td><td class="dict">わかる（分かる）</td><td>わかります</td><td class="neg">わかりません</td><td class="neg">わからない</td><td class="te">わかって</td><td class="ta">わかった</td><td class="eng">to understand</td></tr>
+        <tr><td class="num">13</td><td class="dict">しる（知る）</td><td>しります</td><td class="neg">しりません</td><td class="neg">しらない</td><td class="te">しって</td><td class="ta">しった</td><td class="eng">to get to know</td></tr>
+        <tr><td class="num">14</td><td class="dict">はしる（走る）</td><td>はしります</td><td class="neg">はしりません</td><td class="neg">はしらない</td><td class="te">はしって</td><td class="ta">はしった</td><td class="eng">to run</td></tr>
+        <tr><td class="num">15</td><td class="dict">おわる（終わる）</td><td>おわります</td><td class="neg">おわりません</td><td class="neg">おわらない</td><td class="te">おわって</td><td class="ta">おわった</td><td class="eng">to finish / end</td></tr>
+        <tr><td class="num">16</td><td class="dict">たのむ（頼む）</td><td>たのみます</td><td class="neg">たのみません</td><td class="neg">たのまない</td><td class="te">たのんで</td><td class="ta">たのんだ</td><td class="eng">to order / request</td></tr>
+        <tr><td class="num">17</td><td class="dict">まなぶ（学ぶ）</td><td>まなびます</td><td class="neg">まなびません</td><td class="neg">まなばない</td><td class="te">まなんで</td><td class="ta">まなんだ</td><td class="eng">to learn</td></tr>
+        <tr><td class="num">18</td><td class="dict">えらぶ（選ぶ）</td><td>えらびます</td><td class="neg">えらびません</td><td class="neg">えらばない</td><td class="te">えらんで</td><td class="ta">えらんだ</td><td class="eng">to choose / select</td></tr>
+        <tr><td class="num">19</td><td class="dict">おくる（送る）</td><td>おくります</td><td class="neg">おくりません</td><td class="neg">おくらない</td><td class="te">おくって</td><td class="ta">おくった</td><td class="eng">to send</td></tr>
+        <tr><td class="num">20</td><td class="dict">さがす（探す）</td><td>さがします</td><td class="neg">さがしません</td><td class="neg">さがさない</td><td class="te">さがして</td><td class="ta">さがした</td><td class="eng">to search / look for</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>💬 Example Sentences — れいぶん</h2>
+  <p class="section-intro">One natural example sentence per verb. The verb form used is shown in context — the highlighted part is the verb.</p>
+
+  <div class="examples-grid">
+    <div class="example-card">
+      <div class="ex-num">① よむ — to read</div>
+      <div class="ex-jp">まいにちまんがを<span class="ex-focus">よみます</span>。</div>
+      <div class="ex-romaji">Mainichi manga wo yomimasu.</div>
+      <div class="ex-en">I read manga every day.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">② かく — to write / draw</div>
+      <div class="ex-jp">アニメのキャラクターを<span class="ex-focus">かきます</span>。</div>
+      <div class="ex-romaji">Anime no kyarakutaa wo kakimasu.</div>
+      <div class="ex-en">I draw anime characters.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">③ きく — to listen</div>
+      <div class="ex-jp">にほんごのきょくをよく<span class="ex-focus">ききます</span>。</div>
+      <div class="ex-romaji">Nihongo no kyoku wo yoku kikimasu.</div>
+      <div class="ex-en">I often listen to Japanese songs.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">④ のむ — to drink</div>
+      <div class="ex-jp">しあいのあとでみずを<span class="ex-focus">のみます</span>。</div>
+      <div class="ex-romaji">Shiai no ato de mizu wo nomimasu.</div>
+      <div class="ex-en">I drink water after a match.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑤ はなす — to speak</div>
+      <div class="ex-jp">にほんごで<span class="ex-focus">はなします</span>。</div>
+      <div class="ex-romaji">Nihongo de hanashimasu.</div>
+      <div class="ex-en">I speak in Japanese.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑥ まつ — to wait</div>
+      <div class="ex-jp">えきでともだちを<span class="ex-focus">まちます</span>。</div>
+      <div class="ex-romaji">Eki de tomodachi wo machimasu.</div>
+      <div class="ex-en">I wait for my friend at the station.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑦ かう — to buy</div>
+      <div class="ex-jp">あきはばらでまんがを<span class="ex-focus">かいます</span>。</div>
+      <div class="ex-romaji">Akihabara de manga wo kaimasu.</div>
+      <div class="ex-en">I buy manga in Akihabara.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑧ いく — to go ⚠ irregular te-form</div>
+      <div class="ex-jp">らいねんにほんに<span class="ex-focus">いきます</span>。</div>
+      <div class="ex-romaji">Rainen Nihon ni ikimasu.</div>
+      <div class="ex-en">I am going to Japan next year.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑨ かえる — to return home</div>
+      <div class="ex-jp">しあいのあとすぐ<span class="ex-focus">かえります</span>。</div>
+      <div class="ex-romaji">Shiai no ato sugu kaerimasu.</div>
+      <div class="ex-en">I go straight home after the match.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑩ のる — to ride / board</div>
+      <div class="ex-jp">しんかんせんに<span class="ex-focus">のります</span>。</div>
+      <div class="ex-romaji">Shinkansen ni norimasu.</div>
+      <div class="ex-en">I ride the Shinkansen.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑪ とまる — to stay overnight</div>
+      <div class="ex-jp">とうきょうのホテルに<span class="ex-focus">とまります</span>。</div>
+      <div class="ex-romaji">Toukyou no hoteru ni tomarimasu.</div>
+      <div class="ex-en">I stay at a hotel in Tokyo.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑫ わかる — to understand</div>
+      <div class="ex-jp">にほんごがすこし<span class="ex-focus">わかります</span>。</div>
+      <div class="ex-romaji">Nihongo ga sukoshi wakarimasu.</div>
+      <div class="ex-en">I understand a little Japanese.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑬ しる — to know</div>
+      <div class="ex-jp">そのアニメを<span class="ex-focus">しっています</span>。</div>
+      <div class="ex-romaji">Sono anime wo shitte imasu.</div>
+      <div class="ex-en">I know that anime. (Note: uses ている for current state)</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑭ はしる — to run</div>
+      <div class="ex-jp">せんしゅがピッチを<span class="ex-focus">はしります</span>。</div>
+      <div class="ex-romaji">Senshu ga pitchi wo hashirimasu.</div>
+      <div class="ex-en">The player runs across the pitch.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑮ おわる — to finish</div>
+      <div class="ex-jp">アニメがもうすぐ<span class="ex-focus">おわります</span>。</div>
+      <div class="ex-romaji">Anime ga mousugu owarimasu.</div>
+      <div class="ex-en">The anime is ending soon.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑯ たのむ — to order</div>
+      <div class="ex-jp">レストランでラーメンを<span class="ex-focus">たのみます</span>。</div>
+      <div class="ex-romaji">Resutoran de raamen wo tanomimasu.</div>
+      <div class="ex-en">I order ramen at the restaurant.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑰ まなぶ — to learn</div>
+      <div class="ex-jp">まいしゅうにほんごを<span class="ex-focus">まなびます</span>。</div>
+      <div class="ex-romaji">Maishuu nihongo wo manabimasu.</div>
+      <div class="ex-en">I learn Japanese every week.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑱ えらぶ — to choose</div>
+      <div class="ex-jp">すきなアニメを<span class="ex-focus">えらびます</span>。</div>
+      <div class="ex-romaji">Suki na anime wo erabimasu.</div>
+      <div class="ex-en">I choose my favourite anime.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑲ おくる — to send</div>
+      <div class="ex-jp">ともだちにメッセージを<span class="ex-focus">おくります</span>。</div>
+      <div class="ex-romaji">Tomodachi ni messeeji wo okurimasu.</div>
+      <div class="ex-en">I send a message to my friend.</div>
+    </div>
+    <div class="example-card">
+      <div class="ex-num">⑳ さがす — to search</div>
+      <div class="ex-jp">えきのちかくでコンビニを<span class="ex-focus">さがします</span>。</div>
+      <div class="ex-romaji">Eki no chikaku de konbini wo sagashimasu.</div>
+      <div class="ex-en">I look for a convenience store near the station.</div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>⚠ Watch out — いく (to go) has an irregular て-form:</strong> Even though いく follows the 〜く pattern (which should give いいて), the actual て-form is <em>いって</em> — the only exception in the entire godan 〜く group. Also note that <em>しる</em> (to know) is almost always used in the form <em>しっています</em> rather than the plain present しります — saying しります sounds unnatural to a Japanese ear, like saying "I am getting to know it" when you simply mean "I know it."
+  </div>
+
+</div><!-- /jp-lesson -->

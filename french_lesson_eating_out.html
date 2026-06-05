@@ -1,0 +1,360 @@
+<!-- ============================================================
+     FRENCH LESSON: Eating Out — Au Restaurant
+     Level: Intermediate | French + English
+     ============================================================ -->
+
+<style>
+  .fr-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .fr-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .fr-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* Dialogs */
+  .dialog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  @media (max-width: 600px) { .dialog-grid { grid-template-columns: 1fr; } }
+
+  .dialog-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .dialog-card:hover { border-color: #4f8ef7; }
+
+  .dialog-card h3 {
+    margin: 0 0 12px 0;
+    color: #4f8ef7;
+    font-size: 0.92em;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    border-bottom: 1px solid #2a2d3a;
+    padding-bottom: 6px;
+  }
+  .dialog-line { margin-bottom: 10px; }
+  .dialog-line .speaker {
+    font-weight: bold;
+    color: #7c5cbf;
+    min-width: 24px;
+    display: inline-block;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .dialog-line .fr {
+    font-size: 1.05em;
+    display: block;
+    margin-left: 28px;
+    color: #e2e4ec;
+  }
+  .dialog-line .en {
+    font-size: 0.82em;
+    color: #a0a4b8;
+    display: block;
+    margin-left: 28px;
+  }
+  .dialog-line .note {
+    font-size: 0.78em;
+    color: #7a7f96;
+    display: block;
+    margin-left: 28px;
+    font-style: italic;
+  }
+
+  /* Register badge */
+  .register {
+    font-size: 0.68em;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-style: normal;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+  .register-formal   { background: #1e3a2a; color: #7ecfa0; }
+  .register-informal { background: #2a3a1e; color: #b0d47e; }
+
+  /* Vocabulary table */
+  .vocab-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.9em;
+  }
+  .vocab-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.82em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .vocab-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+  }
+  .vocab-table tr:nth-child(even) td { background: #1a1d27; }
+  .vocab-table tr:hover td { background: #1e2235; }
+  .vocab-table .note {
+    font-size: 0.78em;
+    color: #7a7f96;
+    font-style: italic;
+  }
+  .false-friend {
+    font-size: 0.72em;
+    background: #3a1e1e;
+    color: #f08080;
+    padding: 1px 6px;
+    border-radius: 8px;
+    white-space: nowrap;
+    font-style: normal;
+  }
+
+  .tag-verb {
+    background: #7c5cbf;
+    color: #fff;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .tag-noun {
+    background: #2a5a8a;
+    color: #a8d4ff;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .tag-adj {
+    background: #1e3a2a;
+    color: #7ecfa0;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  /* Tip boxes */
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box em { color: #e2e4ec; }
+</style>
+
+<div class="fr-lesson">
+
+  <h2>🍽️ Eating Out — Au Restaurant</h2>
+  <p class="section-intro">Six conversations covering everything from booking a table to ordering a takeaway — with some intermediate-level traps to watch out for along the way.</p>
+
+  <div class="dialog-grid">
+
+    <!-- Dialog 1: Making a reservation -->
+    <div class="dialog-card">
+      <h3>① Making a Reservation — Réserver une table <span class="register register-formal">formal</span></h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Bonsoir, je voudrais réserver une table pour deux personnes, s'il vous plaît.</span>
+        <span class="en">Good evening, I'd like to reserve a table for two, please.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="fr">Bien sûr. Pour quel soir, et vers quelle heure ?</span>
+        <span class="en">Of course. For which evening, and at what time?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Pour ce vendredi soir, vers vingt heures.</span>
+        <span class="en">This Friday evening, around eight o'clock.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="fr">Très bien, c'est noté. À quel nom ?</span>
+        <span class="en">Very good, noted. Under what name?</span>
+      </div>
+    </div>
+
+    <!-- Dialog 2: Asking for the menu -->
+    <div class="dialog-card">
+      <h3>② The Menu — La Carte <span class="register register-formal">formal</span></h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Excusez-moi, est-ce qu'on pourrait avoir la carte, s'il vous plaît ?</span>
+        <span class="en">Excuse me, could we have the menu, please?</span>
+        <span class="note">la carte = the à la carte menu. Le menu = the set menu. Not interchangeable!</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="fr">Bien sûr, voilà. Vous avez choisi ?</span>
+        <span class="en">Of course, here you are. Have you chosen?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Pas encore, donnez-nous encore quelques minutes.</span>
+        <span class="en">Not yet, give us a few more minutes.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 3: Ordering food -->
+    <div class="dialog-card">
+      <h3>③ Ordering — Commander <span class="register register-formal">formal</span></h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Je vais prendre le steak frites, s'il vous plaît.</span>
+        <span class="en">I'll have the steak and chips, please.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="fr">Et pour la cuisson ?</span>
+        <span class="en">And how would you like it cooked?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">À point, merci. Et une carafe d'eau, s'il vous plaît.</span>
+        <span class="en">Medium, thank you. And a jug of water, please.</span>
+        <span class="note">saignant = rare · à point = medium · bien cuit = well done</span>
+      </div>
+    </div>
+
+    <!-- Dialog 4: Dietary requirements -->
+    <div class="dialog-card">
+      <h3>④ Dietary Requirements — Allergies et Régimes</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Est-ce que ce plat contient des noix ? Je suis allergique.</span>
+        <span class="en">Does this dish contain nuts? I'm allergic.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="fr">À ma connaissance, non — mais je vais vérifier en cuisine.</span>
+        <span class="en">To my knowledge, no — but I'll check with the kitchen.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Merci beaucoup, c'est très gentil.</span>
+        <span class="en">Thank you very much, that's very kind.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 5: Asking for the bill -->
+    <div class="dialog-card">
+      <h3>⑤ The Bill — L'Addition</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">L'addition, s'il vous plaît.</span>
+        <span class="en">The bill, please.</span>
+        <span class="note">Always l'addition in a restaurant — not la facture (that's for business invoices)</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="fr">Tout de suite. Vous avez passé une bonne soirée ?</span>
+        <span class="en">Right away. Did you have a good evening?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Excellente, merci. Le repas était délicieux.</span>
+        <span class="en">Excellent, thank you. The meal was delicious.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 6: Ordering a takeaway -->
+    <div class="dialog-card">
+      <h3>⑥ Ordering a Takeaway — À Emporter</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Bonjour, je voudrais commander une pizza à emporter, s'il vous plaît.</span>
+        <span class="en">Hello, I'd like to order a pizza to take away, please.</span>
+        <span class="note">à emporter = to take away. This is the phrase you need — see the tip below!</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="fr">Bien sûr. Laquelle vous fait envie ?</span>
+        <span class="en">Of course. Which one takes your fancy?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="fr">Une margherita, s'il vous plaît. Dans combien de temps sera-t-elle prête ?</span>
+        <span class="en">A margherita, please. How long will it be?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="fr">Environ vingt minutes.</span>
+        <span class="en">About twenty minutes.</span>
+      </div>
+    </div>
+
+  </div><!-- /dialog-grid -->
+
+
+  <h2>📖 Vocabulary — Vocabulaire</h2>
+  <p class="section-intro">20 key words and phrases for eating out. Verbs are in the infinitive; nouns include their gender. Watch out for the false friends!</p>
+
+  <table class="vocab-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>French</th>
+        <th>English</th>
+        <th>Type</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>la carte</td><td>the (à la carte) menu</td><td><span class="tag-noun">noun</span></td><td class="note">NOT "the map" in this context — that's also la carte, but context makes it clear</td></tr>
+      <tr><td>2</td><td>le menu</td><td>the set menu</td><td><span class="tag-noun">noun</span></td><td class="note"><span class="false-friend">⚠ false friend</span> — le menu ≠ "the menu" in general</td></tr>
+      <tr><td>3</td><td>l'entrée (f)</td><td>the starter</td><td><span class="tag-noun">noun</span></td><td class="note"><span class="false-friend">⚠ false friend</span> — NOT the entrance (l'entrée = starter in food contexts)</td></tr>
+      <tr><td>4</td><td>le plat principal</td><td>the main course</td><td><span class="tag-noun">noun</span></td><td class="note">le plat alone = a dish/course</td></tr>
+      <tr><td>5</td><td>l'addition (f)</td><td>the bill</td><td><span class="tag-noun">noun</span></td><td class="note">always this in a restaurant, never la facture</td></tr>
+      <tr><td>6</td><td>le pourboire</td><td>the tip (gratuity)</td><td><span class="tag-noun">noun</span></td><td class="note">less obligatory in France than in the UK/US</td></tr>
+      <tr><td>7</td><td>la cuisson</td><td>how the meat is cooked</td><td><span class="tag-noun">noun</span></td><td class="note">saignant / à point / bien cuit</td></tr>
+      <tr><td>8</td><td>une carafe d'eau</td><td>a jug of tap water</td><td><span class="tag-noun">noun</span></td><td class="note">free in French restaurants — always ask for this</td></tr>
+      <tr><td>9</td><td>le serveur / la serveuse</td><td>waiter / waitress</td><td><span class="tag-noun">noun</span></td><td class="note">never call them "garçon" — considered rude today</td></tr>
+      <tr><td>10</td><td>à emporter</td><td>to take away / takeout</td><td><span class="tag-adj">phrase</span></td><td class="note">the essential phrase — see tip below!</td></tr>
+      <tr><td>11</td><td>sur place</td><td>to eat in / for here</td><td><span class="tag-adj">phrase</span></td><td class="note">opposite of à emporter</td></tr>
+      <tr><td>12</td><td>le régime</td><td>diet / dietary restriction</td><td><span class="tag-noun">noun</span></td><td class="note"><span class="false-friend">⚠ false friend</span> — also means "political regime"!</td></tr>
+      <tr><td>13</td><td>délicieux / délicieuse</td><td>delicious</td><td><span class="tag-adj">adj</span></td><td class="note">masc/fem forms</td></tr>
+      <tr><td>14</td><td>savoureux / savoureuse</td><td>tasty / flavourful</td><td><span class="tag-adj">adj</span></td><td class="note">a step up from bon — sounds more sophisticated</td></tr>
+      <tr><td>15</td><td>compris(e)</td><td>included</td><td><span class="tag-adj">adj</span></td><td class="note">service compris = service included</td></tr>
+      <tr><td>16</td><td>réserver</td><td>to book / reserve</td><td><span class="tag-verb">verb</span></td><td class="note">je réserve, nous réservons</td></tr>
+      <tr><td>17</td><td>commander</td><td>to order</td><td><span class="tag-verb">verb</span></td><td class="note">je commande — not "ordonner" which means to order someone around</td></tr>
+      <tr><td>18</td><td>recommander</td><td>to recommend</td><td><span class="tag-verb">verb</span></td><td class="note">Qu'est-ce que vous recommandez ? = What do you recommend?</td></tr>
+      <tr><td>19</td><td>apporter</td><td>to bring</td><td><span class="tag-verb">verb</span></td><td class="note">Pouvez-vous m'apporter… ? = Could you bring me…?</td></tr>
+      <tr><td>20</td><td>se tromper</td><td>to make a mistake / be wrong</td><td><span class="tag-verb">verb</span></td><td class="note">Je crois que vous vous êtes trompé = I think you've made a mistake (polite complaint)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box">
+    <strong>False Friend Alert — à emporter vs. emmener quelqu'un chez soi:</strong> This one is dedicated to a famous Brussels incident. <em>« Je voudrais une pizza à emporter »</em> = I would like a pizza to take away. <em>« Vous voulez m'emmener chez vous ? »</em> = Do you want to take me home with you? The key phrase you always need in a takeaway context is <em>à emporter</em> — it is unambiguous, universally understood, and will not result in any unintended dinner invitations. While we're here: <em>la carte</em> vs. <em>le menu</em> is the other classic trap — asking for <em>le menu</em> in a French restaurant means you want the fixed-price set meal, not the full list of dishes. If you want to browse everything on offer, ask for <em>la carte</em>.
+  </div>
+
+</div><!-- /fr-lesson -->
