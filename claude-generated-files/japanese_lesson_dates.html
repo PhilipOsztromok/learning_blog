@@ -1,0 +1,552 @@
+<!-- ============================================================
+     JAPANESE LESSON: Dates — ひづけ（日付）
+     Level: Beginner-plus | Hiragana + Romaji + English
+     ============================================================ -->
+
+<style>
+  .jp-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .jp-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .jp-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* ── Dialogs ─────────────────────────────────────── */
+  .dialog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  @media (max-width: 600px) { .dialog-grid { grid-template-columns: 1fr; } }
+
+  .dialog-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .dialog-card:hover { border-color: #4f8ef7; }
+  .dialog-card h3 {
+    margin: 0 0 12px 0;
+    color: #4f8ef7;
+    font-size: 0.92em;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    border-bottom: 1px solid #2a2d3a;
+    padding-bottom: 6px;
+  }
+  .dialog-line { margin-bottom: 10px; }
+  .dialog-line .speaker {
+    font-weight: bold; color: #7c5cbf;
+    min-width: 24px; display: inline-block;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .dialog-line .jp   { font-size: 1.05em; display: block; margin-left: 28px; color: #e2e4ec; }
+  .dialog-line .romaji { font-size: 0.82em; color: #7a7f96; display: block; margin-left: 28px; font-style: italic; }
+  .dialog-line .en   { font-size: 0.82em; color: #a0a4b8; display: block; margin-left: 28px; }
+
+  /* ── Days-of-month grid (31 cards) ───────────────── */
+  .dom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .dom-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .dom-card.irregular { border-color: #7c5cbf; background: #1e1a2e; }
+  .dom-card .dom-num  { font-size: 0.72em; color: #7a7f96; font-family: system-ui, sans-serif; }
+  .dom-card .dom-jp   { font-size: 1em; color: #e2e4ec; line-height: 1.3; }
+  .dom-card.irregular .dom-jp { color: #c9a8ff; }
+  .dom-card .dom-rom  { font-size: 0.72em; color: #7a7f96; font-style: italic; }
+
+  /* ── Days of week ────────────────────────────────── */
+  .dow-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .dow-grid { grid-template-columns: repeat(4, 1fr)); } }
+
+  .dow-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .dow-card.weekend { border-color: #4f8ef7; background: #141d2e; }
+  .dow-card .dow-kanji { font-size: 1.3em; color: #e2e4ec; display: block; }
+  .dow-card.weekend .dow-kanji { color: #7ab8ff; }
+  .dow-card .dow-jp  { font-size: 0.82em; color: #a0a4b8; display: block; }
+  .dow-card .dow-rom { font-size: 0.72em; color: #7a7f96; font-style: italic; display: block; }
+  .dow-card .dow-en  { font-size: 0.72em; color: #7a7f96; display: block; margin-top: 2px; }
+
+  /* ── Months grid ─────────────────────────────────── */
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 500px) { .month-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .month-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .month-card.irregular { border-color: #7c5cbf; background: #1e1a2e; }
+  .month-card .mo-num  { font-size: 0.7em; color: #4f8ef7; font-family: system-ui, sans-serif; font-weight: 600; }
+  .month-card .mo-jp   { font-size: 1.1em; color: #e2e4ec; display: block; }
+  .month-card.irregular .mo-jp { color: #c9a8ff; }
+  .month-card .mo-rom  { font-size: 0.75em; color: #7a7f96; font-style: italic; display: block; }
+  .month-card .mo-en   { font-size: 0.75em; color: #a0a4b8; display: block; }
+
+  /* ── Vocabulary table ────────────────────────────── */
+  .vocab-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-family: system-ui, -apple-system, sans-serif; font-size: 0.9em; }
+  .vocab-table th { background: #1e2235; color: #4f8ef7; padding: 10px 14px; text-align: left; font-size: 0.82em; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #2a2d3a; }
+  .vocab-table td { padding: 9px 14px; border-bottom: 1px solid #2a2d3a; color: #e2e4ec; }
+  .vocab-table tr:nth-child(even) td { background: #1a1d27; }
+  .vocab-table tr:hover td { background: #1e2235; }
+  .vocab-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+
+  .tag-verb    { background: #7c5cbf; color: #fff; font-size: 0.7em; padding: 2px 7px; border-radius: 10px; white-space: nowrap; font-family: system-ui, sans-serif; }
+  .tag-noun    { background: #2a5a8a; color: #a8d4ff; font-size: 0.7em; padding: 2px 7px; border-radius: 10px; white-space: nowrap; font-family: system-ui, sans-serif; }
+  .tag-adv     { background: #1e3a2a; color: #7ecfa0; font-size: 0.7em; padding: 2px 7px; border-radius: 10px; white-space: nowrap; font-family: system-ui, sans-serif; }
+
+  /* ── Tip box ─────────────────────────────────────── */
+  .tip-box { background: #1a1d27; border-left: 3px solid #7c5cbf; padding: 14px 18px; border-radius: 0 6px 6px 0; margin-top: 16px; font-size: 0.88em; color: #a0a4b8; font-style: italic; }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Legend ──────────────────────────────────────── */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; font-family: system-ui, sans-serif; font-size: 0.8em; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #a0a4b8; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .legend-dot.irr { background: #1e1a2e; border: 1px solid #7c5cbf; }
+  .legend-dot.reg { background: #1a1d27; border: 1px solid #2a2d3a; }
+  .legend-dot.wkd { background: #141d2e; border: 1px solid #4f8ef7; }
+</style>
+
+<div class="jp-lesson">
+
+  <h2>📅 Dates — ひづけ（日付）</h2>
+  <p class="section-intro">How to say, ask, and understand dates in Japanese — from today's date to planning your trip to Tokyo. Japanese dates are written and spoken largest to smallest: year → month → day.</p>
+
+
+  <!-- ═══════════════════════════════════════════════
+       DIALOGUES
+  ═══════════════════════════════════════════════ -->
+  <h2>💬 Dialogues — かいわ</h2>
+
+  <div class="dialog-grid">
+
+    <!-- Dialog 1: What's today's date? -->
+    <div class="dialog-card">
+      <h3>① What's the Date Today? — きょうはなんにち？</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">すみません、きょうはなんにちですか？</span>
+        <span class="romaji">Sumimasen, kyou wa nan-nichi desu ka?</span>
+        <span class="en">Excuse me, what's the date today?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">ろくがつじゅうごにちです。</span>
+        <span class="romaji">Roku-gatsu juugo-nichi desu.</span>
+        <span class="en">It's the 15th of June.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">もうそんなにちですか！はやいですね。</span>
+        <span class="romaji">Mou sonna nichi desu ka! Hayai desu ne.</span>
+        <span class="en">It's already that date! Time flies.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 2: What day is today? -->
+    <div class="dialog-card">
+      <h3>② What Day Is It? — なんようびですか？</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">きょうはなんようびですか？</span>
+        <span class="romaji">Kyou wa nan-youbi desu ka?</span>
+        <span class="en">What day of the week is it today?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">もくようびです。</span>
+        <span class="romaji">Moku-youbi desu.</span>
+        <span class="en">It's Thursday.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">じゃあ、しゅうまつはもうすぐですね！</span>
+        <span class="romaji">Jaa, shuumatsu wa mousugu desu ne!</span>
+        <span class="en">So the weekend is just around the corner!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 3: Birthday -->
+    <div class="dialog-card">
+      <h3>③ When's Your Birthday? — たんじょうびはいつ？</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">たんじょうびはいつですか？</span>
+        <span class="romaji">Tanjoubi wa itsu desu ka?</span>
+        <span class="en">When is your birthday?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">さんがつみっかです。あなたは？</span>
+        <span class="romaji">San-gatsu mikka desu. Anata wa?</span>
+        <span class="en">It's the 3rd of March. And yours?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">わたしはじゅうにがつはつかです。</span>
+        <span class="romaji">Watashi wa juuni-gatsu hatsuka desu.</span>
+        <span class="en">Mine is the 20th of December.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">クリスマスのちかくですね！</span>
+        <span class="romaji">Kurisumasu no chikaku desu ne!</span>
+        <span class="en">That's close to Christmas!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 4: Visiting Tokyo -->
+    <div class="dialog-card">
+      <h3>④ Visiting Tokyo — とうきょうにいつ？</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">とうきょうにはいつごろいくよていですか？</span>
+        <span class="romaji">Toukyou ni wa itsu goro iku yotei desu ka?</span>
+        <span class="en">When are you planning to visit Tokyo?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">らいねんのしちがつにいくよていです。</span>
+        <span class="romaji">Rainen no shichi-gatsu ni iku yotei desu.</span>
+        <span class="en">I'm planning to go in July next year.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">なんにちごろですか？</span>
+        <span class="romaji">Nan-nichi goro desu ka?</span>
+        <span class="en">Around what date?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">じゅうごにちごろのよていです。たのしみです！</span>
+        <span class="romaji">Juugo-nichi goro no yotei desu. Tanoshimi desu!</span>
+        <span class="en">Around the 15th. I'm really looking forward to it!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 5: Length of stay -->
+    <div class="dialog-card">
+      <h3>⑤ Your Trip Dates — りょこうのひづけ</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">にほんにはなんにちからなんにちまでいますか？</span>
+        <span class="romaji">Nihon ni wa nan-nichi kara nan-nichi made imasu ka?</span>
+        <span class="en">From what date to what date will you be in Japan?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">はちがつとおかからにじゅうにちまでです。</span>
+        <span class="romaji">Hachi-gatsu tooka kara nijuu-nichi made desu.</span>
+        <span class="en">From August 10th to the 20th.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">じゅうにちかんですね！たのしんできてください！</span>
+        <span class="romaji">Juuni-nichi kan desu ne! Tanoshinde kite kudasai!</span>
+        <span class="en">That's twelve days! Enjoy your time there!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 6: School / event start date -->
+    <div class="dialog-card">
+      <h3>⑥ When Does It Start? — いつはじまりますか？</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">にほんごのじゅぎょうはいつはじまりますか？</span>
+        <span class="romaji">Nihongo no jugyou wa itsu hajimarimasu ka?</span>
+        <span class="en">When do the Japanese classes start?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">くがつついたち、げつようびからです。</span>
+        <span class="romaji">Ku-gatsu tsuitachi, getsu-youbi kara desu.</span>
+        <span class="en">From the 1st of September, on a Monday.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">わかりました。たのしみにしています！</span>
+        <span class="romaji">Wakarimashita. Tanoshimi ni shite imasu!</span>
+        <span class="en">Got it. I'm really looking forward to it!</span>
+      </div>
+    </div>
+
+  </div><!-- /dialog-grid -->
+
+
+  <!-- ═══════════════════════════════════════════════
+       VOCABULARY
+  ═══════════════════════════════════════════════ -->
+  <h2>📖 Vocabulary — ごい</h2>
+  <p class="section-intro">20 essential date-related words. Verbs are in polite masu-form.</p>
+
+  <table class="vocab-table">
+    <thead>
+      <tr><th>#</th><th>Japanese</th><th>Romaji</th><th>English</th><th>Type</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>きょう（今日）</td><td>kyou</td><td>today</td><td><span class="tag-adv">adverb</span></td><td class="note"></td></tr>
+      <tr><td>2</td><td>あした（明日）</td><td>ashita</td><td>tomorrow</td><td><span class="tag-adv">adverb</span></td><td class="note">also あす (asu) — more formal</td></tr>
+      <tr><td>3</td><td>きのう（昨日）</td><td>kinou</td><td>yesterday</td><td><span class="tag-adv">adverb</span></td><td class="note"></td></tr>
+      <tr><td>4</td><td>ひ（日）</td><td>hi</td><td>day</td><td><span class="tag-noun">noun</span></td><td class="note">general word for "day"</td></tr>
+      <tr><td>5</td><td>〜にち（〜日）</td><td>~nichi</td><td>date / day counter</td><td><span class="tag-noun">counter</span></td><td class="note">なんにちですか？= what date is it?</td></tr>
+      <tr><td>6</td><td>〜がつ（〜月）</td><td>~gatsu</td><td>month (number)</td><td><span class="tag-noun">counter</span></td><td class="note">ろくがつ = June (6th month)</td></tr>
+      <tr><td>7</td><td>〜ねん（〜年）</td><td>~nen</td><td>year</td><td><span class="tag-noun">counter</span></td><td class="note">にせんにじゅうごねん = 2025</td></tr>
+      <tr><td>8</td><td>ようび（曜日）</td><td>youbi</td><td>day of the week</td><td><span class="tag-noun">noun</span></td><td class="note">なんようびですか？= what day is it?</td></tr>
+      <tr><td>9</td><td>たんじょうび（誕生日）</td><td>tanjoubi</td><td>birthday</td><td><span class="tag-noun">noun</span></td><td class="note">おたんじょうびおめでとう = happy birthday!</td></tr>
+      <tr><td>10</td><td>しゅうまつ（週末）</td><td>shuumatsu</td><td>weekend</td><td><span class="tag-noun">noun</span></td><td class="note">しゅう=week, まつ=end</td></tr>
+      <tr><td>11</td><td>やすみ（休み）</td><td>yasumi</td><td>holiday / day off</td><td><span class="tag-noun">noun</span></td><td class="note">おやすみ = also "goodnight"!</td></tr>
+      <tr><td>12</td><td>よてい（予定）</td><td>yotei</td><td>plan / schedule</td><td><span class="tag-noun">noun</span></td><td class="note">〜するよていです = I plan to ~</td></tr>
+      <tr><td>13</td><td>ことし（今年）</td><td>kotoshi</td><td>this year</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>14</td><td>らいねん（来年）</td><td>rainen</td><td>next year</td><td><span class="tag-noun">noun</span></td><td class="note">らいしゅう = next week</td></tr>
+      <tr><td>15</td><td>いつ</td><td>itsu</td><td>when</td><td><span class="tag-adv">question</span></td><td class="note">たんじょうびはいつ？= when is your birthday?</td></tr>
+      <tr><td>16</td><td>うまれます（生まれます）</td><td>umaremasu</td><td>to be born</td><td><span class="tag-verb">verb</span></td><td class="note">いつうまれましたか？= when were you born?</td></tr>
+      <tr><td>17</td><td>はじまります（始まります）</td><td>hajimarimasu</td><td>to begin / start</td><td><span class="tag-verb">verb</span></td><td class="note">godan verb</td></tr>
+      <tr><td>18</td><td>おわります（終わります）</td><td>owarimasu</td><td>to end / finish</td><td><span class="tag-verb">verb</span></td><td class="note">godan verb</td></tr>
+      <tr><td>19</td><td>たのしみにします</td><td>tanoshimi ni shimasu</td><td>to look forward to</td><td><span class="tag-verb">verb</span></td><td class="note">たのしみにしています = I'm looking forward to it</td></tr>
+      <tr><td>20</td><td>おぼえます（覚えます）</td><td>oboemasu</td><td>to memorise / remember</td><td><span class="tag-verb">verb</span></td><td class="note">ichidan — useful for memorising dates!</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════════
+       EXTRA: DAYS OF THE MONTH
+  ═══════════════════════════════════════════════ -->
+  <h2>🗓️ Extra — Days of the Month（ついたち〜さんじゅういちにち）</h2>
+  <p class="section-intro">The first ten days of the month all have special irregular readings — these must be memorised. Days 11 onwards mostly follow a regular pattern (number + にち), but watch out for 14, 20 and 24.</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot irr"></div> Irregular reading — must be memorised</div>
+    <div class="legend-item"><div class="legend-dot reg"></div> Regular reading (number + にち)</div>
+  </div>
+
+  <div class="dom-grid">
+    <div class="dom-card irregular"><div class="dom-num">1日</div><div class="dom-jp">ついたち</div><div class="dom-rom">tsuitachi</div></div>
+    <div class="dom-card irregular"><div class="dom-num">2日</div><div class="dom-jp">ふつか</div><div class="dom-rom">futsuka</div></div>
+    <div class="dom-card irregular"><div class="dom-num">3日</div><div class="dom-jp">みっか</div><div class="dom-rom">mikka</div></div>
+    <div class="dom-card irregular"><div class="dom-num">4日</div><div class="dom-jp">よっか</div><div class="dom-rom">yokka</div></div>
+    <div class="dom-card irregular"><div class="dom-num">5日</div><div class="dom-jp">いつか</div><div class="dom-rom">itsuka</div></div>
+    <div class="dom-card irregular"><div class="dom-num">6日</div><div class="dom-jp">むいか</div><div class="dom-rom">muika</div></div>
+    <div class="dom-card irregular"><div class="dom-num">7日</div><div class="dom-jp">なのか</div><div class="dom-rom">nanoka</div></div>
+    <div class="dom-card irregular"><div class="dom-num">8日</div><div class="dom-jp">ようか</div><div class="dom-rom">youka</div></div>
+    <div class="dom-card irregular"><div class="dom-num">9日</div><div class="dom-jp">ここのか</div><div class="dom-rom">kokonoka</div></div>
+    <div class="dom-card irregular"><div class="dom-num">10日</div><div class="dom-jp">とおか</div><div class="dom-rom">tooka</div></div>
+    <div class="dom-card"><div class="dom-num">11日</div><div class="dom-jp">じゅういちにち</div><div class="dom-rom">juuichi-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">12日</div><div class="dom-jp">じゅうににち</div><div class="dom-rom">juuni-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">13日</div><div class="dom-jp">じゅうさんにち</div><div class="dom-rom">juusan-nichi</div></div>
+    <div class="dom-card irregular"><div class="dom-num">14日</div><div class="dom-jp">じゅうよっか</div><div class="dom-rom">juuyokka ⚠</div></div>
+    <div class="dom-card"><div class="dom-num">15日</div><div class="dom-jp">じゅうごにち</div><div class="dom-rom">juugo-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">16日</div><div class="dom-jp">じゅうろくにち</div><div class="dom-rom">juuroku-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">17日</div><div class="dom-jp">じゅうしちにち</div><div class="dom-rom">juushichi-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">18日</div><div class="dom-jp">じゅうはちにち</div><div class="dom-rom">juuhachi-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">19日</div><div class="dom-jp">じゅうくにち</div><div class="dom-rom">juuku-nichi</div></div>
+    <div class="dom-card irregular"><div class="dom-num">20日</div><div class="dom-jp">はつか</div><div class="dom-rom">hatsuka ⚠</div></div>
+    <div class="dom-card"><div class="dom-num">21日</div><div class="dom-jp">にじゅういちにち</div><div class="dom-rom">nijuuichi-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">22日</div><div class="dom-jp">にじゅうににち</div><div class="dom-rom">nijuuni-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">23日</div><div class="dom-jp">にじゅうさんにち</div><div class="dom-rom">nijuusan-nichi</div></div>
+    <div class="dom-card irregular"><div class="dom-num">24日</div><div class="dom-jp">にじゅうよっか</div><div class="dom-rom">nijuuyokka ⚠</div></div>
+    <div class="dom-card"><div class="dom-num">25日</div><div class="dom-jp">にじゅうごにち</div><div class="dom-rom">nijuugo-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">26日</div><div class="dom-jp">にじゅうろくにち</div><div class="dom-rom">nijuuroku-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">27日</div><div class="dom-jp">にじゅうしちにち</div><div class="dom-rom">nijuushichi-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">28日</div><div class="dom-jp">にじゅうはちにち</div><div class="dom-rom">nijuuhachi-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">29日</div><div class="dom-jp">にじゅうくにち</div><div class="dom-rom">nijuuku-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">30日</div><div class="dom-jp">さんじゅうにち</div><div class="dom-rom">sanjuu-nichi</div></div>
+    <div class="dom-card"><div class="dom-num">31日</div><div class="dom-jp">さんじゅういちにち</div><div class="dom-rom">sanjuuichi-nichi</div></div>
+  </div>
+
+  <div class="tip-box">
+    <strong>Memory hook for the irregular dates:</strong> Days 1–10 are the hardest — they use old Japanese number words rather than the Chinese-derived numbers you already know. A useful trick: <span class="trap">ついたち (1st)</span> is completely unique; <span class="trap">とおか (10th)</span> sounds like とお (ten, old style); and <span class="trap">はつか (20th)</span> is the only other fully irregular one after 10. The three ⚠ dates after 10 — 14th, 24th (じゅうよっか / にじゅうよっか) — mirror the irregular reading of 4日 (よっか), so if you learn よっか you get all three for free.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       EXTRA: DAYS OF THE WEEK
+  ═══════════════════════════════════════════════ -->
+  <h2>📆 Extra — Days of the Week — ようび（曜日）</h2>
+  <p class="section-intro">All seven days follow a regular pattern: element/concept + ようび. Each day is named after a celestial body or natural element — which makes them surprisingly easy to remember once you spot the pattern.</p>
+
+  <div class="dow-grid">
+    <div class="dow-card">
+      <span class="dow-kanji">月</span>
+      <span class="dow-jp">げつようび</span>
+      <span class="dow-rom">getsu-youbi</span>
+      <span class="dow-en">Monday<br>🌙 moon</span>
+    </div>
+    <div class="dow-card">
+      <span class="dow-kanji">火</span>
+      <span class="dow-jp">かようび</span>
+      <span class="dow-rom">ka-youbi</span>
+      <span class="dow-en">Tuesday<br>🔥 fire</span>
+    </div>
+    <div class="dow-card">
+      <span class="dow-kanji">水</span>
+      <span class="dow-jp">すいようび</span>
+      <span class="dow-rom">sui-youbi</span>
+      <span class="dow-en">Wednesday<br>💧 water</span>
+    </div>
+    <div class="dow-card">
+      <span class="dow-kanji">木</span>
+      <span class="dow-jp">もくようび</span>
+      <span class="dow-rom">moku-youbi</span>
+      <span class="dow-en">Thursday<br>🌳 wood</span>
+    </div>
+    <div class="dow-card">
+      <span class="dow-kanji">金</span>
+      <span class="dow-jp">きんようび</span>
+      <span class="dow-rom">kin-youbi</span>
+      <span class="dow-en">Friday<br>✨ gold</span>
+    </div>
+    <div class="dow-card weekend">
+      <span class="dow-kanji">土</span>
+      <span class="dow-jp">どようび</span>
+      <span class="dow-rom">do-youbi</span>
+      <span class="dow-en">Saturday<br>🌍 earth</span>
+    </div>
+    <div class="dow-card weekend">
+      <span class="dow-kanji">日</span>
+      <span class="dow-jp">にちようび</span>
+      <span class="dow-rom">nichi-youbi</span>
+      <span class="dow-en">Sunday<br>☀️ sun</span>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>The five elements + sun + moon:</strong> Japanese days of the week follow the classical East Asian five-element system — fire (火), water (水), wood (木), gold/metal (金), earth (土) — plus the sun (日) and moon (月). This is the same system used in Chinese, Korean, and Vietnamese calendars. Once you know the kanji, you will never forget the days: 金ようび (gold day) is Friday — perfect, since Friday is payday! Also note that 月 (moon/Monday) is the same kanji used in 〜がつ (month), and 日 (sun/Sunday) is the same kanji used in にち (day/date).
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════
+       EXTRA: MONTHS
+  ═══════════════════════════════════════════════ -->
+  <h2>📅 Extra — Months of the Year — つき（月）</h2>
+  <p class="section-intro">Months in Japanese are beautifully simple: just the number + がつ. No special names like "January" or "February" — just "1-month", "2-month" and so on. However, watch out for months 4, 7 and 9 which use irregular number readings.</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot irr"></div> Irregular number reading — watch out!</div>
+    <div class="legend-item"><div class="legend-dot reg"></div> Regular (number + がつ)</div>
+  </div>
+
+  <div class="month-grid">
+    <div class="month-card">
+      <div class="mo-num">1月</div>
+      <span class="mo-jp">いちがつ</span>
+      <span class="mo-rom">ichi-gatsu</span>
+      <span class="mo-en">January</span>
+    </div>
+    <div class="month-card">
+      <div class="mo-num">2月</div>
+      <span class="mo-jp">にがつ</span>
+      <span class="mo-rom">ni-gatsu</span>
+      <span class="mo-en">February</span>
+    </div>
+    <div class="month-card">
+      <div class="mo-num">3月</div>
+      <span class="mo-jp">さんがつ</span>
+      <span class="mo-rom">san-gatsu</span>
+      <span class="mo-en">March</span>
+    </div>
+    <div class="month-card irregular">
+      <div class="mo-num">4月 ⚠</div>
+      <span class="mo-jp">しがつ</span>
+      <span class="mo-rom">shi-gatsu</span>
+      <span class="mo-en">April</span>
+    </div>
+    <div class="month-card">
+      <div class="mo-num">5月</div>
+      <span class="mo-jp">ごがつ</span>
+      <span class="mo-rom">go-gatsu</span>
+      <span class="mo-en">May</span>
+    </div>
+    <div class="month-card">
+      <div class="mo-num">6月</div>
+      <span class="mo-jp">ろくがつ</span>
+      <span class="mo-rom">roku-gatsu</span>
+      <span class="mo-en">June</span>
+    </div>
+    <div class="month-card irregular">
+      <div class="mo-num">7月 ⚠</div>
+      <span class="mo-jp">しちがつ</span>
+      <span class="mo-rom">shichi-gatsu</span>
+      <span class="mo-en">July</span>
+    </div>
+    <div class="month-card">
+      <div class="mo-num">8月</div>
+      <span class="mo-jp">はちがつ</span>
+      <span class="mo-rom">hachi-gatsu</span>
+      <span class="mo-en">August</span>
+    </div>
+    <div class="month-card irregular">
+      <div class="mo-num">9月 ⚠</div>
+      <span class="mo-jp">くがつ</span>
+      <span class="mo-rom">ku-gatsu</span>
+      <span class="mo-en">September</span>
+    </div>
+    <div class="month-card">
+      <div class="mo-num">10月</div>
+      <span class="mo-jp">じゅうがつ</span>
+      <span class="mo-rom">juu-gatsu</span>
+      <span class="mo-en">October</span>
+    </div>
+    <div class="month-card">
+      <div class="mo-num">11月</div>
+      <span class="mo-jp">じゅういちがつ</span>
+      <span class="mo-rom">juuichi-gatsu</span>
+      <span class="mo-en">November</span>
+    </div>
+    <div class="month-card">
+      <div class="mo-num">12月</div>
+      <span class="mo-jp">じゅうにがつ</span>
+      <span class="mo-rom">juuni-gatsu</span>
+      <span class="mo-en">December</span>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>The three irregular months — and a helpful connection:</strong> Months 4, 7 and 9 use the same irregular number readings as hours on the clock: <span class="trap">4月 = しがつ</span> (not よんがつ), <span class="trap">7月 = しちがつ</span> (not なながつ), <span class="trap">9月 = くがつ</span> (not きゅうがつ). If you have already learned the clock lesson, you already know these! The full date format in Japanese runs year → month → day → day-of-week, for example: <em>にせんにじゅうごねん しちがつ じゅうごにち もくようび</em> = Thursday, 15th July 2025. Note that Japanese puts the largest unit first — the opposite of British date order (day/month/year) but logical once you get used to it.
+  </div>
+
+</div><!-- /jp-lesson -->

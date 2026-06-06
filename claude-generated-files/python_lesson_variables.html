@@ -1,0 +1,513 @@
+<!-- ============================================================
+     PYTHON LESSON: Variables & Data Types
+     Level: Beginner Python / Experienced Programmer
+     ============================================================ -->
+
+<style>
+  .py-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .py-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .py-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .py-lesson p { margin-bottom: 1rem; }
+  .py-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 16px;
+  }
+  .cm { color: #6a9153; font-style: italic; }   /* comment */
+  .kw { color: #c9a8ff; }                        /* keyword */
+  .st { color: #7ecfa0; }                        /* string */
+  .nu { color: #f08080; }                        /* number */
+  .fn { color: #7ab8ff; }                        /* function */
+  .cl { color: #ffd580; }                        /* class / type */
+  .dc { color: #4f8ef7; }                        /* decorator / built-in */
+  .op { color: #a0a4b8; }                        /* operator */
+
+  /* ── Info / callout boxes ────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.9em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; font-style: normal; }
+
+  .java-box {
+    background: #1a1d27;
+    border-left: 3px solid #ffd580;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .java-box strong { color: #ffd580; }
+  .java-box .java-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .fastapi-box {
+    background: #1a1d27;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .fastapi-box strong { color: #7ecfa0; }
+  .fastapi-box .fastapi-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Concept cards ───────────────────────────────── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+
+  .concept-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: #4f8ef7; }
+  .concept-card .cc-type {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 4px;
+  }
+  .concept-card .cc-name {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 1.15em;
+    color: #ffd580;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .concept-card .cc-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 10px;
+  }
+  .concept-card .cc-example {
+    background: #12141e;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #e2e4ec;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  /* ── Quick reference table ───────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.88em;
+    margin-top: 12px;
+    margin-bottom: 24px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.9em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.8em; color: #7a7f96; font-style: italic; }
+
+  /* ── Example section ─────────────────────────────── */
+  .example-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .example-block .ex-title {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #4f8ef7;
+    margin-bottom: 8px;
+  }
+  .example-block .ex-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+</style>
+
+<div class="py-lesson">
+
+  <h2>🐍 Variables &amp; Data Types</h2>
+  <p class="section-intro">Python's approach to variables will feel familiar in concept but different in syntax. The biggest shift from Java is that Python is <em>dynamically typed</em> — but as you'll see, that doesn't mean type information disappears, especially when working with FastAPI.</p>
+
+  <div class="java-box">
+    <span class="java-label">⚡ Coming from Java / JavaScript</span>
+    <strong>No type declarations, no semicolons, no <code>var</code>/<code>let</code>/<code>const</code>.</strong> In Python you just write <code>name = "Philip"</code> and Python figures out the type. Unlike JavaScript's <code>var</code> hoisting chaos, Python variables are scoped cleanly to their block. Unlike Java, there are no primitives — everything in Python is an object.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       CORE DATA TYPES
+  ═══════════════════════════════════════════ -->
+  <h2>🧱 Core Built-in Types</h2>
+  <p class="section-intro">Python has a small set of built-in types that cover most everyday needs. Collections (list, dict, set, tuple) are introduced briefly here and will each get their own lesson.</p>
+
+  <div class="concept-grid">
+
+    <div class="concept-card">
+      <div class="cc-type">Numeric</div>
+      <span class="cc-name">int &amp; float</span>
+      <div class="cc-desc">Integers have unlimited precision. Floats are IEEE 754 doubles — same as Java's <code>double</code>. No <code>long</code>, no casting needed between int sizes.</div>
+      <div class="cc-example"><span class="cm"># No size limit on int</span>
+calories = 2000
+price = 3.99
+big = 10 ** 100  <span class="cm"># works fine</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Text</div>
+      <span class="cc-name">str</span>
+      <div class="cc-desc">Immutable, Unicode by default (no <code>char</code> type). Single or double quotes are interchangeable. Triple quotes for multi-line strings.</div>
+      <div class="cc-example"><span class="cm"># All equivalent</span>
+name = <span class="st">'Chicken Tikka'</span>
+name = <span class="st">"Chicken Tikka"</span>
+desc = <span class="st">"""A rich, creamy
+curry dish."""</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Boolean</div>
+      <span class="cc-name">bool</span>
+      <div class="cc-desc">Capitalised: <code>True</code> / <code>False</code> (not lowercase like JavaScript). <code>bool</code> is actually a subclass of <code>int</code> in Python — <code>True == 1</code> and <code>False == 0</code>.</div>
+      <div class="cc-example">is_vegetarian = <span class="kw">True</span>
+is_expired = <span class="kw">False</span>
+
+<span class="cm"># Surprising but valid:</span>
+<span class="fn">print</span>(<span class="kw">True</span> + <span class="kw">True</span>)  <span class="cm"># → 2</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Null equivalent</div>
+      <span class="cc-name">None</span>
+      <div class="cc-desc">Python's equivalent of <code>null</code> (Java) or <code>null</code>/<code>undefined</code> (JS). It is its own type — <code>NoneType</code>. Always check with <code>is None</code>, not <code>== None</code>.</div>
+      <div class="cc-example">expiry_date = <span class="kw">None</span>  <span class="cm"># not set yet</span>
+
+<span class="kw">if</span> expiry_date <span class="kw">is</span> <span class="kw">None</span>:
+    <span class="fn">print</span>(<span class="st">"No expiry set"</span>)</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Ordered collection</div>
+      <span class="cc-name">list</span>
+      <div class="cc-desc">Mutable, ordered, allows duplicates. Python's equivalent of <code>ArrayList</code> in Java or a plain array in JS. Can hold mixed types (though in practice, keep them consistent).</div>
+      <div class="cc-example">ingredients = [<span class="st">"eggs"</span>, <span class="st">"milk"</span>, <span class="st">"flour"</span>]
+ingredients.append(<span class="st">"butter"</span>)
+first = ingredients[<span class="nu">0</span>]  <span class="cm"># "eggs"</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Key-value store</div>
+      <span class="cc-name">dict</span>
+      <div class="cc-desc">Mutable, ordered (Python 3.7+), key-value pairs. Equivalent to <code>HashMap</code> in Java or a plain object <code>{}</code> in JavaScript. Central to FastAPI — JSON maps directly to dicts.</div>
+      <div class="cc-example">recipe = {
+    <span class="st">"name"</span>: <span class="st">"Pasta"</span>,
+    <span class="st">"servings"</span>: <span class="nu">4</span>,
+    <span class="st">"vegetarian"</span>: <span class="kw">True</span>
+}
+<span class="fn">print</span>(recipe[<span class="st">"name"</span>])</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Immutable sequence</div>
+      <span class="cc-name">tuple</span>
+      <div class="cc-desc">Like a list but immutable — can't be changed after creation. Good for fixed data like coordinates or a (day, month) date pair. Slightly faster than lists.</div>
+      <div class="cc-example"><span class="cm"># Immutable pair</span>
+best_before = (<span class="nu">2025</span>, <span class="nu">12</span>, <span class="nu">31</span>)
+year, month, day = best_before
+<span class="cm"># Unpacking — very Pythonic!</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Unique values</div>
+      <span class="cc-name">set</span>
+      <div class="cc-desc">Unordered, no duplicates. Equivalent to Java's <code>HashSet</code>. Great for checking membership quickly or deduplicating a list of ingredients.</div>
+      <div class="cc-example">allergens = {<span class="st">"gluten"</span>, <span class="st">"dairy"</span>, <span class="st">"nuts"</span>}
+allergens.add(<span class="st">"eggs"</span>)
+
+<span class="kw">if</span> <span class="st">"nuts"</span> <span class="kw">in</span> allergens:
+    <span class="fn">print</span>(<span class="st">"Contains nuts!"</span>)</div>
+    </div>
+
+  </div><!-- /concept-grid -->
+
+
+  <!-- ═══════════════════════════════════════════
+       TYPE HINTS
+  ═══════════════════════════════════════════ -->
+  <h2>🏷️ Type Hints — Optional but Important</h2>
+  <p class="section-intro">Python is dynamically typed, but since Python 3.5 you can add optional type annotations. These don't affect runtime behaviour — but FastAPI uses them heavily to validate data, generate API docs, and power editor autocomplete.</p>
+
+  <div class="fastapi-box">
+    <span class="fastapi-label">🚀 FastAPI relevance — HIGH</span>
+    <strong>Type hints are not optional in FastAPI — they are how FastAPI works.</strong> FastAPI reads your type annotations to automatically validate request data, convert types, and generate interactive API documentation (Swagger UI). Learning type hints now will make FastAPI feel natural from day one.
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Type Hints — Basic Syntax</div>
+    <div class="ex-desc">Add a colon after the variable name for annotations. Use <code>-&gt;</code> for function return types. Python won't enforce these at runtime, but tools and FastAPI will.</div>
+<code class="code-block"><span class="cm"># Without type hints (still valid Python)</span>
+name = <span class="st">"Philip"</span>
+age = <span class="nu">30</span>
+
+<span class="cm"># With type hints (same at runtime, but much more useful)</span>
+name: <span class="cl">str</span> = <span class="st">"Philip"</span>
+age: <span class="cl">int</span> = <span class="nu">30</span>
+price: <span class="cl">float</span> = <span class="nu">9.99</span>
+is_available: <span class="cl">bool</span> = <span class="kw">True</span>
+notes: <span class="cl">str</span> | <span class="kw">None</span> = <span class="kw">None</span>   <span class="cm"># Python 3.10+ — optional string</span>
+
+<span class="cm"># Function with type hints — this is what FastAPI endpoints look like</span>
+<span class="kw">def</span> <span class="fn">get_recipe</span>(recipe_id: <span class="cl">int</span>, include_nutrition: <span class="cl">bool</span> = <span class="kw">False</span>) -> <span class="cl">str</span>:
+    <span class="kw">return</span> <span class="st">f"Recipe </span>{recipe_id}<span class="st">"</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Type Hints with Collections</div>
+    <div class="ex-desc">Use <code>list[type]</code>, <code>dict[key, value]</code> etc. to annotate collections. Import <code>Optional</code> from <code>typing</code> for Python &lt; 3.10.</div>
+<code class="code-block"><span class="kw">from</span> typing <span class="kw">import</span> Optional  <span class="cm"># needed for Python &lt; 3.10</span>
+
+<span class="cm"># List of strings</span>
+ingredients: <span class="cl">list</span>[<span class="cl">str</span>] = [<span class="st">"flour"</span>, <span class="st">"eggs"</span>, <span class="st">"milk"</span>]
+
+<span class="cm"># Dict with string keys and int values</span>
+stock: <span class="cl">dict</span>[<span class="cl">str</span>, <span class="cl">int</span>] = {<span class="st">"eggs"</span>: <span class="nu">6</span>, <span class="st">"milk"</span>: <span class="nu">2</span>}
+
+<span class="cm"># Optional value — can be str or None</span>
+description: Optional[<span class="cl">str</span>] = <span class="kw">None</span>       <span class="cm"># Python &lt; 3.10</span>
+description: <span class="cl">str</span> | <span class="kw">None</span> = <span class="kw">None</span>          <span class="cm"># Python 3.10+</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       F-STRINGS & DYNAMIC TYPING
+  ═══════════════════════════════════════════ -->
+  <h2>💬 F-Strings &amp; Dynamic Typing in Practice</h2>
+
+  <div class="example-block">
+    <div class="ex-title">F-Strings — Python's Template Literals</div>
+    <div class="ex-desc">F-strings (formatted string literals) work like JavaScript's template literals — prefix with <code>f</code> and use <code>{}</code> for expressions. Far cleaner than Java's <code>String.format()</code>.</div>
+<code class="code-block">item = <span class="st">"Milk"</span>
+quantity = <span class="nu">3</span>
+expiry = <span class="st">"2025-08-01"</span>
+
+<span class="cm"># Simple interpolation</span>
+<span class="fn">print</span>(<span class="st">f"</span>{item}<span class="st"> — quantity: </span>{quantity}<span class="st">"</span>)
+<span class="cm"># → Milk — quantity: 3</span>
+
+<span class="cm"># Expressions inside {}</span>
+<span class="fn">print</span>(<span class="st">f"</span>{item.upper()}<span class="st"> expires: </span>{expiry}<span class="st">"</span>)
+<span class="cm"># → MILK expires: 2025-08-01</span>
+
+<span class="cm"># Formatting numbers</span>
+price = <span class="nu">2.5</span>
+<span class="fn">print</span>(<span class="st">f"Price: £</span>{price:.2f}<span class="st">"</span>)
+<span class="cm"># → Price: £2.50</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Dynamic Typing — and How to Check Types</div>
+    <div class="ex-desc">Variables can change type at runtime (though this is usually bad practice). Use <code>type()</code> to inspect and <code>isinstance()</code> to check — prefer <code>isinstance()</code> as it handles inheritance.</div>
+<code class="code-block"><span class="cm"># type() — returns the type object</span>
+<span class="fn">print</span>(<span class="fn">type</span>(<span class="st">"hello"</span>))      <span class="cm"># &lt;class 'str'&gt;</span>
+<span class="fn">print</span>(<span class="fn">type</span>(<span class="nu">42</span>))          <span class="cm"># &lt;class 'int'&gt;</span>
+<span class="fn">print</span>(<span class="fn">type</span>([<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>]))  <span class="cm"># &lt;class 'list'&gt;</span>
+
+<span class="cm"># isinstance() — preferred for type checking</span>
+quantity = <span class="nu">5</span>
+<span class="kw">if</span> <span class="fn">isinstance</span>(quantity, <span class="cl">int</span>):
+    <span class="fn">print</span>(<span class="st">"Valid quantity"</span>)
+
+<span class="cm"># Check multiple types at once</span>
+value = <span class="nu">3.14</span>
+<span class="kw">if</span> <span class="fn">isinstance</span>(value, (int, float)):
+    <span class="fn">print</span>(<span class="st">"It's a number"</span>)</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Multiple Assignment &amp; Unpacking</div>
+    <div class="ex-desc">Python allows elegant multiple assignment and tuple unpacking — you'll see this constantly in real Python code.</div>
+<code class="code-block"><span class="cm"># Multiple assignment on one line</span>
+name, quantity, unit = <span class="st">"Rice"</span>, <span class="nu">500</span>, <span class="st">"grams"</span>
+
+<span class="cm"># Swap values — no temp variable needed (unlike Java)</span>
+a, b = <span class="nu">1</span>, <span class="nu">2</span>
+a, b = b, a       <span class="cm"># a=2, b=1 — very Pythonic</span>
+
+<span class="cm"># Unpack a list</span>
+first, *rest = [<span class="st">"eggs"</span>, <span class="st">"milk"</span>, <span class="st">"flour"</span>, <span class="st">"butter"</span>]
+<span class="cm"># first = "eggs", rest = ["milk", "flour", "butter"]</span>
+
+<span class="cm"># Underscore _ for values you don't need</span>
+_, month, day = (<span class="nu">2025</span>, <span class="nu">8</span>, <span class="nu">15</span>)
+<span class="fn">print</span>(<span class="st">f"Day: </span>{day}<span class="st">, Month: </span>{month}<span class="st">"</span>)</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Constants — Convention, Not Enforcement</div>
+    <div class="ex-desc">Python has no <code>final</code> or <code>const</code> keyword. The convention is UPPER_SNAKE_CASE for constants — Python won't stop you changing them, but it signals intent to other developers (and your future self).</div>
+<code class="code-block"><span class="cm"># Convention: UPPER_CASE = constant (not enforced by Python)</span>
+MAX_INGREDIENTS = <span class="nu">50</span>
+DEFAULT_SERVINGS = <span class="nu">4</span>
+DATABASE_URL = <span class="st">"postgresql://localhost/mealplanner"</span>
+DAYS_BEFORE_EXPIRY_ALERT = <span class="nu">3</span>
+
+<span class="cm"># For true constants in larger projects, use an enum:</span>
+<span class="kw">from</span> enum <span class="kw">import</span> Enum
+
+<span class="kw">class</span> <span class="cl">MealType</span>(Enum):
+    BREAKFAST = <span class="st">"breakfast"</span>
+    LUNCH = <span class="st">"lunch"</span>
+    DINNER = <span class="st">"dinner"</span>
+
+meal = <span class="cl">MealType</span>.DINNER
+<span class="fn">print</span>(meal.value)  <span class="cm"># → "dinner"</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>📋 Quick Reference</h2>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Type</th><th>Example</th><th>Java equivalent</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>int</code></td><td><code>age = 30</code></td><td><code>int</code> / <code>long</code></td><td class="note">Unlimited precision — no overflow</td></tr>
+      <tr><td><code>float</code></td><td><code>price = 9.99</code></td><td><code>double</code></td><td class="note">IEEE 754 — same precision as Java double</td></tr>
+      <tr><td><code>str</code></td><td><code>name = "Pasta"</code></td><td><code>String</code></td><td class="note">Immutable, Unicode, no char type</td></tr>
+      <tr><td><code>bool</code></td><td><code>done = True</code></td><td><code>boolean</code></td><td class="note">Capitalised True/False — subclass of int</td></tr>
+      <tr><td><code>None</code></td><td><code>val = None</code></td><td><code>null</code></td><td class="note">Check with <code>is None</code>, not <code>== None</code></td></tr>
+      <tr><td><code>list</code></td><td><code>[1, 2, 3]</code></td><td><code>ArrayList</code></td><td class="note">Mutable, ordered, allows duplicates</td></tr>
+      <tr><td><code>dict</code></td><td><code>{"key": "val"}</code></td><td><code>HashMap</code></td><td class="note">Mutable, ordered (3.7+), JSON-like</td></tr>
+      <tr><td><code>tuple</code></td><td><code>(1, 2, 3)</code></td><td>—</td><td class="note">Immutable list — great for fixed data</td></tr>
+      <tr><td><code>set</code></td><td><code>{1, 2, 3}</code></td><td><code>HashSet</code></td><td class="note">Unordered, unique values only</td></tr>
+      <tr><td>f-string</td><td><code>f"Hi {name}"</code></td><td><code>String.format()</code></td><td class="note">Expressions allowed inside <code>{}</code></td></tr>
+      <tr><td>type hint</td><td><code>x: int = 5</code></td><td>type declaration</td><td class="note">Optional but required for FastAPI</td></tr>
+      <tr><td><code>type(x)</code></td><td><code>type(42)</code> → <code>int</code></td><td><code>x.getClass()</code></td><td class="note">Returns the type object</td></tr>
+      <tr><td><code>isinstance()</code></td><td><code>isinstance(x, int)</code></td><td><code>instanceof</code></td><td class="note">Preferred for type checking</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       GOTCHAS
+  ═══════════════════════════════════════════ -->
+  <div class="tip-box">
+    <strong>⚠ Gotchas for Java / JavaScript Programmers:</strong><br><br>
+    <span class="trap">Mutable default arguments</span> — never use a mutable object (list, dict) as a default function argument. <code>def add(item, items=[])</code> shares the same list across all calls. Use <code>None</code> and create inside the function instead.<br><br>
+    <span class="trap">== vs is</span> — <code>==</code> checks value equality (like Java's <code>.equals()</code>); <code>is</code> checks identity (same object in memory, like Java's <code>==</code> for objects). Always use <code>is None</code> and <code>is not None</code>, never <code>== None</code>.<br><br>
+    <span class="trap">Integers are cached</span> — Python caches small integers (-5 to 256), so <code>a = 100; b = 100; a is b</code> returns <code>True</code>. For larger integers it won't. This is a curiosity, not something to rely on.<br><br>
+    <span class="trap">No <code>++</code> operator</span> — use <code>x += 1</code> instead of <code>x++</code>. Python has no increment/decrement operator at all.
+  </div>
+
+</div><!-- /py-lesson -->

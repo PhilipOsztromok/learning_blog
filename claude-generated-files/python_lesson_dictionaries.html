@@ -1,0 +1,756 @@
+<!-- ============================================================
+     PYTHON LESSON: Dictionaries
+     Level: Beginner Python / Experienced Programmer
+     ============================================================ -->
+
+<style>
+  .py-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .py-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .py-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .py-lesson p { margin-bottom: 1rem; }
+  .py-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 16px;
+  }
+  .cm { color: #6a9153; font-style: italic; }
+  .kw { color: #c9a8ff; }
+  .st { color: #7ecfa0; }
+  .nu { color: #f08080; }
+  .fn { color: #7ab8ff; }
+  .cl { color: #ffd580; }
+  .op { color: #a0a4b8; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .java-box {
+    background: #1a1d27;
+    border-left: 3px solid #ffd580;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .java-box strong { color: #ffd580; }
+  .java-box .java-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .fastapi-box {
+    background: #1a1d27;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .fastapi-box strong { color: #7ecfa0; }
+  .fastapi-box .fastapi-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Concept cards ───────────────────────────────── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+  .concept-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: #4f8ef7; }
+  .concept-card .cc-type {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 4px;
+  }
+  .concept-card .cc-name {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 1.05em;
+    color: #ffd580;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .concept-card .cc-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 10px;
+  }
+  .concept-card .cc-example {
+    background: #12141e;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #e2e4ec;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  /* ── Example blocks ──────────────────────────────── */
+  .example-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .example-block .ex-title {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #4f8ef7;
+    margin-bottom: 6px;
+  }
+  .example-block .ex-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* ── Iteration visual ────────────────────────────── */
+  .iter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 500px) { .iter-grid { grid-template-columns: 1fr; } }
+  .iter-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .iter-card .ic-header {
+    background: #1e2235;
+    padding: 8px 12px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.85em;
+    color: #4f8ef7;
+    font-weight: 700;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .iter-card .ic-sub {
+    padding: 6px 12px 2px;
+    font-size: 0.75em;
+    color: #7a7f96;
+    font-style: italic;
+    font-family: system-ui, sans-serif;
+  }
+  .iter-card .ic-body {
+    padding: 6px 12px 10px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #e2e4ec;
+    white-space: pre;
+    line-height: 1.6;
+  }
+
+  /* ── Merge comparison ────────────────────────────── */
+  .merge-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .merge-grid { grid-template-columns: 1fr; } }
+  .merge-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .merge-card .mc-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7c5cbf;
+    margin-bottom: 6px;
+  }
+  .merge-card .mc-code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #e2e4ec;
+    white-space: pre;
+    line-height: 1.6;
+  }
+  .merge-card .mc-note {
+    font-size: 0.78em;
+    color: #7a7f96;
+    font-style: italic;
+    margin-top: 6px;
+  }
+
+  /* ── Reference table ─────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.88em;
+    margin-top: 12px;
+    margin-bottom: 24px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.9em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.8em; color: #7a7f96; font-style: italic; }
+  .ref-table .java-eq { font-size: 0.8em; color: #ffd580; }
+</style>
+
+<div class="py-lesson">
+
+  <h2>📚 Dictionaries</h2>
+  <p class="section-intro">Dictionaries are arguably Python's most important and versatile data structure. They store key-value pairs, are ordered (Python 3.7+), and map directly onto JSON — making them essential for web development. Almost every real Python program uses them heavily.</p>
+
+  <div class="java-box">
+    <span class="java-label">⚡ Coming from Java / JavaScript</span>
+    <strong>If you know JavaScript objects, Python dicts will feel very familiar — with some key differences.</strong> Like JS objects, Python dicts use <code>{}</code> syntax and store key-value pairs. Unlike JS, you must use <code>d["key"]</code> bracket notation — there's no dot access (<code>d.key</code>). Unlike Java's <code>HashMap</code>, dicts are built in with no import, are ordered by insertion (Python 3.7+), and have a much cleaner API. The JS spread operator <code>{...a, ...b}</code> has a Python equivalent: <code>{**a, **b}</code>.
+  </div>
+
+  <div class="fastapi-box">
+    <span class="fastapi-label">🚀 FastAPI relevance — CRITICAL</span>
+    <strong>JSON is the language of web APIs, and Python dicts <em>are</em> JSON.</strong> Every FastAPI response you return, every request body you receive, and every database record you work with will involve dicts. Understanding dict iteration (<code>.items()</code>), safe access (<code>.get()</code>), and dict comprehensions is essential for writing clean FastAPI route handlers.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       CREATING & ACCESSING
+  ═══════════════════════════════════════════ -->
+  <h2>🏗️ Creating &amp; Accessing Dictionaries</h2>
+
+  <div class="concept-grid">
+
+    <div class="concept-card">
+      <div class="cc-type">Creating</div>
+      <span class="cc-name">{ key: value, ... }</span>
+      <div class="cc-desc">Keys must be <em>hashable</em> — strings, numbers, and tuples work. Lists do not. Values can be anything. <code>dict()</code> is an alternative constructor useful when keys are valid identifiers.</div>
+      <div class="cc-example"><span class="cm"># Literal syntax</span>
+recipe = {
+    <span class="st">"name"</span>: <span class="st">"Pasta"</span>,
+    <span class="st">"servings"</span>: <span class="nu">4</span>,
+    <span class="st">"vegetarian"</span>: <span class="kw">True</span>,
+    <span class="st">"ingredients"</span>: [<span class="st">"pasta"</span>, <span class="st">"tomato"</span>],
+}
+
+<span class="cm"># dict() constructor</span>
+item = <span class="fn">dict</span>(name=<span class="st">"milk"</span>, qty=<span class="nu">2</span>)
+
+<span class="cm"># Empty dict</span>
+inventory = {}</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Accessing values</div>
+      <span class="cc-name">d[key]  vs  d.get(key)</span>
+      <div class="cc-desc"><code>d[key]</code> raises a <code>KeyError</code> if the key is missing. <code>d.get(key)</code> returns <code>None</code> (or a default you provide) — almost always the safer choice in real code.</div>
+      <div class="cc-example"><span class="cm"># Bracket access — raises KeyError if missing</span>
+name = recipe[<span class="st">"name"</span>]       <span class="cm"># "Pasta"</span>
+<span class="cm"># recipe["missing"]        ← KeyError!</span>
+
+<span class="cm"># .get() — safe, returns None or default</span>
+desc = recipe.get(<span class="st">"description"</span>)
+<span class="cm"># → None  (no KeyError)</span>
+
+desc = recipe.get(<span class="st">"description"</span>, <span class="st">"No description"</span>)
+<span class="cm"># → "No description"</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Adding &amp; updating</div>
+      <span class="cc-name">d[key] = value</span>
+      <div class="cc-desc">Assignment creates the key if it doesn't exist, or overwrites the value if it does. Use <code>.setdefault()</code> to set a value only if the key is absent — useful for building nested structures.</div>
+      <div class="cc-example"><span class="cm"># Add a new key</span>
+recipe[<span class="st">"prep_mins"</span>] = <span class="nu">30</span>
+
+<span class="cm"># Update an existing key</span>
+recipe[<span class="st">"servings"</span>] = <span class="nu">6</span>
+
+<span class="cm"># Only set if key doesn't already exist</span>
+recipe.setdefault(<span class="st">"calories"</span>, <span class="nu">0</span>)
+<span class="cm"># Won't overwrite if "calories" exists</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Removing entries</div>
+      <span class="cc-name">del  /  .pop()  /  .clear()</span>
+      <div class="cc-desc"><code>del</code> removes a key (raises <code>KeyError</code> if missing). <code>.pop(key)</code> removes and returns the value — like lists. <code>.popitem()</code> removes and returns the last inserted pair as a tuple.</div>
+      <div class="cc-example"><span class="cm"># del — raises KeyError if missing</span>
+<span class="kw">del</span> recipe[<span class="st">"calories"</span>]
+
+<span class="cm"># .pop() — returns the removed value</span>
+servings = recipe.pop(<span class="st">"servings"</span>)
+servings = recipe.pop(<span class="st">"servings"</span>, <span class="nu">4</span>) <span class="cm"># default if missing</span>
+
+<span class="cm"># .popitem() — removes last inserted pair</span>
+key, val = recipe.popitem()
+
+<span class="cm"># .clear() — empties the dict</span>
+recipe.clear()</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Membership &amp; length</div>
+      <span class="cc-name">in  /  not in  /  len()</span>
+      <div class="cc-desc"><code>in</code> checks <em>keys</em> by default — not values. This is an O(1) operation (hash lookup), making dicts excellent for fast lookups regardless of size.</div>
+      <div class="cc-example"><span class="cm"># Checking keys — O(1) lookup</span>
+<span class="kw">if</span> <span class="st">"name"</span> <span class="kw">in</span> recipe:
+    <span class="fn">print</span>(recipe[<span class="st">"name"</span>])
+
+<span class="kw">if</span> <span class="st">"calories"</span> <span class="kw">not in</span> recipe:
+    <span class="fn">print</span>(<span class="st">"No calorie info"</span>)
+
+<span class="cm"># Length — number of key-value pairs</span>
+<span class="fn">print</span>(<span class="fn">len</span>(recipe))  <span class="cm"># 3</span>
+
+<span class="cm"># Check if empty</span>
+<span class="kw">if not</span> recipe:
+    <span class="fn">print</span>(<span class="st">"Empty dict"</span>)</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Copying</div>
+      <span class="cc-name">.copy()  /  dict()</span>
+      <div class="cc-desc">Like lists, assignment copies the <em>reference</em> — both variables point to the same dict. Use <code>.copy()</code> or <code>dict(d)</code> for a shallow copy. For deeply nested dicts, use <code>copy.deepcopy()</code>.</div>
+      <div class="cc-example"><span class="kw">import</span> copy
+
+<span class="cm"># Shallow copy — safe for flat dicts</span>
+recipe_copy = recipe.copy()
+recipe_copy = <span class="fn">dict</span>(recipe)
+
+<span class="cm"># Deep copy — for nested dicts</span>
+deep = copy.deepcopy(recipe)
+
+<span class="cm"># ⚠ This is NOT a copy:</span>
+<span class="cm"># alias = recipe  ← same object!</span></div>
+    </div>
+
+  </div><!-- /concept-grid -->
+
+
+  <!-- ═══════════════════════════════════════════
+       ITERATION
+  ═══════════════════════════════════════════ -->
+  <h2>🔄 Iterating Dictionaries</h2>
+  <p class="section-intro">Dicts offer three views for iteration. You'll use <code>.items()</code> most often — it's the workhorse of dict iteration in real code.</p>
+
+  <div class="iter-grid">
+    <div class="iter-card">
+      <div class="ic-header">.keys()</div>
+      <div class="ic-sub">Iterate over keys (also the default)</div>
+      <div class="ic-body"><span class="kw">for</span> key <span class="kw">in</span> recipe:
+    <span class="fn">print</span>(key)
+<span class="cm"># same as:</span>
+<span class="kw">for</span> key <span class="kw">in</span> recipe.keys():
+    <span class="fn">print</span>(key)
+<span class="cm"># → "name"</span>
+<span class="cm"># → "servings"</span>
+<span class="cm"># → "vegetarian"</span></div>
+    </div>
+    <div class="iter-card">
+      <div class="ic-header">.values()</div>
+      <div class="ic-sub">Iterate over values only</div>
+      <div class="ic-body"><span class="kw">for</span> value <span class="kw">in</span> recipe.values():
+    <span class="fn">print</span>(value)
+<span class="cm"># → "Pasta"</span>
+<span class="cm"># → 4</span>
+<span class="cm"># → True</span>
+
+
+
+</div>
+    </div>
+    <div class="iter-card">
+      <div class="ic-header">.items()</div>
+      <div class="ic-sub">Iterate over key-value pairs ← use this most</div>
+      <div class="ic-body"><span class="kw">for</span> key, val <span class="kw">in</span> recipe.items():
+    <span class="fn">print</span>(<span class="st">f"</span>{key}<span class="st">: </span>{val}<span class="st">"</span>)
+<span class="cm"># → name: Pasta</span>
+<span class="cm"># → servings: 4</span>
+<span class="cm"># → vegetarian: True</span></div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       MERGING
+  ═══════════════════════════════════════════ -->
+  <h2>🔗 Merging Dictionaries</h2>
+  <p class="section-intro">Python offers three ways to merge dicts. The <code>|</code> operator (Python 3.9+) is the cleanest. The <code>**</code> unpacking approach works in older versions and is common in FastAPI when building response objects.</p>
+
+  <div class="merge-grid">
+    <div class="merge-card">
+      <div class="mc-label">| operator — Python 3.9+</div>
+      <div class="mc-code">base = {<span class="st">"name"</span>: <span class="st">"Pasta"</span>}
+extra = {<span class="st">"servings"</span>: <span class="nu">4</span>}
+
+merged = base | extra
+<span class="cm"># → {"name": "Pasta",</span>
+<span class="cm">#    "servings": 4}</span>
+
+<span class="cm"># Update in place</span>
+base |= extra</div>
+      <div class="mc-note">Cleanest syntax. Right dict wins on conflicts.</div>
+    </div>
+    <div class="merge-card">
+      <div class="mc-label">** unpacking — all versions</div>
+      <div class="mc-code">base = {<span class="st">"name"</span>: <span class="st">"Pasta"</span>}
+extra = {<span class="st">"servings"</span>: <span class="nu">4</span>}
+
+merged = {<span class="op">**</span>base, <span class="op">**</span>extra}
+<span class="cm"># → {"name": "Pasta",</span>
+<span class="cm">#    "servings": 4}</span>
+
+<span class="cm"># Add extra keys inline</span>
+merged = {<span class="op">**</span>base, <span class="st">"prep"</span>: <span class="nu">30</span>}</div>
+      <div class="mc-note">Like JS <code>{...a, ...b}</code>. Works in Python 3.5+.</div>
+    </div>
+    <div class="merge-card">
+      <div class="mc-label">.update() — mutates in place</div>
+      <div class="mc-code">base = {<span class="st">"name"</span>: <span class="st">"Pasta"</span>}
+extra = {<span class="st">"servings"</span>: <span class="nu">4</span>}
+
+base.update(extra)
+<span class="cm"># base is now modified</span>
+<span class="cm"># → {"name": "Pasta",</span>
+<span class="cm">#    "servings": 4}</span>
+</div>
+      <div class="mc-note">Modifies the original — use when you want that.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       DICT COMPREHENSIONS
+  ═══════════════════════════════════════════ -->
+  <h2>⚡ Dictionary Comprehensions</h2>
+  <p class="section-intro">Just like list comprehensions, but producing a dict. The pattern is <code>{ key_expr: value_expr for item in iterable if condition }</code>. Essential for transforming and filtering dicts in FastAPI handlers.</p>
+
+  <div class="example-block">
+    <div class="ex-title">Dict Comprehension Patterns</div>
+    <div class="ex-desc">Building, transforming, and filtering dicts in a single expression.</div>
+<code class="code-block">inventory = {
+    <span class="st">"milk"</span>:   {<span class="st">"qty"</span>: <span class="nu">2</span>, <span class="st">"days_left"</span>: <span class="nu">2</span>},
+    <span class="st">"eggs"</span>:   {<span class="st">"qty"</span>: <span class="nu">6</span>, <span class="st">"days_left"</span>: <span class="nu">10</span>},
+    <span class="st">"yogurt"</span>: {<span class="st">"qty"</span>: <span class="nu">1</span>, <span class="st">"days_left"</span>: <span class="nu">1</span>},
+    <span class="st">"butter"</span>: {<span class="st">"qty"</span>: <span class="nu">0</span>, <span class="st">"days_left"</span>: <span class="nu">14</span>},
+}
+
+<span class="cm"># 1. Filter — only items expiring within 3 days</span>
+expiring = {
+    name: data
+    <span class="kw">for</span> name, data <span class="kw">in</span> inventory.items()
+    <span class="kw">if</span> data[<span class="st">"days_left"</span>] <span class="op">&lt;=</span> <span class="nu">3</span>
+}
+<span class="cm"># → {"milk": {...}, "yogurt": {...}}</span>
+
+<span class="cm"># 2. Transform — extract just the quantities</span>
+quantities = {name: data[<span class="st">"qty"</span>] <span class="kw">for</span> name, data <span class="kw">in</span> inventory.items()}
+<span class="cm"># → {"milk": 2, "eggs": 6, "yogurt": 1, "butter": 0}</span>
+
+<span class="cm"># 3. Invert a dict — swap keys and values</span>
+day_to_meal = {<span class="st">"Mon"</span>: <span class="st">"Pasta"</span>, <span class="st">"Tue"</span>: <span class="st">"Curry"</span>, <span class="st">"Wed"</span>: <span class="st">"Soup"</span>}
+meal_to_day = {meal: day <span class="kw">for</span> day, meal <span class="kw">in</span> day_to_meal.items()}
+<span class="cm"># → {"Pasta": "Mon", "Curry": "Tue", "Soup": "Wed"}</span>
+
+<span class="cm"># 4. Build a lookup dict from a list</span>
+names = [<span class="st">"milk"</span>, <span class="st">"eggs"</span>, <span class="st">"butter"</span>]
+in_stock = {name: (<span class="st">"yes"</span> <span class="kw">if</span> name <span class="kw">in</span> inventory <span class="kw">else</span> <span class="st">"no"</span>) <span class="kw">for</span> name <span class="kw">in</span> names}
+<span class="cm"># → {"milk": "yes", "eggs": "yes", "butter": "yes"}</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       CODE EXAMPLES
+  ═══════════════════════════════════════════ -->
+  <h2>💻 Examples in Context</h2>
+
+  <div class="example-block">
+    <div class="ex-title">Safe Access Patterns — .get() in Practice</div>
+    <div class="ex-desc">The pattern of using <code>.get()</code> with a default is so common in Python web code that it's worth seeing several real-world variants.</div>
+<code class="code-block">recipe = {
+    <span class="st">"name"</span>: <span class="st">"Risotto"</span>,
+    <span class="st">"servings"</span>: <span class="nu">4</span>,
+    <span class="st">"tags"</span>: [<span class="st">"vegetarian"</span>, <span class="st">"gluten-free"</span>],
+}
+
+<span class="cm"># Safe access with fallback</span>
+desc     = recipe.get(<span class="st">"description"</span>, <span class="st">"No description available"</span>)
+calories = recipe.get(<span class="st">"calories"</span>, <span class="nu">0</span>)
+tags     = recipe.get(<span class="st">"tags"</span>, [])  <span class="cm"># empty list if tags absent</span>
+
+<span class="cm"># Common pattern: guard before deep access</span>
+nutrition = recipe.get(<span class="st">"nutrition"</span>)
+<span class="kw">if</span> nutrition:
+    protein = nutrition.get(<span class="st">"protein_g"</span>, <span class="nu">0</span>)
+
+<span class="cm"># setdefault — ensure a key exists before appending</span>
+meal_plan = {}
+meal_plan.setdefault(<span class="st">"Monday"</span>, []).append(<span class="st">"Risotto"</span>)
+meal_plan.setdefault(<span class="st">"Monday"</span>, []).append(<span class="st">"Salad"</span>)
+<span class="cm"># → {"Monday": ["Risotto", "Salad"]}</span>
+<span class="cm"># setdefault only sets if key absent — won't reset to []</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Iterating with .items() — Expiry Alert System</div>
+    <div class="ex-desc">The most common dict iteration pattern — unpack each key-value pair inside a for loop. This is the Python idiom you'll write hundreds of times.</div>
+<code class="code-block">inventory = {
+    <span class="st">"milk"</span>:    {<span class="st">"qty"</span>: <span class="nu">2</span>,  <span class="st">"unit"</span>: <span class="st">"litres"</span>, <span class="st">"days_left"</span>: <span class="nu">2</span>},
+    <span class="st">"eggs"</span>:    {<span class="st">"qty"</span>: <span class="nu">6</span>,  <span class="st">"unit"</span>: <span class="st">"units"</span>,  <span class="st">"days_left"</span>: <span class="nu">10</span>},
+    <span class="st">"yogurt"</span>:  {<span class="st">"qty"</span>: <span class="nu">1</span>,  <span class="st">"unit"</span>: <span class="st">"pot"</span>,    <span class="st">"days_left"</span>: <span class="nu">1</span>},
+    <span class="st">"chicken"</span>: {<span class="st">"qty"</span>: <span class="nu">500</span>, <span class="st">"unit"</span>: <span class="st">"grams"</span>,  <span class="st">"days_left"</span>: <span class="nu">0</span>},
+}
+
+alerts = []
+<span class="kw">for</span> name, data <span class="kw">in</span> inventory.items():
+    days = data[<span class="st">"days_left"</span>]
+    <span class="kw">if</span> days <span class="op">&lt;=</span> <span class="nu">0</span>:
+        alerts.append(<span class="st">f"🚫 </span>{name}<span class="st"> has EXPIRED — discard immediately"</span>)
+    <span class="kw">elif</span> days <span class="op">&lt;=</span> <span class="nu">3</span>:
+        alerts.append(<span class="st">f"⚠ </span>{name}<span class="st"> expires in </span>{days}<span class="st"> day(s) — use soon!"</span>)
+
+<span class="kw">for</span> alert <span class="kw">in</span> alerts:
+    <span class="fn">print</span>(alert)
+<span class="cm"># 🚫 chicken has EXPIRED — discard immediately</span>
+<span class="cm"># ⚠ yogurt expires in 1 day(s) — use soon!</span>
+<span class="cm"># ⚠ milk expires in 2 day(s) — use soon!</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Nested Dictionaries — Structured Data</div>
+    <div class="ex-desc">Dicts of dicts are the natural way to represent structured records in Python — and mirror JSON perfectly. Access nested values by chaining <code>[]</code> or <code>.get()</code> calls.</div>
+<code class="code-block">meal_plan = {
+    <span class="st">"Monday"</span>: {
+        <span class="st">"breakfast"</span>: <span class="st">"Porridge"</span>,
+        <span class="st">"lunch"</span>:     <span class="st">"Chicken Soup"</span>,
+        <span class="st">"dinner"</span>:    <span class="st">"Pasta Bolognese"</span>,
+    },
+    <span class="st">"Tuesday"</span>: {
+        <span class="st">"breakfast"</span>: <span class="st">"Toast"</span>,
+        <span class="st">"lunch"</span>:     <span class="st">"Caesar Salad"</span>,
+        <span class="st">"dinner"</span>:    <span class="st">"Chicken Tikka"</span>,
+    },
+}
+
+<span class="cm"># Access nested value</span>
+monday_dinner = meal_plan[<span class="st">"Monday"</span>][<span class="st">"dinner"</span>]
+<span class="cm"># → "Pasta Bolognese"</span>
+
+<span class="cm"># Safe nested access with .get()</span>
+wednesday = meal_plan.get(<span class="st">"Wednesday"</span>, {})
+lunch = wednesday.get(<span class="st">"lunch"</span>, <span class="st">"Not planned"</span>)
+<span class="cm"># → "Not planned"  (no KeyError)</span>
+
+<span class="cm"># Iterate nested structure</span>
+<span class="kw">for</span> day, meals <span class="kw">in</span> meal_plan.items():
+    <span class="fn">print</span>(<span class="st">f"\n</span>{day}<span class="st">:"</span>)
+    <span class="kw">for</span> meal_type, dish <span class="kw">in</span> meals.items():
+        <span class="fn">print</span>(<span class="st">f"  </span>{meal_type.capitalize()}<span class="st">: </span>{dish}<span class="st">"</span>)</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Building Dicts Dynamically — Grouping Data</div>
+    <div class="ex-desc">A common real-world pattern: grouping a flat list of items into a dict by some category. The <code>setdefault</code> trick is the cleanest way to do this without importing anything.</div>
+<code class="code-block">ingredients = [
+    {<span class="st">"name"</span>: <span class="st">"milk"</span>,     <span class="st">"category"</span>: <span class="st">"dairy"</span>},
+    {<span class="st">"name"</span>: <span class="st">"yogurt"</span>,   <span class="st">"category"</span>: <span class="st">"dairy"</span>},
+    {<span class="st">"name"</span>: <span class="st">"spinach"</span>,  <span class="st">"category"</span>: <span class="st">"produce"</span>},
+    {<span class="st">"name"</span>: <span class="st">"carrots"</span>,  <span class="st">"category"</span>: <span class="st">"produce"</span>},
+    {<span class="st">"name"</span>: <span class="st">"chicken"</span>,  <span class="st">"category"</span>: <span class="st">"meat"</span>},
+]
+
+<span class="cm"># Group into dict by category</span>
+by_category = {}
+<span class="kw">for</span> item <span class="kw">in</span> ingredients:
+    cat = item[<span class="st">"category"</span>]
+    by_category.setdefault(cat, []).append(item[<span class="st">"name"</span>])
+
+<span class="cm"># → {</span>
+<span class="cm">#     "dairy":   ["milk", "yogurt"],</span>
+<span class="cm">#     "produce": ["spinach", "carrots"],</span>
+<span class="cm">#     "meat":    ["chicken"]</span>
+<span class="cm"># }</span>
+
+<span class="kw">for</span> category, items <span class="kw">in</span> by_category.items():
+    <span class="fn">print</span>(<span class="st">f"</span>{category}<span class="st">: </span>{<span class="st">', '</span>.join(items)}<span class="st">"</span>)</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Dicts as JSON — The FastAPI Connection</div>
+    <div class="ex-desc">In FastAPI, returning a Python dict from a route automatically serialises it to JSON. Understanding dicts <em>is</em> understanding API responses.</div>
+<code class="code-block"><span class="kw">import</span> json
+
+recipe = {
+    <span class="st">"id"</span>: <span class="nu">42</span>,
+    <span class="st">"name"</span>: <span class="st">"Pasta Bolognese"</span>,
+    <span class="st">"servings"</span>: <span class="nu">4</span>,
+    <span class="st">"tags"</span>: [<span class="st">"italian"</span>, <span class="st">"meat"</span>],
+    <span class="st">"nutrition"</span>: {<span class="st">"calories"</span>: <span class="nu">520</span>, <span class="st">"protein_g"</span>: <span class="nu">28</span>},
+}
+
+<span class="cm"># Python dict → JSON string</span>
+json_str = json.dumps(recipe, indent=<span class="nu">2</span>)
+<span class="fn">print</span>(json_str)
+<span class="cm"># {</span>
+<span class="cm">#   "id": 42,</span>
+<span class="cm">#   "name": "Pasta Bolognese",</span>
+<span class="cm">#   ...}</span>
+
+<span class="cm"># JSON string → Python dict</span>
+data = json.loads(json_str)
+<span class="fn">print</span>(data[<span class="st">"name"</span>])  <span class="cm"># "Pasta Bolognese"</span>
+
+<span class="cm"># In FastAPI a route handler looks like this:</span>
+<span class="cm"># @app.get("/recipes/{recipe_id}")</span>
+<span class="cm"># def get_recipe(recipe_id: int):</span>
+<span class="cm">#     return {"id": recipe_id, "name": "Pasta"}  ← dict auto-converts to JSON</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>📋 Quick Reference</h2>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Operation</th><th>Syntax</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Create</td><td><code>{"key": val}</code></td><td class="note">Keys must be hashable (str, int, tuple — not list)</td></tr>
+      <tr><td>From pairs</td><td><code>dict([("a",1),("b",2)])</code></td><td class="note">From a list of 2-tuples</td></tr>
+      <tr><td>Get value (unsafe)</td><td><code>d["key"]</code></td><td class="note">Raises KeyError if missing</td></tr>
+      <tr><td>Get value (safe)</td><td><code>d.get("key", default)</code></td><td class="note">Returns default (None) if missing — prefer this</td></tr>
+      <tr><td>Set / update</td><td><code>d["key"] = val</code></td><td class="note">Creates if absent, overwrites if present</td></tr>
+      <tr><td>Set if absent</td><td><code>d.setdefault("key", val)</code></td><td class="note">Won't overwrite existing value</td></tr>
+      <tr><td>Remove</td><td><code>del d["key"]</code></td><td class="note">Raises KeyError if missing</td></tr>
+      <tr><td>Remove &amp; return</td><td><code>d.pop("key", default)</code></td><td class="note">Safe with default — like list.pop()</td></tr>
+      <tr><td>Remove last</td><td><code>d.popitem()</code></td><td class="note">Returns (key, value) tuple</td></tr>
+      <tr><td>Clear all</td><td><code>d.clear()</code></td><td class="note"></td></tr>
+      <tr><td>Key exists</td><td><code>"key" in d</code></td><td class="note">O(1) hash lookup — checks keys only</td></tr>
+      <tr><td>Length</td><td><code>len(d)</code></td><td class="note">Number of key-value pairs</td></tr>
+      <tr><td>All keys</td><td><code>d.keys()</code></td><td class="note">Returns a view — not a list</td></tr>
+      <tr><td>All values</td><td><code>d.values()</code></td><td class="note">Returns a view — not a list</td></tr>
+      <tr><td>All pairs</td><td><code>d.items()</code></td><td class="note">Returns (key, value) view — use in for loops</td></tr>
+      <tr><td>Shallow copy</td><td><code>d.copy()</code></td><td class="note">Or <code>dict(d)</code> or <code>{**d}</code></td></tr>
+      <tr><td>Merge (new)</td><td><code>d1 | d2</code></td><td class="note">Python 3.9+ — right dict wins conflicts</td></tr>
+      <tr><td>Merge (new)</td><td><code>{**d1, **d2}</code></td><td class="note">Python 3.5+ — right dict wins conflicts</td></tr>
+      <tr><td>Merge (in place)</td><td><code>d1.update(d2)</code></td><td class="note">Mutates d1</td></tr>
+      <tr><td>Comprehension</td><td><code>{k: v for k, v in d.items()}</code></td><td class="note">Transform or filter a dict</td></tr>
+      <tr><td>To JSON</td><td><code>json.dumps(d)</code></td><td class="note">Requires <code>import json</code></td></tr>
+      <tr><td>From JSON</td><td><code>json.loads(s)</code></td><td class="note">Returns a Python dict</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       GOTCHAS
+  ═══════════════════════════════════════════ -->
+  <div class="tip-box">
+    <strong>⚠ Gotchas for Java / JavaScript Programmers:</strong><br><br>
+    <span class="trap">d[key] raises KeyError — use .get()</span> — the biggest cause of crashes in Python dict code. In JavaScript, accessing a missing key just gives <code>undefined</code>. In Python it raises an exception. Always use <code>d.get(key)</code> when the key might not exist. Get into the habit early.<br><br>
+    <span class="trap">in checks keys, not values</span> — <code>"Pasta" in recipe</code> checks if <code>"Pasta"</code> is a <em>key</em>, not a value. If you want to check values, use <code>"Pasta" in recipe.values()</code> — though this is O(n), not O(1).<br><br>
+    <span class="trap">.keys(), .values(), .items() return views, not lists</span> — they are live views of the dict, not snapshots. If you modify the dict while holding a view, the view reflects the change. If you need a true list, wrap them: <code>list(d.keys())</code>. Also, you cannot use index access on views: <code>d.keys()[0]</code> raises a TypeError.<br><br>
+    <span class="trap">No dot access like JavaScript</span> — in JS you can write <code>recipe.name</code>. In Python you must write <code>recipe["name"]</code> or <code>recipe.get("name")</code>. If you want dot access, look at <code>SimpleNamespace</code> or Pydantic models — which you'll encounter in FastAPI.<br><br>
+    <span class="trap">Dict keys are case-sensitive</span> — <code>d["Name"]</code> and <code>d["name"]</code> are different keys. This catches people when parsing JSON from external APIs where key casing is inconsistent.
+  </div>
+
+</div><!-- /py-lesson -->

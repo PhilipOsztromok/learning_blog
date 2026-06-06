@@ -1,0 +1,613 @@
+<!-- ============================================================
+     PYTHON LESSON: Tuples
+     Level: Beginner Python / Experienced Programmer
+     ============================================================ -->
+
+<style>
+  .py-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .py-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .py-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .py-lesson p { margin-bottom: 1rem; }
+  .py-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 16px;
+  }
+  .cm { color: #6a9153; font-style: italic; }
+  .kw { color: #c9a8ff; }
+  .st { color: #7ecfa0; }
+  .nu { color: #f08080; }
+  .fn { color: #7ab8ff; }
+  .cl { color: #ffd580; }
+  .op { color: #a0a4b8; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .java-box {
+    background: #1a1d27;
+    border-left: 3px solid #ffd580;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .java-box strong { color: #ffd580; }
+  .java-box .java-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .fastapi-box {
+    background: #1a1d27;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .fastapi-box strong { color: #7ecfa0; }
+  .fastapi-box .fastapi-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Concept cards ───────────────────────────────── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+
+  .concept-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: #4f8ef7; }
+  .concept-card .cc-type {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 4px;
+  }
+  .concept-card .cc-name {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 1.1em;
+    color: #ffd580;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .concept-card .cc-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 10px;
+  }
+  .concept-card .cc-example {
+    background: #12141e;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #e2e4ec;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  /* ── Example blocks ──────────────────────────────── */
+  .example-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .example-block .ex-title {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #4f8ef7;
+    margin-bottom: 6px;
+  }
+  .example-block .ex-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* ── Comparison table ────────────────────────────── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  .compare-card {
+    background: #1a1d27;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .compare-card .cc-header {
+    padding: 10px 14px;
+    font-family: system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.88em;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .compare-card.tuple-side .cc-header { background: #1e2235; color: #4f8ef7; border-left: 3px solid #4f8ef7; }
+  .compare-card.list-side  .cc-header { background: #1e2a1e; color: #7ecfa0; border-left: 3px solid #7ecfa0; }
+  .compare-card ul { list-style: none; padding: 0; margin: 0; }
+  .compare-card ul li {
+    padding: 7px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    font-size: 0.87em;
+    color: #a0a4b8;
+  }
+  .compare-card ul li:last-child { border-bottom: none; }
+  .compare-card ul li::before { content: "✓ "; color: #4f8ef7; font-weight: bold; }
+  .compare-card.list-side ul li::before { color: #7ecfa0; }
+
+  /* ── Quick reference table ───────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.88em;
+    margin-top: 12px;
+    margin-bottom: 24px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.9em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.8em; color: #7a7f96; font-style: italic; }
+</style>
+
+<div class="py-lesson">
+
+  <h2>📦 Tuples</h2>
+  <p class="section-intro">A tuple is an immutable, ordered sequence — like a list that can never be changed after creation. That constraint turns out to be surprisingly useful: it communicates intent, enables features lists can't have, and is the foundation of Python's elegant multiple-assignment syntax.</p>
+
+  <div class="java-box">
+    <span class="java-label">⚡ Coming from Java / JavaScript</span>
+    <strong>Neither Java nor JavaScript has a built-in tuple type.</strong> In Java you'd reach for a small class, a <code>record</code> (Java 16+), or an array. In JavaScript you'd use an array and just... try not to mutate it. Python's tuple is a first-class citizen — lighter than a class, safer than a list, and with unpacking syntax that makes it genuinely powerful.
+  </div>
+
+  <div class="fastapi-box">
+    <span class="fastapi-label">🚀 FastAPI relevance — MEDIUM</span>
+    <strong>Tuples appear frequently in Python web code as lightweight records.</strong> When FastAPI reads route parameters or query strings, it often works with named tuples internally. <code>NamedTuple</code> is also a clean, lightweight alternative to full Pydantic models for simple structured data.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       CREATING TUPLES
+  ═══════════════════════════════════════════ -->
+  <h2>🏗️ Creating Tuples</h2>
+
+  <div class="concept-grid">
+
+    <div class="concept-card">
+      <div class="cc-type">Standard syntax</div>
+      <span class="cc-name">( item, item, ... )</span>
+      <div class="cc-desc">Parentheses with comma-separated values. The parentheses are actually optional — it's the <em>commas</em> that make a tuple, not the brackets. But use parentheses for clarity.</div>
+      <div class="cc-example"><span class="cm"># With parentheses (recommended)</span>
+expiry = (<span class="nu">2025</span>, <span class="nu">12</span>, <span class="nu">31</span>)
+ingredient = (<span class="st">"milk"</span>, <span class="nu">2</span>, <span class="st">"litres"</span>)
+
+<span class="cm"># Without parentheses — still a tuple!</span>
+expiry = <span class="nu">2025</span>, <span class="nu">12</span>, <span class="nu">31</span>
+<span class="fn">print</span>(<span class="fn">type</span>(expiry))  <span class="cm"># &lt;class 'tuple'&gt;</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Single-element tuple</div>
+      <span class="cc-name">( item, )  ← trailing comma!</span>
+      <div class="cc-desc">This is the single biggest gotcha with tuples. A single value in parentheses is <em>not</em> a tuple — you must add a trailing comma. This catches everyone the first time.</div>
+      <div class="cc-example"><span class="cm"># NOT a tuple — just parentheses</span>
+not_a_tuple = (<span class="st">"milk"</span>)
+<span class="fn">print</span>(<span class="fn">type</span>(not_a_tuple))  <span class="cm"># &lt;class 'str'&gt;</span>
+
+<span class="cm"># IS a tuple — trailing comma</span>
+is_a_tuple = (<span class="st">"milk"</span>,)
+<span class="fn">print</span>(<span class="fn">type</span>(is_a_tuple))   <span class="cm"># &lt;class 'tuple'&gt;</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Empty tuple &amp; conversion</div>
+      <span class="cc-name">()  and  tuple()</span>
+      <div class="cc-desc"><code>tuple()</code> converts any iterable to a tuple — lists, strings, ranges. The empty tuple is simply <code>()</code>.</div>
+      <div class="cc-example">empty = ()
+
+<span class="cm"># Convert from list</span>
+ingredients_list = [<span class="st">"eggs"</span>, <span class="st">"milk"</span>]
+frozen = <span class="fn">tuple</span>(ingredients_list)
+
+<span class="cm"># Convert string to chars</span>
+chars = <span class="fn">tuple</span>(<span class="st">"abc"</span>)
+<span class="cm"># → ('a', 'b', 'c')</span></div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Indexing &amp; slicing</div>
+      <span class="cc-name">Same as lists</span>
+      <div class="cc-desc">Tuples support all the same indexing and slicing as lists — positive, negative, and <code>start:stop:step</code>. They just can't be modified through those operations.</div>
+      <div class="cc-example">date = (<span class="nu">2025</span>, <span class="nu">8</span>, <span class="nu">15</span>)
+
+date[<span class="nu">0</span>]    <span class="cm"># → 2025  (year)</span>
+date[<span class="op">-</span><span class="nu">1</span>]   <span class="cm"># → 15   (day)</span>
+date[<span class="nu">1</span>:]   <span class="cm"># → (8, 15)</span>
+
+<span class="cm"># This raises TypeError:</span>
+<span class="cm"># date[0] = 2026  ← immutable!</span></div>
+    </div>
+
+  </div><!-- /concept-grid -->
+
+
+  <!-- ═══════════════════════════════════════════
+       IMMUTABILITY
+  ═══════════════════════════════════════════ -->
+  <h2>🔒 Immutability — What It Means in Practice</h2>
+
+  <div class="example-block">
+    <div class="ex-title">What You Can and Cannot Do</div>
+    <div class="ex-desc">You cannot change, add, or remove items in a tuple. But if a tuple contains a mutable object (like a list), that inner object can still be changed — the tuple just can't point to a different object.</div>
+<code class="code-block">ingredient = (<span class="st">"pasta"</span>, <span class="nu">500</span>, <span class="st">"grams"</span>)
+
+<span class="cm"># ✗ All of these raise TypeError</span>
+<span class="cm"># ingredient[0] = "rice"</span>
+<span class="cm"># ingredient.append("organic")</span>
+<span class="cm"># del ingredient[0]</span>
+
+<span class="cm"># ✓ Reading is fine</span>
+name = ingredient[<span class="nu">0</span>]          <span class="cm"># "pasta"</span>
+<span class="kw">if</span> <span class="st">"pasta"</span> <span class="kw">in</span> ingredient:    <span class="cm"># membership test</span>
+    <span class="fn">print</span>(<span class="st">"Found it"</span>)
+
+<span class="cm"># ✓ Concatenation creates a NEW tuple</span>
+more = ingredient + (<span class="st">"organic"</span>,)
+<span class="cm"># → ("pasta", 500, "grams", "organic")</span>
+<span class="cm"># ingredient itself is unchanged</span>
+
+<span class="cm"># ⚠ The "mutable inside immutable" edge case</span>
+mixed = ([<span class="st">"eggs"</span>, <span class="st">"milk"</span>], <span class="nu">500</span>)
+mixed[<span class="nu">0</span>].append(<span class="st">"butter"</span>)   <span class="cm"># ✓ modifying the list inside works</span>
+<span class="cm"># mixed[0] is still the same list object — tuple didn't change</span>
+<span class="cm"># mixed[0] = []  ← ✗ this still raises TypeError</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Tuples as Dictionary Keys — a Superpower Lists Don't Have</div>
+    <div class="ex-desc">Because tuples are immutable and <em>hashable</em>, they can be used as dictionary keys. Lists cannot. This makes tuples ideal for composite keys — like a (year, month, day) date.</div>
+<code class="code-block"><span class="cm"># Use a (year, month, day) tuple as a dict key</span>
+meal_plan = {
+    (<span class="nu">2025</span>, <span class="nu">8</span>, <span class="nu">11</span>): <span class="st">"Spaghetti Bolognese"</span>,
+    (<span class="nu">2025</span>, <span class="nu">8</span>, <span class="nu">12</span>): <span class="st">"Chicken Tikka"</span>,
+    (<span class="nu">2025</span>, <span class="nu">8</span>, <span class="nu">13</span>): <span class="st">"Vegetable Curry"</span>,
+}
+
+<span class="cm"># Look up by date tuple</span>
+todays_meal = meal_plan[(<span class="nu">2025</span>, <span class="nu">8</span>, <span class="nu">12</span>)]
+<span class="fn">print</span>(todays_meal)  <span class="cm"># → "Chicken Tikka"</span>
+
+<span class="cm"># This would raise TypeError — lists are not hashable:</span>
+<span class="cm"># bad = {[2025, 8, 11]: "Pasta"}  ← ✗</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       TUPLE UNPACKING
+  ═══════════════════════════════════════════ -->
+  <h2>📬 Tuple Unpacking — Python's Party Trick</h2>
+  <p class="section-intro">Unpacking is arguably the most useful thing about tuples. It lets you assign multiple variables in one clean line and is used constantly in real Python code.</p>
+
+  <div class="example-block">
+    <div class="ex-title">Basic Unpacking</div>
+    <div class="ex-desc">The number of variables on the left must match the number of values in the tuple (unless you use <code>*</code>). The variable names can be anything — Python assigns by position.</div>
+<code class="code-block"><span class="cm"># Unpack into named variables</span>
+expiry = (<span class="nu">2025</span>, <span class="nu">12</span>, <span class="nu">31</span>)
+year, month, day = expiry
+<span class="fn">print</span>(<span class="st">f"Expires: </span>{day}<span class="st">/</span>{month}<span class="st">/</span>{year}<span class="st">"</span>)  <span class="cm"># 31/12/2025</span>
+
+<span class="cm"># Unpack an ingredient record</span>
+ingredient = (<span class="st">"milk"</span>, <span class="nu">2</span>, <span class="st">"litres"</span>)
+name, qty, unit = ingredient
+<span class="fn">print</span>(<span class="st">f"</span>{qty}<span class="st"> </span>{unit}<span class="st"> of </span>{name}<span class="st">"</span>)  <span class="cm"># 2 litres of milk</span>
+
+<span class="cm"># Swap two variables — no temp variable (works because of tuple packing)</span>
+a, b = <span class="nu">10</span>, <span class="nu">20</span>
+a, b = b, a
+<span class="fn">print</span>(a, b)  <span class="cm"># 20 10</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Starred Unpacking — Grab the Rest</div>
+    <div class="ex-desc">Use <code>*</code> to capture multiple remaining values into a list. The starred variable can be in any position.</div>
+<code class="code-block">ingredients = (<span class="st">"flour"</span>, <span class="st">"eggs"</span>, <span class="st">"milk"</span>, <span class="st">"butter"</span>, <span class="st">"sugar"</span>)
+
+<span class="cm"># Grab first, last, and everything in between</span>
+first, *middle, last = ingredients
+<span class="fn">print</span>(first)   <span class="cm"># "flour"</span>
+<span class="fn">print</span>(middle)  <span class="cm"># ["eggs", "milk", "butter"]  ← a list, not a tuple</span>
+<span class="fn">print</span>(last)    <span class="cm"># "sugar"</span>
+
+<span class="cm"># Grab just the first, ignore the rest</span>
+head, *_ = ingredients
+<span class="fn">print</span>(head)    <span class="cm"># "flour"</span>
+
+<span class="cm"># Grab just the last two</span>
+*_, penultimate, final = ingredients
+<span class="fn">print</span>(penultimate, final)  <span class="cm"># "butter" "sugar"</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Ignore Values with _ (Underscore)</div>
+    <div class="ex-desc">By convention, <code>_</code> is used for values you don't need. It's a real variable, but it signals to other developers (and yourself) that you intentionally don't care about that value.</div>
+<code class="code-block">date_record = (<span class="nu">2025</span>, <span class="nu">8</span>, <span class="nu">15</span>, <span class="st">"Thursday"</span>)
+
+<span class="cm"># Only want the month and day</span>
+_, month, day, _ = date_record
+<span class="fn">print</span>(<span class="st">f"</span>{day}<span class="st">/</span>{month}<span class="st">"</span>)  <span class="cm"># 15/8</span>
+
+<span class="cm"># Unpack inside a for loop — very common pattern</span>
+inventory = [
+    (<span class="st">"milk"</span>,   <span class="nu">2</span>, <span class="nu">3</span>),   <span class="cm"># (name, qty, days_left)</span>
+    (<span class="st">"eggs"</span>,   <span class="nu">6</span>, <span class="nu">10</span>),
+    (<span class="st">"yogurt"</span>, <span class="nu">1</span>, <span class="nu">1</span>),
+]
+
+<span class="kw">for</span> name, qty, days_left <span class="kw">in</span> inventory:
+    <span class="kw">if</span> days_left <span class="op"><=</span> <span class="nu">3</span>:
+        <span class="fn">print</span>(<span class="st">f"⚠ </span>{name}<span class="st"> expires in </span>{days_left}<span class="st"> day(s)!"</span>)</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       NAMED TUPLES
+  ═══════════════════════════════════════════ -->
+  <h2>🏷️ Named Tuples — Tuples with Labels</h2>
+  <p class="section-intro">A named tuple is a tuple subclass where each position has a name. It gives you the immutability and memory efficiency of a tuple with the readability of a class — without needing to write a full class definition.</p>
+
+  <div class="example-block">
+    <div class="ex-title">typing.NamedTuple — The Modern Approach</div>
+    <div class="ex-desc">There are two ways to create named tuples. The modern way using <code>typing.NamedTuple</code> supports type hints and is more readable — it's what you'll see in FastAPI-adjacent code.</div>
+<code class="code-block"><span class="kw">from</span> typing <span class="kw">import</span> NamedTuple
+
+<span class="cm"># Define a named tuple (looks like a class)</span>
+<span class="kw">class</span> <span class="cl">Ingredient</span>(NamedTuple):
+    name:     <span class="cl">str</span>
+    quantity: <span class="cl">int</span>
+    unit:     <span class="cl">str</span>
+    days_left: <span class="cl">int</span> = <span class="nu">0</span>   <span class="cm"># default value</span>
+
+<span class="cm"># Create instances</span>
+milk   = <span class="cl">Ingredient</span>(<span class="st">"milk"</span>,   <span class="nu">2</span>, <span class="st">"litres"</span>, <span class="nu">3</span>)
+eggs   = <span class="cl">Ingredient</span>(<span class="st">"eggs"</span>,   <span class="nu">6</span>, <span class="st">"units"</span>,  <span class="nu">10</span>)
+butter = <span class="cl">Ingredient</span>(name=<span class="st">"butter"</span>, quantity=<span class="nu">250</span>, unit=<span class="st">"grams"</span>, days_left=<span class="nu">7</span>)
+
+<span class="cm"># Access by NAME — much clearer than index</span>
+<span class="fn">print</span>(milk.name)       <span class="cm"># "milk"</span>
+<span class="fn">print</span>(milk.days_left)  <span class="cm"># 3</span>
+
+<span class="cm"># Still works as a tuple too</span>
+<span class="fn">print</span>(milk[<span class="nu">0</span>])         <span class="cm"># "milk"</span>
+name, qty, unit, days = milk  <span class="cm"># unpacking still works</span>
+
+<span class="cm"># Expiry alert using named access</span>
+pantry = [milk, eggs, butter]
+<span class="kw">for</span> item <span class="kw">in</span> pantry:
+    <span class="kw">if</span> item.days_left <span class="op"><=</span> <span class="nu">3</span>:
+        <span class="fn">print</span>(<span class="st">f"⚠ </span>{item.name}<span class="st">: only </span>{item.days_left}<span class="st"> day(s) left!"</span>)</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">collections.namedtuple — The Classic Approach</div>
+    <div class="ex-desc">The older <code>collections.namedtuple</code> factory function does the same thing with a different syntax. You'll see this in older codebases.</div>
+<code class="code-block"><span class="kw">from</span> collections <span class="kw">import</span> namedtuple
+
+<span class="cm"># First arg: the type name. Second: field names as a list (or space-separated string)</span>
+<span class="cl">Recipe</span> = namedtuple(<span class="st">"Recipe"</span>, [<span class="st">"name"</span>, <span class="st">"servings"</span>, <span class="st">"prep_minutes"</span>])
+
+pasta = <span class="cl">Recipe</span>(<span class="st">"Pasta"</span>, <span class="nu">4</span>, <span class="nu">30</span>)
+<span class="fn">print</span>(pasta.name)      <span class="cm"># "Pasta"</span>
+<span class="fn">print</span>(pasta.servings)  <span class="cm"># 4</span>
+
+<span class="cm"># Convert to dict</span>
+<span class="fn">print</span>(pasta._asdict())
+<span class="cm"># → {"name": "Pasta", "servings": 4, "prep_minutes": 30}</span>
+
+<span class="cm"># "Update" a field — returns a NEW named tuple (immutable!)</span>
+bigger = pasta._replace(servings=<span class="nu">8</span>)
+<span class="fn">print</span>(bigger.servings)  <span class="cm"># 8</span>
+<span class="fn">print</span>(pasta.servings)   <span class="cm"># 4  — original unchanged</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       TUPLE vs LIST
+  ═══════════════════════════════════════════ -->
+  <h2>⚖️ Tuple vs List — When to Use Which</h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tuple-side">
+      <div class="cc-header">📦 Use a Tuple when...</div>
+      <ul>
+        <li>The data is fixed and shouldn't change</li>
+        <li>You're grouping related but different things (name, qty, unit)</li>
+        <li>You need to use it as a dictionary key</li>
+        <li>You want to signal to other developers: "don't modify this"</li>
+        <li>You need slight memory and speed advantages over a list</li>
+        <li>Returning multiple values (covered in the functions lesson)</li>
+      </ul>
+    </div>
+    <div class="compare-card list-side">
+      <div class="cc-header">📋 Use a List when...</div>
+      <ul>
+        <li>The data will grow or shrink over time</li>
+        <li>You're collecting similar things (a list of ingredients)</li>
+        <li>You need to sort, append, remove, or reorder</li>
+        <li>The length isn't known in advance</li>
+        <li>You're building up results in a loop</li>
+        <li>You want list comprehensions (comprehensions return lists)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">A Practical Rule of Thumb</div>
+    <div class="ex-desc">Think of a list as a collection of the same kind of thing. Think of a tuple as a record with fixed fields.</div>
+<code class="code-block"><span class="cm"># List — many things of the same kind</span>
+shopping = [<span class="st">"milk"</span>, <span class="st">"eggs"</span>, <span class="st">"bread"</span>]   <span class="cm"># will be added to / removed from</span>
+
+<span class="cm"># Tuple — one thing with multiple attributes</span>
+milk = (<span class="st">"milk"</span>, <span class="nu">2</span>, <span class="st">"litres"</span>, <span class="nu">3</span>)         <span class="cm"># fixed record: name, qty, unit, days</span>
+
+<span class="cm"># List of tuples — very common pattern</span>
+inventory = [
+    (<span class="st">"milk"</span>,   <span class="nu">2</span>, <span class="st">"litres"</span>, <span class="nu">3</span>),
+    (<span class="st">"eggs"</span>,   <span class="nu">6</span>, <span class="st">"units"</span>,  <span class="nu">10</span>),
+    (<span class="st">"butter"</span>, <span class="nu">250</span>, <span class="st">"grams"</span>, <span class="nu">7</span>),
+]
+
+<span class="cm"># Sort by days_left (index 3) — tuples sort by first element by default</span>
+inventory.sort(key=<span class="kw">lambda</span> item: item[<span class="nu">3</span>])
+<span class="cm"># → milk (3), butter (7), eggs (10)</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>📋 Quick Reference</h2>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Operation</th><th>Syntax</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Create</td><td><code>(1, 2, 3)</code></td><td class="note">Parentheses optional — commas make the tuple</td></tr>
+      <tr><td>Single item</td><td><code>(1,)</code></td><td class="note">Trailing comma is required — <code>(1)</code> is just <code>1</code></td></tr>
+      <tr><td>Empty</td><td><code>()</code></td><td class="note">Or <code>tuple()</code></td></tr>
+      <tr><td>From iterable</td><td><code>tuple([1, 2, 3])</code></td><td class="note">Converts list, string, range, etc.</td></tr>
+      <tr><td>Index</td><td><code>t[0]</code> / <code>t[-1]</code></td><td class="note">Same as lists — read only</td></tr>
+      <tr><td>Slice</td><td><code>t[1:3]</code></td><td class="note">Returns a new tuple</td></tr>
+      <tr><td>Length</td><td><code>len(t)</code></td><td class="note"></td></tr>
+      <tr><td>Membership</td><td><code>x in t</code></td><td class="note">Returns True / False</td></tr>
+      <tr><td>Concatenate</td><td><code>t1 + t2</code></td><td class="note">Creates a new tuple</td></tr>
+      <tr><td>Repeat</td><td><code>t * 3</code></td><td class="note">e.g. <code>(0,) * 7</code> → seven zeros</td></tr>
+      <tr><td>Count</td><td><code>t.count(x)</code></td><td class="note">How many times x appears</td></tr>
+      <tr><td>Find</td><td><code>t.index(x)</code></td><td class="note">Index of first x — raises ValueError if missing</td></tr>
+      <tr><td>Unpack</td><td><code>a, b, c = t</code></td><td class="note">Must match length exactly</td></tr>
+      <tr><td>Starred unpack</td><td><code>first, *rest = t</code></td><td class="note"><code>rest</code> becomes a list</td></tr>
+      <tr><td>Ignore value</td><td><code>_, b, _ = t</code></td><td class="note">Convention for "don't care"</td></tr>
+      <tr><td>As dict key</td><td><code>{(1, 2): "val"}</code></td><td class="note">Works because tuples are hashable</td></tr>
+      <tr><td>Named tuple</td><td><code>class T(NamedTuple): ...</code></td><td class="note">Access by name: <code>t.name</code></td></tr>
+      <tr><td>To list</td><td><code>list(t)</code></td><td class="note">When you need to modify it</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       GOTCHAS
+  ═══════════════════════════════════════════ -->
+  <div class="tip-box">
+    <strong>⚠ Gotchas for Java / JavaScript Programmers:</strong><br><br>
+    <span class="trap">The single-element trap</span> — <code>("milk")</code> is a string, not a tuple. <code>("milk",)</code> is a tuple. The trailing comma is the only difference and it will bite you at least once.<br><br>
+    <span class="trap">Tuples are not "read-only lists"</span> — they are a different type with a different purpose. A tuple says "this is a record with a fixed structure." A list says "this is a collection of similar things." Choosing the right one communicates intent to anyone reading your code.<br><br>
+    <span class="trap">Immutability is shallow</span> — if a tuple contains a list, that list can still be mutated. The tuple's <em>references</em> are frozen, not the objects those references point to. This is the same as Java's <code>final</code> for object references — <code>final List&lt;String&gt; list</code> prevents reassignment but not <code>list.add()</code>.<br><br>
+    <span class="trap">Starred unpacking gives a list, not a tuple</span> — <code>first, *rest = (1, 2, 3, 4)</code> gives <code>rest = [2, 3, 4]</code> as a <code>list</code>, even though the source was a tuple. If you need a tuple, wrap it: <code>rest = tuple(rest)</code>.
+  </div>
+
+</div><!-- /py-lesson -->

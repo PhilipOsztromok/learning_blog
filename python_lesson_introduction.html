@@ -1,0 +1,1008 @@
+<!-- ============================================================
+     PYTHON LESSON: Introduction
+     Level: Beginner Python / Experienced Programmer
+     Platforms: Windows 11 | Raspberry Pi 5 (Debian Bookworm) | Red Hat Linux
+     ============================================================ -->
+
+<style>
+  .py-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .py-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .py-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .py-lesson p { margin-bottom: 1rem; }
+  .py-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .py-lesson ul { padding-left: 1.4rem; margin-bottom: 1rem; }
+  .py-lesson ul li { margin-bottom: 0.3rem; color: #a0a4b8; font-size: 0.95em; }
+  .py-lesson ul li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 0 0 4px;
+  }
+  .cm { color: #6a9153; font-style: italic; }
+  .kw { color: #c9a8ff; }
+  .st { color: #7ecfa0; }
+  .nu { color: #f08080; }
+  .fn { color: #7ab8ff; }
+  .cl { color: #ffd580; }
+  .op { color: #a0a4b8; }
+
+  /* ── Platform blocks ─────────────────────────────── */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 700px) { .platform-grid { grid-template-columns: 1fr; } }
+
+  .platform-block {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #2a2d3a;
+  }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .pb-body { padding: 12px 13px; }
+  .pb-body .code-block { border-radius: 4px; font-size: 0.82em; margin-bottom: 0; }
+  .pb-note {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-style: italic;
+    margin-top: 6px;
+    padding: 0 2px;
+  }
+
+  .platform-block.win { border-color: #3a5a8a; }
+  .platform-block.win .pb-header { background: #1a2a3a; color: #7ab8ff; }
+  .platform-block.win .pb-note { color: #7ab8ff; opacity: 0.8; }
+
+  .platform-block.pi  { border-color: #6a2a2a; }
+  .platform-block.pi  .pb-header { background: #2a1a1a; color: #e87d7d; }
+  .platform-block.pi  .pb-note { color: #e87d7d; opacity: 0.8; }
+
+  .platform-block.rh  { border-color: #6a3a1a; }
+  .platform-block.rh  .pb-header { background: #2a1a0a; color: #e8a87d; }
+  .platform-block.rh  .pb-note { color: #e8a87d; opacity: 0.8; }
+
+  /* Single-platform block (full width) */
+  .platform-block.full { margin-bottom: 12px; }
+  .platform-block.full .pb-body .code-block { font-size: 0.86em; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .java-box {
+    background: #1a1d27;
+    border-left: 3px solid #ffd580;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .java-box strong { color: #ffd580; }
+  .java-box .java-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .fastapi-box {
+    background: #1a1d27;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .fastapi-box strong { color: #7ecfa0; }
+  .fastapi-box .fastapi-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .warn-box {
+    background: #2a1a0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Concept cards ───────────────────────────────── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+  .concept-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: #4f8ef7; }
+  .concept-card .cc-type {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 4px;
+  }
+  .concept-card .cc-name {
+    font-size: 1.05em;
+    color: #ffd580;
+    margin-bottom: 6px;
+    display: block;
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+  }
+  .concept-card .cc-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+
+  /* ── Package table ───────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.88em;
+    margin-top: 12px;
+    margin-bottom: 24px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.9em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.8em; color: #7a7f96; font-style: italic; }
+
+  /* ── Example block ───────────────────────────────── */
+  .example-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .example-block .ex-title {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #4f8ef7;
+    margin-bottom: 6px;
+  }
+  .example-block .ex-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* ── IDE grid ────────────────────────────────────── */
+  .ide-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .ide-grid { grid-template-columns: 1fr; } }
+  .ide-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .ide-card:hover { border-color: #7c5cbf; }
+  .ide-card .ic-name { font-weight: 700; color: #c9a8ff; font-family: system-ui, sans-serif; font-size: 0.95em; margin-bottom: 4px; }
+  .ide-card .ic-tag {
+    display: inline-block;
+    font-family: system-ui, sans-serif;
+    font-size: 0.68em;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .ic-tag.free { background: #1a2a1a; color: #7ecfa0; }
+  .ic-tag.paid { background: #2a1a1a; color: #e87d7d; }
+  .ic-tag.freemium { background: #2a2a1a; color: #ffd580; }
+  .ide-card .ic-desc { font-size: 0.83em; color: #a0a4b8; }
+  .ide-card .ic-platforms { font-size: 0.75em; color: #7a7f96; margin-top: 6px; font-style: italic; }
+
+  /* ── Project tree ────────────────────────────────── */
+  .project-tree {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .pt-dir  { color: #4f8ef7; }
+  .pt-file { color: #7ecfa0; }
+  .pt-py   { color: #c9a8ff; }
+  .pt-cfg  { color: #ffd580; }
+  .pt-note { color: #7a7f96; font-style: italic; margin-left: 8px; }
+</style>
+
+<div class="py-lesson">
+
+  <h2>🐍 Introduction to Python</h2>
+  <p class="section-intro">This lesson covers everything you need to get Python up and running — across three different environments — and establishes the conventions and tools used throughout all subsequent lessons. Skip what you already know, focus on what's new.</p>
+
+  <div class="java-box">
+    <span class="java-label">⚡ Coming from Java / JavaScript</span>
+    <strong>Three key mindset shifts from your existing experience:</strong> (1) No compilation step — Python files run directly as source. (2) Package management is closer to npm than Maven — a single tool (<code>pip</code>) installs everything, and per-project isolation is handled by <em>virtual environments</em> rather than a project-level <code>node_modules</code>. (3) The command is <code>python</code> or <code>python3</code> depending on platform — there is no JVM or Node runtime to install separately.
+  </div>
+
+  <div class="fastapi-box">
+    <span class="fastapi-label">🚀 FastAPI relevance — FOUNDATION</span>
+    <strong>Everything in this lesson is prerequisite for FastAPI.</strong> Virtual environments ensure your FastAPI project dependencies don't conflict with system packages. The web development packages listed here are the exact stack you'll use: FastAPI, Uvicorn, SQLAlchemy, Pydantic, and Alembic.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       WHAT IS PYTHON?
+  ═══════════════════════════════════════════ -->
+  <h2>🔍 What is Python?</h2>
+  <p>Python is a general-purpose, interpreted, dynamically typed programming language first released in 1991. It consistently ranks as one of the world's most popular languages and is the dominant choice for web backends, data science, automation, AI/ML, and scripting.</p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="cc-type">Interpreted</div>
+      <span class="cc-name">No compilation step</span>
+      <div class="cc-desc">Python source files (<code>.py</code>) run directly. The interpreter reads and executes them line by line. No <code>javac</code>, no build tool — just write and run. This makes iteration very fast.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Dynamically typed</div>
+      <span class="cc-name">Types at runtime, not compile time</span>
+      <div class="cc-desc">Variables don't have declared types. Type errors appear at runtime rather than compile time. Optional type hints (covered in the Variables lesson) add static analysis without changing runtime behaviour.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Batteries included</div>
+      <span class="cc-name">Rich standard library</span>
+      <div class="cc-desc">Python ships with an extensive standard library — file I/O, JSON, HTTP, dates, maths, databases, email, and much more — all without any additional installs. Third-party packages via pip extend this further.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Ecosystem</div>
+      <span class="cc-name">PyPI — 500,000+ packages</span>
+      <div class="cc-desc">The Python Package Index (PyPI) hosts over half a million packages. Web frameworks (FastAPI, Django, Flask), data tools (pandas, numpy), and AI libraries (TensorFlow, PyTorch) are all a single <code>pip install</code> away.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       PYTHON VERSIONS
+  ═══════════════════════════════════════════ -->
+  <h2>🔢 Python Versions</h2>
+  <p>Always use <strong>Python 3</strong>. Python 2 reached end-of-life in January 2020 and should not be used for new projects. Aim for Python 3.11 or 3.12 for best performance and feature support.</p>
+
+  <h3>Check Your Python Version</h3>
+  <div class="platform-grid">
+    <div class="platform-block win">
+      <div class="pb-header">🪟 Windows 11</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># In PowerShell or Command Prompt</span>
+python --version
+python -V
+
+<span class="cm"># If both Python 2 & 3 installed</span>
+py -3 --version</code>
+        <div class="pb-note">On Windows the command is usually <code>python</code>, not <code>python3</code>.</div>
+      </div>
+    </div>
+    <div class="platform-block pi">
+      <div class="pb-header">🍓 Raspberry Pi 5 — Debian Bookworm</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># In Terminal</span>
+python3 --version
+python3 -V
+
+<span class="cm"># Check pip version too</span>
+pip3 --version</code>
+        <div class="pb-note">Use <code>python3</code> — plain <code>python</code> may not exist or may be Python 2.</div>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat Linux (RHEL / Fedora / Rocky / Alma)</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># In Terminal</span>
+python3 --version
+python3 -V
+
+<span class="cm"># Check available versions</span>
+alternatives --list | grep python</code>
+        <div class="pb-note">Use <code>python3</code>. On RHEL 8+ the default is Python 3.6–3.11 depending on release.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       INSTALLING PYTHON
+  ═══════════════════════════════════════════ -->
+  <h2>⬇️ Installing Python</h2>
+
+  <div class="platform-block full win">
+    <div class="pb-header">🪟 Windows 11</div>
+    <div class="pb-body">
+      <p style="font-size:0.88em; color:#a0a4b8; margin-bottom:8px;">Python is not installed by default on Windows. You have three options — the official installer is recommended.</p>
+<code class="code-block"><span class="cm">## Option 1: Official installer (recommended)</span>
+<span class="cm"># 1. Go to https://python.org/downloads</span>
+<span class="cm"># 2. Download the latest Python 3.x Windows installer</span>
+<span class="cm"># 3. Run the installer — TICK "Add Python to PATH" before clicking Install</span>
+<span class="cm"># 4. Verify in a new PowerShell window:</span>
+python --version
+
+<span class="cm">## Option 2: winget (Windows Package Manager — terminal install)</span>
+winget install Python.Python.3.12
+
+<span class="cm">## Option 3: Microsoft Store</span>
+<span class="cm"># Search "Python" in the Microsoft Store — convenient but some tools behave differently</span>
+
+<span class="cm">## After installing — verify pip is available</span>
+pip --version</code>
+      <div class="pb-note">⚠ If you forget to tick "Add Python to PATH" during install, re-run the installer and choose "Modify", then enable the PATH option.</div>
+    </div>
+  </div>
+
+  <div class="platform-block full pi">
+    <div class="pb-header">🍓 Raspberry Pi 5 — Debian Bookworm</div>
+    <div class="pb-body">
+      <p style="font-size:0.88em; color:#a0a4b8; margin-bottom:8px;">Python 3 is pre-installed on Raspberry Pi OS (Bookworm). You may need to install pip and venv support separately.</p>
+<code class="code-block"><span class="cm">## Update package lists first (always good practice)</span>
+sudo apt update && sudo apt upgrade -y
+
+<span class="cm">## Install Python 3, pip, and venv support</span>
+sudo apt install -y python3 python3-pip python3-venv python3-full
+
+<span class="cm">## Verify</span>
+python3 --version
+pip3 --version
+
+<span class="cm">## Optional: install a specific newer version via deadsnakes PPA</span>
+<span class="cm">## (Bookworm ships Python 3.11 — this is usually sufficient)</span>
+<span class="cm"># sudo add-apt-repository ppa:deadsnakes/ppa</span>
+<span class="cm"># sudo apt install python3.12</span></code>
+      <div class="pb-note">⚠ Debian Bookworm enforces PEP 668 — you cannot <code>pip install</code> packages globally. Always use a virtual environment (covered below).</div>
+    </div>
+  </div>
+
+  <div class="platform-block full rh">
+    <div class="pb-header">🎩 Red Hat Linux (RHEL 8+ / Fedora / Rocky Linux / AlmaLinux)</div>
+    <div class="pb-body">
+      <p style="font-size:0.88em; color:#a0a4b8; margin-bottom:8px;">Python 3 is available via dnf (RHEL 8+/Fedora) or yum (older systems). RHEL may require enabling the AppStream repository.</p>
+<code class="code-block"><span class="cm">## RHEL 8+ / Rocky Linux / AlmaLinux / Fedora — using dnf</span>
+sudo dnf install -y python3 python3-pip
+
+<span class="cm">## For RHEL 7 / CentOS 7 — using yum</span>
+sudo yum install -y python3 python3-pip
+
+<span class="cm">## Install a specific version (Fedora / EPEL)</span>
+sudo dnf install -y python3.11
+<span class="cm"># or</span>
+sudo dnf install -y python3.12
+
+<span class="cm">## If pip is not available via dnf, install manually</span>
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py --user
+
+<span class="cm">## Verify</span>
+python3 --version
+pip3 --version</code>
+      <div class="pb-note">On RHEL-based systems, <code>python3</code> may point to 3.6 even on recent releases. Install a specific version if you need 3.11+.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       VIRTUAL ENVIRONMENTS
+  ═══════════════════════════════════════════ -->
+  <h2>🏖️ Virtual Environments</h2>
+
+  <h3>What Is a Virtual Environment?</h3>
+  <p>A virtual environment is an isolated, self-contained Python installation for a specific project. It has its own copy of pip and its own set of installed packages — completely separate from the system Python and from every other project.</p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="cc-type">The Problem</div>
+      <span class="cc-name">Dependency conflicts</span>
+      <div class="cc-desc">Project A needs <code>requests==2.28</code>. Project B needs <code>requests==2.31</code>. Without isolation they can't coexist. Virtual environments solve this by giving each project its own package directory.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">The Solution</div>
+      <span class="cc-name">One venv per project</span>
+      <div class="cc-desc">Each project lives in its own folder with an activated virtual environment. Installing packages only affects that environment. Deleting the <code>venv</code> folder removes all its packages cleanly.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Node.js equivalent</div>
+      <span class="cc-name">Like node_modules per project</span>
+      <div class="cc-desc">If you know Node.js, a venv is conceptually similar to <code>node_modules</code> — project-local dependencies. The key difference is you must explicitly <em>activate</em> the environment before use.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Linux enforcement</div>
+      <span class="cc-name">PEP 668 — required on modern Linux</span>
+      <div class="cc-desc">Debian Bookworm (your Pi) and modern Red Hat distributions block global <code>pip install</code> to protect system packages. Virtual environments are not just recommended — they are <em>required</em> on these systems.</div>
+    </div>
+  </div>
+
+  <h3>Creating a Virtual Environment</h3>
+  <div class="platform-grid">
+    <div class="platform-block win">
+      <div class="pb-header">🪟 Windows 11</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Navigate to your project folder</span>
+cd C:\Projects\mealplanner
+
+<span class="cm"># Create the venv (named "venv" by convention)</span>
+python -m venv venv
+
+<span class="cm"># The venv folder is created:</span>
+<span class="cm"># mealplanner/</span>
+<span class="cm">#   venv/</span>
+<span class="cm">#     Scripts/</span>
+<span class="cm">#     Lib/</span>
+<span class="cm">#     ...</span></code>
+      </div>
+    </div>
+    <div class="platform-block pi">
+      <div class="pb-header">🍓 Raspberry Pi 5</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Navigate to your project folder</span>
+cd ~/projects/mealplanner
+
+<span class="cm"># Create the venv</span>
+python3 -m venv venv
+
+<span class="cm"># If python3-venv is not installed:</span>
+sudo apt install python3-venv
+python3 -m venv venv</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat Linux</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Navigate to your project folder</span>
+cd ~/projects/mealplanner
+
+<span class="cm"># Create the venv</span>
+python3 -m venv venv
+
+<span class="cm"># If venv module missing:</span>
+sudo dnf install python3-virtualenv
+python3 -m venv venv</code>
+      </div>
+    </div>
+  </div>
+
+  <h3>Activating &amp; Deactivating</h3>
+
+  <div class="warn-box">
+    <strong>⚠ Always activate before working.</strong> A virtual environment does nothing until it is activated. Once active, <code>python</code> and <code>pip</code> point to the venv's versions — not the system ones. Your terminal prompt changes to show <code>(venv)</code> when it is active.
+  </div>
+
+  <div class="platform-grid">
+    <div class="platform-block win">
+      <div class="pb-header">🪟 Windows 11</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># PowerShell</span>
+.\venv\Scripts\Activate.ps1
+
+<span class="cm"># Command Prompt (cmd.exe)</span>
+venv\Scripts\activate.bat
+
+<span class="cm"># Prompt changes to:</span>
+<span class="cm"># (venv) PS C:\Projects\mealplanner></span>
+
+<span class="cm"># Deactivate</span>
+deactivate</code>
+        <div class="pb-note">PowerShell may block scripts — run <code>Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</code> once to allow it.</div>
+      </div>
+    </div>
+    <div class="platform-block pi">
+      <div class="pb-header">🍓 Raspberry Pi 5</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Activate</span>
+source venv/bin/activate
+
+<span class="cm"># Prompt changes to:</span>
+<span class="cm"># (venv) pi@raspberrypi:~/projects/mealplanner$</span>
+
+<span class="cm"># Now use python (not python3)</span>
+python --version
+
+<span class="cm"># Deactivate</span>
+deactivate</code>
+        <div class="pb-note">Once active, use <code>python</code> and <code>pip</code> — the venv rewires these commands automatically.</div>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat Linux</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Activate</span>
+source venv/bin/activate
+
+<span class="cm"># Prompt changes to:</span>
+<span class="cm"># (venv) [user@host mealplanner]$</span>
+
+<span class="cm"># Now use python and pip</span>
+python --version
+
+<span class="cm"># Deactivate</span>
+deactivate</code>
+        <div class="pb-note">Identical to Debian/Pi — Linux activation is consistent across distros.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       PIP — PACKAGE MANAGER
+  ═══════════════════════════════════════════ -->
+  <h2>📦 pip — Python's Package Manager</h2>
+  <p class="section-intro">pip is Python's equivalent of npm (Node.js) or Maven (Java). It downloads and installs packages from PyPI — the Python Package Index at <strong>pypi.org</strong>. Always activate your virtual environment before running pip.</p>
+
+  <div class="example-block">
+    <div class="ex-title">Essential pip Commands</div>
+    <div class="ex-desc">These commands are the same on all three platforms once your virtual environment is activated.</div>
+<code class="code-block"><span class="cm"># Install a package</span>
+pip install fastapi
+
+<span class="cm"># Install a specific version</span>
+pip install fastapi==0.111.0
+
+<span class="cm"># Install minimum version</span>
+pip install fastapi>=0.100.0
+
+<span class="cm"># Install multiple packages at once</span>
+pip install fastapi uvicorn sqlalchemy
+
+<span class="cm"># Upgrade a package to latest</span>
+pip install --upgrade fastapi
+
+<span class="cm"># Uninstall a package</span>
+pip uninstall fastapi
+
+<span class="cm"># List all installed packages in this venv</span>
+pip list
+
+<span class="cm"># Show details about a specific package</span>
+pip show fastapi
+
+<span class="cm"># Export installed packages to a requirements file</span>
+pip freeze > requirements.txt
+
+<span class="cm"># Install all packages from a requirements file</span>
+<span class="cm"># (used when setting up a project someone else created)</span>
+pip install -r requirements.txt</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">requirements.txt — Sharing Your Dependencies</div>
+    <div class="ex-desc">The <code>requirements.txt</code> file is the Python equivalent of <code>package.json</code> — it records every package your project needs so that anyone else (or you on another machine) can recreate the same environment exactly. Always commit this file to version control.</div>
+<code class="code-block"><span class="cm"># Generate it (run with venv active)</span>
+pip freeze > requirements.txt
+
+<span class="cm"># Example requirements.txt contents:</span>
+<span class="cm"># fastapi==0.111.0</span>
+<span class="cm"># uvicorn[standard]==0.30.1</span>
+<span class="cm"># sqlalchemy==2.0.30</span>
+<span class="cm"># pydantic==2.7.1</span>
+<span class="cm"># alembic==1.13.1</span>
+
+<span class="cm"># Recreate environment on another machine:</span>
+python -m venv venv
+<span class="cm"># (activate venv, then:)</span>
+pip install -r requirements.txt</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       WEB DEV PACKAGES
+  ═══════════════════════════════════════════ -->
+  <h2>🌐 Installing Web Development Packages</h2>
+  <p class="section-intro">The packages below form the core stack for Python web development — particularly for building a FastAPI application like the meal planner. Install them inside your activated virtual environment.</p>
+
+  <div class="example-block">
+    <div class="ex-title">Install the Full Web Development Stack</div>
+    <div class="ex-desc">Run this with your virtual environment active. This is the same command on all three platforms.</div>
+<code class="code-block"><span class="cm"># Core FastAPI stack</span>
+pip install fastapi uvicorn[standard]
+
+<span class="cm"># Database ORM and migrations</span>
+pip install sqlalchemy alembic
+
+<span class="cm"># HTTP client (for calling external APIs)</span>
+pip install httpx requests
+
+<span class="cm"># Templating engine (for server-rendered HTML)</span>
+pip install jinja2
+
+<span class="cm"># File upload support (required by FastAPI for multipart forms)</span>
+pip install python-multipart
+
+<span class="cm"># Environment variable management</span>
+pip install python-dotenv
+
+<span class="cm"># Or install them all in one line:</span>
+pip install fastapi "uvicorn[standard]" sqlalchemy alembic httpx requests jinja2 python-multipart python-dotenv</code>
+  </div>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Package</th><th>Purpose</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>fastapi</code></td><td>Web framework — routes, validation, API docs</td><td class="note">Brings Pydantic and Starlette as dependencies</td></tr>
+      <tr><td><code>uvicorn[standard]</code></td><td>ASGI server — runs your FastAPI app</td><td class="note">The equivalent of Node's built-in HTTP server</td></tr>
+      <tr><td><code>pydantic</code></td><td>Data validation using type hints</td><td class="note">Installed automatically with FastAPI</td></tr>
+      <tr><td><code>sqlalchemy</code></td><td>Database ORM — work with databases in Python</td><td class="note">Like Hibernate for Java</td></tr>
+      <tr><td><code>alembic</code></td><td>Database migration tool</td><td class="note">Like Flyway/Liquibase for Java</td></tr>
+      <tr><td><code>httpx</code></td><td>Async-capable HTTP client</td><td class="note">Modern alternative to requests — async support</td></tr>
+      <tr><td><code>requests</code></td><td>Simple synchronous HTTP client</td><td class="note">Like Java's HttpClient or JS's fetch</td></tr>
+      <tr><td><code>jinja2</code></td><td>HTML templating engine</td><td class="note">Like Thymeleaf (Java) or Handlebars (JS)</td></tr>
+      <tr><td><code>python-multipart</code></td><td>Form and file upload parsing</td><td class="note">Required when accepting file uploads in FastAPI</td></tr>
+      <tr><td><code>python-dotenv</code></td><td>Load <code>.env</code> files as environment variables</td><td class="note">Keep secrets out of source code</td></tr>
+      <tr><td><code>psycopg2-binary</code></td><td>PostgreSQL database driver</td><td class="note">Install if using PostgreSQL</td></tr>
+      <tr><td><code>aiosqlite</code></td><td>Async SQLite driver</td><td class="note">Good for local development without a server</td></tr>
+      <tr><td><code>pytest</code></td><td>Testing framework</td><td class="note">The standard Python testing tool</td></tr>
+    </tbody>
+  </table>
+
+  <div class="platform-grid">
+    <div class="platform-block win">
+      <div class="pb-header">🪟 Windows 11 — PostgreSQL driver note</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># psycopg2-binary usually works on Windows</span>
+pip install psycopg2-binary
+
+<span class="cm"># If it fails, try the binary wheel:</span>
+pip install psycopg2-binary --only-binary :all:</code>
+      </div>
+    </div>
+    <div class="platform-block pi">
+      <div class="pb-header">🍓 Raspberry Pi 5 — build tools</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Some packages need build tools</span>
+sudo apt install -y python3-dev \
+    libpq-dev gcc build-essential
+
+<span class="cm"># Then install normally in venv</span>
+pip install psycopg2-binary</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat — build dependencies</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Install build tools and PostgreSQL headers</span>
+sudo dnf install -y python3-devel \
+    postgresql-devel gcc
+
+<span class="cm"># Then install in venv</span>
+pip install psycopg2-binary</code>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       THE REPL
+  ═══════════════════════════════════════════ -->
+  <h2>⌨️ The Python REPL — Interactive Mode</h2>
+  <p class="section-intro">The REPL (Read-Eval-Print Loop) is an interactive Python shell. Type a Python expression, press Enter, see the result immediately. It's invaluable for testing ideas, exploring APIs, and debugging — there's no equivalent quick-feedback loop in Java.</p>
+
+  <div class="platform-grid">
+    <div class="platform-block win">
+      <div class="pb-header">🪟 Windows 11</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Launch REPL</span>
+python
+
+<span class="cm"># With specific version</span>
+py -3.12
+
+<span class="cm"># Exit the REPL</span>
+exit()
+<span class="cm"># or Ctrl+Z then Enter</span></code>
+      </div>
+    </div>
+    <div class="platform-block pi">
+      <div class="pb-header">🍓 Raspberry Pi 5</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Launch REPL</span>
+python3
+<span class="cm"># or (with venv active)</span>
+python
+
+<span class="cm"># Exit the REPL</span>
+exit()
+<span class="cm"># or Ctrl+D</span></code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat Linux</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Launch REPL</span>
+python3
+<span class="cm"># or (with venv active)</span>
+python
+
+<span class="cm"># Exit the REPL</span>
+exit()
+<span class="cm"># or Ctrl+D</span></code>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">What the REPL Looks Like</div>
+    <div class="ex-desc">The <code>&gt;&gt;&gt;</code> prompt means Python is waiting for input. Results print immediately — no print statement needed for single expressions.</div>
+<code class="code-block">Python 3.12.3 (main, Apr  9 2025, 08:09:14)
+Type "help", "copyright", "credits" or "license" for more information.
+>>> 2 + 2
+4
+>>> name = "Philip"
+>>> f"Hello, {name}!"
+'Hello, Philip!'
+>>> ingredients = ["milk", "eggs", "flour"]
+>>> len(ingredients)
+3
+>>> [i.upper() for i in ingredients]
+['MILK', 'EGGS', 'FLOUR']
+>>> exit()</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       RUNNING SCRIPTS
+  ═══════════════════════════════════════════ -->
+  <h2>▶️ Running Python Scripts</h2>
+  <p class="section-intro">Python scripts are plain text files with a <code>.py</code> extension. Run them from the terminal — always with your virtual environment active if the script uses installed packages.</p>
+
+  <div class="platform-grid">
+    <div class="platform-block win">
+      <div class="pb-header">🪟 Windows 11</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Run a script</span>
+python script.py
+python main.py
+
+<span class="cm"># With Python Launcher</span>
+py -3 script.py
+py -3.12 script.py
+
+<span class="cm"># Run a module as a script</span>
+python -m uvicorn main:app --reload</code>
+      </div>
+    </div>
+    <div class="platform-block pi">
+      <div class="pb-header">🍓 Raspberry Pi 5</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Run a script</span>
+python3 script.py
+<span class="cm"># or (with venv active)</span>
+python script.py
+
+<span class="cm"># Run a FastAPI app</span>
+python -m uvicorn main:app \
+    --reload --host 0.0.0.0</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat Linux</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Run a script</span>
+python3 script.py
+<span class="cm"># or (with venv active)</span>
+python script.py
+
+<span class="cm"># Run a FastAPI app</span>
+python -m uvicorn main:app \
+    --reload --host 0.0.0.0</code>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       IDE RECOMMENDATIONS
+  ═══════════════════════════════════════════ -->
+  <h2>🖥️ IDE &amp; Editor Recommendations</h2>
+
+  <div class="ide-grid">
+    <div class="ide-card">
+      <div class="ic-name">VS Code</div>
+      <span class="ic-tag free">Free</span>
+      <div class="ic-desc">The most popular choice for Python. Install the official Python extension by Microsoft for IntelliSense, debugging, venv auto-detection, and Jupyter notebook support. Works excellently on all three platforms.</div>
+      <div class="ic-platforms">🪟 Windows · 🍓 Raspberry Pi · 🎩 Red Hat</div>
+    </div>
+    <div class="ide-card">
+      <div class="ic-name">PyCharm</div>
+      <span class="ic-tag freemium">Free (Community)</span>
+      <div class="ic-desc">JetBrains' dedicated Python IDE — if you've used IntelliJ IDEA for Java this will feel instantly familiar. The Community edition is free and excellent for FastAPI development. Professional adds database tools.</div>
+      <div class="ic-platforms">🪟 Windows · 🎩 Red Hat</div>
+    </div>
+    <div class="ide-card">
+      <div class="ic-name">Thonny</div>
+      <span class="ic-tag free">Free</span>
+      <div class="ic-desc">Lightweight IDE designed for beginners — ships pre-installed on Raspberry Pi OS. Simple debugger, built-in pip manager, and a clean interface. Good for getting started quickly on the Pi without heavy setup.</div>
+      <div class="ic-platforms">🍓 Raspberry Pi (pre-installed)</div>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">VS Code — Python Extension Setup</div>
+    <div class="ex-desc">After installing VS Code, install the Python extension and point it to your virtual environment.</div>
+<code class="code-block"><span class="cm"># Install VS Code Python extension via command line</span>
+code --install-extension ms-python.python
+code --install-extension ms-python.pylance     <span class="cm"># type checking</span>
+code --install-extension ms-python.debugpy     <span class="cm"># debugging</span>
+
+<span class="cm"># Open your project folder</span>
+code .
+
+<span class="cm"># Select interpreter: Ctrl+Shift+P → "Python: Select Interpreter"</span>
+<span class="cm"># → Choose the venv interpreter (./venv/bin/python or ./venv/Scripts/python.exe)</span>
+<span class="cm"># VS Code will auto-activate your venv in its integrated terminal</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       PROJECT STRUCTURE
+  ═══════════════════════════════════════════ -->
+  <h2>📁 Python Project Structure</h2>
+  <p class="section-intro">Python doesn't enforce a project layout, but conventions exist. Below is a recommended structure for a FastAPI project — including the meal planner you're planning to build.</p>
+
+  <div class="project-tree">
+<span class="pt-dir">mealplanner/</span>                     <span class="pt-note">← project root</span>
+│
+├── <span class="pt-dir">venv/</span>                          <span class="pt-note">← virtual environment — never commit to git!</span>
+│
+├── <span class="pt-dir">app/</span>                           <span class="pt-note">← your application package</span>
+│   ├── <span class="pt-py">__init__.py</span>               <span class="pt-note">← makes app/ a Python package (can be empty)</span>
+│   ├── <span class="pt-py">main.py</span>                   <span class="pt-note">← FastAPI app entry point</span>
+│   ├── <span class="pt-dir">routers/</span>                  <span class="pt-note">← route handlers (one file per feature)</span>
+│   │   ├── <span class="pt-py">recipes.py</span>
+│   │   ├── <span class="pt-py">inventory.py</span>
+│   │   └── <span class="pt-py">meal_plan.py</span>
+│   ├── <span class="pt-dir">models/</span>                   <span class="pt-note">← database models (SQLAlchemy)</span>
+│   │   └── <span class="pt-py">ingredient.py</span>
+│   ├── <span class="pt-dir">schemas/</span>                  <span class="pt-note">← Pydantic schemas (request/response shapes)</span>
+│   │   └── <span class="pt-py">ingredient.py</span>
+│   └── <span class="pt-dir">db/</span>                       <span class="pt-note">← database connection setup</span>
+│       └── <span class="pt-py">database.py</span>
+│
+├── <span class="pt-dir">tests/</span>                         <span class="pt-note">← pytest test files</span>
+│   └── <span class="pt-py">test_recipes.py</span>
+│
+├── <span class="pt-cfg">.env</span>                           <span class="pt-note">← secrets & config — NEVER commit to git!</span>
+├── <span class="pt-cfg">.gitignore</span>                     <span class="pt-note">← include venv/ and .env here</span>
+├── <span class="pt-file">requirements.txt</span>               <span class="pt-note">← project dependencies — always commit this</span>
+└── <span class="pt-file">README.md</span>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">The .gitignore File — What Not to Commit</div>
+    <div class="ex-desc">Your <code>venv/</code> folder and <code>.env</code> file must never go into version control. Add a <code>.gitignore</code> to your project root from the start.</div>
+<code class="code-block"><span class="cm"># .gitignore for a Python project</span>
+venv/
+.env
+*.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+dist/
+build/
+*.egg-info/</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       GOTCHAS
+  ═══════════════════════════════════════════ -->
+  <div class="tip-box">
+    <strong>⚠ Common Setup Mistakes:</strong><br><br>
+    <span class="trap">Forgetting to activate the virtual environment</span> — the single most common issue. If <code>pip install fastapi</code> seems to have no effect, or <code>import fastapi</code> fails, you almost certainly forgot to activate the venv. Check your prompt — it should show <code>(venv)</code>. Fix: <code>source venv/bin/activate</code> (Linux/Mac) or <code>.\venv\Scripts\Activate.ps1</code> (Windows).<br><br>
+    <span class="trap">python vs python3</span> — on Linux and the Pi, always use <code>python3</code> when outside a virtual environment. Inside an activated venv, both <code>python</code> and <code>python3</code> work. On Windows, <code>python</code> is the standard command. This trips up everyone who switches between platforms.<br><br>
+    <span class="trap">Installing packages globally on Linux</span> — on Debian Bookworm (Pi) and modern Red Hat, running <code>sudo pip install anything</code> will either fail with a PEP 668 error or break system packages. Always use a virtual environment. If you see "externally managed environment" in an error message, this is the cause.<br><br>
+    <span class="trap">Committing venv/ or .env to git</span> — the <code>venv/</code> folder can be hundreds of megabytes and is machine-specific. The <code>.env</code> file contains secrets. Neither should ever be in version control. Use <code>requirements.txt</code> to share dependencies instead.
+  </div>
+
+</div><!-- /py-lesson -->

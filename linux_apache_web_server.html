@@ -1,0 +1,1466 @@
+<!-- ============================================================
+     LINUX WEB SERVICES: Serve Web Content with Apache
+     Subject: Linux | Subtopic: Linux Web Services
+     Platforms: Debian/Bookworm (Pi) | Red Hat (RHEL/Rocky/Fedora)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+
+  /* ── Platform blocks ─────────────────────────────── */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 650px) { .platform-grid { grid-template-columns: 1fr; } }
+
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 4px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; }
+
+  .platform-block.deb { border-color: #2a4a6a; }
+  .platform-block.deb .pb-header { background: #1a2a3a; color: #7ab8ff; }
+  .platform-block.deb .pb-note   { color: #7ab8ff; opacity: 0.8; }
+
+  .platform-block.rh  { border-color: #5a2a1a; }
+  .platform-block.rh  .pb-header { background: #2a1a0a; color: #e8a87d; }
+  .platform-block.rh  .pb-note   { color: #e8a87d; opacity: 0.8; }
+
+  .platform-block.both { border-color: #2a3a2a; margin-bottom: 12px; }
+  .platform-block.both .pb-header { background: #1a2a1a; color: #7ecfa0; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin: 16px 0;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap  { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Concept cards ───────────────────────────────── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+
+  .concept-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: #4f8ef7; }
+  .concept-card .cc-type {
+    font-family: system-ui, sans-serif;
+    font-size: 0.7em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 3px;
+  }
+  .concept-card .cc-name {
+    font-family: system-ui, sans-serif;
+    font-size: 0.97em;
+    font-weight: 600;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .concept-card .cc-desc { font-size: 0.87em; color: #a0a4b8; }
+
+  /* ── Example / section blocks ────────────────────── */
+  .example-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .example-block .ex-title {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #4f8ef7;
+    margin-bottom: 6px;
+  }
+  .example-block .ex-desc {
+    font-size: 0.87em;
+    color: #a0a4b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* ── Diff table (Debian vs RH) ───────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+
+  /* ── Diagram: request/response ───────────────────── */
+  .http-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 16px 0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.85em;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .hd-box {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .hd-box .hd-icon { font-size: 1.5em; display: block; }
+  .hd-box .hd-label { color: #e2e4ec; font-weight: 600; display: block; font-size: 0.9em; }
+  .hd-box .hd-sub   { color: #7a7f96; font-size: 0.78em; }
+  .hd-arrow { color: #4f8ef7; font-size: 1.4em; padding: 0 4px; display: flex; flex-direction: column; align-items: center; }
+  .hd-arrow .ha-label { font-size: 0.68em; color: #7a7f96; white-space: nowrap; }
+
+  /* ── Troubleshoot steps ──────────────────────────── */
+  .trouble-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .trouble-grid { grid-template-columns: 1fr; } }
+  .trouble-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #f08080;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 14px;
+  }
+  .trouble-card .tc-problem { font-family: system-ui, sans-serif; font-weight: 700; font-size: 0.88em; color: #f08080; margin-bottom: 4px; }
+  .trouble-card .tc-fix { font-size: 0.84em; color: #a0a4b8; }
+  .trouble-card code { font-family: 'Courier New', Consolas, monospace; font-size: 0.88em; color: #7ecfa0; background: #12141e; padding: 1px 4px; border-radius: 3px; }
+
+  /* ── Quiz ────────────────────────────────────────── */
+  .quiz-intro {
+    background: #1e2235;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-family: system-ui, sans-serif;
+  }
+  .quiz-intro strong { color: #4f8ef7; }
+
+  .quiz-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .quiz-card:hover { border-color: #3a3d4a; }
+
+  .quiz-q-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 4px;
+  }
+  .quiz-q-text {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  @media (max-width: 500px) { .quiz-options { grid-template-columns: 1fr; } }
+
+  .quiz-option {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.85em;
+    color: #a0a4b8;
+    cursor: default;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .quiz-option .opt-letter {
+    display: inline-block;
+    font-weight: 700;
+    color: #4f8ef7;
+    margin-right: 6px;
+    min-width: 14px;
+  }
+
+  /* Revealed states */
+  .quiz-card.revealed .quiz-option.correct {
+    background: #1a2a1a;
+    border-color: #7ecfa0;
+    color: #7ecfa0;
+  }
+  .quiz-card.revealed .quiz-option.correct .opt-letter { color: #7ecfa0; }
+  .quiz-card.revealed .quiz-option:not(.correct) {
+    opacity: 0.45;
+  }
+
+  .reveal-btn {
+    background: #1e2235;
+    border: 1px solid #4f8ef7;
+    border-radius: 5px;
+    color: #4f8ef7;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 600;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .reveal-btn:hover:not(:disabled) { background: #4f8ef7; color: #0f1117; }
+  .reveal-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .quiz-score-area {
+    background: #1e2235;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-top: 20px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9em;
+    color: #a0a4b8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .reveal-all-btn {
+    background: #7c5cbf;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    font-family: system-ui, sans-serif;
+    font-size: 0.82em;
+    font-weight: 600;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .reveal-all-btn:hover { background: #9a72e0; }
+</style>
+
+<script>
+function revealAnswer(btn) {
+  var card = btn.closest('.quiz-card');
+  card.classList.add('revealed');
+  btn.textContent = '✓ Revealed';
+  btn.disabled = true;
+}
+function revealAll() {
+  var cards = document.querySelectorAll('.quiz-card');
+  cards.forEach(function(card) {
+    if (!card.classList.contains('revealed')) {
+      card.classList.add('revealed');
+      var btn = card.querySelector('.reveal-btn');
+      if (btn) { btn.textContent = '✓ Revealed'; btn.disabled = true; }
+    }
+  });
+  var allBtn = document.querySelector('.reveal-all-btn');
+  if (allBtn) { allBtn.textContent = 'All Answers Revealed'; allBtn.disabled = true; allBtn.style.opacity = '0.5'; }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>🌐 Serve Web Content with Apache</h2>
+  <p class="section-intro">Apache HTTP Server is the world's most widely deployed web server, powering a significant portion of the internet since 1995. This lesson covers everything from installing and configuring Apache to deploying sites, managing logs, and using virtual hosts — across both Debian-based (Raspberry Pi / Ubuntu) and Red Hat-based (RHEL / Rocky / Fedora) systems.</p>
+
+  <div class="info-box">
+    <strong>Platform note:</strong> Apache is called <strong>apache2</strong> on Debian-based systems and <strong>httpd</strong> on Red Hat-based systems. Commands, file paths, and service names differ between the two — platform-specific blocks are clearly labelled throughout this lesson.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. HOW A WEB SERVER WORKS
+  ═══════════════════════════════════════════ -->
+  <h2>1 — How a Web Server Works</h2>
+
+  <p>A web server is software that listens for incoming network requests and responds with content — HTML pages, images, CSS files, or data from an application. Apache handles this using the <strong>HTTP protocol</strong> (Hypertext Transfer Protocol) on port 80, or HTTPS on port 443.</p>
+
+  <div class="http-diagram">
+    <div class="hd-box">
+      <span class="hd-icon">💻</span>
+      <span class="hd-label">Browser</span>
+      <span class="hd-sub">Client</span>
+    </div>
+    <div class="hd-arrow">
+      <span>→</span>
+      <span class="ha-label">HTTP Request<br>GET /index.html</span>
+    </div>
+    <div class="hd-box">
+      <span class="hd-icon">🔀</span>
+      <span class="hd-label">Network</span>
+      <span class="hd-sub">TCP Port 80/443</span>
+    </div>
+    <div class="hd-arrow">
+      <span>→</span>
+      <span class="ha-label">Routed to server<br>IP address</span>
+    </div>
+    <div class="hd-box">
+      <span class="hd-icon">🖥️</span>
+      <span class="hd-label">Apache</span>
+      <span class="hd-sub">Web Server</span>
+    </div>
+    <div class="hd-arrow">
+      <span>←</span>
+      <span class="ha-label">HTTP Response<br>200 OK + content</span>
+    </div>
+    <div class="hd-box">
+      <span class="hd-icon">📄</span>
+      <span class="hd-label">Content</span>
+      <span class="hd-sub">HTML / Files</span>
+    </div>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="cc-type">The Request</div>
+      <span class="cc-name">HTTP Methods</span>
+      <div class="cc-desc">A client sends an HTTP request with a <strong>method</strong> (GET, POST, PUT, DELETE), a <strong>path</strong> (/index.html), and <strong>headers</strong> (browser info, cookies, content type). Apache reads this and decides how to respond.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">The Response</div>
+      <span class="cc-name">Status Codes</span>
+      <div class="cc-desc">Apache responds with a <strong>status code</strong> (200 OK, 404 Not Found, 301 Redirect, 500 Server Error), response headers, and a body (the HTML page, file, or error message).</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Static Content</div>
+      <span class="cc-name">Files served directly</span>
+      <div class="cc-desc">Apache reads files from the <strong>document root</strong> directory and returns them as-is. HTML, CSS, JavaScript, and images are all static. No processing — just file delivery.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Dynamic Content</div>
+      <span class="cc-name">Applications and proxies</span>
+      <div class="cc-desc">With modules like <strong>mod_proxy</strong> or <strong>mod_wsgi</strong>, Apache can pass requests to a backend application (Python/FastAPI, PHP, Node.js) and return that application's response to the client.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. NETWORK CONNECTIVITY
+  ═══════════════════════════════════════════ -->
+  <h2>2 — Ensure Network Connectivity</h2>
+  <p class="section-intro">Before installing Apache, confirm your server has a working network connection and that any firewall is configured to allow web traffic on ports 80 and 443.</p>
+
+  <h3>Check Your IP Address</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Both Platforms</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Show all network interfaces and IP addresses</span>
+<span class="cmd">ip addr show</span>
+<span class="cm"># or the shorthand:</span>
+<span class="cmd">ip a</span>
+
+<span class="cm"># Look for your ethernet (eth0, ens3) or WiFi (wlan0) interface</span>
+<span class="cm"># Example output:</span>
+<span class="out">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt;</span>
+<span class="out">    inet 192.168.1.50/24 brd 192.168.1.255 scope global eth0</span>
+
+<span class="cm"># Test internet connectivity</span>
+<span class="cmd">ping</span> <span class="fl">-c 4</span> 8.8.8.8</code>
+    </div>
+  </div>
+
+  <h3>Configure the Firewall</h3>
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian / Raspberry Pi — ufw</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Install ufw if not present</span>
+<span class="cmd">sudo apt install</span> ufw
+
+<span class="cm"># Allow HTTP and HTTPS</span>
+<span class="cmd">sudo ufw allow</span> 80/tcp
+<span class="cmd">sudo ufw allow</span> 443/tcp
+<span class="cm"># or by service name:</span>
+<span class="cmd">sudo ufw allow</span> <span class="st">'Apache Full'</span>
+
+<span class="cm"># Enable the firewall</span>
+<span class="cmd">sudo ufw enable</span>
+<span class="cmd">sudo ufw status</span></code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat — firewalld</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Allow HTTP and HTTPS permanently</span>
+<span class="cmd">sudo firewall-cmd</span> <span class="fl">--permanent</span> \
+    <span class="fl">--add-service=http</span>
+<span class="cmd">sudo firewall-cmd</span> <span class="fl">--permanent</span> \
+    <span class="fl">--add-service=https</span>
+
+<span class="cm"># Apply changes</span>
+<span class="cmd">sudo firewall-cmd</span> <span class="fl">--reload</span>
+
+<span class="cm"># Verify</span>
+<span class="cmd">sudo firewall-cmd</span> <span class="fl">--list-all</span></code>
+      </div>
+    </div>
+  </div>
+
+  <h3>Check for Port Conflicts</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Both Platforms</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Check what is listening on port 80 before installing Apache</span>
+<span class="cmd">sudo ss</span> <span class="fl">-tlnp</span> | grep <span class="st">':80'</span>
+<span class="cm"># or</span>
+<span class="cmd">sudo netstat</span> <span class="fl">-tlnp</span> | grep <span class="st">':80'</span>
+
+<span class="cm"># If nothing is returned, port 80 is free — you're good to proceed</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. INSTALL APACHE
+  ═══════════════════════════════════════════ -->
+  <h2>3 — Install Apache</h2>
+
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian / Raspberry Pi</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Update package lists</span>
+<span class="cmd">sudo apt update</span>
+
+<span class="cm"># Install Apache</span>
+<span class="cmd">sudo apt install</span> <span class="fl">-y</span> apache2
+
+<span class="cm"># Verify installation</span>
+<span class="cmd">apache2</span> <span class="fl">-v</span>
+<span class="out">Server version: Apache/2.4.57 (Debian)</span>
+
+<span class="cm"># Apache starts automatically after install</span>
+<span class="cm"># Test by opening in browser: http://&lt;your-ip&gt;</span>
+<span class="cm"># You should see the Apache2 Default Page</span></code>
+        <div class="pb-note">Package name: <strong>apache2</strong> — service name is also apache2</div>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat / Fedora / Rocky / AlmaLinux</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Install Apache (called httpd on Red Hat)</span>
+<span class="cmd">sudo dnf install</span> <span class="fl">-y</span> httpd
+
+<span class="cm"># For older RHEL 7 / CentOS 7 using yum:</span>
+<span class="cm"># sudo yum install -y httpd</span>
+
+<span class="cm"># Verify installation</span>
+<span class="cmd">httpd</span> <span class="fl">-v</span>
+<span class="out">Server version: Apache/2.4.57 (Red Hat)</span>
+
+<span class="cm"># Unlike Debian, httpd does NOT start automatically</span>
+<span class="cm"># Start it manually (see Section 5)</span></code>
+        <div class="pb-note">Package name: <strong>httpd</strong> — service name is also httpd</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Quick Platform Reference</h3>
+  <table class="ref-table">
+    <thead><tr><th>Item</th><th>Debian / Pi</th><th>Red Hat / Rocky</th></tr></thead>
+    <tbody>
+      <tr><td>Package name</td><td><code>apache2</code></td><td><code>httpd</code></td></tr>
+      <tr><td>Service name</td><td><code>apache2</code></td><td><code>httpd</code></td></tr>
+      <tr><td>Config file</td><td><code>/etc/apache2/apache2.conf</code></td><td><code>/etc/httpd/conf/httpd.conf</code></td></tr>
+      <tr><td>Document root</td><td><code>/var/www/html</code></td><td><code>/var/www/html</code></td></tr>
+      <tr><td>Log directory</td><td><code>/var/log/apache2/</code></td><td><code>/var/log/httpd/</code></td></tr>
+      <tr><td>Sites config dir</td><td><code>/etc/apache2/sites-available/</code></td><td><code>/etc/httpd/conf.d/</code></td></tr>
+      <tr><td>Modules dir</td><td><code>/etc/apache2/mods-available/</code></td><td><code>/etc/httpd/modules/</code></td></tr>
+      <tr><td>Apache user</td><td><code>www-data</code></td><td><code>apache</code></td></tr>
+      <tr><td>Enable module</td><td><code>a2enmod module_name</code></td><td>Add <code>LoadModule</code> to config</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. EXPLORE THE CONFIGURATION FILE
+  ═══════════════════════════════════════════ -->
+  <h2>4 — Explore the Configuration File</h2>
+
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian — /etc/apache2/ structure</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Main config file</span>
+<span class="pth">/etc/apache2/apache2.conf</span>
+
+<span class="cm"># Included directories</span>
+<span class="pth">/etc/apache2/conf-available/</span>   <span class="cm"># optional config fragments</span>
+<span class="pth">/etc/apache2/conf-enabled/</span>     <span class="cm"># symlinks to active configs</span>
+<span class="pth">/etc/apache2/mods-available/</span>   <span class="cm"># all available modules</span>
+<span class="pth">/etc/apache2/mods-enabled/</span>     <span class="cm"># symlinks to active modules</span>
+<span class="pth">/etc/apache2/sites-available/</span>  <span class="cm"># virtual host definitions</span>
+<span class="pth">/etc/apache2/sites-enabled/</span>    <span class="cm"># symlinks to active sites</span>
+<span class="pth">/etc/apache2/ports.conf</span>        <span class="cm"># port listening config</span>
+
+<span class="cm"># View the main config</span>
+<span class="cmd">cat</span> /etc/apache2/apache2.conf</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat — /etc/httpd/ structure</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Main config file</span>
+<span class="pth">/etc/httpd/conf/httpd.conf</span>
+
+<span class="cm"># Included directories</span>
+<span class="pth">/etc/httpd/conf.d/</span>    <span class="cm"># drop-in config files (*.conf)</span>
+<span class="pth">/etc/httpd/conf.modules.d/</span>  <span class="cm"># module loading configs</span>
+<span class="pth">/etc/httpd/modules/</span>   <span class="cm"># compiled module files (.so)</span>
+
+<span class="cm"># Red Hat uses a single directory — no</span>
+<span class="cm"># available/enabled split like Debian</span>
+
+<span class="cm"># View the main config</span>
+<span class="cmd">cat</span> /etc/httpd/conf/httpd.conf</code>
+      </div>
+    </div>
+  </div>
+
+  <h3>Key Configuration Directives</h3>
+  <div class="example-block">
+    <div class="ex-title">Core Directives Explained</div>
+<code class="code-block"><span class="cm"># ServerRoot — base directory for Apache's own files</span>
+<span class="kw">ServerRoot</span> <span class="st">"/etc/apache2"</span>
+
+<span class="cm"># Listen — which port(s) Apache accepts connections on</span>
+<span class="kw">Listen</span> <span class="nu">80</span>
+<span class="kw">Listen</span> <span class="nu">443</span>
+
+<span class="cm"># DocumentRoot — the directory from which files are served</span>
+<span class="kw">DocumentRoot</span> <span class="st">"/var/www/html"</span>
+
+<span class="cm"># DirectoryIndex — default file when a directory is requested</span>
+<span class="kw">DirectoryIndex</span> index.html index.php
+
+<span class="cm"># ServerName — the server's hostname (add to avoid a warning)</span>
+<span class="kw">ServerName</span> <span class="st">localhost</span>
+
+<span class="cm"># Directory block — set permissions and options for a path</span>
+<span class="kw">&lt;Directory</span> <span class="st">"/var/www/html"</span><span class="kw">&gt;</span>
+    <span class="kw">Options</span> Indexes FollowSymLinks
+    <span class="kw">AllowOverride</span> All        <span class="cm"># allow .htaccess files</span>
+    <span class="kw">Require</span> all granted     <span class="cm"># allow access to everyone</span>
+<span class="kw">&lt;/Directory&gt;</span>
+
+<span class="cm"># Include — pull in other config files</span>
+<span class="kw">Include</span> <span class="st">conf-enabled/*.conf</span>
+<span class="kw">IncludeOptional</span> <span class="st">sites-enabled/*.conf</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">.htaccess Files — Per-Directory Configuration</div>
+    <div class="ex-desc">When <code>AllowOverride All</code> is set, Apache reads a <code>.htaccess</code> file in each directory, allowing per-site configuration without editing the main config. Commonly used for URL rewriting, authentication, and redirects.</div>
+<code class="code-block"><span class="cm"># Example .htaccess for URL rewriting (requires mod_rewrite)</span>
+<span class="kw">Options</span> -Indexes
+<span class="kw">RewriteEngine</span> On
+<span class="kw">RewriteBase</span> /
+
+<span class="cm"># Redirect all HTTP traffic to HTTPS</span>
+<span class="kw">RewriteCond</span> %{HTTPS} off
+<span class="kw">RewriteRule</span> ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+<span class="cm"># Serve index.html for all routes (SPA / React apps)</span>
+<span class="kw">RewriteCond</span> %{REQUEST_FILENAME} !-f
+<span class="kw">RewriteCond</span> %{REQUEST_FILENAME} !-d
+<span class="kw">RewriteRule</span> . /index.html [L]</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. START / STOP THE SERVICE
+  ═══════════════════════════════════════════ -->
+  <h2>5 — Start Up and Shut Down the Web Service</h2>
+  <p class="section-intro">Apache is managed via <code>systemctl</code> on all modern Linux distributions. The service name differs between platforms.</p>
+
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian / Raspberry Pi — apache2</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Start</span>
+<span class="cmd">sudo systemctl start</span> apache2
+
+<span class="cm"># Stop</span>
+<span class="cmd">sudo systemctl stop</span> apache2
+
+<span class="cm"># Restart (drops all connections)</span>
+<span class="cmd">sudo systemctl restart</span> apache2
+
+<span class="cm"># Reload config (graceful, no downtime)</span>
+<span class="cmd">sudo systemctl reload</span> apache2
+
+<span class="cm"># Check status</span>
+<span class="cmd">sudo systemctl status</span> apache2
+
+<span class="cm"># Enable at boot</span>
+<span class="cmd">sudo systemctl enable</span> apache2
+
+<span class="cm"># Disable at boot</span>
+<span class="cmd">sudo systemctl disable</span> apache2</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat — httpd</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Start</span>
+<span class="cmd">sudo systemctl start</span> httpd
+
+<span class="cm"># Stop</span>
+<span class="cmd">sudo systemctl stop</span> httpd
+
+<span class="cm"># Restart (drops all connections)</span>
+<span class="cmd">sudo systemctl restart</span> httpd
+
+<span class="cm"># Reload config (graceful, no downtime)</span>
+<span class="cmd">sudo systemctl reload</span> httpd
+
+<span class="cm"># Check status</span>
+<span class="cmd">sudo systemctl status</span> httpd
+
+<span class="cm"># Enable at boot</span>
+<span class="cmd">sudo systemctl enable</span> httpd
+
+<span class="cm"># Disable at boot</span>
+<span class="cmd">sudo systemctl disable</span> httpd</code>
+      </div>
+    </div>
+  </div>
+
+  <h3>Check Configuration Before Restarting</h3>
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Test syntax — always do this before restarting!</span>
+<span class="cmd">sudo apache2ctl configtest</span>
+<span class="cm"># or</span>
+<span class="cmd">sudo apache2</span> <span class="fl">-t</span>
+<span class="out">Syntax OK</span></code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Test syntax</span>
+<span class="cmd">sudo apachectl configtest</span>
+<span class="cm"># or</span>
+<span class="cmd">sudo httpd</span> <span class="fl">-t</span>
+<span class="out">Syntax OK</span></code>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>💡 Use reload, not restart, for config changes.</strong> <code>systemctl reload</code> sends a SIGHUP signal that causes Apache to re-read its configuration without closing existing connections. <code>restart</code> kills all connections. For a production server, always prefer <code>reload</code> when only the config has changed.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. DEPLOY A SITE
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Deploy a Site</h2>
+  <p class="section-intro">Deploying a static site to Apache is a case of copying your files to the document root and ensuring the correct ownership and permissions.</p>
+
+  <div class="example-block">
+    <div class="ex-title">Create and Deploy a Simple Site</div>
+<code class="code-block"><span class="cm"># The default document root is /var/www/html on both platforms</span>
+<span class="cm"># Remove the default placeholder page</span>
+<span class="cmd">sudo rm</span> /var/www/html/index.html
+
+<span class="cm"># Create a new homepage</span>
+<span class="cmd">sudo nano</span> /var/www/html/index.html</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Example index.html</div>
+<code class="code-block"><span class="st">&lt;!DOCTYPE html&gt;</span>
+<span class="st">&lt;html lang="en"&gt;</span>
+<span class="st">&lt;head&gt;</span>
+<span class="st">    &lt;meta charset="UTF-8"&gt;</span>
+<span class="st">    &lt;title&gt;My Site&lt;/title&gt;</span>
+<span class="st">&lt;/head&gt;</span>
+<span class="st">&lt;body&gt;</span>
+<span class="st">    &lt;h1&gt;Hello from Apache!&lt;/h1&gt;</span>
+<span class="st">    &lt;p&gt;My web server is working.&lt;/p&gt;</span>
+<span class="st">&lt;/body&gt;</span>
+<span class="st">&lt;/html&gt;</span></code>
+  </div>
+
+  <h3>File Permissions and Ownership</h3>
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian / Pi — Apache user: www-data</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Set correct ownership</span>
+<span class="cmd">sudo chown</span> <span class="fl">-R</span> www-data:www-data /var/www/html
+
+<span class="cm"># Set correct permissions</span>
+<span class="cm"># Directories: 755 (rwxr-xr-x)</span>
+<span class="cmd">sudo find</span> /var/www/html <span class="fl">-type d</span> \
+    <span class="fl">-exec chmod 755</span> {} \;
+
+<span class="cm"># Files: 644 (rw-r--r--)</span>
+<span class="cmd">sudo find</span> /var/www/html <span class="fl">-type f</span> \
+    <span class="fl">-exec chmod 644</span> {} \;</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat — Apache user: apache</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Set correct ownership</span>
+<span class="cmd">sudo chown</span> <span class="fl">-R</span> apache:apache /var/www/html
+
+<span class="cm"># Set permissions (same as Debian)</span>
+<span class="cmd">sudo find</span> /var/www/html <span class="fl">-type d</span> \
+    <span class="fl">-exec chmod 755</span> {} \;
+<span class="cmd">sudo find</span> /var/www/html <span class="fl">-type f</span> \
+    <span class="fl">-exec chmod 644</span> {} \;
+
+<span class="cm"># SELinux: restore correct context</span>
+<span class="cmd">sudo restorecon</span> <span class="fl">-Rv</span> /var/www/html</code>
+        <div class="pb-note">On Red Hat with SELinux enforcing, always run restorecon after copying new files.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. CONFIGURE LOGGING
+  ═══════════════════════════════════════════ -->
+  <h2>7 — Configure Logging</h2>
+  <p class="section-intro">Apache writes two log files by default: the <strong>access log</strong> (every request) and the <strong>error log</strong> (problems and diagnostic messages). These are your primary diagnostic tools.</p>
+
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian — Log Locations</div>
+      <div class="pb-body">
+<code class="code-block"><span class="pth">/var/log/apache2/access.log</span>  <span class="cm"># all requests</span>
+<span class="pth">/var/log/apache2/error.log</span>   <span class="cm"># errors & warnings</span>
+
+<span class="cm"># Watch the access log in real time</span>
+<span class="cmd">sudo tail</span> <span class="fl">-f</span> /var/log/apache2/access.log
+
+<span class="cm"># Watch the error log</span>
+<span class="cmd">sudo tail</span> <span class="fl">-f</span> /var/log/apache2/error.log</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat — Log Locations</div>
+      <div class="pb-body">
+<code class="code-block"><span class="pth">/var/log/httpd/access_log</span>    <span class="cm"># all requests</span>
+<span class="pth">/var/log/httpd/error_log</span>     <span class="cm"># errors & warnings</span>
+
+<span class="cm"># Watch the access log in real time</span>
+<span class="cmd">sudo tail</span> <span class="fl">-f</span> /var/log/httpd/access_log
+
+<span class="cm"># Watch the error log</span>
+<span class="cmd">sudo tail</span> <span class="fl">-f</span> /var/log/httpd/error_log</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Log Format and LogLevel Directives</div>
+<code class="code-block"><span class="cm"># In the Apache config (apache2.conf or httpd.conf)</span>
+
+<span class="cm"># LogLevel controls verbosity (least → most detailed)</span>
+<span class="cm"># emerg, alert, crit, error, warn, notice, info, debug</span>
+<span class="kw">LogLevel</span> warn       <span class="cm"># default — suitable for production</span>
+<span class="kw">LogLevel</span> debug      <span class="cm"># maximum detail — use only for troubleshooting</span>
+
+<span class="cm"># LogFormat defines what each access log entry contains</span>
+<span class="cm"># This is the "Combined Log Format" — the industry standard</span>
+<span class="kw">LogFormat</span> <span class="st">"%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\""</span> combined
+
+<span class="cm"># CustomLog — which log file and which format to use</span>
+<span class="kw">CustomLog</span> <span class="pth">${APACHE_LOG_DIR}/access.log</span> combined
+
+<span class="cm"># ErrorLog — where to write error messages</span>
+<span class="kw">ErrorLog</span> <span class="pth">${APACHE_LOG_DIR}/error.log</span>
+
+<span class="cm"># Example access log entry explained:</span>
+<span class="cm"># 192.168.1.5 - - [15/Aug/2025:10:22:01 +0000] "GET /index.html HTTP/1.1" 200 648</span>
+<span class="cm"># [client IP] [ident] [auth user] [time] [request] [status] [bytes]</span></code>
+  </div>
+
+  <div class="info-box">
+    <strong>Log Rotation:</strong> Apache logs are automatically rotated by <strong>logrotate</strong> on both platforms. The configuration lives in <code>/etc/logrotate.d/apache2</code> (Debian) or <code>/etc/logrotate.d/httpd</code> (Red Hat). By default, logs are rotated weekly, compressed, and kept for 52 weeks. You can adjust this without any manual intervention needed for most deployments.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       8. ADD MODULES
+  ═══════════════════════════════════════════ -->
+  <h2>8 — Add Modules to Extend Apache</h2>
+  <p class="section-intro">Apache's functionality is extended through modules. Essential modules for web development include mod_rewrite (URL rewriting), mod_ssl (HTTPS), and mod_proxy (reverse proxy to backend apps).</p>
+
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian — a2enmod / a2dismod</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Enable a module</span>
+<span class="cmd">sudo a2enmod</span> rewrite
+<span class="cmd">sudo a2enmod</span> ssl
+<span class="cmd">sudo a2enmod</span> proxy
+<span class="cmd">sudo a2enmod</span> proxy_http
+<span class="cmd">sudo a2enmod</span> headers
+
+<span class="cm"># Disable a module</span>
+<span class="cmd">sudo a2dismod</span> rewrite
+
+<span class="cm"># List enabled modules</span>
+<span class="cmd">apache2ctl</span> <span class="fl">-M</span>
+
+<span class="cm"># Reload after enabling/disabling</span>
+<span class="cmd">sudo systemctl reload</span> apache2</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat — LoadModule in config</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Most modules are pre-configured in:</span>
+<span class="pth">/etc/httpd/conf.modules.d/</span>
+
+<span class="cm"># Install additional modules</span>
+<span class="cmd">sudo dnf install</span> mod_ssl
+<span class="cmd">sudo dnf install</span> mod_security
+
+<span class="cm"># LoadModule directive in httpd.conf</span>
+<span class="kw">LoadModule</span> rewrite_module modules/mod_rewrite.so
+
+<span class="cm"># List loaded modules</span>
+<span class="cmd">httpd</span> <span class="fl">-M</span>
+
+<span class="cm"># Reload after changes</span>
+<span class="cmd">sudo systemctl reload</span> httpd</code>
+      </div>
+    </div>
+  </div>
+
+  <h3>Key Modules Reference</h3>
+  <table class="ref-table">
+    <thead><tr><th>Module</th><th>Purpose</th><th>Common Use</th></tr></thead>
+    <tbody>
+      <tr><td><code>mod_rewrite</code></td><td>URL rewriting and redirects</td><td class="note">Clean URLs, HTTPS redirect, SPA routing</td></tr>
+      <tr><td><code>mod_ssl</code></td><td>HTTPS / TLS support</td><td class="note">Required for any HTTPS site</td></tr>
+      <tr><td><code>mod_proxy</code></td><td>Reverse proxy base module</td><td class="note">Required for all proxy modules</td></tr>
+      <tr><td><code>mod_proxy_http</code></td><td>Proxy HTTP requests to backend</td><td class="note">Forward requests to FastAPI/Node.js app</td></tr>
+      <tr><td><code>mod_proxy_wstunnel</code></td><td>Proxy WebSocket connections</td><td class="note">WebSocket support through Apache</td></tr>
+      <tr><td><code>mod_headers</code></td><td>Manipulate HTTP headers</td><td class="note">CORS headers, security headers, caching</td></tr>
+      <tr><td><code>mod_expires</code></td><td>Set cache expiry headers</td><td class="note">Browser caching for static assets</td></tr>
+      <tr><td><code>mod_deflate</code></td><td>Gzip/deflate compression</td><td class="note">Compress responses to save bandwidth</td></tr>
+      <tr><td><code>mod_status</code></td><td>Server status dashboard</td><td class="note">Real-time server statistics at /server-status</td></tr>
+      <tr><td><code>mod_auth_basic</code></td><td>HTTP Basic Authentication</td><td class="note">Password-protect directories</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       9. VIRTUAL HOSTS
+  ═══════════════════════════════════════════ -->
+  <h2>9 — Use Virtual Hosts to Serve Many Sites</h2>
+  <p class="section-intro">Virtual hosting allows a single Apache server to serve multiple websites — distinguishing them by domain name (name-based virtual hosting). Each site gets its own document root, log files, and configuration.</p>
+
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian — sites-available / sites-enabled</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Create a config file for the new site</span>
+<span class="cmd">sudo nano</span> /etc/apache2/sites-available/mysite.conf</code>
+<br>
+<code class="code-block"><span class="cm"># Virtual host config (mysite.conf)</span>
+<span class="kw">&lt;VirtualHost</span> *:<span class="nu">80</span><span class="kw">&gt;</span>
+    <span class="kw">ServerName</span>    www.mysite.com
+    <span class="kw">ServerAlias</span>   mysite.com
+    <span class="kw">DocumentRoot</span>  /var/www/mysite
+
+    <span class="kw">&lt;Directory</span> <span class="st">/var/www/mysite</span><span class="kw">&gt;</span>
+        <span class="kw">AllowOverride</span> All
+        <span class="kw">Require</span> all granted
+    <span class="kw">&lt;/Directory&gt;</span>
+
+    <span class="kw">ErrorLog</span>  <span class="pth">${APACHE_LOG_DIR}/mysite-error.log</span>
+    <span class="kw">CustomLog</span> <span class="pth">${APACHE_LOG_DIR}/mysite-access.log</span> combined
+<span class="kw">&lt;/VirtualHost&gt;</span></code>
+<br>
+<code class="code-block"><span class="cm"># Create the document root</span>
+<span class="cmd">sudo mkdir</span> <span class="fl">-p</span> /var/www/mysite
+<span class="cmd">sudo chown</span> <span class="fl">-R</span> www-data:www-data /var/www/mysite
+
+<span class="cm"># Enable the site (creates symlink in sites-enabled)</span>
+<span class="cmd">sudo a2ensite</span> mysite.conf
+
+<span class="cm"># Disable a site</span>
+<span class="cmd">sudo a2dissite</span> 000-default.conf
+
+<span class="cm"># Test config then reload</span>
+<span class="cmd">sudo apache2ctl configtest</span>
+<span class="cmd">sudo systemctl reload</span> apache2</code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat — conf.d directory</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Drop config files directly into conf.d/</span>
+<span class="cmd">sudo nano</span> /etc/httpd/conf.d/mysite.conf</code>
+<br>
+<code class="code-block"><span class="cm"># Virtual host config (mysite.conf)</span>
+<span class="kw">&lt;VirtualHost</span> *:<span class="nu">80</span><span class="kw">&gt;</span>
+    <span class="kw">ServerName</span>    www.mysite.com
+    <span class="kw">ServerAlias</span>   mysite.com
+    <span class="kw">DocumentRoot</span>  /var/www/mysite
+
+    <span class="kw">&lt;Directory</span> <span class="st">/var/www/mysite</span><span class="kw">&gt;</span>
+        <span class="kw">AllowOverride</span> All
+        <span class="kw">Require</span> all granted
+    <span class="kw">&lt;/Directory&gt;</span>
+
+    <span class="kw">ErrorLog</span>  <span class="pth">/var/log/httpd/mysite-error.log</span>
+    <span class="kw">CustomLog</span> <span class="pth">/var/log/httpd/mysite-access.log</span> combined
+<span class="kw">&lt;/VirtualHost&gt;</span></code>
+<br>
+<code class="code-block"><span class="cm"># Create the document root</span>
+<span class="cmd">sudo mkdir</span> <span class="fl">-p</span> /var/www/mysite
+<span class="cmd">sudo chown</span> <span class="fl">-R</span> apache:apache /var/www/mysite
+
+<span class="cm"># SELinux: set correct context</span>
+<span class="cmd">sudo restorecon</span> <span class="fl">-Rv</span> /var/www/mysite
+
+<span class="cm"># Test config then reload</span>
+<span class="cmd">sudo apachectl configtest</span>
+<span class="cmd">sudo systemctl reload</span> httpd</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Reverse Proxy Virtual Host — Apache in front of FastAPI</div>
+    <div class="ex-desc">A common pattern: Apache receives requests on port 80/443 and forwards them to your Python/FastAPI application running on port 8000. Enable <code>mod_proxy</code> and <code>mod_proxy_http</code> first.</div>
+<code class="code-block"><span class="kw">&lt;VirtualHost</span> *:<span class="nu">80</span><span class="kw">&gt;</span>
+    <span class="kw">ServerName</span> api.mysite.com
+
+    <span class="kw">ProxyPreserveHost</span> On
+    <span class="kw">ProxyPass</span>        / http://127.0.0.1:<span class="nu">8000</span>/
+    <span class="kw">ProxyPassReverse</span> / http://127.0.0.1:<span class="nu">8000</span>/
+
+    <span class="cm"># Pass real client IP to FastAPI</span>
+    <span class="kw">RequestHeader</span> set X-Forwarded-For %{REMOTE_ADDR}s
+
+    <span class="kw">ErrorLog</span>  <span class="pth">/var/log/apache2/api-error.log</span>
+    <span class="kw">CustomLog</span> <span class="pth">/var/log/apache2/api-access.log</span> combined
+<span class="kw">&lt;/VirtualHost&gt;</span>
+
+<span class="cm"># Enable required modules (Debian):</span>
+<span class="cm"># sudo a2enmod proxy proxy_http headers</span>
+<span class="cm"># sudo systemctl reload apache2</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       10. TROUBLESHOOTING
+  ═══════════════════════════════════════════ -->
+  <h2>10 — Common Troubleshooting Topics</h2>
+
+  <div class="trouble-grid">
+    <div class="trouble-card">
+      <div class="tc-problem">🔴 Apache won't start</div>
+      <div class="tc-fix">Check config syntax first: <code>apache2ctl -t</code> (Debian) or <code>httpd -t</code> (RHEL). Then check error log: <code>sudo journalctl -u apache2 -n 50</code>. Most startup failures are config syntax errors or port conflicts.</div>
+    </div>
+    <div class="trouble-card">
+      <div class="tc-problem">🔴 Port 80 already in use</div>
+      <div class="tc-fix">Run <code>sudo ss -tlnp | grep :80</code> to find what's using the port. Common culprits: nginx, another Apache instance, or a Python dev server. Stop the conflicting service before starting Apache.</div>
+    </div>
+    <div class="trouble-card">
+      <div class="tc-problem">🔴 403 Forbidden error</div>
+      <div class="tc-fix">Usually a permissions problem. Check: (1) file permissions (<code>ls -la /var/www/html</code>), (2) directory ownership matches Apache user (<code>www-data</code> or <code>apache</code>), (3) <code>Require all granted</code> is in the Directory block, (4) on RHEL, run <code>restorecon -Rv /var/www/html</code> for SELinux.</div>
+    </div>
+    <div class="trouble-card">
+      <div class="tc-problem">🔴 404 Not Found</div>
+      <div class="tc-fix">Check the DocumentRoot path is correct and the file actually exists there. Verify the virtual host is enabled. On Debian, confirm the site symlink exists in <code>sites-enabled/</code>. Check if <code>mod_rewrite</code> is redirecting the request incorrectly.</div>
+    </div>
+    <div class="trouble-card">
+      <div class="tc-problem">🔴 Changes not taking effect</div>
+      <div class="tc-fix">Run <code>sudo systemctl reload apache2</code> (or httpd) after every config change. Browser cache can also hide changes — try a hard refresh (<kbd>Ctrl+Shift+R</kbd>) or test with <code>curl -v http://localhost</code> which bypasses the browser cache entirely.</div>
+    </div>
+    <div class="trouble-card">
+      <div class="tc-problem">🔴 SELinux blocking Apache (Red Hat)</div>
+      <div class="tc-fix">Check the audit log: <code>sudo ausearch -c httpd --raw | audit2allow</code>. Quick test — temporarily set SELinux permissive: <code>sudo setenforce 0</code>. If site works, SELinux is the cause. Fix with: <code>sudo restorecon -Rv /var/www/html</code> or generate a custom policy.</div>
+    </div>
+    <div class="trouble-card">
+      <div class="tc-problem">🔴 Cannot connect from another machine</div>
+      <div class="tc-fix">Check the firewall: <code>sudo ufw status</code> (Debian) or <code>sudo firewall-cmd --list-all</code> (RHEL). Verify Apache is listening on 0.0.0.0:80 not 127.0.0.1:80 using <code>sudo ss -tlnp | grep :80</code>. Check the <code>Listen</code> directive in ports.conf or httpd.conf.</div>
+    </div>
+    <div class="trouble-card">
+      <div class="tc-problem">🔴 .htaccess not working</div>
+      <div class="tc-fix">Ensure <code>AllowOverride All</code> (not <code>None</code>) is set for the directory in the Apache config. Ensure <code>mod_rewrite</code> is enabled. Verify the <code>.htaccess</code> file has correct permissions (644) and is in the correct directory.</div>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Essential Diagnostic Commands — Quick Reference</div>
+<code class="code-block"><span class="cm"># Check service status</span>
+<span class="cmd">sudo systemctl status</span> apache2      <span class="cm"># Debian</span>
+<span class="cmd">sudo systemctl status</span> httpd         <span class="cm"># Red Hat</span>
+
+<span class="cm"># Check config syntax</span>
+<span class="cmd">sudo apache2ctl configtest</span>          <span class="cm"># Debian</span>
+<span class="cmd">sudo apachectl configtest</span>           <span class="cm"># Red Hat</span>
+
+<span class="cm"># View recent log entries</span>
+<span class="cmd">sudo tail</span> <span class="fl">-n 50</span> /var/log/apache2/error.log
+<span class="cmd">sudo tail</span> <span class="fl">-n 50</span> /var/log/httpd/error_log
+
+<span class="cm"># View systemd journal for Apache</span>
+<span class="cmd">sudo journalctl</span> <span class="fl">-u</span> apache2 <span class="fl">-n 100 --no-pager</span>
+
+<span class="cm"># Test the server locally</span>
+<span class="cmd">curl</span> <span class="fl">-v</span> http://localhost
+<span class="cmd">curl</span> <span class="fl">-I</span> http://localhost         <span class="cm"># headers only</span>
+
+<span class="cm"># Check which ports Apache is listening on</span>
+<span class="cmd">sudo ss</span> <span class="fl">-tlnp</span> | grep httpd
+<span class="cmd">sudo ss</span> <span class="fl">-tlnp</span> | grep apache
+
+<span class="cm"># List enabled modules</span>
+<span class="cmd">apache2ctl</span> <span class="fl">-M</span> 2>/dev/null        <span class="cm"># Debian</span>
+<span class="cmd">httpd</span> <span class="fl">-M</span> 2>/dev/null             <span class="cm"># Red Hat</span>
+
+<span class="cm"># List enabled sites (Debian only)</span>
+<span class="cmd">ls</span> <span class="fl">-la</span> /etc/apache2/sites-enabled/</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       11. CHAPTER QUIZ
+  ═══════════════════════════════════════════ -->
+  <h2>📝 Chapter Quiz</h2>
+
+  <div class="quiz-intro">
+    <strong>20 questions</strong> — test your knowledge of Apache web server configuration and management. Click <strong>Reveal Answer</strong> on each question to see the correct option, or use <strong>Reveal All Answers</strong> at the bottom.
+  </div>
+
+  <!-- Q1 -->
+  <div class="quiz-card" id="q1">
+    <div class="quiz-q-num">Question 1 of 20</div>
+    <div class="quiz-q-text">What is the default port that Apache listens on for standard HTTP traffic?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>8080</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>443</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>80</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>8443</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-card" id="q2">
+    <div class="quiz-q-num">Question 2 of 20</div>
+    <div class="quiz-q-text">What command installs Apache on a Debian-based system such as the Raspberry Pi?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>sudo yum install httpd</div>
+      <div class="quiz-option correct"><span class="opt-letter">B</span>sudo apt install apache2</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>sudo dnf install apache</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>sudo apt install httpd</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-card" id="q3">
+    <div class="quiz-q-num">Question 3 of 20</div>
+    <div class="quiz-q-text">What is the name of the Apache service on Red Hat-based Linux systems?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>apache2</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>apache</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>httpd</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>webserver</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-card" id="q4">
+    <div class="quiz-q-num">Question 4 of 20</div>
+    <div class="quiz-q-text">Which directive in the Apache configuration file sets the directory from which web content is served?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>ServerRoot</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>ContentRoot</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>DocumentRoot</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>WebRoot</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-card" id="q5">
+    <div class="quiz-q-num">Question 5 of 20</div>
+    <div class="quiz-q-text">Which command checks the Apache configuration file for syntax errors on a Debian-based system?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>apache2 --check</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>apache2 --validate</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>sudo apache2ctl configtest</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>sudo apache2 --syntax-check</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-card" id="q6">
+    <div class="quiz-q-num">Question 6 of 20</div>
+    <div class="quiz-q-text">Which systemctl command reloads Apache's configuration without dropping existing connections?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>sudo systemctl restart apache2</div>
+      <div class="quiz-option correct"><span class="opt-letter">B</span>sudo systemctl reload apache2</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>sudo systemctl refresh apache2</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>sudo systemctl reset apache2</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-card" id="q7">
+    <div class="quiz-q-num">Question 7 of 20</div>
+    <div class="quiz-q-text">What does name-based virtual hosting allow you to do?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>Run multiple Apache processes on the same machine</div>
+      <div class="quiz-option correct"><span class="opt-letter">B</span>Serve multiple websites from a single server using domain names</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>Create virtual machines for each website</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>Mirror content across multiple backup servers</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-card" id="q8">
+    <div class="quiz-q-num">Question 8 of 20</div>
+    <div class="quiz-q-text">Where are Apache access logs stored by default on a Debian-based system?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>/var/log/httpd/access_log</div>
+      <div class="quiz-option correct"><span class="opt-letter">B</span>/var/log/apache2/access.log</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>/etc/apache2/logs/access.log</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>/tmp/apache/access.log</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q9 -->
+  <div class="quiz-card" id="q9">
+    <div class="quiz-q-num">Question 9 of 20</div>
+    <div class="quiz-q-text">Which Apache module enables URL rewriting and is required for clean URLs and .htaccess redirects?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>mod_alias</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>mod_redirect</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>mod_rewrite</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>mod_url</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q10 -->
+  <div class="quiz-card" id="q10">
+    <div class="quiz-q-num">Question 10 of 20</div>
+    <div class="quiz-q-text">What is the Apache process user on Debian-based systems?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>apache</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>httpd</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>root</div>
+      <div class="quiz-option correct"><span class="opt-letter">D</span>www-data</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q11 -->
+  <div class="quiz-card" id="q11">
+    <div class="quiz-q-num">Question 11 of 20</div>
+    <div class="quiz-q-text">Which command enables a module in Apache on a Debian-based system?</div>
+    <div class="quiz-options">
+      <div class="quiz-option correct"><span class="opt-letter">A</span>sudo a2enmod &lt;module&gt;</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>sudo modanable &lt;module&gt;</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>sudo apache2 --enable-mod &lt;module&gt;</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>sudo enablemod &lt;module&gt;</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q12 -->
+  <div class="quiz-card" id="q12">
+    <div class="quiz-q-num">Question 12 of 20</div>
+    <div class="quiz-q-text">Which directive specifies the default filename Apache serves when a directory is requested?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>DefaultFile</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>IndexFile</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>DirectoryIndex</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>MainPage</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q13 -->
+  <div class="quiz-card" id="q13">
+    <div class="quiz-q-num">Question 13 of 20</div>
+    <div class="quiz-q-text">Which firewall command permanently opens port 80 on a Red Hat system using firewalld?</div>
+    <div class="quiz-options">
+      <div class="quiz-option correct"><span class="opt-letter">A</span>sudo firewall-cmd --permanent --add-service=http</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>sudo ufw allow 80</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>sudo firewall-cmd --open=http --permanent</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q14 -->
+  <div class="quiz-card" id="q14">
+    <div class="quiz-q-num">Question 14 of 20</div>
+    <div class="quiz-q-text">On a Red Hat system, which command should you run after copying new files into the Apache document root when SELinux is enforcing?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>sudo setenforce 0</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>sudo chmod -R 755 /var/www/html</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>sudo chcon -t httpd_sys_content_t /var/www/html</div>
+      <div class="quiz-option correct"><span class="opt-letter">D</span>sudo restorecon -Rv /var/www/html</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q15 -->
+  <div class="quiz-card" id="q15">
+    <div class="quiz-q-num">Question 15 of 20</div>
+    <div class="quiz-q-text">Which LogLevel setting provides the most detailed diagnostic information in the Apache error log?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>info</div>
+      <div class="quiz-option correct"><span class="opt-letter">B</span>debug</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>warn</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>verbose</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q16 -->
+  <div class="quiz-card" id="q16">
+    <div class="quiz-q-num">Question 16 of 20</div>
+    <div class="quiz-q-text">What is the purpose of the mod_proxy and mod_proxy_http modules in Apache?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>To provide HTTPS/TLS encryption</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>To enable URL rewriting</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>To forward requests to a backend application server</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>To compress responses with gzip</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q17 -->
+  <div class="quiz-card" id="q17">
+    <div class="quiz-q-num">Question 17 of 20</div>
+    <div class="quiz-q-text">Which directive in a virtual host configuration block sets the primary domain name for that site?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>HostName</div>
+      <div class="quiz-option correct"><span class="opt-letter">B</span>ServerName</div>
+      <div class="quiz-option"><span class="opt-letter">C</span>DomainName</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>SiteName</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q18 -->
+  <div class="quiz-card" id="q18">
+    <div class="quiz-q-num">Question 18 of 20</div>
+    <div class="quiz-q-text">What does the AllowOverride All directive in a Directory block enable?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>Grants full root access to the directory</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>Allows Apache to override OS file permissions</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>Permits .htaccess files to override the main configuration</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>Enables all Apache modules for that directory</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q19 -->
+  <div class="quiz-card" id="q19">
+    <div class="quiz-q-num">Question 19 of 20</div>
+    <div class="quiz-q-text">Which command on Debian enables a virtual host configuration file and creates the necessary symlink?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>sudo apache2 --enable-site mysite.conf</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>sudo ln -s ../sites-available/mysite.conf sites-enabled/</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>sudo a2ensite mysite.conf</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>sudo enablesite mysite.conf</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <!-- Q20 -->
+  <div class="quiz-card" id="q20">
+    <div class="quiz-q-num">Question 20 of 20</div>
+    <div class="quiz-q-text">You receive a 403 Forbidden error on a page that definitely exists. After confirming the file permissions are correct, what is the most likely remaining cause on a Red Hat system?</div>
+    <div class="quiz-options">
+      <div class="quiz-option"><span class="opt-letter">A</span>The Apache service needs to be restarted</div>
+      <div class="quiz-option"><span class="opt-letter">B</span>The DocumentRoot directive is incorrect</div>
+      <div class="quiz-option correct"><span class="opt-letter">C</span>SELinux security context is preventing Apache from reading the file</div>
+      <div class="quiz-option"><span class="opt-letter">D</span>The mod_headers module is not enabled</div>
+    </div>
+    <button class="reveal-btn" onclick="revealAnswer(this)">Reveal Answer</button>
+  </div>
+
+  <div class="quiz-score-area">
+    <span>Click each question's <strong>Reveal Answer</strong> button to see the correct option highlighted in green.</span>
+    <button class="reveal-all-btn" onclick="revealAll()">Reveal All Answers</button>
+  </div>
+
+</div><!-- /lx-lesson -->
