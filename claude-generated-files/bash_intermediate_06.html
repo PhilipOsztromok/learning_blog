@@ -1,0 +1,1212 @@
+<!-- ============================================================
+     BASH INTERMEDIATE: Topic 6 — Structured Data: CSV, TSV, and INI
+     Subject: Bash / Linux Shell Scripting (Intermediate)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+  .sh  { color: #e8a87d; }
+  .vr  { color: #ffd580; }
+  .op  { color: #e8a87d; }
+  .er  { color: #e05c5c; }
+  .fn  { color: #7ab8ff; }
+  .rx  { color: #ff9eb5; }
+
+  /* ── Platform label blocks ───────────────────────── */
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 12px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+    background: #1a1d27;
+    color: #7ecfa0;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; color: #7ab8ff; opacity: 0.8; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin: 16px 0;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+
+  /* ── Reference tables ────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+
+  /* ── Two-column comparison ───────────────────────── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .compare-grid .compare-cell {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .compare-grid .compare-cell .compare-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .compare-grid .compare-cell.good .compare-label { color: #7ecfa0; }
+  .compare-grid .compare-cell.bad  .compare-label { color: #e05c5c; }
+  .compare-grid .compare-cell.left .compare-label { color: #7ab8ff; }
+  .compare-grid .compare-cell.right .compare-label { color: #c9a8ff; }
+  .compare-grid .code-block { font-size: 0.82em; margin: 0; }
+
+  /* ── Exercise blocks ─────────────────────────────── */
+  .exercise-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-block .ex-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+  .exercise-block .ex-task {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .exercise-block .ex-hint {
+    font-size: 0.85em;
+    color: #a0a4b8;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-solution-toggle {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    color: #7ecfa0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .exercise-block .ex-solution-toggle:hover { background: #1e2235; }
+  .exercise-block .ex-solution { display: none; margin-top: 12px; }
+  .exercise-block .ex-solution.visible { display: block; }
+  .exercise-block .sol-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+</style>
+
+<script>
+function toggleSolution(btn) {
+  var sol = btn.nextElementSibling;
+  if (sol.classList.contains('visible')) {
+    sol.classList.remove('visible');
+    btn.textContent = '▶ Show Sample Solution';
+  } else {
+    sol.classList.add('visible');
+    btn.textContent = '▼ Hide Solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>📊 Intermediate Topic 6 — Structured Data: CSV, TSV, and INI</h2>
+  <p class="section-intro">Shell scripts constantly consume and produce structured text: exports from databases, configuration files, reports. The tools are right there — <code>awk</code>, <code>IFS</code> splitting, pattern matching — but the edge cases bite hard. A CSV file with quoted fields containing commas will silently corrupt your data if you split naively. An INI file with inline comments or trailing spaces will hand you the wrong value. This chapter covers the full picture: how the formats actually work, where the traps are, and the robust patterns used in production scripts.</p>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. CSV FUNDAMENTALS
+  ═══════════════════════════════════════════ -->
+  <h2>1 — CSV Fundamentals: Why It's Harder Than It Looks</h2>
+
+  <p>CSV sounds simple — values separated by commas. The problem is that real CSV (RFC 4180) allows fields to contain commas, newlines, and double-quote characters, all of which break naive parsing. A field that contains a comma must be wrapped in double-quotes. A double-quote inside a quoted field must be escaped as two consecutive double-quotes (<code>""</code>).</p>
+
+  <div class="compare-grid">
+    <div class="compare-cell bad">
+      <div class="compare-label">❌ Naive — breaks on quoted fields</div>
+<code class="code-block"><span class="cm"># Input: name,city,note</span>
+<span class="cm"># Alice,"New York",no comma</span>
+<span class="cm"># Bob,"Paris, France",has comma</span>
+
+<span class="kw">while</span> <span class="kw">IFS</span>=<span class="st">','</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">name</span> <span class="vr">city</span> <span class="vr">note</span>; <span class="kw">do</span>
+    <span class="cmd">echo</span> <span class="st">"city=$city"</span>
+<span class="kw">done</span> <span class="op">&lt;</span> data.csv
+<span class="cm"># Bob's city = '"Paris'   ← WRONG</span>
+<span class="cm"># note       = ' France"' ← WRONG</span></code>
+    </div>
+    <div class="compare-cell good">
+      <div class="compare-label">✓ Real-world CSV has quoting rules</div>
+<code class="code-block"><span class="cm"># RFC 4180 rules:</span>
+<span class="cm"># 1. Fields MAY be quoted with "</span>
+<span class="cm"># 2. A quoted field may contain , \n "
+# 3. A " inside quotes = ""</span>
+<span class="cm"># 4. Leading/trailing spaces inside</span>
+<span class="cm">#    quotes are part of the value</span>
+<span class="cm">#</span>
+<span class="cm"># "Alice","New York","says ""hi"""</span>
+<span class="cm"># → Alice | New York | says "hi"</span>
+<span class="cm">#</span>
+<span class="cm"># Need a state-machine parser.</span>
+<span class="cm"># awk's FPAT is the cleanest option.</span></code>
+    </div>
+  </div>
+
+  <div class="warn-box"><strong>The IFS comma split is only safe when you control the data.</strong> If your CSV comes from a spreadsheet export, a database dump, or any system that follows RFC 4180, you must handle quoted fields. Use the <code>awk FPAT</code> approach or pipe through a purpose-built tool like <code>csvkit</code> (<code>csvcut</code>, <code>csvstat</code>). For data you generate yourself — logs, reports — you can choose to avoid values that need quoting, or use TSV instead.</div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. PARSING CSV WITH AWK FPAT
+  ═══════════════════════════════════════════ -->
+  <h2>2 — Robust CSV Parsing with <code>awk</code> and <code>FPAT</code></h2>
+
+  <p>GNU awk (<code>gawk</code>) provides a special variable <code>FPAT</code> — Field PATtern — which instead of defining the <em>separator</em> defines what a <em>field looks like</em>. Setting it to a pattern that matches either a quoted field or an unquoted field gives you a proper CSV parser in one line.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🐧 FPAT-based CSV parsing in gawk</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># FPAT pattern breakdown:</span>
+<span class="cm">#   ([^,]*)           — any unquoted field (zero or more non-comma chars)</span>
+<span class="cm">#   |                 — OR</span>
+<span class="cm">#   ("([^"]|"")*")    — a double-quoted field (handles "" escape inside)</span>
+<span class="vr">FPAT_CSV</span>=<span class="st">'([^,]*)|("([^"]|"")*")'</span>
+
+<span class="cm"># ── Print every field on a separate line ──────────────────────</span>
+<span class="cmd">gawk</span> <span class="fl">-v</span> <span class="st">FPAT='([^,]*)|("([^"]|"")*")'</span> <span class="st">'</span>
+<span class="st">{ for (i=1; i<=NF; i++) print i, $i }</span>
+<span class="st">'</span> data.csv
+
+<span class="cm"># ── Strip surrounding quotes from a field value ───────────────</span>
+<span class="cm"># Fields from FPAT still include the outer quotes — strip them:</span>
+<span class="fn">csv_unquote</span>() {
+    <span class="cm"># Strips surrounding quotes and unescapes "" → "</span>
+    <span class="cmd">awk</span> <span class="st">'BEGIN {
+        s = ARGV[1]
+        if (substr(s,1,1) == "\"") s = substr(s, 2, length(s)-2)
+        gsub(/""/, "\"", s)
+        print s
+    }'</span> <span class="st">"$1"</span>
+}
+
+<span class="cm"># ── Practical: process a CSV with header row ──────────────────</span>
+<span class="cm"># File: employees.csv</span>
+<span class="cm"># id,name,department,salary</span>
+<span class="cm"># 1,Alice,"Engineering",95000</span>
+<span class="cm"># 2,Bob,"Sales, East",72000</span>
+<span class="cm"># 3,"O'Brien, Carol","HR",68000</span>
+
+<span class="cmd">gawk</span> <span class="fl">-v</span> <span class="st">FPAT='([^,]*)|("([^"]|"")*")'</span> <span class="st">'
+NR == 1 { next }            # skip header
+{
+    id   = $1
+    name = $2; gsub(/^"|"$/, "", name)   # strip quotes
+    dept = $3; gsub(/^"|"$/, "", dept)
+    sal  = $4
+
+    printf "%-4s %-20s %-20s %s\n", id, name, dept, sal
+}
+'</span> employees.csv
+
+<span class="cm"># ── Filter: only Engineering employees ────────────────────────</span>
+<span class="cmd">gawk</span> <span class="fl">-v</span> <span class="st">FPAT='([^,]*)|("([^"]|"")*")'</span> <span class="st">'
+NR == 1 { print; next }
+{
+    dept = $3; gsub(/^"|"$/, "", dept)
+    if (dept == "Engineering") print
+}
+'</span> employees.csv
+
+<span class="cm"># ── Extract a single column by header name ────────────────────</span>
+<span class="cmd">gawk</span> <span class="fl">-v</span> <span class="st">FPAT='([^,]*)|("([^"]|"")*")'</span> \
+     <span class="fl">-v</span> <span class="st">col="salary"</span> <span class="st">'
+NR == 1 {
+    for (i=1; i<=NF; i++) {
+        h = $i; gsub(/^"|"$/, "", h)
+        if (h == col) colidx = i
+    }
+    next
+}
+colidx { v = $colidx; gsub(/^"|"$/, "", v); print v }
+'</span> employees.csv</code>
+      <div class="pb-note"><code>FPAT</code> is a GNU awk extension — not available in POSIX <code>awk</code> or <code>mawk</code>. Check with <code>gawk --version</code>. On systems where only <code>awk</code> is available, fall back to a Python one-liner or <code>csvkit</code>.</div>
+    </div>
+  </div>
+
+  <h3>Building a reusable csv_parse() library function</h3>
+  <div class="platform-block">
+    <div class="pb-header">🐧 A shell function that turns a CSV row into a bash array</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># csv_split ROW → prints fields one per line, with quotes stripped</span>
+<span class="cm"># Pipe its output to mapfile to get an array</span>
+<span class="fn">csv_split</span>() {
+    <span class="cmd">gawk</span> <span class="st">'BEGIN {
+        FPAT = "([^,]*)|(\\"([^\\"]|\\"\\")* \\")"
+        $0 = ARGV[1]
+        for (i=1; i<=NF; i++) {
+            v = $i
+            if (substr(v,1,1) == "\"") v = substr(v, 2, length(v)-2)
+            gsub(/""/, "\"", v)
+            print v
+        }
+    }'</span> <span class="st">"$1"</span>
+}
+
+<span class="cm"># Usage: turn a CSV row into a bash array</span>
+<span class="vr">row</span>=<span class="st">'42,"Smith, John","New York","says ""hello"""'</span>
+<span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">fields</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="fn">csv_split</span> <span class="st">"$row"</span><span class="op">)</span>
+
+<span class="cmd">echo</span> <span class="st">"ID:   ${fields[0]}"</span>   <span class="out">→ 42</span>
+<span class="cmd">echo</span> <span class="st">"Name: ${fields[1]}"</span>   <span class="out">→ Smith, John</span>
+<span class="cmd">echo</span> <span class="st">"City: ${fields[2]}"</span>   <span class="out">→ New York</span>
+<span class="cmd">echo</span> <span class="st">"Note: ${fields[3]}"</span>   <span class="out">→ says "hello"</span>
+
+<span class="cm"># Process a whole file row by row</span>
+<span class="fn">process_csv</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">header_done</span>=<span class="nu">0</span>
+    <span class="kw">local</span> <span class="vr">row</span>
+
+    <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">row</span>; <span class="kw">do</span>
+        (( header_done == <span class="nu">0</span> )) && { <span class="vr">header_done</span>=<span class="nu">1</span>; <span class="kw">continue</span>; }
+        <span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">f</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="fn">csv_split</span> <span class="st">"$row"</span><span class="op">)</span>
+        <span class="cm"># Now f[0], f[1], f[2]... hold the clean field values</span>
+        <span class="cmd">printf</span> <span class="st">'id=%s name=%s\n'</span> <span class="st">"${f[0]}"</span> <span class="st">"${f[1]}"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="st">"$file"</span>
+}</code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. GENERATING CSV OUTPUT
+  ═══════════════════════════════════════════ -->
+  <h2>3 — Generating CSV Output</h2>
+
+  <p>Writing CSV is easier than reading it — you control the quoting. The safest rule: always quote fields that may contain commas, double-quotes, or newlines; double up any literal double-quotes inside them. For simple data you know is clean, quoting only when necessary is fine.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🐧 Writing safe CSV from shell scripts</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── csv_field: quote a single value for CSV output ────────────</span>
+<span class="fn">csv_field</span>() {
+    <span class="kw">local</span> <span class="vr">val</span>=<span class="st">"$1"</span>
+    <span class="cm"># Always quote — simplest and safest</span>
+    <span class="vr">val</span>=<span class="st">"${val//\"/\"\"}"</span>   <span class="cm"># escape " → ""</span>
+    <span class="cmd">printf</span> <span class="st">'"%s"'</span> <span class="st">"$val"</span>
+}
+
+<span class="cm"># ── csv_row: turn args into a CSV line ────────────────────────</span>
+<span class="fn">csv_row</span>() {
+    <span class="kw">local</span> <span class="vr">first</span>=<span class="nu">1</span>
+    <span class="kw">for</span> <span class="vr">arg</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+        (( first )) || <span class="cmd">printf</span> <span class="st">','</span>
+        <span class="fn">csv_field</span> <span class="st">"$arg"</span>
+        <span class="vr">first</span>=<span class="nu">0</span>
+    <span class="kw">done</span>
+    <span class="cmd">printf</span> <span class="st">'\n'</span>
+}
+
+<span class="cm"># ── Generate a CSV report ─────────────────────────────────────</span>
+{
+    <span class="fn">csv_row</span> <span class="st">"hostname"</span> <span class="st">"cpu_pct"</span> <span class="st">"mem_pct"</span> <span class="st">"disk_pct"</span> <span class="st">"timestamp"</span>
+
+    <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">host</span>; <span class="kw">do</span>
+        <span class="cm"># Collect metrics for $host (simplified)</span>
+        <span class="vr">cpu</span>=<span class="st">$(</span><span class="cmd">ssh</span> <span class="st">"$host"</span> <span class="st">"top -bn1 | awk '/Cpu/ {print 100-\$8}'"</span> <span class="nu">2</span><span class="op">/dev/null</span><span class="st">)</span>
+        <span class="vr">ts</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%Y-%m-%d %H:%M:%S'</span><span class="st">)</span>
+        <span class="fn">csv_row</span> <span class="st">"$host"</span> <span class="st">"${cpu:-N/A}"</span> <span class="st">"N/A"</span> <span class="st">"N/A"</span> <span class="st">"$ts"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> hosts.txt
+} <span class="op">&gt;</span> report.csv
+
+<span class="cm"># ── Append to an existing CSV safely ──────────────────────────</span>
+<span class="fn">csv_append</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"$1"</span>; <span class="kw">shift</span>
+    <span class="kw">if</span> [[ ! <span class="fl">-f</span> <span class="st">"$file"</span> ]]; <span class="kw">then</span>
+        <span class="cm"># Create with header on first call if header provided as first arg</span>
+        <span class="cmd">touch</span> <span class="st">"$file"</span>
+    <span class="kw">fi</span>
+    <span class="fn">csv_row</span> <span class="st">"$@"</span> <span class="op">&gt;&gt;</span> <span class="st">"$file"</span>
+}
+
+<span class="cm"># ── Column extraction without gawk (safe only for simple CSV) ─</span>
+<span class="cm"># cut -d, -f2 — works only when no quoted commas exist</span>
+<span class="cmd">cut</span> <span class="fl">-d</span><span class="st">','</span> <span class="fl">-f2</span> employees.csv
+
+<span class="cm"># With gawk FPAT — handles quoted commas</span>
+<span class="cmd">gawk</span> <span class="fl">-v</span> <span class="st">FPAT='([^,]*)|("([^"]|"")*")'</span> <span class="st">'{v=$2; gsub(/^"|"$/,"",v); print v}'</span> employees.csv</code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. TSV — SIMPLER AND SHELL-FRIENDLIER
+  ═══════════════════════════════════════════ -->
+  <h2>4 — TSV: Tab-Separated Values</h2>
+
+  <p>TSV uses a tab character as the delimiter. Tabs almost never appear in real data, which means quoting rules are usually unnecessary and parsing with <code>IFS=$'\t'</code> is safe. Many tools (<code>sort</code>, <code>join</code>, <code>awk</code>) integrate cleanly with tab-delimited data. When you control the format, TSV is often the better choice over CSV for shell processing.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🐧 TSV reading, writing, and conversion</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Reading TSV ───────────────────────────────────────────────</span>
+<span class="kw">while</span> <span class="kw">IFS</span>=<span class="st">$'\t'</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">id</span> <span class="vr">name</span> <span class="vr">dept</span> <span class="vr">salary</span>; <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">'%-4s %-20s %-15s %s\n'</span> <span class="st">"$id"</span> <span class="st">"$name"</span> <span class="st">"$dept"</span> <span class="st">"$salary"</span>
+<span class="kw">done</span> <span class="op">&lt;</span> employees.tsv
+
+<span class="cm"># ── Writing TSV ───────────────────────────────────────────────</span>
+<span class="fn">tsv_row</span>() {
+    <span class="kw">local</span> <span class="kw">IFS</span>=<span class="st">$'\t'</span>
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$*"</span>
+}
+<span class="fn">tsv_row</span> <span class="st">"id"</span> <span class="st">"name"</span> <span class="st">"department"</span> <span class="st">"salary"</span>
+<span class="fn">tsv_row</span> <span class="st">"1"</span>  <span class="st">"Alice"</span> <span class="st">"Engineering"</span> <span class="st">"95000"</span>
+
+<span class="cm"># ── Converting CSV to TSV ─────────────────────────────────────</span>
+<span class="cm"># Simple (only safe when no embedded commas/newlines in fields)</span>
+<span class="cmd">tr</span> <span class="st">','</span> <span class="st">$'\t'</span> <span class="op">&lt;</span> simple.csv <span class="op">&gt;</span> simple.tsv
+
+<span class="cm"># Robust (uses gawk FPAT to parse, then re-joins with tab)</span>
+<span class="cmd">gawk</span> <span class="fl">-v</span> <span class="st">FPAT='([^,]*)|("([^"]|"")*")'</span> <span class="st">'
+{
+    for (i=1; i<=NF; i++) {
+        v = $i
+        gsub(/^"|"$/, "", v)   # strip surrounding quotes
+        gsub(/""/, "\"", v)    # unescape doubled quotes
+        printf "%s%s", (i>1?"\t":""), v
+    }
+    print ""
+}
+'</span> input.csv <span class="op">&gt;</span> output.tsv
+
+<span class="cm"># ── Sort TSV by column ────────────────────────────────────────</span>
+<span class="cmd">sort</span> <span class="fl">-t</span><span class="st">$'\t'</span> <span class="fl">-k3,3</span>       employees.tsv   <span class="cm"># sort by col 3 (alphabetic)</span>
+<span class="cmd">sort</span> <span class="fl">-t</span><span class="st">$'\t'</span> <span class="fl">-k4,4n</span> <span class="fl">-r</span>  employees.tsv   <span class="cm"># sort by col 4 (numeric, desc)</span>
+
+<span class="cm"># ── join two TSV files on a common key ────────────────────────</span>
+<span class="cm"># employees.tsv:  id  name  dept_id</span>
+<span class="cm"># departments.tsv: dept_id  dept_name  budget</span>
+<span class="cm"># Both must be sorted on the join field first</span>
+<span class="cmd">join</span> <span class="fl">-t</span><span class="st">$'\t'</span> <span class="fl">-1</span> <span class="nu">3</span> <span class="fl">-2</span> <span class="nu">1</span> \
+    <span class="op">&lt;(</span><span class="cmd">sort</span> <span class="fl">-t</span><span class="st">$'\t'</span> <span class="fl">-k3,3</span> employees.tsv<span class="op">)</span> \
+    <span class="op">&lt;(</span><span class="cmd">sort</span> <span class="fl">-t</span><span class="st">$'\t'</span> <span class="fl">-k1,1</span> departments.tsv<span class="op">)</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. INI / CONFIG FILE PARSING
+  ═══════════════════════════════════════════ -->
+  <h2>5 — INI and Config File Parsing</h2>
+
+  <p>INI files are ubiquitous: <code>/etc/mysql/my.cnf</code>, <code>~/.gitconfig</code>, <code>php.ini</code>, <code>smb.conf</code>, countless application configs. The format has no strict standard but the conventions are consistent: <code>[section]</code> headers, <code>key=value</code> or <code>key = value</code> pairs, and <code>#</code> or <code>;</code> line comments. The traps are whitespace around the <code>=</code>, inline comments, multi-line values, and section awareness.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🐧 Reading INI files with awk</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Sample config.ini:</span>
+<span class="cm"># [database]</span>
+<span class="cm"># host = db.example.com</span>
+<span class="cm"># port = 5432</span>
+<span class="cm"># name = myapp_prod   # production DB</span>
+<span class="cm">#</span>
+<span class="cm"># [cache]</span>
+<span class="cm"># host = redis.example.com</span>
+<span class="cm"># port = 6379</span>
+
+<span class="cm"># ── Get a single value: ini_get FILE SECTION KEY ──────────────</span>
+<span class="fn">ini_get</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"$1"</span> <span class="vr">section</span>=<span class="st">"$2"</span> <span class="vr">key</span>=<span class="st">"$3"</span>
+    <span class="cmd">awk</span> <span class="fl">-v</span> <span class="st">s="$section"</span> <span class="fl">-v</span> <span class="st">k="$key"</span> <span class="st">'
+    /^\[/ {
+        gsub(/[\[\]]/, "")
+        cur = $0
+        next
+    }
+    cur == s && /=/ {
+        # Split on first = only
+        eq = index($0, "=")
+        key_part = substr($0, 1, eq-1)
+        val_part = substr($0, eq+1)
+        # Trim whitespace
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", key_part)
+        gsub(/^[[:space:]]+/, "", val_part)
+        # Strip inline comment (# or ;)
+        sub(/[[:space:]]+[#;].*$/, "", val_part)
+        # Trim trailing whitespace
+        gsub(/[[:space:]]+$/, "", val_part)
+        if (key_part == k) { print val_part; exit }
+    }
+    '</span> <span class="st">"$file"</span>
+}
+
+<span class="vr">db_host</span>=<span class="st">$(</span><span class="fn">ini_get</span> config.ini database host<span class="st">)</span>
+<span class="vr">db_port</span>=<span class="st">$(</span><span class="fn">ini_get</span> config.ini database port<span class="st">)</span>
+<span class="vr">db_name</span>=<span class="st">$(</span><span class="fn">ini_get</span> config.ini database name<span class="st">)</span>
+<span class="cmd">echo</span> <span class="st">"Connecting to $db_host:$db_port/$db_name"</span>
+
+<span class="cm"># ── Load an entire section into bash variables ─────────────────</span>
+<span class="fn">ini_load_section</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"$1"</span> <span class="vr">section</span>=<span class="st">"$2"</span> <span class="vr">prefix</span>=<span class="st">"${3:-}"</span>
+    <span class="kw">local</span> <span class="vr">k</span> <span class="vr">v</span>
+    <span class="kw">while</span> <span class="kw">IFS</span>=<span class="st">'='</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">k</span> <span class="vr">v</span>; <span class="kw">do</span>
+        <span class="cm"># Strip whitespace and inline comments</span>
+        <span class="vr">k</span>=<span class="st">"${k// /}"</span>
+        <span class="vr">v</span>=<span class="st">"${v#"${v%%[![:space:]]*}"}"</span>   <span class="cm"># ltrim</span>
+        <span class="vr">v</span>=<span class="st">"${v%%[[:space:]]*#*}"</span>          <span class="cm"># strip inline comment</span>
+        <span class="vr">v</span>=<span class="st">"${v%"${v##*[![:space:]]}"}"</span>   <span class="cm"># rtrim</span>
+        [[ <span class="fl">-z</span> <span class="st">"$k"</span> ]] && <span class="kw">continue</span>
+        <span class="kw">declare</span> <span class="fl">-g</span> <span class="st">"${prefix}${k}=${v}"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">awk</span> <span class="fl">-v</span> <span class="st">s="$section"</span> <span class="st">'
+        /^\[/ { gsub(/[\[\]]/,""); cur=$0; next }
+        cur==s && /=/ { print }
+        cur==s && /^\s*($|[#;])/ { next }
+    '</span> <span class="st">"$file"</span><span class="op">)</span>
+}
+
+<span class="cm"># Loads database.host, database.port, etc. as shell vars with prefix</span>
+<span class="fn">ini_load_section</span> config.ini database db_
+<span class="cmd">echo</span> <span class="st">"host=$db_host  port=$db_port"</span></code>
+    </div>
+  </div>
+
+  <h3>Writing and updating INI values</h3>
+  <div class="platform-block">
+    <div class="pb-header">🐧 Updating a key in an INI file in-place</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ini_set FILE SECTION KEY VALUE</span>
+<span class="cm"># Updates the key if it exists; inserts it if it doesn't</span>
+<span class="fn">ini_set</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"$1"</span> <span class="vr">section</span>=<span class="st">"$2"</span> <span class="vr">key</span>=<span class="st">"$3"</span> <span class="vr">value</span>=<span class="st">"$4"</span>
+
+    <span class="kw">if</span> <span class="cmd">grep</span> <span class="fl">-q</span> <span class="st">"^\[${section}\]"</span> <span class="st">"$file"</span>; <span class="kw">then</span>
+        <span class="cm"># Section exists — try to update existing key</span>
+        <span class="kw">if</span> <span class="cmd">awk</span> <span class="fl">-v</span> <span class="st">s="$section"</span> <span class="fl">-v</span> <span class="st">k="$key"</span> <span class="st">'
+            /^\[/ { cur=substr($0,2,length($0)-2) }
+            cur==s && $0 ~ "^[[:space:]]*"k"[[:space:]]*=" { found=1 }
+            END { exit !found }
+        '</span> <span class="st">"$file"</span>; <span class="kw">then</span>
+            <span class="cm"># Key exists — update it with sed</span>
+            <span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">"/^\[${section}\]/,/^\[/"</span> \
+                <span class="fl">-e</span> <span class="st">"/^\[${section}\]/,/^\[/ s|^\([[:space:]]*${key}[[:space:]]*=\).*|\1 ${value}|"</span> \
+                <span class="st">"$file"</span>
+        <span class="kw">else</span>
+            <span class="cm"># Key missing — append to section</span>
+            <span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">"/^\[${section}\]/a ${key} = ${value}"</span> <span class="st">"$file"</span>
+        <span class="kw">fi</span>
+    <span class="kw">else</span>
+        <span class="cm"># Section missing — append at end of file</span>
+        <span class="cmd">printf</span> <span class="st">'\n[%s]\n%s = %s\n'</span> <span class="st">"$section"</span> <span class="st">"$key"</span> <span class="st">"$value"</span> <span class="op">&gt;&gt;</span> <span class="st">"$file"</span>
+    <span class="kw">fi</span>
+}
+
+<span class="fn">ini_set</span> config.ini database port <span class="nu">5433</span>
+<span class="fn">ini_set</span> config.ini database timeout <span class="nu">30</span>    <span class="cm"># new key</span>
+<span class="fn">ini_set</span> config.ini newapp debug true       <span class="cm"># new section + key</span>
+
+<span class="cm"># ── List all sections in a file ───────────────────────────────</span>
+<span class="fn">ini_sections</span>() {
+    <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="rx">'(?&lt;=^\[)[^\]]*'</span> <span class="st">"$1"</span>
+}
+
+<span class="cm"># ── List all keys in a section ────────────────────────────────</span>
+<span class="fn">ini_keys</span>() {
+    <span class="cmd">awk</span> <span class="fl">-v</span> <span class="st">s="$2"</span> <span class="st">'
+        /^\[/ { gsub(/[\[\]]/,""); cur=$0; next }
+        cur==s && /=/ {
+            eq=index($0,"="); k=substr($0,1,eq-1)
+            gsub(/^[[:space:]]+|[[:space:]]+$/,"",k)
+            print k
+        }
+    '</span> <span class="st">"$1"</span>
+}
+
+<span class="fn">ini_sections</span> config.ini          <span class="out">→ database</span>
+<span class="out">                                      cache</span>
+<span class="fn">ini_keys</span>     config.ini database  <span class="out">→ host</span>
+<span class="out">                                      port</span>
+<span class="out">                                      name</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. KEY=VALUE / ENV FILES
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Key=Value and <code>.env</code> Files</h2>
+
+  <p>The simpler cousin of INI: a flat file of <code>KEY=VALUE</code> pairs with no sections. Docker Compose, systemd unit <code>EnvironmentFile=</code>, and countless deployment tools use this format. Bash can <code>source</code> it directly — but only after sanitising it, because a malicious or malformed <code>.env</code> file can execute arbitrary code on <code>source</code>.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🐧 Safely loading .env files</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── UNSAFE: direct source runs any code in the file ───────────</span>
+<span class="cm"># source .env        ← NEVER do this with untrusted files</span>
+<span class="cm"># . .env             ← same risk</span>
+
+<span class="cm"># ── Safe: parse and export only valid KEY=VALUE lines ─────────</span>
+<span class="fn">load_env</span>() {
+    <span class="kw">local</span> <span class="vr">envfile</span>=<span class="st">"${1:-.env}"</span>
+    [[ <span class="fl">-f</span> <span class="st">"$envfile"</span> ]] || { <span class="cmd">echo</span> <span class="er">"$envfile not found"</span> <span class="op">>&amp;2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+    <span class="kw">local</span> <span class="vr">key</span> <span class="vr">val</span> <span class="vr">line</span>
+    <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+        <span class="cm"># Skip blanks and comments</span>
+        [[ <span class="st">"$line"</span> =~ ^[[:space:]]*($|#) ]] && <span class="kw">continue</span>
+        <span class="cm"># Must match KEY=VALUE with valid identifier key</span>
+        [[ <span class="st">"$line"</span> =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]] || <span class="kw">continue</span>
+        <span class="vr">key</span>=<span class="st">"${BASH_REMATCH[1]}"</span>
+        <span class="vr">val</span>=<span class="st">"${BASH_REMATCH[2]}"</span>
+        <span class="cm"># Strip optional surrounding quotes</span>
+        [[ <span class="st">"$val"</span> =~ ^\"(.*)\"$ ]] && <span class="vr">val</span>=<span class="st">"${BASH_REMATCH[1]}"</span>
+        [[ <span class="st">"$val"</span> =~ ^\'(.*)\'$ ]] && <span class="vr">val</span>=<span class="st">"${BASH_REMATCH[1]}"</span>
+        <span class="cm"># Strip inline comment (only outside quotes)</span>
+        <span class="vr">val</span>=<span class="st">"${val%%[[:space:]]*\#*}"</span>
+        <span class="kw">export</span> <span class="st">"${key}=${val}"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="st">"$envfile"</span>
+}
+
+<span class="fn">load_env</span> <span class="pth">.env.production</span>
+<span class="cmd">echo</span> <span class="st">"DB_HOST=$DB_HOST"</span>
+
+<span class="cm"># ── source is fine when you wrote the file yourself ───────────</span>
+<span class="cm"># In CI or deploy scripts, sourcing a file you generated is OK</span>
+<span class="cm"># Just never source files from user input or external sources</span>
+
+<span class="cm"># ── Generate a .env file ──────────────────────────────────────</span>
+<span class="fn">write_env</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"$1"</span>; <span class="kw">shift</span>
+    <span class="cm"># Args: KEY VALUE KEY VALUE ...</span>
+    {
+        <span class="cmd">printf</span> <span class="st">'# Generated %s\n'</span> <span class="st">"$(date -Is)"</span>
+        <span class="kw">while</span> (( $# >= <span class="nu">2</span> )); <span class="kw">do</span>
+            <span class="vr">k</span>=<span class="st">"$1"</span> <span class="vr">v</span>=<span class="st">"$2"</span>; <span class="kw">shift</span> <span class="nu">2</span>
+            <span class="cm"># Quote if value contains spaces, #, or special chars</span>
+            [[ <span class="st">"$v"</span> =~ [[:space:]#\"] ]] && <span class="vr">v</span>=<span class="st">'"'"${v//\"/\\\"}"'"'</span>
+            <span class="cmd">printf</span> <span class="st">'%s=%s\n'</span> <span class="st">"$k"</span> <span class="st">"$v"</span>
+        <span class="kw">done</span>
+    } <span class="op">&gt;</span> <span class="st">"$file"</span>
+    <span class="cmd">chmod</span> <span class="nu">600</span> <span class="st">"$file"</span>   <span class="cm"># env files often contain secrets</span>
+}
+<span class="fn">write_env</span> <span class="pth">.env.staging</span> \
+    DB_HOST staging-db.internal \
+    DB_PORT <span class="nu">5432</span> \
+    APP_SECRET <span class="st">"my secret value"</span> \
+    DEBUG false</code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. STRUCTURED REPORTS
+  ═══════════════════════════════════════════ -->
+  <h2>7 — Generating Structured Reports</h2>
+
+  <p>A common pattern in ops scripts: collect data from multiple sources, assemble it into a structured table, and emit it as either a human-readable aligned table or a machine-readable CSV. The key is separating data collection from formatting.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🐧 Aligned console table + CSV output from the same data</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># disk_report.sh — show disk usage for a list of paths</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">FORMAT</span>=<span class="st">"${FORMAT:-table}"</span>   <span class="cm"># table | csv | tsv</span>
+<span class="vr">PATHS</span>=( <span class="st">"${@:-/}"</span> )
+
+<span class="cm"># ── Column definitions: name, width, awk-expression ───────────</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">COL_W</span>=( [mount]=20 [total]=8 [used]=8 [avail]=8 [pct]=6 )
+
+<span class="cm"># ── Collect data from df ───────────────────────────────────────</span>
+<span class="cm"># df -h outputs: Filesystem Size Used Avail Use% Mounted-on</span>
+<span class="fn">collect_data</span>() {
+    <span class="cmd">df</span> <span class="fl">-h</span> <span class="st">"${PATHS[@]}"</span> 2<span class="op">&gt;</span><span class="pth">/dev/null</span> | <span class="cmd">tail</span> <span class="fl">-n</span> +2 | \
+    <span class="cmd">awk</span> <span class="st">'{print $6, $2, $3, $4, $5}'</span>  <span class="cm"># mount total used avail pct</span>
+}
+
+<span class="cm"># ── Render as aligned table ────────────────────────────────────</span>
+<span class="fn">render_table</span>() {
+    <span class="kw">local</span> <span class="vr">w_m</span>=<span class="st">${COL_W[mount]}</span> <span class="vr">w_t</span>=<span class="st">${COL_W[total]}</span>
+    <span class="kw">local</span> <span class="vr">w_u</span>=<span class="st">${COL_W[used]}</span>  <span class="vr">w_a</span>=<span class="st">${COL_W[avail]}</span> <span class="vr">w_p</span>=<span class="st">${COL_W[pct]}</span>
+    <span class="kw">local</span> <span class="vr">sep</span>; <span class="vr">sep</span>=<span class="st">$(</span><span class="cmd">printf</span> <span class="st">'%*s'</span> <span class="st">$(( w_m + w_t + w_u + w_a + w_p + 5 ))</span> <span class="st">''</span> | <span class="cmd">tr</span> <span class="st">' '</span> <span class="st">'─'</span><span class="st">)</span>
+
+    <span class="cmd">printf</span> <span class="st">"\033[1m%-${w_m}s %${w_t}s %${w_u}s %${w_a}s %${w_p}s\033[0m\n"</span> \
+        MOUNT TOTAL USED AVAIL PCT
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$sep"</span>
+
+    <span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">mount</span> <span class="vr">total</span> <span class="vr">used</span> <span class="vr">avail</span> <span class="vr">pct</span>; <span class="kw">do</span>
+        <span class="cm"># Colour-code by usage percentage</span>
+        <span class="vr">pct_n</span>=<span class="st">${pct//%/}</span>
+        <span class="kw">local</span> <span class="vr">colour</span>=<span class="st">'\033[0m'</span>
+        (( pct_n >= <span class="nu">90</span> )) && <span class="vr">colour</span>=<span class="st">'\033[31m'</span>
+        (( pct_n >= <span class="nu">75</span> && pct_n < <span class="nu">90</span> )) && <span class="vr">colour</span>=<span class="st">'\033[33m'</span>
+
+        <span class="cmd">printf</span> <span class="st">"%-${w_m}s %${w_t}s %${w_u}s %${w_a}s ${colour}%${w_p}s\033[0m\n"</span> \
+            <span class="st">"$mount"</span> <span class="st">"$total"</span> <span class="st">"$used"</span> <span class="st">"$avail"</span> <span class="st">"$pct"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="fn">collect_data</span><span class="op">)</span>
+}
+
+<span class="cm"># ── Render as CSV ─────────────────────────────────────────────</span>
+<span class="fn">render_csv</span>() {
+    <span class="fn">csv_row</span> mount total used avail pct
+    <span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">mount</span> <span class="vr">total</span> <span class="vr">used</span> <span class="vr">avail</span> <span class="vr">pct</span>; <span class="kw">do</span>
+        <span class="fn">csv_row</span> <span class="st">"$mount"</span> <span class="st">"$total"</span> <span class="st">"$used"</span> <span class="st">"$avail"</span> <span class="st">"$pct"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="fn">collect_data</span><span class="op">)</span>
+}
+
+<span class="cm"># ── Dispatch ──────────────────────────────────────────────────</span>
+<span class="kw">case</span> <span class="st">"$FORMAT"</span> <span class="kw">in</span>
+    table<span class="op">)</span> <span class="fn">render_table</span> ;;
+    csv<span class="op">)</span>   <span class="fn">render_csv</span>   ;;
+    tsv<span class="op">)</span>   <span class="fn">render_csv</span> | <span class="cmd">tr</span> <span class="st">','</span> <span class="st">$'\t'</span> ;;  <span class="cm"># quick for clean data</span>
+    <span class="op">*</span><span class="op">)</span>     <span class="cmd">echo</span> <span class="er">"Unknown FORMAT: $FORMAT"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span> ;;
+<span class="kw">esac</span>
+
+<span class="cm"># Usage:</span>
+<span class="cm"># ./disk_report.sh /var /home /tmp</span>
+<span class="cm"># FORMAT=csv ./disk_report.sh / /var</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       8. QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>8 — Quick Reference</h2>
+
+  <table class="ref-table">
+    <thead><tr><th>Task</th><th>Tool / Pattern</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Parse CSV with quoted fields</td><td><code>gawk FPAT='([^,]*)|("([^"]|"")*")'</code></td><td>GNU awk only</td></tr>
+      <tr><td>Simple CSV split (no quotes)</td><td><code>IFS=',' read -r f1 f2 f3</code></td><td>Only safe when no quoted commas</td></tr>
+      <tr><td>Extract CSV column by name</td><td><code>gawk -v FPAT=... -v col="name" 'NR==1{...} {print $colidx}'</code></td><td></td></tr>
+      <tr><td>Sort TSV by column N</td><td><code>sort -t$'\t' -kN,N</code></td><td>Add <code>n</code> flag for numeric sort</td></tr>
+      <tr><td>Join two TSV files</td><td><code>join -t$'\t' -1 N -2 M file1 file2</code></td><td>Files must be pre-sorted</td></tr>
+      <tr><td>Read INI value</td><td><code>ini_get FILE SECTION KEY</code></td><td>awk-based function</td></tr>
+      <tr><td>Update INI value</td><td><code>ini_set FILE SECTION KEY VALUE</code></td><td>Uses sed in-place</td></tr>
+      <tr><td>Load .env safely</td><td>Regex-validate keys, then <code>export "$key=$val"</code></td><td>Never <code>source</code> untrusted files</td></tr>
+      <tr><td>Quote a CSV field</td><td><code>val="${val//\"/\"\"}"; printf '"%s"' "$val"</code></td><td>Always safe to over-quote</td></tr>
+      <tr><td>CSV → TSV (no embedded commas)</td><td><code>tr ',' $'\t'</code></td><td></td></tr>
+      <tr><td>CSV → TSV (with quoted commas)</td><td><code>gawk FPAT=... + gsub + printf with \t</code></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box"><strong>When to use a real tool instead:</strong> For anything beyond simple filtering and extraction, reach for <code>csvkit</code> (<code>pip install csvkit</code>) — it provides <code>csvcut</code>, <code>csvjoin</code>, <code>csvstat</code>, <code>csvsql</code>, and handles encoding, BOM markers, and edge cases you haven't thought of yet. For Python users, <code>pandas</code> and its <code>read_csv()</code> are the standard. Shell CSV parsing is the right tool for quick one-offs and environments where you can't install extra packages.</div>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXERCISES
+  ═══════════════════════════════════════════ -->
+  <h2>✏️ Exercises</h2>
+  <p class="section-intro">Each exercise builds a utility you'd actually reach for. Test with edge cases: values containing commas, empty fields, sections with missing keys, files with Windows-style CRLF line endings.</p>
+
+  <!-- Exercise 1 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 1</div>
+    <div class="ex-task">Write a function called <code>csv_summary()</code> that accepts a CSV file path and prints a summary of its structure: number of rows (excluding header), number of columns, each column name with its index, and for numeric columns the min, max, and average. Use <code>gawk</code> with <code>FPAT</code> so it handles quoted fields correctly.</div>
+    <div class="ex-hint">Hint: in the NR==1 block, capture column names into an array. For data rows, try to detect numeric columns by checking if the value matches <code>/^-?[0-9.]+$/</code>. Track running sum, min, and max per column in arrays. Print the summary in the END block.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="fn">csv_summary</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"${1:?csv_summary: file required}"</span>
+    [[ <span class="fl">-f</span> <span class="st">"$file"</span> ]] || { <span class="cmd">echo</span> <span class="er">"Not found: $file"</span> <span class="op">>&amp;2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+    <span class="cmd">gawk</span> <span class="st">'
+    BEGIN { FPAT = "([^,]*)(\"([^\"]|\"\")*\")" }
+    function strip(s) {
+        gsub(/^[[:space:]"]+|[[:space:]"]+$/, "", s)
+        return s
+    }
+    NR == 1 {
+        ncols = NF
+        for (i=1; i<=NF; i++) hdr[i] = strip($i)
+        next
+    }
+    {
+        rows++
+        for (i=1; i<=NF; i++) {
+            v = strip($i)
+            if (v ~ /^-?[0-9]+(\.[0-9]+)?$/) {
+                is_num[i] = 1
+                sum[i] += v
+                if (!(i in mn) || v+0 < mn[i]) mn[i] = v+0
+                if (!(i in mx) || v+0 > mx[i]) mx[i] = v+0
+            }
+        }
+    }
+    END {
+        print "File:    " FILENAME
+        print "Rows:    " rows
+        print "Columns: " ncols
+        print ""
+        printf "%-4s %-20s %-10s %s\n", "IDX", "COLUMN", "TYPE", "STATS"
+        printf "%s\n", "─────────────────────────────────────────────────────"
+        for (i=1; i<=ncols; i++) {
+            if (is_num[i]) {
+                avg = (rows > 0) ? sum[i] / rows : 0
+                printf "%-4d %-20s %-10s min=%-8g max=%-8g avg=%.2f\n",
+                    i, hdr[i], "numeric", mn[i], mx[i], avg
+            } else {
+                printf "%-4d %-20s %-10s\n", i, hdr[i], "text"
+            }
+        }
+    }
+    '</span> <span class="st">"$file"</span>
+}
+
+<span class="cm"># Test:</span>
+<span class="cmd">printf</span> <span class="st">'id,name,score,city\n1,Alice,92,"New York"\n2,Bob,78,"Paris"\n3,Carol,85,London\n'</span> <span class="op">&gt;</span> /tmp/test.csv
+<span class="fn">csv_summary</span> /tmp/test.csv</code>
+    </div>
+  </div>
+
+  <!-- Exercise 2 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 2</div>
+    <div class="ex-task">Write a script called <code>csv_filter.sh</code> that filters rows from a CSV file based on a column name and a value. Usage: <code>csv_filter.sh FILE COLUMN VALUE</code>. It should print the header row, then all rows where the named column exactly matches VALUE (case-insensitive). Handle quoted fields correctly and strip surrounding quotes when comparing. Support an optional <code>--contains</code> flag that does a substring match instead of an exact match.</div>
+    <div class="ex-hint">Hint: in NR==1 find the column index by name. In data rows, strip quotes from the target field before comparing. Store the <code>--contains</code> flag in a variable passed via <code>-v</code>. Use <code>tolower()</code> in awk for case-insensitive comparison.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># csv_filter.sh [--contains] FILE COLUMN VALUE</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">MATCH_TYPE</span>=<span class="st">"exact"</span>
+<span class="kw">if</span> [[ <span class="st">"${1:-}"</span> == <span class="st">"--contains"</span> ]]; <span class="kw">then</span>
+    <span class="vr">MATCH_TYPE</span>=<span class="st">"contains"</span>
+    <span class="kw">shift</span>
+<span class="kw">fi</span>
+
+<span class="vr">FILE</span>=<span class="st">"${1:?Usage: csv_filter.sh [--contains] FILE COLUMN VALUE}"</span>
+<span class="vr">COL</span>=<span class="st">"${2:?column name required}"</span>
+<span class="vr">VAL</span>=<span class="st">"${3:?value required}"</span>
+
+[[ <span class="fl">-f</span> <span class="st">"$FILE"</span> ]] || { <span class="cmd">echo</span> <span class="er">"Error: $FILE not found"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="cmd">gawk</span> <span class="fl">-v</span> <span class="st">col="$COL"</span> <span class="fl">-v</span> <span class="st">val="$VAL"</span> <span class="fl">-v</span> <span class="st">mtype="$MATCH_TYPE"</span> <span class="st">'
+BEGIN {
+    FPAT = "([^,]*)(\"([^\"]|\"\")*\")"
+    colidx = 0
+    val_l = tolower(val)
+}
+
+function strip(s) {
+    gsub(/^[[:space:]"]+|[[:space:]"]+$/, "", s)
+    gsub(/""/, "\"", s)
+    return s
+}
+
+NR == 1 {
+    for (i=1; i<=NF; i++) {
+        h = strip($i)
+        if (tolower(h) == tolower(col)) { colidx = i }
+    }
+    if (!colidx) {
+        print "Error: column \"" col "\" not found" > "/dev/stderr"
+        exit 1
+    }
+    print   # always print header
+    next
+}
+
+{
+    if (!colidx) next
+    field = strip($colidx)
+    field_l = tolower(field)
+
+    if (mtype == "exact" && field_l == val_l) print
+    else if (mtype == "contains" && index(field_l, val_l)) print
+}
+'</span> <span class="st">"$FILE"</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 3 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 3</div>
+    <div class="ex-task">Write a complete config library in a file called <code>lib_config.sh</code> designed to be sourced by other scripts. It should provide: <code>config_load FILE</code> (loads all sections into <code>CONF[section.key]</code> associative array), <code>config_get SECTION KEY [DEFAULT]</code> (retrieves a value, returns DEFAULT if missing), <code>config_require SECTION KEY</code> (dies with an error if the key is absent), and <code>config_dump</code> (prints all loaded values sorted). Include a self-test that runs when the file is executed directly.</div>
+    <div class="ex-hint">Hint: use <code>declare -gA CONF</code> to create a global associative array. The key format is <code>"${section}.${key}"</code>. In <code>config_get</code>, use <code>"${CONF[$section.$key]:-$default}"</code>. The <code>${BASH_SOURCE[0]} == $0</code> trick from Topic 4 triggers the self-test.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib_config.sh — INI config library</span>
+<span class="cm"># Source this file; if executed directly it runs self-tests</span>
+
+<span class="kw">declare</span> <span class="fl">-gA</span> <span class="vr">CONF</span>=()
+<span class="vr">_CONF_LOADED</span>=<span class="st">""</span>
+
+<span class="cm"># config_load FILE — parse INI into CONF[section.key]</span>
+<span class="fn">config_load</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"${1:?config_load: file required}"</span>
+    [[ <span class="fl">-f</span> <span class="st">"$file"</span> ]] || { <span class="cmd">printf</span> <span class="er">'config_load: %s not found\n'</span> <span class="st">"$file"</span> <span class="op">>&amp;2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+    <span class="vr">CONF</span>=()   <span class="cm"># reset</span>
+    <span class="vr">_CONF_LOADED</span>=<span class="st">"$file"</span>
+
+    <span class="kw">local</span> <span class="vr">cur_section</span>=<span class="st">""</span>
+    <span class="kw">local</span> <span class="vr">line</span> <span class="vr">k</span> <span class="vr">v</span>
+
+    <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+        <span class="cm"># Remove CR (handle Windows CRLF)</span>
+        <span class="vr">line</span>=<span class="st">"${line//$'\r'/}"</span>
+        <span class="cm"># Skip blank lines and comments</span>
+        [[ <span class="st">"$line"</span> =~ ^[[:space:]]*($|[#;]) ]] && <span class="kw">continue</span>
+        <span class="cm"># Section header</span>
+        <span class="kw">if</span> [[ <span class="st">"$line"</span> =~ ^\[([A-Za-z0-9_.-]+)\] ]]; <span class="kw">then</span>
+            <span class="vr">cur_section</span>=<span class="st">"${BASH_REMATCH[1]}"</span>
+            <span class="kw">continue</span>
+        <span class="kw">fi</span>
+        <span class="cm"># key = value (only inside a section)</span>
+        [[ <span class="fl">-z</span> <span class="st">"$cur_section"</span> ]] && <span class="kw">continue</span>
+        [[ <span class="st">"$line"</span> =~ ^[[:space:]]*([A-Za-z0-9_./-]+)[[:space:]]*=[[:space:]]*(.*) ]] || <span class="kw">continue</span>
+        <span class="vr">k</span>=<span class="st">"${BASH_REMATCH[1]}"</span>
+        <span class="vr">v</span>=<span class="st">"${BASH_REMATCH[2]}"</span>
+        <span class="cm"># Strip inline comment</span>
+        <span class="vr">v</span>=<span class="st">"${v%%[[:space:]][#;]*}"</span>
+        <span class="cm"># Strip trailing whitespace</span>
+        <span class="vr">v</span>=<span class="st">"${v%"${v##*[![:space:]]}"}"</span>
+        <span class="cm"># Strip surrounding quotes</span>
+        [[ <span class="st">"$v"</span> =~ ^\"(.*)\"$ ]] && <span class="vr">v</span>=<span class="st">"${BASH_REMATCH[1]}"</span>
+        [[ <span class="st">"$v"</span> =~ ^\'(.*)\'$ ]] && <span class="vr">v</span>=<span class="st">"${BASH_REMATCH[1]}"</span>
+        <span class="vr">CONF</span>[<span class="st">"${cur_section}.${k}"</span>]=<span class="st">"$v"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="st">"$file"</span>
+}
+
+<span class="cm"># config_get SECTION KEY [DEFAULT]</span>
+<span class="fn">config_get</span>() {
+    <span class="kw">local</span> <span class="vr">sec</span>=<span class="st">"$1"</span> <span class="vr">key</span>=<span class="st">"$2"</span> <span class="vr">default</span>=<span class="st">"${3:-}"</span>
+    <span class="kw">local</span> <span class="vr">ckey</span>=<span class="st">"${sec}.${key}"</span>
+    <span class="kw">if</span> [[ <span class="fl">-v</span> <span class="st">"CONF[$ckey]"</span> ]]; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"${CONF[$ckey]}"</span>
+    <span class="kw">else</span>
+        <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$default"</span>
+    <span class="kw">fi</span>
+}
+
+<span class="cm"># config_require SECTION KEY — exits with error if missing</span>
+<span class="fn">config_require</span>() {
+    <span class="kw">local</span> <span class="vr">sec</span>=<span class="st">"$1"</span> <span class="vr">key</span>=<span class="st">"$2"</span>
+    [[ <span class="fl">-v</span> <span class="st">"CONF[${sec}.${key}]"</span> ]] || {
+        <span class="cmd">printf</span> <span class="er">'config_require: [%s] %s is required but not set\n'</span> <span class="st">"$sec"</span> <span class="st">"$key"</span> <span class="op">>&amp;2</span>
+        <span class="kw">return</span> <span class="nu">1</span>
+    }
+    <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"${CONF[${sec}.${key}]}"</span>
+}
+
+<span class="cm"># config_dump — print all loaded values</span>
+<span class="fn">config_dump</span>() {
+    <span class="cmd">printf</span> <span class="st">'# Config loaded from: %s\n'</span> <span class="st">"$_CONF_LOADED"</span>
+    <span class="kw">local</span> <span class="vr">k</span>
+    <span class="kw">for</span> <span class="vr">k</span> <span class="kw">in</span> <span class="st">$(</span><span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${!CONF[@]}"</span> | <span class="cmd">sort</span><span class="st">)</span>; <span class="kw">do</span>
+        <span class="cmd">printf</span> <span class="st">'%-40s = %s\n'</span> <span class="st">"$k"</span> <span class="st">"${CONF[$k]}"</span>
+    <span class="kw">done</span>
+}
+
+<span class="cm"># ── Self-test (runs only when executed, not sourced) ───────────</span>
+<span class="kw">if</span> [[ <span class="st">"${BASH_SOURCE[0]}"</span> == <span class="st">"$0"</span> ]]; <span class="kw">then</span>
+    <span class="vr">tmpf</span>=<span class="st">$(</span><span class="cmd">mktemp</span> /tmp/lib_config_test.XXXXXX.ini<span class="st">)</span>
+    <span class="cmd">trap</span> <span class="st">"rm -f '$tmpf'"</span> EXIT
+
+    <span class="cmd">cat</span> <span class="op">&gt;</span> <span class="st">"$tmpf"</span> <span class="op">&lt;&lt;</span><span class="st">'EOF'</span>
+<span class="st">[database]</span>
+<span class="st">host = db.example.com  # primary DB</span>
+<span class="st">port = 5432</span>
+<span class="st">name = "myapp prod"</span>
+
+<span class="st">[cache]</span>
+<span class="st">host = redis.example.com</span>
+<span class="st">port = 6379</span>
+<span class="st">EOF</span>
+
+    <span class="vr">pass</span>=<span class="nu">0</span>; <span class="vr">fail</span>=<span class="nu">0</span>
+    <span class="fn">assert_eq</span>() {
+        <span class="kw">if</span> [[ <span class="st">"$1"</span> == <span class="st">"$2"</span> ]]; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="st">'\033[32m✓\033[0m %s\n'</span> <span class="st">"$3"</span>; (( pass++ ))
+        <span class="kw">else</span>
+            <span class="cmd">printf</span> <span class="st">'\033[31m✗\033[0m %s (got "%s", want "%s")\n'</span> <span class="st">"$3"</span> <span class="st">"$1"</span> <span class="st">"$2"</span>; (( fail++ ))
+        <span class="kw">fi</span>
+    }
+
+    <span class="fn">config_load</span> <span class="st">"$tmpf"</span>
+
+    <span class="fn">assert_eq</span> <span class="st">"$(config_get database host)"</span>    <span class="st">"db.example.com"</span>  <span class="st">"host without inline comment"</span>
+    <span class="fn">assert_eq</span> <span class="st">"$(config_get database port)"</span>    <span class="st">"5432"</span>            <span class="st">"port as string"</span>
+    <span class="fn">assert_eq</span> <span class="st">"$(config_get database name)"</span>    <span class="st">"myapp prod"</span>      <span class="st">"quoted value"</span>
+    <span class="fn">assert_eq</span> <span class="st">"$(config_get cache host)"</span>       <span class="st">"redis.example.com"</span> <span class="st">"cache host"</span>
+    <span class="fn">assert_eq</span> <span class="st">"$(config_get database missing default_val)"</span> \
+               <span class="st">"default_val"</span>  <span class="st">"missing key returns default"</span>
+    <span class="fn">assert_eq</span> <span class="st">"$(config_get nosec nokey fallback)"</span> \
+               <span class="st">"fallback"</span>     <span class="st">"missing section returns default"</span>
+
+    <span class="cmd">echo</span>; <span class="fn">config_dump</span>
+    <span class="cmd">printf</span> <span class="st">'\nResults: %d passed, %d failed\n'</span> <span class="st">"$pass"</span> <span class="st">"$fail"</span>
+    (( fail == <span class="nu">0</span> ))
+<span class="kw">fi</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 4 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 4</div>
+    <div class="ex-task">Write a script called <code>csv_join.sh</code> that performs a left join on two CSV files, matching rows by a common key column. Usage: <code>csv_join.sh FILE1 COL1 FILE2 COL2</code>. The output should have all columns from FILE1, followed by all non-key columns from FILE2. Rows in FILE1 with no match in FILE2 should still appear, with empty strings for the FILE2 columns. Handle quoted fields throughout.</div>
+    <div class="ex-hint">Hint: the cleanest approach is a two-pass awk: first pass reads FILE2 into an associative array keyed by the join field; second pass processes FILE1 and looks up each row's key. Pass both FPAT and the column indices via <code>-v</code>. To find column indices, process NR==1 of each file separately using <code>BEGINFILE</code> or by running two awk programs.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># csv_join.sh FILE1 COL1 FILE2 COL2</span>
+<span class="cm"># Left join: all rows from FILE1, matched with FILE2 on key columns</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">F1</span>=<span class="st">"${1:?Usage: csv_join.sh FILE1 COL1 FILE2 COL2}"</span>
+<span class="vr">C1</span>=<span class="st">"${2:?col1 required}"</span>
+<span class="vr">F2</span>=<span class="st">"${3:?file2 required}"</span>
+<span class="vr">C2</span>=<span class="st">"${4:?col2 required}"</span>
+
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="st">"$F1"</span> <span class="st">"$F2"</span>; <span class="kw">do</span>
+    [[ <span class="fl">-f</span> <span class="st">"$f"</span> ]] || { <span class="cmd">printf</span> <span class="er">'Not found: %s\n'</span> <span class="st">"$f"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="kw">done</span>
+
+<span class="cmd">gawk</span> \
+    <span class="fl">-v</span> <span class="st">f1="$F1"</span> <span class="fl">-v</span> <span class="st">c1="$C1"</span> \
+    <span class="fl">-v</span> <span class="st">f2="$F2"</span> <span class="fl">-v</span> <span class="st">c2="$C2"</span> \
+    <span class="st">'
+BEGIN {
+    FPAT = "([^,]*)(\"([^\"]|\"\")*\")"
+    FS  = ","
+}
+
+function strip(s,    v) {
+    v = s
+    gsub(/^[[:space:]"]+|[[:space:]"]+$/, "", v)
+    gsub(/""/, "\"", v)
+    return v
+}
+
+function csv_field(s,    v) {
+    # Always quote output for safety
+    v = s; gsub(/"/, "\"\"", v)
+    return "\"" v "\""
+}
+
+# ── Pass 1: load FILE2 into memory ─────────────────────────
+BEGINFILE {
+    if (FILENAME == f2) in_f2 = 1
+    else                in_f2 = 0
+}
+
+in_f2 && FNR == 1 {
+    for (i=1; i<=NF; i++) {
+        h = strip($i)
+        if (tolower(h) == tolower(c2)) { f2_key_idx = i }
+        f2_hdr[i] = h
+    }
+    f2_ncols = NF
+    next
+}
+
+in_f2 {
+    key = strip($f2_key_idx)
+    row = ""
+    for (i=1; i<=NF; i++) {
+        if (i == f2_key_idx) continue   # exclude key col from f2 output
+        row = row (row ? SUBSEP : "") strip($i)
+    }
+    f2_data[key] = row
+    next
+}
+
+# ── Pass 2: process FILE1, join with FILE2 data ─────────────
+!in_f2 && FNR == 1 {
+    for (i=1; i<=NF; i++) {
+        h = strip($i)
+        if (tolower(h) == tolower(c1)) f1_key_idx = i
+        f1_hdr[i] = h
+    }
+    f1_ncols = NF
+    # Print merged header
+    out = ""
+    for (i=1; i<=f1_ncols; i++) out = out (out?",":"") csv_field(f1_hdr[i])
+    for (i=1; i<=f2_ncols; i++) {
+        if (i == f2_key_idx) continue
+        out = out "," csv_field(f2_hdr[i])
+    }
+    print out
+    next
+}
+
+!in_f2 {
+    key = strip($f1_key_idx)
+    out = ""
+    for (i=1; i<=f1_ncols; i++) out = out (out?",":"") csv_field(strip($i))
+
+    if (key in f2_data) {
+        n = split(f2_data[key], parts, SUBSEP)
+        for (i=1; i<=n; i++) out = out "," csv_field(parts[i])
+    } else {
+        # No match: fill with empty fields
+        empties = f2_ncols - 1   # -1 for the key col we excluded
+        for (i=1; i<=empties; i++) out = out ","
+    }
+    print out
+}
+'</span> <span class="st">"$F2"</span> <span class="st">"$F1"</span>   <span class="cm"># F2 first so it is loaded before F1 is processed</span>
+
+<span class="cm"># Example:</span>
+<span class="cm"># employees.csv: id,name,dept_id</span>
+<span class="cm"># departments.csv: dept_id,dept_name,budget</span>
+<span class="cm"># ./csv_join.sh employees.csv dept_id departments.csv dept_id</span></code>
+    </div>
+  </div>
+
+</div><!-- /lx-lesson -->
