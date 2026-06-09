@@ -1,0 +1,1137 @@
+<!-- ============================================================
+     BASH INTERMEDIATE: Topic 5 — Working with Dates and Times
+     Subject: Bash / Linux Shell Scripting (Intermediate)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+  .sh  { color: #e8a87d; }
+  .vr  { color: #ffd580; }
+  .op  { color: #e8a87d; }
+  .er  { color: #e05c5c; }
+  .fn  { color: #7ab8ff; }
+  .rx  { color: #ff9eb5; }
+
+  /* ── Platform blocks ─────────────────────────────── */
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 12px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; color: #7ab8ff; opacity: 0.8; }
+  .platform-block.both { border-color: #2a3a2a; }
+  .platform-block.both .pb-header { background: #1a2a1a; color: #7ecfa0; }
+  .platform-block.mac { border-color: #2a2a3a; }
+  .platform-block.mac .pb-header { background: #1e1e2e; color: #c9a8ff; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin: 16px 0;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+
+  /* ── Reference table ─────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+  .ref-table .example { color: #ffd580; font-family: 'Courier New', monospace; font-size: 0.85em; }
+
+  /* ── Exercise blocks ─────────────────────────────── */
+  .exercise-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-block .ex-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+  .exercise-block .ex-task {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .exercise-block .ex-hint {
+    font-size: 0.85em;
+    color: #a0a4b8;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-solution-toggle {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    color: #7ecfa0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .exercise-block .ex-solution-toggle:hover { background: #1e2235; }
+  .exercise-block .ex-solution { display: none; margin-top: 12px; }
+  .exercise-block .ex-solution.visible { display: block; }
+  .exercise-block .sol-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+</style>
+
+<script>
+function toggleSolution(btn) {
+  var sol = btn.nextElementSibling;
+  if (sol.classList.contains('visible')) {
+    sol.classList.remove('visible');
+    btn.textContent = '▶ Show Sample Solution';
+  } else {
+    sol.classList.add('visible');
+    btn.textContent = '▼ Hide Solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>🕐 Intermediate Topic 5 — Working with Dates and Times</h2>
+  <p class="section-intro">Date and time handling trips up shell scripters more than almost any other topic. The tools are powerful but the interfaces are inconsistent — GNU <code>date</code> and BSD <code>date</code> (macOS) have completely different syntax for date arithmetic. Epoch seconds are the lingua franca that makes everything else predictable. This chapter covers every form of date formatting, arithmetic entirely in shell integers, timezone handling, comparing and aging timestamps, the bash built-in time formatting that avoids forks in tight loops, and scheduling decision patterns used in real-world cron jobs and maintenance scripts.</p>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. THE date COMMAND — FORMAT STRINGS
+  ═══════════════════════════════════════════ -->
+  <h2>1 — The <code>date</code> Command and Format Strings</h2>
+
+  <p><code>date</code> with a <code>+FORMAT</code> argument controls its output. Every format directive starts with <code>%</code>. The result is a string you compose exactly as needed — for log files, filenames, display, or further arithmetic.</p>
+
+  <table class="ref-table">
+    <thead><tr><th>Directive</th><th>Meaning</th><th>Example output</th></tr></thead>
+    <tbody>
+      <tr><td><code>%Y</code></td><td>4-digit year</td><td class="example">2026</td></tr>
+      <tr><td><code>%y</code></td><td>2-digit year</td><td class="example">26</td></tr>
+      <tr><td><code>%m</code></td><td>Month (01–12)</td><td class="example">06</td></tr>
+      <tr><td><code>%d</code></td><td>Day of month (01–31)</td><td class="example">09</td></tr>
+      <tr><td><code>%j</code></td><td>Day of year (001–366)</td><td class="example">160</td></tr>
+      <tr><td><code>%H</code></td><td>Hour, 24h (00–23)</td><td class="example">14</td></tr>
+      <tr><td><code>%I</code></td><td>Hour, 12h (01–12)</td><td class="example">02</td></tr>
+      <tr><td><code>%M</code></td><td>Minute (00–59)</td><td class="example">30</td></tr>
+      <tr><td><code>%S</code></td><td>Second (00–60)</td><td class="example">05</td></tr>
+      <tr><td><code>%N</code></td><td>Nanoseconds <span class="note">(GNU only)</span></td><td class="example">123456789</td></tr>
+      <tr><td><code>%s</code></td><td>Unix epoch seconds since 1970-01-01 UTC</td><td class="example">1749470405</td></tr>
+      <tr><td><code>%A</code></td><td>Full weekday name</td><td class="example">Monday</td></tr>
+      <tr><td><code>%a</code></td><td>Abbreviated weekday</td><td class="example">Mon</td></tr>
+      <tr><td><code>%B</code></td><td>Full month name</td><td class="example">June</td></tr>
+      <tr><td><code>%b</code></td><td>Abbreviated month name</td><td class="example">Jun</td></tr>
+      <tr><td><code>%u</code></td><td>Day of week (1=Mon … 7=Sun)</td><td class="example">1</td></tr>
+      <tr><td><code>%w</code></td><td>Day of week (0=Sun … 6=Sat)</td><td class="example">1</td></tr>
+      <tr><td><code>%W</code></td><td>Week number of year (Mon-based)</td><td class="example">23</td></tr>
+      <tr><td><code>%Z</code></td><td>Timezone abbreviation</td><td class="example">UTC</td></tr>
+      <tr><td><code>%z</code></td><td>UTC offset</td><td class="example">+0100</td></tr>
+      <tr><td><code>%:z</code></td><td>UTC offset with colon <span class="note">(GNU only)</span></td><td class="example">+01:00</td></tr>
+      <tr><td><code>%F</code></td><td>ISO date shorthand: <code>%Y-%m-%d</code></td><td class="example">2026-06-09</td></tr>
+      <tr><td><code>%T</code></td><td>Time shorthand: <code>%H:%M:%S</code></td><td class="example">14:30:05</td></tr>
+      <tr><td><code>%R</code></td><td>Hour:minute: <code>%H:%M</code></td><td class="example">14:30</td></tr>
+      <tr><td><code>%D</code></td><td>US date: <code>%m/%d/%y</code></td><td class="example">06/09/26</td></tr>
+      <tr><td><code>%%</code></td><td>Literal percent sign</td><td class="example">%</td></tr>
+    </tbody>
+  </table>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Common date format recipes</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Formats for filenames (no spaces or colons) ───────────────</span>
+<span class="cmd">date</span> <span class="st">'+%Y%m%d'</span>             <span class="out">→ 20260609</span>
+<span class="cmd">date</span> <span class="st">'+%Y%m%d_%H%M%S'</span>      <span class="out">→ 20260609_143005</span>
+<span class="cmd">date</span> <span class="st">'+%Y-%m-%dT%H%M%S'</span>    <span class="out">→ 2026-06-09T143005</span>
+
+<span class="cm"># ── ISO 8601 — the universal machine-readable format ─────────</span>
+<span class="cmd">date</span> <span class="st">'+%Y-%m-%d'</span>            <span class="out">→ 2026-06-09</span>
+<span class="cmd">date</span> <span class="st">'+%Y-%m-%dT%H:%M:%S'</span>  <span class="out">→ 2026-06-09T14:30:05</span>
+<span class="cmd">date</span> <span class="fl">-Is</span>                    <span class="out">→ 2026-06-09T14:30:05+01:00  (GNU shorthand)</span>
+<span class="cmd">date</span> <span class="st">'+%Y-%m-%dT%H:%M:%S%z'</span> <span class="out">→ 2026-06-09T14:30:05+0100</span>
+
+<span class="cm"># ── Human-readable log timestamps ────────────────────────────</span>
+<span class="cmd">date</span> <span class="st">'+%a %b %d %T %Z %Y'</span>  <span class="out">→ Mon Jun 09 14:30:05 UTC 2026</span>
+<span class="cmd">date</span> <span class="st">'+[%Y-%m-%d %H:%M:%S]'</span> <span class="out">→ [2026-06-09 14:30:05]</span>
+
+<span class="cm"># ── Epoch seconds — the key to all arithmetic ─────────────────</span>
+<span class="cmd">date</span> <span class="st">'+%s'</span>                  <span class="out">→ 1749470405</span>
+
+<span class="cm"># ── Suppress newline / assign to variable ─────────────────────</span>
+<span class="vr">ts</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%Y%m%d_%H%M%S'</span><span class="st">)</span>
+<span class="vr">logfile</span>=<span class="st">"app_${ts}.log"</span>     <span class="out">→ app_20260609_143005.log</span>
+
+<span class="cm"># ── bash built-in — no fork, fast in loops ────────────────────</span>
+<span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">ts</span> <span class="st">'%(%Y%m%d_%H%M%S)T'</span> <span class="fl">-1</span>
+<span class="cm"># -1 = current time. -2 = time shell was invoked. Any epoch int works.</span>
+<span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">epoch</span> <span class="st">'%(%s)T'</span> <span class="fl">-1</span>   <span class="cm"># epoch seconds, no fork</span></code>
+      <div class="pb-note">The <code>printf '%(%FT%T)T'</code> built-in uses the same <code>strftime</code> directives as <code>date</code>, but is a bash built-in — no subprocess is spawned. Always prefer it inside loops where performance matters.</div>
+    </div>
+  </div>
+
+  <div class="warn-box"><strong>GNU date vs BSD date (macOS):</strong> The examples in this chapter use GNU <code>date</code> (Linux). macOS ships with BSD <code>date</code>, which has completely different syntax for date arithmetic and parsing. Key differences: BSD uses <code>-j -f FORMAT INPUT</code> to parse, and <code>-v +Nd</code> for arithmetic. If you write scripts that must run on both, the safest approach is to convert everything to epoch seconds immediately and do arithmetic purely in integers — that part is fully portable.</div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. EPOCH SECONDS — THE FOUNDATION
+  ═══════════════════════════════════════════ -->
+  <h2>2 — Epoch Seconds: The Foundation of Date Arithmetic</h2>
+
+  <p>Unix epoch time is the number of seconds since 1970-01-01 00:00:00 UTC. It's a plain integer — no timezone confusion, no calendar edge cases, just a number you can add, subtract, and compare with standard shell arithmetic. Every robust date calculation should start here.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Getting epoch seconds — current time and from a date string</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Current epoch ─────────────────────────────────────────────</span>
+<span class="cmd">date</span> <span class="st">'+%s'</span>                         <span class="out">→ 1749470405</span>
+<span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">now</span> <span class="st">'%(%s)T'</span> <span class="fl">-1</span>         <span class="cm"># no fork</span>
+
+<span class="cm"># ── Parse a date string to epoch (GNU date) ───────────────────</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'2026-06-09'</span>         <span class="st">'+%s'</span>  <span class="out">→ 1749427200</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'2026-06-09 14:30:00'</span> <span class="st">'+%s'</span>  <span class="out">→ 1749479400</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'yesterday'</span>          <span class="st">'+%s'</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'next Monday'</span>        <span class="st">'+%s'</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'3 days ago'</span>         <span class="st">'+%s'</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'2026-06-09 + 7 days'</span> <span class="st">'+%s'</span>
+
+<span class="cm"># ── Parse from a file's modification time ─────────────────────</span>
+<span class="cmd">date</span> <span class="fl">-r</span> <span class="pth">/etc/hosts</span> <span class="st">'+%s'</span>           <span class="cm"># mtime as epoch (GNU)</span>
+<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%Y'</span> <span class="pth">/etc/hosts</span>           <span class="cm"># same, via stat (more portable)</span>
+
+<span class="cm"># ── Convert epoch back to a human date ────────────────────────</span>
+<span class="vr">epoch</span>=<span class="nu">1749479400</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@${epoch}"</span>                 <span class="out">→ Tue Jun  9 14:30:00 UTC 2026</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@${epoch}"</span> <span class="st">'+%Y-%m-%d %H:%M:%S'</span>   <span class="out">→ 2026-06-09 14:30:00</span>
+<span class="cm"># The @ prefix means "interpret as epoch seconds"</span>
+
+<span class="cm"># ── Portable: extract individual fields from epoch ────────────</span>
+<span class="cm"># Works on both GNU and BSD date</span>
+<span class="fn">epoch_to_parts</span>() {
+    <span class="kw">local</span> <span class="vr">epoch</span>=<span class="st">$1</span>
+    <span class="kw">IFS</span>=<span class="st">' '</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">year</span> <span class="vr">month</span> <span class="vr">day</span> <span class="vr">hour</span> <span class="vr">min</span> <span class="vr">sec</span> \
+        <span class="op">&lt;&lt;&lt;</span> <span class="st">"$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@$epoch"</span> <span class="st">'+%Y %m %d %H %M %S'</span><span class="st">)"</span>
+    <span class="cmd">printf</span> <span class="st">'year=%s month=%s day=%s hour=%s min=%s sec=%s\n'</span> \
+        <span class="st">"$year"</span> <span class="st">"$month"</span> <span class="st">"$day"</span> <span class="st">"$hour"</span> <span class="st">"$min"</span> <span class="st">"$sec"</span>
+}</code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. DATE ARITHMETIC
+  ═══════════════════════════════════════════ -->
+  <h2>3 — Date Arithmetic</h2>
+
+  <p>Once you have epoch seconds, arithmetic is trivial — it's just integer addition and subtraction. The key constants: 60 seconds/minute, 3600 seconds/hour, 86400 seconds/day. For month and year arithmetic, delegate back to <code>date -d</code> since months have variable lengths.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Adding and subtracting time periods</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Add/subtract fixed intervals (pure arithmetic) ────────────</span>
+<span class="vr">now</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s'</span><span class="st">)</span>
+
+<span class="vr">one_hour_ago</span>=$(( now - 3600 ))
+<span class="vr">one_day_ago</span>=$(( now - 86400 ))
+<span class="vr">one_week_ago</span>=$(( now - 86400 * 7 ))
+<span class="vr">in_30_days</span>=$(( now + 86400 * 30 ))
+
+<span class="cm"># Convert result back to readable date</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@$one_day_ago"</span> <span class="st">'+%Y-%m-%d %H:%M:%S'</span>
+
+<span class="cm"># ── Month/year arithmetic — delegate to date -d ───────────────</span>
+<span class="cm"># Month lengths vary; don't do month arithmetic with 30*86400</span>
+<span class="vr">next_month</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'now + 1 month'</span> <span class="st">'+%Y-%m-%d'</span><span class="st">)</span>
+<span class="vr">prev_month</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'now - 1 month'</span> <span class="st">'+%Y-%m-%d'</span><span class="st">)</span>
+<span class="vr">next_year</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'now + 1 year'</span>  <span class="st">'+%Y-%m-%d'</span><span class="st">)</span>
+
+<span class="cm"># ── First and last day of current month ───────────────────────</span>
+<span class="vr">first_day</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%Y-%m-01'</span><span class="st">)</span>
+<span class="vr">last_day</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"$(date '+%Y-%m-01') + 1 month - 1 day"</span> <span class="st">'+%Y-%m-%d'</span><span class="st">)</span>
+<span class="cm"># Alternative: next month's first day minus 1 second</span>
+<span class="vr">eom_epoch</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"$(date '+%Y-%m-01') + 1 month - 1 second"</span> <span class="st">'+%s'</span><span class="st">)</span>
+
+<span class="cm"># ── Start/end of current day ──────────────────────────────────</span>
+<span class="vr">today_start</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%Y-%m-%d 00:00:00'</span><span class="st">)</span>
+<span class="vr">today_start_epoch</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"$today_start"</span> <span class="st">'+%s'</span><span class="st">)</span>
+<span class="vr">today_end_epoch</span>=$(( today_start_epoch + 86400 - 1 ))</code>
+    </div>
+  </div>
+
+  <h3>Calculating differences between two dates</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Duration and age calculations</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Difference between two epoch values ───────────────────────</span>
+<span class="vr">start</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'2026-01-01'</span> <span class="st">'+%s'</span><span class="st">)</span>
+<span class="vr">end</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'2026-06-09'</span> <span class="st">'+%s'</span><span class="st">)</span>
+<span class="vr">diff_seconds</span>=$(( end - start ))
+<span class="vr">diff_days</span>=$(( diff_seconds / 86400 ))
+<span class="vr">diff_hours</span>=$(( diff_seconds / 3600 ))
+<span class="cmd">echo</span> <span class="st">"$diff_days days"</span>              <span class="out">→ 159 days</span>
+
+<span class="cm"># ── Human-readable duration from seconds ──────────────────────</span>
+<span class="fn">format_duration</span>() {
+    <span class="kw">local</span> <span class="vr">total</span>=<span class="st">$1</span>
+    <span class="kw">local</span> <span class="vr">days</span>=$(( total / 86400 ))
+    <span class="kw">local</span> <span class="vr">hours</span>=$(( (total % 86400) / 3600 ))
+    <span class="kw">local</span> <span class="vr">mins</span>=$(( (total % 3600) / 60 ))
+    <span class="kw">local</span> <span class="vr">secs</span>=$(( total % 60 ))
+
+    <span class="kw">local</span> <span class="vr">result</span>=<span class="st">""</span>
+    (( days  > <span class="nu">0</span> )) && <span class="vr">result</span>+=<span class="st">"${days}d "</span>
+    (( hours > <span class="nu">0</span> )) && <span class="vr">result</span>+=<span class="st">"${hours}h "</span>
+    (( mins  > <span class="nu">0</span> )) && <span class="vr">result</span>+=<span class="st">"${mins}m "</span>
+    <span class="vr">result</span>+=<span class="st">"${secs}s"</span>
+    <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$result"</span>
+}
+
+<span class="fn">format_duration</span> <span class="nu">90061</span>              <span class="out">→ 1d 1h 1m 1s</span>
+<span class="fn">format_duration</span> <span class="nu">3723</span>               <span class="out">→ 1h 2m 3s</span>
+<span class="fn">format_duration</span> <span class="nu">45</span>                 <span class="out">→ 45s</span>
+
+<span class="cm"># ── Script execution timer ────────────────────────────────────</span>
+<span class="vr">T_START</span>=<span class="st">$SECONDS</span>      <span class="cm"># $SECONDS counts seconds since shell started</span>
+<span class="cm"># ... do work ...</span>
+<span class="vr">elapsed</span>=$(( SECONDS - T_START ))
+<span class="cmd">echo</span> <span class="st">"Completed in $(format_duration $elapsed)"</span>
+
+<span class="cm"># Higher resolution: use date +%s%N for nanoseconds</span>
+<span class="vr">t0</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s%N'</span><span class="st">)</span>
+<span class="cm"># ... do work ...</span>
+<span class="vr">t1</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s%N'</span><span class="st">)</span>
+<span class="vr">ms</span>=$(( (t1 - t0) / 1000000 ))
+<span class="cmd">echo</span> <span class="st">"Elapsed: ${ms}ms"</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. COMPARING TIMESTAMPS
+  ═══════════════════════════════════════════ -->
+  <h2>4 — Comparing Timestamps</h2>
+
+  <p>Since epoch seconds are integers, all comparisons use standard integer operators: <code>-lt</code>, <code>-gt</code>, <code>-eq</code>, or <code>(( ))</code> arithmetic. This is far more reliable than comparing date strings lexicographically (which only works safely with ISO format <code>YYYY-MM-DD</code>).</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Is a timestamp past? Is a file too old? Is it business hours?</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Is a deadline past? ───────────────────────────────────────</span>
+<span class="vr">deadline</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'2026-12-31 23:59:59'</span> <span class="st">'+%s'</span><span class="st">)</span>
+<span class="vr">now</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s'</span><span class="st">)</span>
+
+<span class="kw">if</span> (( now > deadline )); <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Deadline has passed"</span>
+<span class="kw">else</span>
+    <span class="vr">remaining</span>=$(( deadline - now ))
+    <span class="cmd">echo</span> <span class="st">"$(format_duration $remaining) until deadline"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Is a file older than N days? ──────────────────────────────</span>
+<span class="fn">file_older_than</span>() {
+    <span class="kw">local</span> <span class="vr">file</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">days</span>=<span class="st">"$2"</span>
+    [[ <span class="fl">-e</span> <span class="st">"$file"</span> ]] || <span class="kw">return</span> <span class="nu">0</span>  <span class="cm"># missing file: treat as infinitely old</span>
+    <span class="kw">local</span> <span class="vr">mtime</span>
+    <span class="vr">mtime</span>=<span class="st">$(</span><span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%Y'</span> <span class="st">"$file"</span><span class="st">)</span>
+    <span class="kw">local</span> <span class="vr">cutoff</span>=$(( $(date '+%s') - days * 86400 ))
+    (( mtime < cutoff ))
+}
+
+<span class="kw">if</span> <span class="fn">file_older_than</span> <span class="pth">/var/cache/myapp/data.cache</span> <span class="nu">7</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Cache is stale — refreshing"</span>
+    <span class="fn">refresh_cache</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Find all files modified in the last N minutes ─────────────</span>
+<span class="vr">cutoff</span>=$(( $(date '+%s') - 30 * 60 ))   <span class="cm"># 30 minutes ago</span>
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">f</span>; <span class="kw">do</span>
+    <span class="vr">mtime</span>=<span class="st">$(</span><span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%Y'</span> <span class="st">"$f"</span><span class="st">)</span>
+    (( mtime >= cutoff )) && <span class="cmd">echo</span> <span class="st">"Recent: $f"</span>
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">find</span> <span class="pth">/var/log</span> <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="fl">-print0</span><span class="op">)</span>
+<span class="cm"># Better: let find do it</span>
+<span class="cmd">find</span> <span class="pth">/var/log</span> <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="fl">-newer</span> <span class="op">&lt;(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'30 minutes ago'</span><span class="op">)</span>
+
+<span class="cm"># ── Compare two ISO date strings directly (lexicographic — safe for YYYY-MM-DD)</span>
+<span class="vr">d1</span>=<span class="st">"2026-01-15"</span>
+<span class="vr">d2</span>=<span class="st">"2026-06-09"</span>
+[[ <span class="st">"$d1"</span> < <span class="st">"$d2"</span> ]] && <span class="cmd">echo</span> <span class="st">"$d1 is earlier"</span>
+<span class="cm"># This ONLY works reliably with YYYY-MM-DD or YYYYMMDD — never with locale dates</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. TIMEZONE HANDLING
+  ═══════════════════════════════════════════ -->
+  <h2>5 — Timezone Handling</h2>
+
+  <p>The <code>TZ</code> environment variable controls which timezone <code>date</code> uses. You can set it inline for a single command, export it for the current script, or use it to convert between zones. Epoch seconds are always UTC — the timezone only affects how they're <em>displayed</em> or <em>parsed</em>.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Working with timezones</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Display current time in multiple timezones ────────────────</span>
+<span class="cmd">TZ</span>=<span class="st">'UTC'</span>              <span class="cmd">date</span> <span class="st">'+%H:%M %Z'</span>   <span class="out">→ 13:30 UTC</span>
+<span class="cmd">TZ</span>=<span class="st">'America/New_York'</span> <span class="cmd">date</span> <span class="st">'+%H:%M %Z'</span>   <span class="out">→ 09:30 EDT</span>
+<span class="cmd">TZ</span>=<span class="st">'Europe/London'</span>   <span class="cmd">date</span> <span class="st">'+%H:%M %Z'</span>   <span class="out">→ 14:30 BST</span>
+<span class="cmd">TZ</span>=<span class="st">'Asia/Tokyo'</span>       <span class="cmd">date</span> <span class="st">'+%H:%M %Z'</span>   <span class="out">→ 22:30 JST</span>
+
+<span class="cm"># ── Convert a timestamp from one zone to another ──────────────</span>
+<span class="cm"># Step 1: parse the local time as epoch (forces UTC interpretation)</span>
+<span class="cm"># Step 2: display with the target TZ</span>
+<span class="vr">ny_time</span>=<span class="st">"2026-06-09 09:30:00"</span>
+<span class="vr">epoch</span>=<span class="st">$(</span><span class="cmd">TZ</span>=<span class="st">'America/New_York'</span> <span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"$ny_time"</span> <span class="st">'+%s'</span><span class="st">)</span>
+<span class="vr">tokyo_time</span>=<span class="st">$(</span><span class="cmd">TZ</span>=<span class="st">'Asia/Tokyo'</span> <span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@$epoch"</span> <span class="st">'+%Y-%m-%d %H:%M %Z'</span><span class="st">)</span>
+<span class="cmd">echo</span> <span class="st">"$ny_time ET  =  $tokyo_time"</span>
+
+<span class="cm"># ── Ensure a script always uses UTC ───────────────────────────</span>
+<span class="kw">export</span> <span class="vr">TZ</span>=<span class="st">'UTC'</span>
+<span class="cm"># All subsequent date calls use UTC regardless of system timezone</span>
+<span class="cm"># Critical for cron jobs that run on servers across multiple timezones</span>
+
+<span class="cm"># ── List available timezone names ─────────────────────────────</span>
+<span class="cmd">timedatectl</span> list-timezones           <span class="cm"># systemd systems</span>
+<span class="cmd">ls</span> <span class="pth">/usr/share/zoneinfo/</span>             <span class="cm"># all systems</span>
+
+<span class="cm"># ── Check current system timezone ─────────────────────────────</span>
+<span class="cmd">date</span> <span class="st">'+%Z %z'</span>                        <span class="out">→ UTC +0000</span>
+<span class="cmd">timedatectl</span> | <span class="cmd">grep</span> <span class="st">'Time zone'</span>      <span class="out">→ Time zone: Europe/London (BST, +0100)</span>
+
+<span class="cm"># ── DST-safe "is it past 9am in New York?" ────────────────────</span>
+<span class="cm"># DON'T use fixed offsets like UTC-5 — DST changes them</span>
+<span class="cm"># DO use named timezones — the OS handles DST automatically</span>
+<span class="vr">ny_hour</span>=<span class="st">$(</span><span class="cmd">TZ</span>=<span class="st">'America/New_York'</span> <span class="cmd">date</span> <span class="st">'+%-H'</span><span class="st">)</span>  <span class="cm"># %-H strips leading zero</span>
+(( ny_hour >= <span class="nu">9</span> && ny_hour < <span class="nu">17</span> )) && <span class="cmd">echo</span> <span class="st">"NY business hours"</span></code>
+      <div class="pb-note">Timezone names come from the IANA tz database (also called the Olson database). Always use full names like <code>America/New_York</code>, never abbreviations like <code>EST</code> — abbreviations are ambiguous (three different countries use <code>CST</code> with different UTC offsets).</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. SCHEDULING LOGIC
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Scheduling Logic: Day-of-Week and Time-Window Decisions</h2>
+
+  <p>Scripts running under cron or as daemons often need to make decisions based on the current time: "only run on weekdays", "don't run during backup window", "send the digest every Monday". This is cleaner in the script itself than trying to encode all the logic in crontab syntax.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Day, week, and time-window decision patterns</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Is it a weekday? ──────────────────────────────────────────</span>
+<span class="vr">dow</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%u'</span><span class="st">)</span>   <span class="cm"># 1=Mon … 7=Sun  (ISO weekday, most useful)</span>
+<span class="kw">if</span> (( dow >= <span class="nu">1</span> && dow <= <span class="nu">5</span> )); <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Weekday — running job"</span>
+<span class="kw">else</span>
+    <span class="cmd">echo</span> <span class="st">"Weekend — skipping"</span>
+    <span class="kw">exit</span> <span class="nu">0</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Is it Monday? (for weekly tasks) ─────────────────────────</span>
+<span class="kw">if</span> [[ <span class="st">"$(date '+%u')"</span> == <span class="st">"1"</span> ]]; <span class="kw">then</span>
+    <span class="fn">send_weekly_digest</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Is it the first day of the month? ─────────────────────────</span>
+<span class="kw">if</span> [[ <span class="st">"$(date '+%d')"</span> == <span class="st">"01"</span> ]]; <span class="kw">then</span>
+    <span class="fn">generate_monthly_report</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Is the current time inside a maintenance window? ──────────</span>
+<span class="cm"># Maintenance: 02:00–04:00 UTC every night</span>
+<span class="fn">in_maintenance_window</span>() {
+    <span class="kw">local</span> <span class="vr">h</span> <span class="vr">m</span>
+    <span class="kw">IFS</span>=<span class="st">':'</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">h</span> <span class="vr">m</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$(TZ=UTC date '+%H:%M')"</span>
+    <span class="kw">local</span> <span class="vr">mins</span>=$(( 10#$h * 60 + 10#$m ))  <span class="cm"># force base-10 (08, 09 are octal-safe)</span>
+    (( mins >= 120 && mins < 240 ))         <span class="cm"># 02:00 = 120 mins, 04:00 = 240 mins</span>
+}
+
+<span class="kw">if</span> <span class="fn">in_maintenance_window</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"In maintenance window — aborting"</span>
+    <span class="kw">exit</span> <span class="nu">0</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Wait until a specific time ────────────────────────────────</span>
+<span class="fn">sleep_until</span>() {
+    <span class="kw">local</span> <span class="vr">target_epoch</span>
+    <span class="vr">target_epoch</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"$1"</span> <span class="st">'+%s'</span><span class="st">)</span>
+    <span class="kw">local</span> <span class="vr">now_epoch</span>
+    <span class="kw">now_epoch</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s'</span><span class="st">)</span>
+    <span class="kw">local</span> <span class="vr">wait_secs</span>=$(( target_epoch - now_epoch ))
+    <span class="kw">if</span> (( wait_secs > <span class="nu">0</span> )); <span class="kw">then</span>
+        <span class="cmd">echo</span> <span class="st">"Sleeping ${wait_secs}s until $1"</span>
+        <span class="cmd">sleep</span> <span class="st">"$wait_secs"</span>
+    <span class="kw">fi</span>
+}
+
+<span class="fn">sleep_until</span> <span class="st">"03:00 tomorrow"</span>
+<span class="fn">sleep_until</span> <span class="st">"next Monday 08:00"</span></code>
+    </div>
+  </div>
+
+  <h3>Handling the midnight rollover problem</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Time windows that span midnight</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># A maintenance window 22:00–02:00 crosses midnight</span>
+<span class="cm"># Naive hour comparison breaks: is 23:00 in range [22,2]?</span>
+
+<span class="fn">in_overnight_window</span>() {
+    <span class="kw">local</span> <span class="vr">start_h</span>=<span class="st">"$1"</span>   <span class="cm"># e.g. 22</span>
+    <span class="kw">local</span> <span class="vr">end_h</span>=<span class="st">"$2"</span>     <span class="cm"># e.g. 2</span>
+    <span class="kw">local</span> <span class="vr">cur_h</span>
+    <span class="vr">cur_h</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%-H'</span><span class="st">)</span>  <span class="cm"># current hour, no leading zero</span>
+
+    <span class="kw">if</span> (( start_h > end_h )); <span class="kw">then</span>
+        <span class="cm"># Window crosses midnight: in range if >= start OR < end</span>
+        (( cur_h >= start_h || cur_h < end_h ))
+    <span class="kw">else</span>
+        <span class="cm"># Normal window (same day)</span>
+        (( cur_h >= start_h && cur_h < end_h ))
+    <span class="kw">fi</span>
+}
+
+<span class="fn">in_overnight_window</span> <span class="nu">22</span> <span class="nu">2</span>  <span class="cm"># 22:00–02:00 maintenance window</span>
+<span class="kw">if</span> <span class="fn">in_overnight_window</span> <span class="nu">22</span> <span class="nu">2</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Currently in maintenance window"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Is it the last day of the month? ──────────────────────────</span>
+<span class="cm"># Trickier: "tomorrow is the first of next month"</span>
+<span class="fn">is_last_day_of_month</span>() {
+    <span class="kw">local</span> <span class="vr">tomorrow_day</span>
+    <span class="vr">tomorrow_day</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'tomorrow'</span> <span class="st">'+%d'</span><span class="st">)</span>
+    [[ <span class="st">"$tomorrow_day"</span> == <span class="st">"01"</span> ]]
+}
+<span class="fn">is_last_day_of_month</span> && <span class="fn">run_end_of_month_jobs</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. LOG ROTATION AND FILE AGING
+  ═══════════════════════════════════════════ -->
+  <h2>7 — Practical Patterns: Log Rotation and File Aging</h2>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Date-stamped log files and rotation</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># ── Pattern: one log file per day ─────────────────────────────</span>
+<span class="vr">LOG_DIR</span>=<span class="pth">/var/log/myapp</span>
+<span class="vr">LOG_FILE</span>=<span class="st">"${LOG_DIR}/app_$(date '+%Y-%m-%d').log"</span>
+
+<span class="fn">log</span>() {
+    <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">_ts</span> <span class="st">'%(%Y-%m-%d %H:%M:%S)T'</span> <span class="fl">-1</span>   <span class="cm"># no fork</span>
+    <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$_ts"</span> <span class="st">"$*"</span> <span class="op">&gt;&gt;</span> <span class="st">"$LOG_FILE"</span>
+}
+
+<span class="cm"># ── Delete logs older than N days ─────────────────────────────</span>
+<span class="fn">rotate_logs</span>() {
+    <span class="kw">local</span> <span class="vr">dir</span>=<span class="st">"$1"</span> <span class="vr">keep_days</span>=<span class="st">"$2"</span>
+    <span class="kw">local</span> <span class="vr">cutoff</span>=$(( $(date '+%s') - keep_days * 86400 ))
+    <span class="kw">local</span> <span class="vr">file</span> <span class="vr">mtime</span> <span class="vr">deleted</span>=<span class="nu">0</span>
+
+    <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">file</span>; <span class="kw">do</span>
+        <span class="vr">mtime</span>=<span class="st">$(</span><span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%Y'</span> <span class="st">"$file"</span><span class="st">)</span>
+        <span class="kw">if</span> (( mtime < cutoff )); <span class="kw">then</span>
+            <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$file"</span>
+            (( deleted++ ))
+        <span class="kw">fi</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">find</span> <span class="st">"$dir"</span> <span class="fl">-maxdepth</span> <span class="nu">1</span> <span class="fl">-type</span> f <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="fl">-print0</span><span class="op">)</span>
+    <span class="cmd">echo</span> <span class="st">"Rotated: deleted $deleted logs older than $keep_days days"</span>
+}
+
+<span class="fn">rotate_logs</span> <span class="st">"$LOG_DIR"</span> <span class="nu">30</span>
+
+<span class="cm"># ── Generate a date-stamped backup filename ────────────────────</span>
+<span class="fn">backup_filename</span>() {
+    <span class="kw">local</span> <span class="vr">base</span>=<span class="st">"${1%.*}"</span>       <span class="cm"># strip extension</span>
+    <span class="kw">local</span> <span class="vr">ext</span>=<span class="st">"${1##*.}"</span>        <span class="cm"># get extension</span>
+    <span class="kw">local</span> <span class="vr">ts</span>
+    <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">ts</span> <span class="st">'%(%Y%m%d_%H%M%S)T'</span> <span class="fl">-1</span>
+    <span class="cmd">printf</span> <span class="st">'%s_%s.%s'</span> <span class="st">"$base"</span> <span class="st">"$ts"</span> <span class="st">"$ext"</span>
+}
+<span class="fn">backup_filename</span> <span class="st">"config.yaml"</span>    <span class="out">→ config_20260609_143005.yaml</span>
+<span class="fn">backup_filename</span> <span class="st">"database.sql"</span>   <span class="out">→ database_20260609_143005.sql</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       8. SLEEP AND TIMING
+  ═══════════════════════════════════════════ -->
+  <h2>8 — <code>sleep</code>, Fractional Seconds, and Polling Loops</h2>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 sleep patterns and high-resolution timing</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── sleep accepts fractional seconds (GNU sleep) ──────────────</span>
+<span class="cmd">sleep</span> <span class="nu">0.1</span>           <span class="cm"># 100ms</span>
+<span class="cmd">sleep</span> <span class="nu">0.5</span>           <span class="cm"># 500ms</span>
+<span class="cmd">sleep</span> <span class="nu">2.5</span>           <span class="cm"># 2.5 seconds</span>
+<span class="cmd">sleep</span> <span class="st">"${POLL_INTERVAL:-5}"</span>   <span class="cm"># configurable interval</span>
+
+<span class="cm"># ── Exponential backoff ───────────────────────────────────────</span>
+<span class="fn">retry_with_backoff</span>() {
+    <span class="kw">local</span> <span class="vr">max_attempts</span>=<span class="st">"${1}"</span>; <span class="kw">shift</span>
+    <span class="kw">local</span> <span class="vr">delay</span>=<span class="nu">1</span>
+    <span class="kw">local</span> <span class="vr">attempt</span>
+
+    <span class="kw">for</span> (( <span class="vr">attempt</span>=<span class="nu">1</span>; attempt <= max_attempts; attempt++ )); <span class="kw">do</span>
+        <span class="kw">if</span> <span class="st">"$@"</span>; <span class="kw">then</span>
+            <span class="kw">return</span> <span class="nu">0</span>
+        <span class="kw">fi</span>
+        <span class="kw">if</span> (( attempt < max_attempts )); <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="st">'Attempt %d/%d failed — retrying in %ds\n'</span> \
+                <span class="st">"$attempt"</span> <span class="st">"$max_attempts"</span> <span class="st">"$delay"</span> <span class="op">>&amp;2</span>
+            <span class="cmd">sleep</span> <span class="st">"$delay"</span>
+            <span class="vr">delay</span>=$(( delay * 2 > <span class="nu">60</span> ? <span class="nu">60</span> : delay * 2 ))  <span class="cm"># cap at 60s</span>
+        <span class="kw">fi</span>
+    <span class="kw">done</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+}
+
+<span class="fn">retry_with_backoff</span> <span class="nu">5</span> <span class="cmd">curl</span> <span class="fl">-sf</span> https://api.example.com/health
+
+<span class="cm"># ── Poll until condition is met, with timeout ─────────────────</span>
+<span class="fn">wait_for</span>() {
+    <span class="kw">local</span> <span class="vr">timeout</span>=<span class="st">"$1"</span>; <span class="kw">shift</span>   <span class="cm"># timeout in seconds</span>
+    <span class="kw">local</span> <span class="vr">deadline</span>=$(( $(date '+%s') + timeout ))
+
+    <span class="kw">while</span> (( $(date '+%s') < deadline )); <span class="kw">do</span>
+        <span class="st">"$@"</span> && <span class="kw">return</span> <span class="nu">0</span>
+        <span class="cmd">sleep</span> <span class="nu">2</span>
+    <span class="kw">done</span>
+    <span class="cmd">printf</span> <span class="st">'Timed out after %ds waiting for: %s\n'</span> <span class="st">"$timeout"</span> <span class="st">"$*"</span> <span class="op">>&amp;2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+}
+
+<span class="cm"># Wait up to 60s for a service to become healthy</span>
+<span class="fn">wait_for</span> <span class="nu">60</span> <span class="cmd">curl</span> <span class="fl">-sf</span> http://localhost:8080/health
+<span class="cmd">echo</span> <span class="st">"Service is up"</span>
+
+<span class="cm"># ── The SECONDS built-in — no fork, precise to 1 second ───────</span>
+<span class="vr">T0</span>=<span class="st">$SECONDS</span>
+<span class="cm"># ... work ...</span>
+<span class="cmd">echo</span> <span class="st">"Elapsed: $(( SECONDS - T0 ))s"</span>
+
+<span class="cm"># $SECONDS can be assigned to reset the counter:</span>
+<span class="vr">SECONDS</span>=<span class="nu">0</span>
+<span class="cm"># ... work ...</span>
+<span class="cmd">echo</span> <span class="st">"Elapsed: ${SECONDS}s"</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       9. MACROS / PORTABILITY
+  ═══════════════════════════════════════════ -->
+  <h2>9 — Portability: GNU vs BSD <code>date</code></h2>
+
+  <div class="platform-block mac">
+    <div class="pb-header">🍎 BSD date (macOS) — different syntax for arithmetic and parsing</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># BSD date does NOT support -d "string" for parsing</span>
+<span class="cm"># Instead use -j (don't set date) and -f FORMAT</span>
+
+<span class="cm"># Parse a date string to epoch on macOS:</span>
+<span class="cmd">date</span> <span class="fl">-j</span> <span class="fl">-f</span> <span class="st">'%Y-%m-%d'</span> <span class="st">'2026-06-09'</span> <span class="st">'+%s'</span>    <span class="out">→ epoch int</span>
+
+<span class="cm"># Parse with time on macOS:</span>
+<span class="cmd">date</span> <span class="fl">-j</span> <span class="fl">-f</span> <span class="st">'%Y-%m-%d %H:%M:%S'</span> <span class="st">'2026-06-09 14:30:00'</span> <span class="st">'+%s'</span>
+
+<span class="cm"># Date arithmetic on macOS with -v:</span>
+<span class="cm"># -v +7d = add 7 days, -v -1m = subtract 1 month</span>
+<span class="cmd">date</span> <span class="fl">-v</span> +7d <span class="st">'+%Y-%m-%d'</span>             <span class="cm"># 7 days from now</span>
+<span class="cmd">date</span> <span class="fl">-v</span> -1m <span class="st">'+%Y-%m-%d'</span>             <span class="cm"># 1 month ago</span>
+<span class="cmd">date</span> <span class="fl">-v</span> +1y <span class="fl">-v</span> +3d <span class="st">'+%Y-%m-%d'</span>     <span class="cm"># 1 year + 3 days from now</span>
+
+<span class="cm"># Convert epoch to date on macOS:</span>
+<span class="cmd">date</span> <span class="fl">-r</span> <span class="nu">1749479400</span> <span class="st">'+%Y-%m-%d %H:%M:%S'</span>   <span class="cm"># -r instead of @epoch</span></code>
+    </div>
+  </div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Writing portable date code for both GNU and BSD</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Detect which date we have</span>
+<span class="kw">if</span> <span class="cmd">date</span> <span class="fl">--version</span> <span class="op">&gt;</span><span class="pth">/dev/null</span> <span class="nu">2</span><span class="op">&gt;&amp;1</span>; <span class="kw">then</span>
+    <span class="vr">DATE_TYPE</span>=<span class="st">"gnu"</span>
+<span class="kw">else</span>
+    <span class="vr">DATE_TYPE</span>=<span class="st">"bsd"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Portable: parse a YYYY-MM-DD string to epoch</span>
+<span class="fn">date_to_epoch</span>() {
+    <span class="kw">if</span> [[ <span class="st">"$DATE_TYPE"</span> == <span class="st">"gnu"</span> ]]; <span class="kw">then</span>
+        <span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"$1"</span> <span class="st">'+%s'</span>
+    <span class="kw">else</span>
+        <span class="cmd">date</span> <span class="fl">-j</span> <span class="fl">-f</span> <span class="st">'%Y-%m-%d'</span> <span class="st">"$1"</span> <span class="st">'+%s'</span>
+    <span class="kw">fi</span>
+}
+
+<span class="cm"># Portable: display epoch as formatted date</span>
+<span class="fn">epoch_to_date</span>() {
+    <span class="kw">if</span> [[ <span class="st">"$DATE_TYPE"</span> == <span class="st">"gnu"</span> ]]; <span class="kw">then</span>
+        <span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@$1"</span> <span class="st">"${2:+%Y-%m-%d}"</span>
+    <span class="kw">else</span>
+        <span class="cmd">date</span> <span class="fl">-r</span> <span class="st">"$1"</span> <span class="st">"${2:++%Y-%m-%d}"</span>
+    <span class="kw">fi</span>
+}
+
+<span class="cm"># Fully portable: date arithmetic using only epoch + integer math</span>
+<span class="cm"># Avoids calling date at all for simple add/subtract</span>
+<span class="vr">now_epoch</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s'</span><span class="st">)</span>            <span class="cm"># works on both</span>
+<span class="vr">week_ago</span>=$(( now_epoch - 7*86400 ))  <span class="cm"># pure arithmetic — fully portable</span>
+<span class="vr">week_ago_date</span>=<span class="st">$(</span><span class="fn">epoch_to_date</span> <span class="st">"$week_ago"</span><span class="st">)</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       10. QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>10 — Quick Reference</h2>
+
+  <h3>Key constants for arithmetic</h3>
+  <table class="ref-table">
+    <thead><tr><th>Period</th><th>Seconds</th><th>Expression</th></tr></thead>
+    <tbody>
+      <tr><td>1 minute</td><td>60</td><td><code>60</code></td></tr>
+      <tr><td>1 hour</td><td>3,600</td><td><code>60 * 60</code></td></tr>
+      <tr><td>1 day</td><td>86,400</td><td><code>60 * 60 * 24</code></td></tr>
+      <tr><td>1 week</td><td>604,800</td><td><code>86400 * 7</code></td></tr>
+      <tr><td>30 days</td><td>2,592,000</td><td><code>86400 * 30</code> <span class="note">(approx — use date -d for months)</span></td></tr>
+      <tr><td>365 days</td><td>31,536,000</td><td><code>86400 * 365</code> <span class="note">(approx — use date -d for years)</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Essential one-liners</h3>
+  <table class="ref-table">
+    <thead><tr><th>Task</th><th>Command</th></tr></thead>
+    <tbody>
+      <tr><td>Current epoch (no fork)</td><td><code>printf -v now '%(%s)T' -1</code></td></tr>
+      <tr><td>Current timestamp for filenames</td><td><code>printf -v ts '%(%Y%m%d_%H%M%S)T' -1</code></td></tr>
+      <tr><td>Parse date string to epoch</td><td><code>date -d 'YYYY-MM-DD HH:MM:SS' '+%s'</code></td></tr>
+      <tr><td>Convert epoch to date</td><td><code>date -d "@$epoch" '+%Y-%m-%d %H:%M:%S'</code></td></tr>
+      <tr><td>N days ago (epoch)</td><td><code>$(( $(date '+%s') - N * 86400 ))</code></td></tr>
+      <tr><td>Day of week (1=Mon, 7=Sun)</td><td><code>date '+%u'</code></td></tr>
+      <tr><td>Script elapsed time</td><td><code>$(( SECONDS - T0 ))</code></td></tr>
+      <tr><td>File modification time (epoch)</td><td><code>stat -c '%Y' FILE</code></td></tr>
+      <tr><td>Force base-10 for hours/mins</td><td><code>$(( 10#$h ))</code> — prevents octal interpretation of 08, 09</td></tr>
+      <tr><td>Sleep until a future time</td><td><code>sleep $(( $(date -d "TARGET" '+%s') - $(date '+%s') ))</code></td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXERCISES
+  ═══════════════════════════════════════════ -->
+  <h2>✏️ Exercises</h2>
+  <p class="section-intro">These exercises build real utility functions and scripts you'll reach for regularly. Test each with edge cases: end of month, midnight rollovers, dates in the past and future.</p>
+
+  <!-- Exercise 1 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 1</div>
+    <div class="ex-task">Write a function called <code>age_report()</code> that accepts a list of file paths and produces a formatted table showing each file's name, size, modification date (YYYY-MM-DD HH:MM:SS), age in a human-readable form (e.g. "3d 4h 12m"), and a status of FRESH (less than 1 day old), AGING (1–7 days), or STALE (more than 7 days). Sort output by age, oldest first.</div>
+    <div class="ex-hint">Hint: use <code>stat -c '%Y %s %n'</code> to get mtime epoch, size, and name in one call. Convert age in seconds with your <code>format_duration()</code> function. Sort by epoch ascending using <code>sort -n</code> on the first field. Colour the STATUS column: green for FRESH, yellow for AGING, red for STALE.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="fn">format_duration</span>() {
+    <span class="kw">local</span> <span class="vr">total</span>=<span class="st">$1</span>
+    <span class="kw">local</span> <span class="vr">d</span>=$(( total / 86400 ))
+    <span class="kw">local</span> <span class="vr">h</span>=$(( (total % 86400) / 3600 ))
+    <span class="kw">local</span> <span class="vr">m</span>=$(( (total % 3600) / 60 ))
+    <span class="kw">local</span> <span class="vr">s</span>=$(( total % 60 ))
+    <span class="kw">local</span> <span class="vr">out</span>=<span class="st">""</span>
+    (( d > <span class="nu">0</span> )) && <span class="vr">out</span>+=<span class="st">"${d}d "</span>
+    (( h > <span class="nu">0</span> || d > <span class="nu">0</span> )) && <span class="vr">out</span>+=<span class="st">"${h}h "</span>
+    (( m > <span class="nu">0</span> || h > <span class="nu">0</span> || d > <span class="nu">0</span> )) && <span class="vr">out</span>+=<span class="st">"${m}m "</span>
+    <span class="vr">out</span>+=<span class="st">"${s}s"</span>
+    <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$out"</span>
+}
+
+<span class="fn">age_report</span>() {
+    <span class="kw">local</span> <span class="vr">now</span>
+    <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">now</span> <span class="st">'%(%s)T'</span> <span class="fl">-1</span>
+
+    <span class="cm"># Collect: mtime|size|path — then sort by mtime ascending</span>
+    <span class="kw">local</span> <span class="vr">data</span>=()
+    <span class="kw">local</span> <span class="vr">f</span>
+    <span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+        [[ <span class="fl">-e</span> <span class="st">"$f"</span> ]] || { <span class="cmd">echo</span> <span class="er">"skip: $f not found"</span> <span class="op">>&amp;2</span>; <span class="kw">continue</span>; }
+        <span class="vr">data</span>+=( <span class="st">"$(stat -c '%Y|%s|%n' "$f")"</span> )
+    <span class="kw">done</span>
+
+    <span class="cm"># Header</span>
+    <span class="cmd">printf</span> <span class="st">'\033[1m%-35s %-10s %-20s %-14s %s\033[0m\n'</span> \
+        <span class="st">"FILE"</span> <span class="st">"SIZE"</span> <span class="st">"MODIFIED"</span> <span class="st">"AGE"</span> <span class="st">"STATUS"</span>
+    <span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">95</span>}; <span class="cmd">echo</span>
+
+    <span class="cm"># Sort by mtime (field 1) ascending, oldest first</span>
+    <span class="kw">while</span> <span class="kw">IFS</span>=<span class="st">'|'</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">mtime</span> <span class="vr">size</span> <span class="vr">path</span>; <span class="kw">do</span>
+        <span class="kw">local</span> <span class="vr">age</span>=$(( now - mtime ))
+        <span class="kw">local</span> <span class="vr">age_str</span>; <span class="vr">age_str</span>=<span class="st">$(</span><span class="fn">format_duration</span> <span class="st">"$age"</span><span class="st">)</span>
+        <span class="kw">local</span> <span class="vr">mod_date</span>; <span class="vr">mod_date</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@$mtime"</span> <span class="st">'+%Y-%m-%d %H:%M:%S'</span><span class="st">)</span>
+        <span class="kw">local</span> <span class="vr">name</span>=<span class="st">"${path##*/}"</span>
+
+        <span class="kw">local</span> <span class="vr">status</span> <span class="vr">colour</span>
+        <span class="kw">if</span>   (( age < 86400 ));       <span class="kw">then</span> <span class="vr">status</span>=<span class="st">"FRESH"</span>; <span class="vr">colour</span>=<span class="st">"\033[32m"</span>
+        <span class="kw">elif</span> (( age < 86400 * 7 ));  <span class="kw">then</span> <span class="vr">status</span>=<span class="st">"AGING"</span>; <span class="vr">colour</span>=<span class="st">"\033[33m"</span>
+        <span class="kw">else</span>                               <span class="vr">status</span>=<span class="st">"STALE"</span>; <span class="vr">colour</span>=<span class="st">"\033[31m"</span>
+        <span class="kw">fi</span>
+
+        <span class="cmd">printf</span> <span class="st">'%-35s %-10s %-20s %-14s %b%s\033[0m\n'</span> \
+            <span class="st">"$name"</span> <span class="st">"$size"</span> <span class="st">"$mod_date"</span> <span class="st">"$age_str"</span> <span class="st">"$colour"</span> <span class="st">"$status"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${data[@]}"</span> | <span class="cmd">sort</span> <span class="fl">-t</span><span class="st">'|'</span> <span class="fl">-k1,1n</span><span class="op">)</span>
+}
+
+<span class="cm"># Test with some files</span>
+<span class="fn">age_report</span> <span class="pth">/etc/hostname</span> <span class="pth">/etc/hosts</span> <span class="pth">/etc/passwd</span> <span class="pth">/etc/fstab</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 2 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 2</div>
+    <div class="ex-task">Write a script called <code>business_days.sh</code> that calculates the number of business days (Monday–Friday) between two dates passed as arguments in <code>YYYY-MM-DD</code> format, and also generates a list of all the business day dates between them. It should correctly skip weekends. Bonus: accept an optional third argument, a file of holidays in <code>YYYY-MM-DD</code> format (one per line), and exclude those too.</div>
+    <div class="ex-hint">Hint: iterate day by day from start epoch to end epoch, adding 86400 each time. For each day, check <code>date -d "@$epoch" '+%u'</code> to get the weekday (6=Sat, 7=Sun). Load the holidays file into an associative array for O(1) lookup: <code>holidays["2026-01-01"]=1</code>.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># business_days.sh  START_DATE  END_DATE  [HOLIDAYS_FILE]</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">START</span>=<span class="st">"${1:?Usage: business_days.sh YYYY-MM-DD YYYY-MM-DD [holidays.txt]}"</span>
+<span class="vr">END</span>=<span class="st">"${2:?Usage: business_days.sh YYYY-MM-DD YYYY-MM-DD [holidays.txt]}"</span>
+<span class="vr">HOLIDAY_FILE</span>=<span class="st">"${3:-}"</span>
+
+<span class="cm"># Load holidays into associative array</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">holidays</span>=()
+<span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"$HOLIDAY_FILE"</span> && <span class="fl">-f</span> <span class="st">"$HOLIDAY_FILE"</span> ]]; <span class="kw">then</span>
+    <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">hday</span>; <span class="kw">do</span>
+        [[ <span class="fl">-z</span> <span class="st">"$hday"</span> || <span class="st">"$hday"</span> == <span class="st">'#'</span>* ]] && <span class="kw">continue</span>
+        <span class="vr">holidays</span>[<span class="st">"$hday"</span>]=<span class="nu">1</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="st">"$HOLIDAY_FILE"</span>
+    <span class="cmd">echo</span> <span class="st">"Loaded ${#holidays[@]} holiday(s)"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Parse start/end to epoch (normalised to midnight)</span>
+<span class="vr">start_epoch</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"$START 00:00:00"</span> <span class="st">'+%s'</span><span class="st">)</span>
+<span class="vr">end_epoch</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"$END 00:00:00"</span>   <span class="st">'+%s'</span><span class="st">)</span>
+
+(( end_epoch >= start_epoch )) || {
+    <span class="cmd">echo</span> <span class="er">"Error: END must be >= START"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>
+}
+
+<span class="vr">count</span>=<span class="nu">0</span>
+<span class="vr">business_days</span>=()
+<span class="vr">curr</span>=<span class="st">$start_epoch</span>
+
+<span class="kw">while</span> (( curr <= end_epoch )); <span class="kw">do</span>
+    <span class="vr">dow</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@$curr"</span> <span class="st">'+%u'</span><span class="st">)</span>        <span class="cm"># 1=Mon … 7=Sun</span>
+    <span class="vr">ymd</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-d</span> <span class="st">"@$curr"</span> <span class="st">'+%Y-%m-%d'</span><span class="st">)</span>
+
+    <span class="kw">if</span> (( dow <= <span class="nu">5</span> )) && [[ <span class="fl">-z</span> <span class="st">"${holidays[$ymd]+x}"</span> ]]; <span class="kw">then</span>
+        <span class="vr">business_days</span>+=( <span class="st">"$ymd"</span> )
+        (( count++ ))
+    <span class="kw">fi</span>
+    (( curr += 86400 ))
+<span class="kw">done</span>
+
+<span class="cm"># Output</span>
+<span class="cmd">printf</span> <span class="st">'\nBusiness days from %s to %s: \033[1m%d\033[0m\n\n'</span> \
+    <span class="st">"$START"</span> <span class="st">"$END"</span> <span class="st">"$count"</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${business_days[@]}"</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 3 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 3</div>
+    <div class="ex-task">Write a script called <code>run_window.sh</code> that wraps any command and enforces a time window: it should only execute the command if the current time in a specified timezone falls within a configured start and end time. If outside the window it should print a clear message and exit 0 (so cron doesn't flag it as an error). Make the window configurable via environment variables: <code>WINDOW_TZ</code>, <code>WINDOW_START</code> (HH:MM), <code>WINDOW_END</code> (HH:MM), and optionally <code>WINDOW_DAYS</code> (comma-separated: <code>Mon,Tue,Wed,Thu,Fri</code>).</div>
+    <div class="ex-hint">Hint: use <code>TZ="$WINDOW_TZ" date '+%H %M %u'</code> to get the current hour, minute, and weekday in the target timezone. Convert HH:MM to minutes-since-midnight for comparison, handling the midnight wrap. Parse <code>WINDOW_DAYS</code> with <code>IFS=,</code> and check the current weekday abbreviation.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># run_window.sh — only execute CMD if current time is in the configured window</span>
+<span class="cm"># Env vars: WINDOW_TZ, WINDOW_START (HH:MM), WINDOW_END (HH:MM), WINDOW_DAYS</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">WINDOW_TZ</span>=<span class="st">"${WINDOW_TZ:-UTC}"</span>
+<span class="vr">WINDOW_START</span>=<span class="st">"${WINDOW_START:-09:00}"</span>
+<span class="vr">WINDOW_END</span>=<span class="st">"${WINDOW_END:-17:00}"</span>
+<span class="vr">WINDOW_DAYS</span>=<span class="st">"${WINDOW_DAYS:-}"</span>       <span class="cm"># empty = any day</span>
+
+(( $# > <span class="nu">0</span> )) || { <span class="cmd">echo</span> <span class="er">"Usage: run_window.sh COMMAND [ARGS]"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="cm"># Get current time components in the target timezone</span>
+<span class="kw">read</span> <span class="fl">-r</span> <span class="vr">cur_h</span> <span class="vr">cur_m</span> <span class="vr">cur_dow_n</span> <span class="vr">cur_dow_s</span> \
+    <span class="op">&lt;&lt;&lt;</span> <span class="st">"$(TZ="$WINDOW_TZ" date '+%-H %-M %u %a')"</span>
+
+<span class="cm"># Minutes-since-midnight helper</span>
+<span class="fn">hhmm_to_mins</span>() {
+    <span class="kw">local</span> <span class="vr">h</span>=<span class="st">$(( 10#${1%%:*} ))</span>
+    <span class="kw">local</span> <span class="vr">m</span>=<span class="st">$(( 10#${1##*:} ))</span>
+    <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="st">$(( h * 60 + m ))</span>
+}
+
+<span class="vr">cur_mins</span>=$(( 10#$cur_h * 60 + 10#$cur_m ))
+<span class="vr">start_mins</span>=<span class="st">$(</span><span class="fn">hhmm_to_mins</span> <span class="st">"$WINDOW_START"</span><span class="st">)</span>
+<span class="vr">end_mins</span>=<span class="st">$(</span><span class="fn">hhmm_to_mins</span> <span class="st">"$WINDOW_END"</span><span class="st">)</span>
+
+<span class="cm"># Check time window (handles overnight wrap)</span>
+<span class="vr">in_window</span>=<span class="nu">0</span>
+<span class="kw">if</span> (( start_mins <= end_mins )); <span class="kw">then</span>
+    (( cur_mins >= start_mins && cur_mins < end_mins )) && <span class="vr">in_window</span>=<span class="nu">1</span>
+<span class="kw">else</span>
+    (( cur_mins >= start_mins || cur_mins < end_mins )) && <span class="vr">in_window</span>=<span class="nu">1</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Check day-of-week constraint</span>
+<span class="vr">day_ok</span>=<span class="nu">1</span>
+<span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"$WINDOW_DAYS"</span> ]]; <span class="kw">then</span>
+    <span class="vr">day_ok</span>=<span class="nu">0</span>
+    <span class="kw">IFS</span>=<span class="st">','</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-a</span> <span class="vr">allowed_days</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$WINDOW_DAYS"</span>
+    <span class="kw">for</span> <span class="vr">d</span> <span class="kw">in</span> <span class="st">"${allowed_days[@]}"</span>; <span class="kw">do</span>
+        [[ <span class="st">"${d^}"</span> == <span class="st">"${cur_dow_s^}"</span> ]] && { <span class="vr">day_ok</span>=<span class="nu">1</span>; <span class="kw">break</span>; }
+    <span class="kw">done</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Print summary</span>
+<span class="cmd">printf</span> <span class="st">'[window] TZ=%s  now=%s %02d:%02d  window=%s-%s  days=%s\n'</span> \
+    <span class="st">"$WINDOW_TZ"</span> <span class="st">"$cur_dow_s"</span> <span class="st">"$cur_h"</span> <span class="st">"$cur_m"</span> \
+    <span class="st">"$WINDOW_START"</span> <span class="st">"$WINDOW_END"</span> <span class="st">"${WINDOW_DAYS:-any}"</span> <span class="op">>&amp;2</span>
+
+<span class="kw">if</span> (( in_window && day_ok )); <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'[window] \033[32mIn window\033[0m — running: %s\n'</span> <span class="st">"$*"</span> <span class="op">>&amp;2</span>
+    <span class="kw">exec</span> <span class="st">"$@"</span>
+<span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'[window] \033[33mOutside window\033[0m — skipping\n'</span> <span class="op">>&amp;2</span>
+    <span class="kw">exit</span> <span class="nu">0</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Example usage (in crontab, runs every 15 min but only executes in window):</span>
+<span class="cm"># */15 * * * * WINDOW_TZ=America/New_York WINDOW_START=09:00 WINDOW_END=17:00 \</span>
+<span class="cm">#             WINDOW_DAYS=Mon,Tue,Wed,Thu,Fri \</span>
+<span class="cm">#             /usr/local/bin/run_window.sh /opt/myapp/process_orders.sh</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 4 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 4</div>
+    <div class="ex-task">Write a script called <code>timed_backup.sh</code> that backs up a directory by creating a timestamped <code>.tar.gz</code> archive, then deletes archives older than a configurable retention period (<code>KEEP_DAYS</code>, default 14). It should log each action with a timestamp, report the size of the new archive and how much space was freed by deletions, and produce a one-line summary at the end. Use <code>printf -v</code> for all timestamp generation inside the script to avoid unnecessary forks.</div>
+    <div class="ex-hint">Hint: use <code>printf -v ts '%(%Y%m%d_%H%M%S)T' -1</code> for the archive filename. After creating the archive, use <code>stat -c '%s'</code> for its size. For deletion, loop over existing archives and compare <code>stat -c '%Y'</code> mtime against the cutoff epoch. Track freed bytes in a counter.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># timed_backup.sh  SOURCE_DIR  BACKUP_DIR</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">SOURCE</span>=<span class="st">"${1:?Usage: timed_backup.sh SOURCE_DIR BACKUP_DIR}"</span>
+<span class="vr">DEST</span>=<span class="st">"${2:?Usage: timed_backup.sh SOURCE_DIR BACKUP_DIR}"</span>
+<span class="vr">KEEP_DAYS</span>=<span class="st">${KEEP_DAYS:-14}</span>
+
+[[ <span class="fl">-d</span> <span class="st">"$SOURCE"</span> ]] || { <span class="cmd">echo</span> <span class="er">"Error: $SOURCE not a directory"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"$DEST"</span>
+
+<span class="cm"># Logging (no fork — printf -v for timestamp)</span>
+<span class="fn">log</span>() {
+    <span class="kw">local</span> <span class="vr">_ts</span>
+    <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">_ts</span> <span class="st">'%(%Y-%m-%d %H:%M:%S)T'</span> <span class="fl">-1</span>
+    <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$_ts"</span> <span class="st">"$*"</span>
+}
+
+<span class="cm"># Human-readable bytes</span>
+<span class="fn">human_bytes</span>() {
+    <span class="kw">local</span> <span class="vr">b</span>=<span class="st">$1</span>
+    <span class="kw">if</span>   (( b >= 1073741824 )); <span class="kw">then</span> <span class="cmd">printf</span> <span class="st">'%.1f GB'</span> <span class="st">"$(bc &lt;&lt;&lt; "scale=1; $b/1073741824")"</span>
+    <span class="kw">elif</span> (( b >=    1048576 )); <span class="kw">then</span> <span class="cmd">printf</span> <span class="st">'%.1f MB'</span> <span class="st">"$(bc &lt;&lt;&lt; "scale=1; $b/1048576")"</span>
+    <span class="kw">elif</span> (( b >=       1024 )); <span class="kw">then</span> <span class="cmd">printf</span> <span class="st">'%.1f KB'</span> <span class="st">"$(bc &lt;&lt;&lt; "scale=1; $b/1024")"</span>
+    <span class="kw">else</span>                            <span class="cmd">printf</span> <span class="st">'%d B'</span>    <span class="st">"$b"</span>
+    <span class="kw">fi</span>
+}
+
+<span class="cm"># ── Step 1: Create archive ─────────────────────────────────────</span>
+<span class="kw">local</span> <span class="vr">ts</span>
+<span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">ts</span> <span class="st">'%(%Y%m%d_%H%M%S)T'</span> <span class="fl">-1</span>
+<span class="vr">source_name</span>=<span class="st">"${SOURCE##*/}"</span>
+<span class="vr">archive</span>=<span class="st">"${DEST}/${source_name}_${ts}.tar.gz"</span>
+
+<span class="fn">log</span> <span class="st">"Starting backup: $SOURCE -> $archive"</span>
+<span class="cmd">tar</span> <span class="fl">-czf</span> <span class="st">"$archive"</span> <span class="fl">-C</span> <span class="st">"$(dirname "$SOURCE")"</span> <span class="st">"$source_name"</span>
+<span class="vr">archive_size</span>=<span class="st">$(</span><span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%s'</span> <span class="st">"$archive"</span><span class="st">)</span>
+<span class="fn">log</span> <span class="st">"Archive created: $(human_bytes $archive_size)"</span>
+
+<span class="cm"># ── Step 2: Delete old archives ───────────────────────────────</span>
+<span class="vr">cutoff</span>=$(( $(date '+%s') - KEEP_DAYS * 86400 ))
+<span class="vr">freed</span>=<span class="nu">0</span>
+<span class="vr">deleted</span>=<span class="nu">0</span>
+
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">old</span>; <span class="kw">do</span>
+    [[ <span class="st">"$old"</span> == <span class="st">"$archive"</span> ]] && <span class="kw">continue</span>  <span class="cm"># don't delete what we just made</span>
+    <span class="vr">mtime</span>=<span class="st">$(</span><span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%Y'</span> <span class="st">"$old"</span><span class="st">)</span>
+    <span class="kw">if</span> (( mtime < cutoff )); <span class="kw">then</span>
+        <span class="vr">fsize</span>=<span class="st">$(</span><span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%s'</span> <span class="st">"$old"</span><span class="st">)</span>
+        <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$old"</span>
+        (( freed += fsize ))
+        (( deleted++ ))
+        <span class="fn">log</span> <span class="st">"Deleted old archive: ${old##*/} ($(human_bytes $fsize))"</span>
+    <span class="kw">fi</span>
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">find</span> <span class="st">"$DEST"</span> <span class="fl">-maxdepth</span> <span class="nu">1</span> <span class="fl">-name</span> <span class="st">"${source_name}_*.tar.gz"</span> <span class="fl">-print0</span><span class="op">)</span>
+
+<span class="cm"># ── Summary ────────────────────────────────────────────────────</span>
+<span class="fn">log</span> <span class="st">"Done. Created: $(human_bytes $archive_size)  Freed: $(human_bytes $freed)  Deleted: $deleted archive(s)"</span></code>
+    </div>
+  </div>
+
+</div><!-- /lx-lesson -->
