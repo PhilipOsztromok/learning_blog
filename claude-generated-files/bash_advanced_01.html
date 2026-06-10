@@ -1,0 +1,611 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 1 — Bash Internals: Parsing and Expansion Order</h1>
+<p>Most Bash bugs are not logic errors — they are expansion order surprises.
+When a line of shell script behaves unexpectedly, the cause is almost always that
+the programmer had a different mental model of <em>when</em> the shell interprets each
+piece of syntax than what actually happens. This chapter builds that model precisely,
+from the moment Bash reads a character to the moment a process is launched.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — Tokenisation: What the Lexer Sees</h2>
+
+<p>Before any expansion happens, Bash reads its input and breaks it into
+<strong>tokens</strong>. A token is either a <em>word</em> (a sequence of characters
+treated as a unit) or an <em>operator</em> (a metacharacter like
+<span class="inline-code">|</span>, <span class="inline-code">;&gt;</span>, or
+<span class="inline-code">()</span>).</p>
+
+<p>The rules the lexer applies — in strict priority order:</p>
+
+<ol>
+  <li><strong>Quoting.</strong> Any character preceded by <span class="inline-code">\</span>, or
+  any sequence inside <span class="inline-code">'…'</span> or <span class="inline-code">"…"</span>,
+  is shielded from further lexer processing. Quoting is resolved <em>during</em> tokenisation,
+  not during expansion.</li>
+  <li><strong>Operator recognition.</strong> If the current character starts or continues an
+  operator token (<span class="inline-code">|</span>, <span class="inline-code">&amp;</span>,
+  <span class="inline-code">;</span>, <span class="inline-code">(</span>,
+  <span class="inline-code">)</span>, <span class="inline-code">&lt;</span>,
+  <span class="inline-code">&gt;</span>, and their two-character forms), it becomes an
+  operator token — not a word.</li>
+  <li><strong>Whitespace delimiters.</strong> Unquoted <span class="inline-code">IFS</span>
+  characters (space, tab, newline by default) delimit words but are not themselves tokens.</li>
+  <li><strong>Comments.</strong> An unquoted <span class="inline-code">#</span> that appears as
+  the first character of a word starts a comment; everything to the end of the line is
+  discarded before parsing.</li>
+</ol>
+
+<pre><span class="cm"># Illustrating tokenisation — what are the tokens here?</span>
+<span class="cmd">echo</span> hello <span class="op">|</span> <span class="cmd">cat</span>
+<span class="cm"># Tokens: [echo] [hello] [|] [cat]
+# 'hello' and 'cat' are WORDS; '|' is an OPERATOR</span>
+
+<span class="cm"># Quoting prevents operator recognition</span>
+<span class="cmd">echo</span> <span class="st">'hello | cat'</span>
+<span class="cm"># Tokens: [echo] [hello | cat]
+# The pipe is INSIDE a quoted word — not an operator</span>
+
+<span class="cm"># The # rule: only a word-initial # is a comment</span>
+<span class="cmd">echo</span> foo<span class="cm">#bar</span>   <span class="cm"># prints: foo#bar  — # is not word-initial here</span>
+<span class="cmd">echo</span> foo <span class="cm">#bar  # prints: foo      — space before # makes it word-initial</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — The Seven-Stage Expansion Pipeline</h2>
+
+<p>After tokenisation, each <em>word</em> token is passed through up to seven expansions,
+applied strictly left-to-right in this order. Understanding the order is everything — a
+result from one stage feeds directly into the next.</p>
+
+<table>
+  <tr><th>#</th><th>Expansion</th><th>Trigger syntax</th></tr>
+  <tr><td>1</td><td>Brace expansion</td><td><code>{a,b}</code> &nbsp; <code>{1..5}</code></td></tr>
+  <tr><td>2</td><td>Tilde expansion</td><td><code>~</code> &nbsp; <code>~user</code> &nbsp; <code>~+</code> &nbsp; <code>~-</code></td></tr>
+  <tr><td>3</td><td>Parameter &amp; variable expansion</td><td><code>$var</code> &nbsp; <code>${var}</code> &nbsp; <code>${!var}</code></td></tr>
+  <tr><td>4</td><td>Arithmetic expansion</td><td><code>$(( expr ))</code></td></tr>
+  <tr><td>5</td><td>Command substitution</td><td><code>$( cmd )</code> &nbsp; <code>`cmd`</code></td></tr>
+  <tr><td>6</td><td>Word splitting</td><td>(implicit — splits on <code>$IFS</code>)</td></tr>
+  <tr><td>7</td><td>Pathname expansion (globbing)</td><td><code>*</code> &nbsp; <code>?</code> &nbsp; <code>[…]</code></td></tr>
+</table>
+
+<div class="note">
+<strong>Process substitution</strong> (<code>&lt;(cmd)</code> / <code>&gt;(cmd)</code>) is handled
+concurrently with command substitution but is not part of the standard seven-stage pipeline —
+it is a Bash extension that produces a filename (<code>/dev/fd/N</code>) before the command line
+is assembled.
+</div>
+
+<h3>Stage 1 — Brace expansion</h3>
+<p>Brace expansion happens <em>first</em>, before any variable is looked up.
+This has a critical implication: you cannot put a variable inside braces to control expansion.</p>
+
+<pre><span class="cm"># Works as expected</span>
+<span class="cmd">echo</span> file{1,2,3}.txt
+<span class="out">file1.txt file2.txt file3.txt</span>
+
+<span class="cm"># Sequence expressions</span>
+<span class="cmd">echo</span> {a..e}
+<span class="out">a b c d e</span>
+<span class="cmd">echo</span> {01..05}
+<span class="out">01 02 03 04 05</span>
+<span class="cmd">echo</span> {0..20..5}    <span class="cm"># with step (bash 4+)</span>
+<span class="out">0 5 10 15 20</span>
+
+<span class="cm"># Brace expansion is purely textual — no variable lookup</span>
+<span class="vr">list</span><span class="op">=</span><span class="st">'a,b,c'</span>
+<span class="cmd">echo</span> {<span class="vr">$list</span>}         <span class="cm"># does NOT expand list — prints: {a,b,c}</span>
+<span class="cmd">eval</span> <span class="cmd">echo</span> {<span class="vr">$list</span>}    <span class="cm"># eval forces re-parsing: prints a b c</span>
+
+<span class="cm"># Preamble and postscript are repeated for each element</span>
+<span class="cmd">mkdir</span> <span class="fl">-p</span> project/{src,test,docs}/{main,util}
+<span class="cm"># creates: project/src/main, project/src/util, project/test/main, ...</span></pre>
+
+<h3>Stage 2 — Tilde expansion</h3>
+<pre><span class="cm"># ~ expands to $HOME</span>
+<span class="cmd">echo</span> ~          <span class="cm"># /home/alice</span>
+<span class="cmd">echo</span> ~root      <span class="cm"># /root  (another user's home)</span>
+<span class="cmd">echo</span> ~+         <span class="cm"># $PWD (current directory)</span>
+<span class="cmd">echo</span> ~-         <span class="cm"># $OLDPWD (previous directory)</span>
+
+<span class="cm"># Tilde expansion ONLY fires when ~ is the first char of a word</span>
+<span class="cm"># and the word is unquoted</span>
+<span class="cmd">echo</span> <span class="st">"~"</span>        <span class="cm"># prints literal ~  (quoted)</span>
+<span class="cmd">echo</span> /foo/~     <span class="cm"># prints /foo/~    (not word-initial)</span>
+
+<span class="cm"># Assignment tilde expansion fires after = and each :</span>
+<span class="vr">PATH</span><span class="op">=</span>~/bin:<span class="vr">$PATH</span>   <span class="cm"># ~ expands here inside an assignment</span></pre>
+
+<h3>Stage 3 — Parameter expansion</h3>
+<p>This is the richest stage. The key advanced points:</p>
+
+<pre><span class="cm"># Indirect expansion — ${!var} looks up the value OF the variable named by var</span>
+<span class="vr">target</span><span class="op">=</span><span class="st">'PATH'</span>
+<span class="cmd">echo</span> <span class="st">"${!target}"</span>   <span class="cm"># prints the value of $PATH</span>
+
+<span class="cm"># ${!prefix*} and ${!prefix@} — variable names matching a prefix</span>
+<span class="vr">FOO_A</span><span class="op">=</span><span class="nu">1</span>; <span class="vr">FOO_B</span><span class="op">=</span><span class="nu">2</span>
+<span class="cmd">echo</span> <span class="st">"${!FOO_*}"</span>    <span class="cm"># FOO_A FOO_B</span>
+
+<span class="cm"># Substring extraction: ${var:offset:length}</span>
+<span class="vr">s</span><span class="op">=</span><span class="st">'hello world'</span>
+<span class="cmd">echo</span> <span class="st">"${s:6}"</span>       <span class="cm"># world</span>
+<span class="cmd">echo</span> <span class="st">"${s:6:3}"</span>     <span class="cm"># wor</span>
+<span class="cmd">echo</span> <span class="st">"${s: -5}"</span>     <span class="cm"># world  (negative offset — note the space!)</span>
+
+<span class="cm"># Pattern removal</span>
+<span class="vr">f</span><span class="op">=</span><span class="st">'/path/to/file.tar.gz'</span>
+<span class="cmd">echo</span> <span class="st">"${f##*/}"</span>     <span class="cm"># file.tar.gz   (greedy from left)</span>
+<span class="cmd">echo</span> <span class="st">"${f%.*}"</span>      <span class="cm"># /path/to/file.tar  (lazy from right)</span>
+<span class="cmd">echo</span> <span class="st">"${f%%.*}"</span>     <span class="cm"># /path/to/file  (greedy from right)</span>
+
+<span class="cm"># Case conversion (bash 4+)</span>
+<span class="vr">x</span><span class="op">=</span><span class="st">'Hello World'</span>
+<span class="cmd">echo</span> <span class="st">"${x,,}"</span>       <span class="cm"># hello world</span>
+<span class="cmd">echo</span> <span class="st">"${x^^}"</span>       <span class="cm"># HELLO WORLD</span>
+<span class="cmd">echo</span> <span class="st">"${x^}"</span>        <span class="cm"># Hello World (first char only)</span></pre>
+
+<h3>Stages 4 &amp; 5 — Arithmetic and command substitution</h3>
+<p>Both produce a string that re-enters the pipeline at stage 6 (word splitting).
+They are evaluated in the order they appear left-to-right within a word, but each
+is fully resolved before the result is passed forward.</p>
+
+<pre><span class="cm"># Arithmetic expansion — integer math only, no fork</span>
+<span class="vr">n</span><span class="op">=</span><span class="nu">5</span>
+<span class="cmd">echo</span> $(( <span class="vr">n</span> <span class="op">*</span> <span class="nu">3</span> + <span class="nu">1</span> ))     <span class="cm"># 16</span>
+<span class="cmd">echo</span> $(( <span class="nu">0xFF</span> ))           <span class="cm"># 255  (hex literal)</span>
+<span class="cmd">echo</span> $(( <span class="nu">2</span><span class="op">**</span><span class="nu">10</span> ))          <span class="cm"># 1024  (exponentiation)</span>
+
+<span class="cm"># Command substitution — the output feeds back as a word</span>
+<span class="vr">today</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="st">'+%Y-%m-%d'</span>)
+
+<span class="cm"># CRITICAL: trailing newlines are stripped by command substitution</span>
+<span class="vr">x</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'foo\n\n\n'</span>)
+<span class="cmd">echo</span> <span class="st">"'${x}'"</span>   <span class="cm"># 'foo'  — all trailing newlines gone</span>
+
+<span class="cm"># Preserve trailing newlines with a sentinel character</span>
+<span class="vr">x</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'foo\n\n'</span>; <span class="cmd">echo</span> x)
+<span class="vr">x</span><span class="op">=</span><span class="st">"${x%x}"</span>          <span class="cm"># strip the sentinel, keep the newlines</span></pre>
+
+<h3>Stage 6 — Word splitting</h3>
+<p>This stage is the source of the majority of quoting bugs. It applies
+<em>only</em> to the results of parameter expansion, arithmetic expansion, and
+command substitution — <strong>never</strong> to literal text already in the script.</p>
+
+<pre><span class="cm"># IFS controls word splitting — default is space, tab, newline</span>
+<span class="vr">words</span><span class="op">=</span><span class="st">'one two   three'</span>
+<span class="kw">set</span> <span class="fl">--</span> <span class="vr">$words</span>        <span class="cm"># word-split: $1=one $2=two $3=three</span>
+<span class="kw">set</span> <span class="fl">--</span> <span class="st">"<span class="vr">$words</span>"</span>     <span class="cm"># quoted: $1='one two   three'</span>
+
+<span class="cm"># Changing IFS changes what counts as a delimiter</span>
+<span class="vr">IFS</span><span class="op">=</span><span class="st">':'</span>
+<span class="kw">set</span> <span class="fl">--</span> <span class="vr">$PATH</span>         <span class="cm"># splits PATH into positional parameters</span>
+<span class="vr">IFS</span><span class="op">=</span>$<span class="st">' \t\n'</span>        <span class="cm"># restore default</span>
+
+<span class="cm"># IFS='' disables word splitting entirely — useful in while-read loops</span>
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  <span class="cm"># $line is NEVER split, even if it contains spaces or tabs</span>
+  <span class="cmd">echo</span> <span class="st">"<span class="vr">$line</span>"</span>
+<span class="kw">done</span> <span class="op"><</span> file.txt
+
+<span class="cm"># Word splitting does NOT apply inside [[ … ]] or (( … ))</span>
+<span class="vr">x</span><span class="op">=</span><span class="st">'a b'</span>
+[[ <span class="vr">$x</span> <span class="op">==</span> <span class="st">'a b'</span> ]] <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"match"</span>   <span class="cm"># safe — [[ never word-splits</span>
+<span class="cm"># [ $x == 'a b' ] would fail — old-style [ word-splits</span></pre>
+
+<h3>Stage 7 — Pathname expansion (globbing)</h3>
+<pre><span class="cm"># Globbing fires after word splitting — on each resulting word</span>
+<span class="vr">pattern</span><span class="op">=</span><span class="st">'*.txt'</span>
+<span class="cmd">ls</span> <span class="vr">$pattern</span>      <span class="cm"># splits then globs: ls file1.txt file2.txt</span>
+<span class="cmd">ls</span> <span class="st">"<span class="vr">$pattern</span>"</span>   <span class="cm"># quoted: ls literally looks for a file named '*.txt'</span>
+
+<span class="cm"># Extended globs (shopt -s extglob)</span>
+<span class="cmd">shopt</span> <span class="fl">-s</span> extglob
+<span class="cmd">ls</span> !(*.log)      <span class="cm"># everything except .log files</span>
+<span class="cmd">ls</span> +(foo|bar)*   <span class="cm"># one or more of 'foo' or 'bar', then anything</span>
+<span class="cmd">ls</span> @(*.jpg|*.png)  <span class="cm"># exactly one of the alternatives</span>
+
+<span class="cm"># globstar for recursive matching (bash 4+)</span>
+<span class="cmd">shopt</span> <span class="fl">-s</span> globstar
+<span class="cmd">ls</span> <span class="op">**</span>/<span class="op">*</span>.py        <span class="cm"># all .py files in any subdirectory</span>
+
+<span class="cm"># If no match: by default, the pattern is passed literally</span>
+<span class="cm"># With nullglob: no-match expands to nothing (empty)</span>
+<span class="cmd">shopt</span> <span class="fl">-s</span> nullglob
+<span class="vr">files</span><span class="op">=</span>( <span class="op">*</span>.xyz )
+(( <span class="st">"${#files[@]}"</span> <span class="op">==</span> <span class="nu">0</span> )) <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"no matches"</span>
+
+<span class="cm"># failglob: treat no-match as an error instead</span>
+<span class="cmd">shopt</span> <span class="fl">-s</span> failglob</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — Where Quoting Lives in This Model</h2>
+
+<p>A persistent confusion: people think quoting is about expansion. It is not.
+Quoting is resolved by the <em>lexer</em>, before any expansion stage runs.
+What quoting actually does is mark characters as <em>not subject to the rules that apply to
+unquoted characters in later stages</em>.</p>
+
+<table>
+  <tr><th>Quote form</th><th>What it prevents</th><th>What still happens inside it</th></tr>
+  <tr><td><code>'…'</code></td><td>Everything — no expansion at all</td><td>Nothing</td></tr>
+  <tr><td><code>"…"</code></td><td>Word splitting, globbing, brace expansion, tilde expansion</td><td>Parameter, arithmetic, command substitution; <code>\</code> before <code>$</code> <code>`</code> <code>"</code> <code>\</code> <code>newline</code></td></tr>
+  <tr><td><code>\x</code></td><td>All special meaning of the next character</td><td>Nothing (the backslash is consumed)</td></tr>
+  <tr><td><code>$'…'</code></td><td>All expansion; enables C-style escapes</td><td><code>\n \t \xNN \uNNNN</code> etc.</td></tr>
+</table>
+
+<pre><span class="cm"># Double-quote prevents word splitting and globbing but NOT substitution</span>
+<span class="vr">f</span><span class="op">=</span><span class="st">'hello world'</span>
+<span class="cmd">echo</span> <span class="st">"The value is: <span class="vr">$f</span>"</span>      <span class="cm"># parameter expansion fires inside ""</span>
+<span class="cmd">echo</span> <span class="st">"Result: $((2+2))"</span>       <span class="cm"># arithmetic expansion fires inside ""</span>
+<span class="cmd">echo</span> <span class="st">"Files: $(ls)"</span>           <span class="cm"># command substitution fires inside ""</span>
+<span class="cmd">echo</span> <span class="st">"Glob: *.txt"</span>            <span class="cm"># glob does NOT fire inside "" — literal</span>
+
+<span class="cm"># $'...' for control characters without $() or printf</span>
+<span class="vr">NL</span><span class="op">=</span>$<span class="st">'\n'</span>
+<span class="vr">TAB</span><span class="op">=</span>$<span class="st">'\t'</span>
+<span class="vr">ESC</span><span class="op">=</span>$<span class="st">'\e'</span>   <span class="cm"># or \033</span>
+<span class="cmd">printf</span> <span class="st">'col1%scol2\n'</span> <span class="st">"<span class="vr">$TAB</span>"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — Evaluation Contexts That Change the Rules</h2>
+
+<p>The seven stages apply to simple commands. Several other constructs have
+different evaluation rules that catch experienced programmers off guard.</p>
+
+<h3><code>[[ … ]]</code> — the compound test command</h3>
+<pre><span class="cm"># Inside [[: word splitting and pathname expansion are DISABLED
+# Pattern matching on the right-hand side of == is still active</span>
+
+<span class="vr">x</span><span class="op">=</span><span class="st">'foo bar'</span>
+[[ <span class="vr">$x</span> <span class="op">==</span> <span class="st">'foo bar'</span> ]]       <span class="cm"># safe without quotes — no splitting</span>
+[[ <span class="vr">$x</span> <span class="op">==</span> foo<span class="op">*</span> ]]             <span class="cm"># RHS is a PATTERN (not a string)</span>
+[[ <span class="vr">$x</span> <span class="op">==</span> <span class="st">'foo*'</span> ]]            <span class="cm"># quoted RHS = literal string match</span>
+[[ <span class="vr">$x</span> <span class="op">=~</span> <span class="rx">^foo[[:space:]]</span> ]]  <span class="cm"># RHS is an ERE regex — never quote it</span>
+
+<span class="cm"># BASH_REMATCH captures regex groups</span>
+<span class="kw">if</span> [[ <span class="st">'2026-06-09'</span> <span class="op">=~</span> <span class="rx">^([0-9]{4})-([0-9]{2})-([0-9]{2})$</span> ]]; <span class="kw">then</span>
+  <span class="cmd">echo</span> <span class="st">"year=${BASH_REMATCH[1]} month=${BASH_REMATCH[2]} day=${BASH_REMATCH[3]}"</span>
+<span class="kw">fi</span></pre>
+
+<h3><code>(( … ))</code> — arithmetic evaluation context</h3>
+<pre><span class="cm"># Inside ((): variable names do NOT need $
+# String values that look like integers are evaluated as integers
+# An expression that evaluates to 0 returns exit code 1 (false)</span>
+
+<span class="vr">a</span><span class="op">=</span><span class="nu">5</span>; <span class="vr">b</span><span class="op">=</span><span class="nu">3</span>
+(( <span class="vr">a</span> <span class="op">></span> <span class="vr">b</span> )) <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"a is larger"</span>
+(( <span class="vr">a</span> <span class="op">+=</span> <span class="vr">b</span> ))           <span class="cm"># a is now 8 — side effects are allowed</span>
+
+<span class="cm"># 0 is false, non-zero is true — opposite of shell exit codes</span>
+(( <span class="nu">0</span> )) <span class="op">||</span> <span class="cmd">echo</span> <span class="st">"zero is false"</span>
+(( <span class="nu">1</span> )) <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"non-zero is true"</span>
+
+<span class="cm"># Pitfall: (( expression )) with -e set — false exits the script!</span>
+<span class="kw">set</span> <span class="fl">-e</span>
+<span class="vr">count</span><span class="op">=</span><span class="nu">0</span>
+(( <span class="vr">count</span>++ ))   <span class="cm"># DANGER: count++ evaluates to 0 (the old value), exits script</span>
+<span class="cm"># Safe pattern:</span>
+(( <span class="vr">count</span>++ )) <span class="op">||</span> <span class="kw">true</span>
+<span class="cm"># or:</span>
+<span class="vr">count</span><span class="op">=</span>$(( <span class="vr">count</span> <span class="op">+</span> <span class="nu">1</span> ))    <span class="cm"># $(()) always succeeds</span></pre>
+
+<h3>Here-strings and here-documents</h3>
+<pre><span class="cm"># Here-string: a single word, expanded then fed as stdin
+# Expansion stages 3-5 apply; no word splitting or globbing</span>
+<span class="cmd">cat</span> <span class="op"><<<</span><span class="st">"Hello <span class="vr">$USER</span>, you have $(ls | wc -l) files"</span>
+
+<span class="cm"># Heredoc: delimiter controls expansion
+# Unquoted delimiter: stages 3-5 apply</span>
+<span class="cmd">cat</span> <span class="op"><<</span> <span class="st">EOF</span>
+Hello <span class="vr">$USER</span>
+EOF
+
+<span class="cm"># Quoted delimiter ('EOF', "EOF", \EOF): NO expansion — literal text</span>
+<span class="cmd">cat</span> <span class="op"><<</span> <span class="st">'EOF'</span>
+Hello $USER   &lt;-- this is literal, not expanded
+EOF</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — Alias Expansion: Stage Zero</h2>
+
+<p>Aliases are not part of the seven-stage pipeline. They are expanded by the
+<em>parser</em>, before any other processing — including before brace expansion.
+This makes them powerful but also fragile.</p>
+
+<pre><span class="cm"># Aliases are expanded during parsing, not execution
+# They apply only to interactive shells and scripts that explicitly enable them</span>
+<span class="cmd">shopt</span> <span class="fl">-s</span> expand_aliases   <span class="cm"># required in non-interactive scripts</span>
+
+<span class="kw">alias</span> ll<span class="op">=</span><span class="st">'ls -la'</span>
+ll <span class="pth">/tmp</span>          <span class="cm"># alias expanded before ll is parsed as a command</span>
+
+<span class="cm"># Aliases vs functions: aliases cannot take arguments by position
+# Functions are nearly always preferable in scripts
+# The ONE valid use case for aliases in scripts: redefining a command globally</span>
+<span class="kw">alias</span> <span class="cmd">grep</span><span class="op">=</span><span class="st">'grep --color=auto'</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — Practical Consequences: Reading Bugs Through the Model</h2>
+
+<p>Let's apply the model to diagnose real bugs you will encounter.</p>
+
+<h3>Bug: glob fires when you don't want it to</h3>
+<pre><span class="vr">pattern</span><span class="op">=</span><span class="st">'*.log'</span>
+<span class="kw">if</span> [[ -n <span class="vr">$pattern</span> ]]; <span class="kw">then</span>
+  <span class="cm"># Safe: [[ never globs</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Dangerous: passes to an external command unquoted</span>
+<span class="cmd">find</span> . <span class="fl">-name</span> <span class="vr">$pattern</span>   <span class="cm"># if *.log matches files HERE, it expands before find sees it</span>
+<span class="cmd">find</span> . <span class="fl">-name</span> <span class="st">"<span class="vr">$pattern</span>"</span> <span class="cm"># correct — quote prevents premature glob</span></pre>
+
+<h3>Bug: array element count broken by word splitting</h3>
+<pre><span class="cm"># Wrong: word splitting turns one element into many</span>
+<span class="vr">items</span><span class="op">=</span><span class="st">'one two three'</span>
+<span class="vr">arr</span><span class="op">=</span>( <span class="vr">$items</span> )       <span class="cm"># three elements — probably what you want</span>
+<span class="vr">arr</span><span class="op">=</span>( <span class="st">"<span class="vr">$items</span>"</span> )     <span class="cm"># ONE element: 'one two three' — probably NOT what you want</span>
+
+<span class="cm"># Use mapfile for line-delimited data instead</span>
+<span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">arr</span> <span class="op"><</span> <span class="pth">file.txt</span>    <span class="cm"># each line becomes one element, no splitting</span></pre>
+
+<h3>Bug: nested command substitution and quoting</h3>
+<pre><span class="cm"># Outer $() creates a subshell; inner quotes work independently</span>
+<span class="vr">result</span><span class="op">=</span>$(<span class="cmd">echo</span> <span class="st">"$(date '+%Y-%m-%d')"</span>)   <span class="cm"># both levels of quoting are independent</span>
+
+<span class="cm"># Backtick nesting requires escaping inner quotes — avoid backticks</span>
+<span class="vr">old</span><span class="op">=</span>`<span class="cmd">echo</span> \`<span class="cmd">date</span>\``   <span class="cm"># ugly; $() is always clearer</span></pre>
+
+<h3>Bug: arithmetic in an unquoted assignment splits the result</h3>
+<pre><span class="vr">x</span><span class="op">=</span>$(( <span class="nu">1</span> <span class="op">+</span> <span class="nu">2</span> ))    <span class="cm"># safe — arithmetic result is an integer, no spaces</span>
+<span class="cm"># But consider:</span>
+<span class="vr">IFS</span><span class="op">=</span><span class="nu">2</span>
+<span class="vr">x</span><span class="op">=</span>$(( <span class="nu">1</span> <span class="op">+</span> <span class="nu">2</span> ))    <span class="cm"># result '3' — fine, IFS=2 only matters for unquoted expansions</span>
+<span class="cmd">echo</span> <span class="vr">$x</span>           <span class="cm"># could split on '2' if result were '12' — quote it</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Expansion order detective</h4>
+  <p>For each of the following lines, predict exactly what will be printed (or whether it will error),
+  then verify in your shell. Explain which expansion stage causes the behaviour.</p>
+  <pre><code>a='*.sh'
+echo $a
+echo "$a"
+echo ${a/sh/py}
+b='PATH'
+echo ${!b}
+set -- $'one\ntwo\nthree'
+echo $#</code></pre>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="cm"># echo $a       — parameter expansion → '*.sh'; then word splitting (no spaces)
+#                → then globbing: if .sh files exist, lists them; else prints '*.sh'
+# Stage 7 (globbing) is the key stage.</span>
+
+<span class="cm"># echo "$a"     — quoted: parameter expansion → '*.sh', no word splitting, no globbing
+#                → prints literally:  *.sh</span>
+
+<span class="cm"># echo ${a/sh/py}  — pattern substitution during parameter expansion (stage 3)
+#                   → '*.py'; then word splitting (nothing to split)
+#                   → then globbing: expands to .py files if any, else '*.py'</span>
+
+<span class="vr">b</span><span class="op">=</span><span class="st">'PATH'</span>
+<span class="cmd">echo</span> <span class="st">"${!b}"</span>
+<span class="cm"># Indirect expansion (stage 3): ${!b} looks up the variable whose name is in b
+# → expands to the value of $PATH</span>
+
+<span class="kw">set</span> <span class="fl">--</span> $<span class="st">'\none\ntwo\nthree'</span>
+<span class="cmd">echo</span> <span class="vr">$#</span>
+<span class="cm"># $'...' is resolved by the LEXER (before any expansion stage)
+# The result is a string with embedded newlines.
+# set -- $'one\ntwo\nthree' — the $'...' becomes a single unquoted word
+# with newlines inside it. Word splitting (stage 6) splits on newlines
+# (newline is in IFS by default), giving three positional parameters.
+# $# == 3</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — IFS surgery</h4>
+  <p>Write a function <code>split_by SEP STRING RETARRAY</code> that splits STRING on the
+  single-character delimiter SEP and stores the result in the array named RETARRAY —
+  without using any external commands (no <span class="inline-code">awk</span>,
+  <span class="inline-code">cut</span>, <span class="inline-code">tr</span>). Use IFS manipulation
+  and the knowledge from this chapter about word splitting and namerefs.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="fn">split_by</span>() {
+  <span class="cm"># Args: SEP STRING RETARRAY</span>
+  <span class="kw">local</span> <span class="vr">_sep</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">_str</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_ret</span><span class="op">=</span><span class="st">"$3"</span>
+
+  <span class="cm"># Save and set IFS locally — local IFS is scoped to this function</span>
+  <span class="kw">local</span> <span class="vr">IFS</span><span class="op">=</span><span class="st">"<span class="vr">$_sep</span>"</span>
+
+  <span class="cm"># Word splitting fires when we assign the unquoted expansion to the array.
+  # The read -ra trick is cleaner and handles empty fields:</span>
+  <span class="cmd">read</span> <span class="fl">-ra</span> <span class="vr">_ret</span> <span class="op"><<<</span><span class="st">"<span class="vr">$_str</span>"</span>
+}
+
+<span class="cm"># Test</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">parts</span>
+<span class="fn">split_by</span> <span class="st">':'</span> <span class="st">'one:two:three'</span> parts
+<span class="cmd">printf</span> <span class="st">'[%s]\n'</span> <span class="st">"${parts[@]}"</span>
+<span class="cm"># [one]
+# [two]
+# [three]</span>
+
+<span class="fn">split_by</span> <span class="st">','</span> <span class="st">'a,,b,c'</span> parts   <span class="cm"># empty fields</span>
+<span class="cmd">printf</span> <span class="st">'[%s]\n'</span> <span class="st">"${parts[@]}"</span>
+<span class="cm"># Note: read -ra collapses consecutive delimiters (IFS whitespace rules)
+# For truly empty-field-preserving splits, use a while/case loop with ${str%%SEP*}</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Glob-safe pattern passing</h4>
+  <p>Write a function <code>safe_find DIR PATTERN</code> that uses <span class="inline-code">find</span>
+  to locate files matching PATTERN in DIR. The function must work correctly regardless of whether
+  the current directory contains files that match PATTERN — i.e., it must prevent premature
+  glob expansion. Also handle the case where DIR does not exist, exiting with a clear message.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="fn">safe_find</span>() {
+  <span class="kw">local</span> <span class="vr">dir</span><span class="op">=</span><span class="st">"${1:?safe_find: DIR required}"</span>
+  <span class="kw">local</span> <span class="vr">pattern</span><span class="op">=</span><span class="st">"${2:?safe_find: PATTERN required}"</span>
+
+  <span class="kw">if</span> [[ <span class="op">!</span> <span class="fl">-d</span> <span class="st">"<span class="vr">$dir</span>"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'safe_find: not a directory: %s\n'</span> <span class="st">"<span class="vr">$dir</span>"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+
+  <span class="cm"># Always quote $pattern so the shell never expands it.
+  # find receives the literal string and does its own pattern matching.</span>
+  <span class="cmd">find</span> <span class="st">"<span class="vr">$dir</span>"</span> <span class="fl">-type</span> f <span class="fl">-name</span> <span class="st">"<span class="vr">$pattern</span>"</span>
+}
+
+<span class="cm"># Usage — safe even when *.log files exist in the current directory</span>
+<span class="fn">safe_find</span> <span class="pth">/var/log</span> <span class="st">'*.log'</span>
+<span class="fn">safe_find</span> <span class="pth">/nonexistent</span> <span class="st">'*.txt'</span>   <span class="cm"># prints error, returns 1</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Expansion order puzzle: build a general renderer</h4>
+  <p>Write a function <code>render_template TEMPLATE_FILE</code> that reads a file where
+  <span class="inline-code">{{VAR}}</span> placeholders should be replaced with the values of
+  shell variables of the same name. Requirements:</p>
+  <ul>
+    <li>Must NOT use <span class="inline-code">eval</span> (injection risk)</li>
+    <li>Must handle multi-line templates</li>
+    <li>Must leave <span class="inline-code">{{UNDEFINED}}</span> placeholders intact if the variable
+    is not set</li>
+    <li>Should use only Bash built-ins — no <span class="inline-code">sed</span> or
+    <span class="inline-code">awk</span></li>
+  </ul>
+  <p><em>Hint:</em> think about how parameter expansion's
+  <span class="inline-code">${!varname}</span> indirect form and
+  <span class="inline-code">${var:-default}</span> combine here.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="fn">render_template</span>() {
+  <span class="kw">local</span> <span class="vr">file</span><span class="op">=</span><span class="st">"${1:?template file required}"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span> ]] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'render_template: not found: %s\n'</span> <span class="st">"<span class="vr">$file</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="kw">local</span> <span class="vr">line</span> <span class="vr">out</span> <span class="vr">rest</span> <span class="vr">varname</span> <span class="vr">value</span>
+
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span> <span class="op">||</span> [[ <span class="fl">-n</span> <span class="vr">$line</span> ]]; <span class="kw">do</span>
+    <span class="vr">out</span><span class="op">=</span><span class="st">''</span>
+    <span class="vr">rest</span><span class="op">=</span><span class="st">"<span class="vr">$line</span>"</span>
+
+    <span class="cm"># Scan for {{...}} placeholders using parameter expansion — no external tools</span>
+    <span class="kw">while</span> [[ <span class="vr">$rest</span> <span class="op">==</span> <span class="op">*</span><span class="st">'{{'</span><span class="op">*</span><span class="st">'}}'</span><span class="op">*</span> ]]; <span class="kw">do</span>
+      <span class="cm"># Everything before the first {{</span>
+      <span class="vr">out</span><span class="op">+=</span><span class="st">"${rest%%\{\{*}"</span>
+      <span class="cm"># Everything from {{ onward</span>
+      <span class="vr">rest</span><span class="op">=</span><span class="st">"${rest#*\{\{}"</span>
+      <span class="cm"># The variable name is before }}</span>
+      <span class="vr">varname</span><span class="op">=</span><span class="st">"${rest%%\}\}*}"</span>
+      <span class="cm"># Remainder after }}</span>
+      <span class="vr">rest</span><span class="op">=</span><span class="st">"${rest#*\}\}}"</span>
+
+      <span class="cm"># Validate: varname must be a legal identifier</span>
+      <span class="kw">if</span> [[ <span class="vr">$varname</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span> ]]; <span class="kw">then</span>
+        <span class="cm"># Indirect expansion — ${!varname} retrieves the value</span>
+        <span class="vr">value</span><span class="op">=</span><span class="st">"${!varname}"</span>
+        <span class="kw">if</span> [[ <span class="fl">-v</span> <span class="vr">$varname</span> ]]; <span class="kw">then</span>
+          <span class="cm"># Variable is set — substitute its value</span>
+          <span class="vr">out</span><span class="op">+=</span><span class="st">"<span class="vr">$value</span>"</span>
+        <span class="kw">else</span>
+          <span class="cm"># Variable not set — leave placeholder intact</span>
+          <span class="vr">out</span><span class="op">+=</span><span class="st">"{{<span class="vr">$varname</span>}}"</span>
+        <span class="kw">fi</span>
+      <span class="kw">else</span>
+        <span class="cm"># Not a valid identifier — leave it as-is</span>
+        <span class="vr">out</span><span class="op">+=</span><span class="st">"{{<span class="vr">$varname</span>}}"</span>
+      <span class="kw">fi</span>
+    <span class="kw">done</span>
+
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">${out}${rest}</span>"</span>
+  <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$file</span>"</span>
+}
+
+<span class="cm"># Test</span>
+<span class="vr">NAME</span><span class="op">=</span><span class="st">'Alice'</span>
+<span class="vr">HOST</span><span class="op">=</span><span class="st">'prod-01'</span>
+<span class="cm"># Template file contains:
+#   Hello {{NAME}}, deploying to {{HOST}}.
+#   Token: {{SECRET}}   &lt;-- SECRET not set</span>
+<span class="fn">render_template</span> template.txt
+<span class="out">Hello Alice, deploying to prod-01.
+Token: {{SECRET}}</span></pre>
+  </div>
+</div>
+
+</div>

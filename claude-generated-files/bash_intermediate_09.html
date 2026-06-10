@@ -1,0 +1,621 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  /* syntax highlighting */
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 9 — Advanced <code>find</code> and Filesystem Operations</h1>
+<p>You already know the basics of <span class="inline-code">find</span> from the beginner course. This chapter digs into
+complex filter expressions, efficient bulk execution, parallel processing with <span class="inline-code">xargs</span>,
+and the diagnostic tools that let you see <em>who</em> has files open: <span class="inline-code">lsof</span>,
+<span class="inline-code">fuser</span>, and <span class="inline-code">inotifywait</span>.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — <code>find</code>: Compound Expressions</h2>
+
+<p><span class="inline-code">find</span> builds a boolean expression tree from tests. Understanding operator precedence
+unlocks searches that would be impossible with a single predicate.</p>
+
+<h3>Operators and grouping</h3>
+<table>
+  <tr><th>Operator</th><th>Meaning</th><th>Short form</th></tr>
+  <tr><td><code>-and</code></td><td>Both sides must be true (default)</td><td>(space)</td></tr>
+  <tr><td><code>-or</code></td><td>Either side true</td><td><code>-o</code></td></tr>
+  <tr><td><code>-not</code></td><td>Negate</td><td><code>!</code></td></tr>
+  <tr><td><code>( … )</code></td><td>Grouping — <strong>must</strong> be shell-escaped</td><td></td></tr>
+</table>
+
+<pre><span class="cm"># Files ending in .log OR .tmp — without grouping, -or has lower precedence</span>
+<span class="cmd">find</span> <span class="pth">/var/app</span> <span class="fl">-type</span> f <span class="op">\(</span> <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="fl">-o</span> <span class="fl">-name</span> <span class="st">'*.tmp'</span> <span class="op">\)</span>
+
+<span class="cm"># NOT hidden files (name starts with .)</span>
+<span class="cmd">find</span> <span class="pth">.</span> <span class="fl">-not</span> <span class="fl">-name</span> <span class="st">'.*'</span>
+
+<span class="cm"># Owned by www-data AND world-writable</span>
+<span class="cmd">find</span> <span class="pth">/srv/web</span> <span class="fl">-type</span> f <span class="fl">-user</span> www-data <span class="fl">-perm</span> <span class="fl">-o+w</span>
+
+<span class="cm"># Files modified in the last 7 days but not the last 1 day</span>
+<span class="cmd">find</span> <span class="pth">/data</span> <span class="fl">-type</span> f <span class="fl">-mtime</span> <span class="fl">-7</span> <span class="fl">-not</span> <span class="fl">-mtime</span> <span class="fl">-1</span></pre>
+
+<h3>Key tests quick-reference</h3>
+<table>
+  <tr><th>Test</th><th>Meaning</th></tr>
+  <tr><td><code>-name PATTERN</code></td><td>Basename matches glob (case-sensitive)</td></tr>
+  <tr><td><code>-iname PATTERN</code></td><td>Same, case-insensitive</td></tr>
+  <tr><td><code>-type f|d|l|p|s</code></td><td>File / directory / symlink / FIFO / socket</td></tr>
+  <tr><td><code>-mtime ±N</code></td><td>Modified N×24 h ago (<code>-N</code>=less than, <code>+N</code>=more than)</td></tr>
+  <tr><td><code>-mmin ±N</code></td><td>Modified N minutes ago</td></tr>
+  <tr><td><code>-newer FILE</code></td><td>Modified more recently than FILE</td></tr>
+  <tr><td><code>-size ±Nc/k/M/G</code></td><td>Exact or range by size unit</td></tr>
+  <tr><td><code>-empty</code></td><td>Zero-length file or empty directory</td></tr>
+  <tr><td><code>-perm MODE</code></td><td>Exact permissions; <code>-MODE</code> = at least these bits set</td></tr>
+  <tr><td><code>-user NAME</code> / <code>-group NAME</code></td><td>Ownership</td></tr>
+  <tr><td><code>-path PATTERN</code></td><td>Full path matches glob</td></tr>
+  <tr><td><code>-prune</code></td><td>Do not descend into matched directory</td></tr>
+  <tr><td><code>-maxdepth N</code></td><td>Limit recursion depth</td></tr>
+  <tr><td><code>-mindepth N</code></td><td>Skip first N levels</td></tr>
+</table>
+
+<h3>Pruning subtrees for speed</h3>
+<pre><span class="cm"># Skip .git directories entirely — note the -prune -o … -print pattern</span>
+<span class="cmd">find</span> <span class="pth">.</span> <span class="fl">-name</span> <span class="st">'.git'</span> <span class="fl">-prune</span> <span class="fl">-o</span> <span class="fl">-name</span> <span class="st">'*.py'</span> <span class="fl">-print</span>
+
+<span class="cm"># Multiple directories to skip</span>
+<span class="cmd">find</span> <span class="pth">.</span> <span class="op">\(</span> <span class="fl">-name</span> <span class="st">'.git'</span> <span class="fl">-o</span> <span class="fl">-name</span> <span class="st">'.svn'</span> <span class="fl">-o</span> <span class="fl">-name</span> <span class="st">'node_modules'</span> <span class="op">\)</span> <span class="fl">-prune</span> \
+  <span class="fl">-o</span> <span class="fl">-type</span> f <span class="fl">-name</span> <span class="st">'*.js'</span> <span class="fl">-print</span></pre>
+
+<div class="note">
+<strong>Short-circuit evaluation:</strong> <span class="inline-code">find</span> evaluates left to right and stops as soon as the
+result is determined. Put cheap tests (<span class="inline-code">-type</span>, <span class="inline-code">-name</span>)
+before expensive ones (<span class="inline-code">-newer</span>, stat-based tests) to keep things fast.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — Executing Commands: <code>-exec</code> vs <code>-exec {} +</code></h2>
+
+<h3>One-at-a-time: <code>-exec CMD {} \;</code></h3>
+<p>Spawns a new process for <em>every</em> matched file. Simple, but slow for large result sets.</p>
+<pre><span class="cmd">find</span> <span class="pth">/tmp</span> <span class="fl">-name</span> <span class="st">'*.sock'</span> <span class="fl">-exec</span> rm <span class="fl">-f</span> {} <span class="op">\;</span></pre>
+
+<h3>Batched: <code>-exec CMD {} +</code></h3>
+<p>Appends all matched paths to a single command invocation (like <span class="inline-code">xargs</span> built in).
+Much faster — one process instead of N.</p>
+<pre><span class="cm"># Delete 10 000 .tmp files — one rm call instead of 10 000</span>
+<span class="cmd">find</span> <span class="pth">/cache</span> <span class="fl">-name</span> <span class="st">'*.tmp'</span> <span class="fl">-exec</span> rm <span class="fl">-f</span> {} <span class="op">+</span>
+
+<span class="cm"># Compress all logs older than 30 days — gzip accepts multiple files</span>
+<span class="cmd">find</span> <span class="pth">/var/log/app</span> <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="fl">-mtime</span> <span class="fl">+30</span> <span class="fl">-exec</span> gzip {} <span class="op">+</span></pre>
+
+<div class="warn">
+<strong>Limitation of <code>{} +</code>:</strong> <span class="inline-code">{}</span> must be the <em>last</em> argument before
+<span class="inline-code">+</span>. You cannot write <span class="inline-code">-exec mv {} /dest/ +</span> — use
+<span class="inline-code">xargs</span> instead when the path needs to appear in the middle of the command.
+</div>
+
+<h3>-execdir: safer for untrusted paths</h3>
+<p><span class="inline-code">-execdir</span> runs the command in the matched file's own directory, using
+<span class="inline-code">./filename</span> rather than the full path. This prevents path-traversal attacks when
+processing untrusted filenames.</p>
+<pre><span class="cm"># Run checksums in each directory rather than with full paths</span>
+<span class="cmd">find</span> <span class="pth">/uploads</span> <span class="fl">-type</span> f <span class="fl">-execdir</span> sha256sum {} <span class="op">\;</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — <code>xargs</code> in Depth</h2>
+
+<p><span class="inline-code">xargs</span> reads items from stdin and builds command lines from them.
+When <span class="inline-code">-exec {} +</span> can't do what you need, <span class="inline-code">xargs</span> almost certainly can.</p>
+
+<h3>Core flags</h3>
+<table>
+  <tr><th>Flag</th><th>Effect</th></tr>
+  <tr><td><code>-0</code></td><td>Items delimited by NUL byte — pair with <code>find -print0</code></td></tr>
+  <tr><td><code>-I REPLACE</code></td><td>Replace string in command (default <code>{}</code>) — one item per invocation</td></tr>
+  <tr><td><code>-n N</code></td><td>Maximum N arguments per command</td></tr>
+  <tr><td><code>-P N</code></td><td>Run up to N processes in parallel</td></tr>
+  <tr><td><code>-a FILE</code></td><td>Read items from FILE instead of stdin</td></tr>
+  <tr><td><code>-r</code></td><td>Do not run command if input is empty (GNU xargs)</td></tr>
+  <tr><td><code>-t</code></td><td>Print each command before executing (trace)</td></tr>
+  <tr><td><code>-p</code></td><td>Prompt before each execution</td></tr>
+  <tr><td><code>--max-procs=N</code></td><td>Long form of <code>-P</code></td></tr>
+</table>
+
+<h3>Always use <code>-print0 | xargs -0</code> for filenames</h3>
+<pre><span class="cm"># Filenames with spaces break plain xargs — use NUL delimiters</span>
+<span class="cmd">find</span> <span class="pth">.</span> <span class="fl">-name</span> <span class="st">'*.jpg'</span> <span class="fl">-print0</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-I{}</span> convert {} <span class="fl">-resize</span> 800x {} <span class="cm"># bad — overwrites</span>
+<span class="cmd">find</span> <span class="pth">.</span> <span class="fl">-name</span> <span class="st">'*.jpg'</span> <span class="fl">-print0</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-I{}</span> convert {} <span class="fl">-resize</span> 800x <span class="pth">thumbs</span>/{}</pre>
+
+<h3>Parallel processing with <code>-P</code></h3>
+<pre><span class="cm"># Compress 8 files simultaneously — saturate CPU cores</span>
+<span class="cmd">find</span> <span class="pth">/archive</span> <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="fl">-print0</span> <span class="op">|</span> \
+  <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-P8</span> <span class="fl">-n1</span> gzip <span class="fl">-9</span>
+
+<span class="cm"># Run a custom function in parallel — must use bash -c</span>
+<span class="fn">process_file</span>() {
+  <span class="kw">local</span> <span class="vr">f</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="cm"># … do work …</span>
+}
+<span class="kw">export</span> <span class="fl">-f</span> process_file
+<span class="cmd">find</span> <span class="pth">.</span> <span class="fl">-type</span> f <span class="fl">-print0</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-P4</span> <span class="fl">-n1</span> bash <span class="fl">-c</span> <span class="st">'process_file "$@"'</span> _</pre>
+
+<h3>Reading from a file with <code>-a</code></h3>
+<pre><span class="cm"># Process a pre-made list — one path per line, NUL-terminated</span>
+<span class="cmd">find</span> <span class="pth">/data</span> <span class="fl">-name</span> <span class="st">'*.csv'</span> <span class="fl">-print0</span> <span class="op">></span> <span class="pth">/tmp/csv_list.txt</span>
+<span class="cm"># … later …</span>
+<span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-a</span> <span class="pth">/tmp/csv_list.txt</span> wc <span class="fl">-l</span></pre>
+
+<h3>Controlling batch size with <code>-n</code></h3>
+<pre><span class="cm"># Some commands have argument-count limits — split into batches of 100</span>
+<span class="cmd">find</span> <span class="pth">.</span> <span class="fl">-name</span> <span class="st">'*.png'</span> <span class="fl">-print0</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-n100</span> optipng <span class="fl">-o2</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — <code>lsof</code>: List Open Files</h2>
+
+<p>Every open file, socket, pipe, or device in the OS can be queried with <span class="inline-code">lsof</span>.
+It answers "who has this file open?" and "what does this process have open?"</p>
+
+<h3>Common invocations</h3>
+<pre><span class="cm"># Which process has /var/log/app.log open?</span>
+<span class="cmd">lsof</span> <span class="pth">/var/log/app.log</span>
+
+<span class="cm"># All files open by a specific PID</span>
+<span class="cmd">lsof</span> <span class="fl">-p</span> <span class="nu">1234</span>
+
+<span class="cm"># All files open by process named nginx</span>
+<span class="cmd">lsof</span> <span class="fl">-c</span> nginx
+
+<span class="cm"># All open files in /var/log directory</span>
+<span class="cmd">lsof</span> <span class="fl">+D</span> <span class="pth">/var/log</span>
+
+<span class="cm"># All network connections (like netstat)</span>
+<span class="cmd">lsof</span> <span class="fl">-i</span>
+
+<span class="cm"># TCP connections on port 8080</span>
+<span class="cmd">lsof</span> <span class="fl">-i</span> TCP:<span class="nu">8080</span>
+
+<span class="cm"># Which process is listening on port 443?</span>
+<span class="cmd">lsof</span> <span class="fl">-i</span> TCP:<span class="nu">443</span> <span class="fl">-sTCP:LISTEN</span>
+
+<span class="cm"># Files opened by a specific user</span>
+<span class="cmd">lsof</span> <span class="fl">-u</span> deploy</pre>
+
+<h3>The deleted-but-still-open pattern</h3>
+<p>A process that holds a file open keeps the disk space allocated even after
+<span class="inline-code">rm</span> removes the name. This is the classic "disk is full but <span class="inline-code">df</span> and
+<span class="inline-code">du</span> disagree" scenario.</p>
+<pre><span class="cm"># Find deleted files still consuming disk space</span>
+<span class="cmd">lsof</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'deleted'</span>
+
+<span class="cm"># Typical output — (deleted) in the NAME column:</span>
+<span class="out">nginx   1823  www  3w  REG  8,1  2147483648  ... /var/log/nginx/access.log (deleted)</span>
+
+<span class="cm"># Fix: truncate via the /proc fd, no restart needed</span>
+<span class="op">></span> <span class="pth">/proc/1823/fd/3</span></pre>
+
+<h3>Useful <code>lsof</code> flags</h3>
+<table>
+  <tr><th>Flag</th><th>Meaning</th></tr>
+  <tr><td><code>-n</code></td><td>No hostname lookup (faster)</td></tr>
+  <tr><td><code>-P</code></td><td>No port-name lookup (show numbers)</td></tr>
+  <tr><td><code>-t</code></td><td>Output PIDs only — scriptable</td></tr>
+  <tr><td><code>-r N</code></td><td>Repeat every N seconds</td></tr>
+  <tr><td><code>+D DIR</code></td><td>Recurse directory</td></tr>
+  <tr><td><code>-sTCP:STATE</code></td><td>Filter by TCP state (LISTEN, ESTABLISHED, …)</td></tr>
+</table>
+
+<pre><span class="cm"># Kill all processes that have a specific file open</span>
+<span class="cmd">kill</span> $(<span class="cmd">lsof</span> <span class="fl">-t</span> <span class="pth">/mnt/nas/bigfile.dat</span>)
+
+<span class="cm"># Watch open connections refresh every 2 seconds</span>
+<span class="cmd">lsof</span> <span class="fl">-i</span> TCP <span class="fl">-nP</span> <span class="fl">-r2</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — <code>fuser</code>: Find Processes Using Files or Sockets</h2>
+
+<p><span class="inline-code">fuser</span> is a lighter tool than <span class="inline-code">lsof</span> — it focuses on a single file or
+socket and returns the PIDs using it. Useful for quickly answering "what is blocking this unmount?"</p>
+
+<pre><span class="cm"># Which processes are using this mount point?</span>
+<span class="cmd">fuser</span> <span class="fl">-m</span> <span class="pth">/mnt/usb</span>
+
+<span class="cm"># Which processes are using port 80 (TCP)?</span>
+<span class="cmd">fuser</span> <span class="nu">80</span>/tcp
+
+<span class="cm"># Verbose — show usernames and access types</span>
+<span class="cmd">fuser</span> <span class="fl">-v</span> <span class="pth">/var/log/syslog</span>
+<span class="out">                     USER        PID ACCESS COMMAND</span>
+<span class="out">/var/log/syslog:     root        892 F....  rsyslogd</span>
+
+<span class="cm"># Kill all processes using a file (be careful!)</span>
+<span class="cmd">fuser</span> <span class="fl">-k</span> <span class="pth">/var/run/app.pid</span>
+
+<span class="cm"># Send a specific signal</span>
+<span class="cmd">fuser</span> <span class="fl">-k</span> <span class="fl">-HUP</span> <span class="nu">80</span>/tcp</pre>
+
+<table>
+  <tr><th>Access code</th><th>Meaning</th></tr>
+  <tr><td><code>c</code></td><td>Current directory</td></tr>
+  <tr><td><code>e</code></td><td>Executable being run</td></tr>
+  <tr><td><code>f</code></td><td>Open file</td></tr>
+  <tr><td><code>F</code></td><td>Open file for writing</td></tr>
+  <tr><td><code>r</code></td><td>Root directory</td></tr>
+  <tr><td><code>m</code></td><td>mmap'd file or shared library</td></tr>
+</table>
+
+<div class="note">
+<strong>fuser vs lsof:</strong> Use <span class="inline-code">fuser</span> for a quick "what's blocking unmount" check.
+Use <span class="inline-code">lsof</span> when you need the full picture — network connections, deleted files,
+or per-process fd lists.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — <code>inotifywait</code>: Watching for Filesystem Events</h2>
+
+<p><span class="inline-code">inotifywait</span> is part of the <strong>inotify-tools</strong> package (Linux only).
+It subscribes to the kernel's inotify API, which delivers events the instant a file changes —
+no polling, near-zero CPU cost.</p>
+
+<div class="warn">
+<span class="inline-code">inotifywait</span> is Linux-only. On macOS use <span class="inline-code">fswatch</span>;
+on BSD use <span class="inline-code">kqueue</span>. The examples below assume Linux.
+</div>
+
+<h3>One-shot mode</h3>
+<pre><span class="cm"># Wait until /tmp/signal.txt is created, then continue</span>
+<span class="cmd">inotifywait</span> <span class="fl">-e</span> create <span class="pth">/tmp/signal.txt</span>
+<span class="out">Setting up watches.
+Watches established.
+/tmp/ CREATE signal.txt</span></pre>
+
+<h3>Monitor mode: <code>-m</code></h3>
+<pre><span class="cm"># Watch a directory continuously, printing all events</span>
+<span class="cmd">inotifywait</span> <span class="fl">-m</span> <span class="fl">-e</span> create,modify,delete,moved_to <span class="pth">/var/spool/jobs</span>
+
+<span class="cm"># Parse output in a while-read loop</span>
+<span class="cmd">inotifywait</span> <span class="fl">-m</span> <span class="fl">-q</span> <span class="fl">--format</span> <span class="st">'%e %f'</span> <span class="fl">-e</span> close_write <span class="pth">/var/spool/jobs</span> <span class="op">|</span> \
+<span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">event</span> <span class="vr">file</span>; <span class="kw">do</span>
+  <span class="cmd">echo</span> <span class="st">"Processing: <span class="vr">$file</span> (<span class="vr">$event</span>)"</span>
+  process_job <span class="st">"<span class="vr">$file</span>"</span>
+<span class="kw">done</span></pre>
+
+<h3>Recursive watching: <code>-r</code></h3>
+<pre><span class="cm"># Watch an entire directory tree</span>
+<span class="cmd">inotifywait</span> <span class="fl">-m</span> <span class="fl">-r</span> <span class="fl">-q</span> <span class="fl">--format</span> <span class="st">'%w%f %e'</span> <span class="fl">-e</span> modify <span class="pth">/etc/nginx</span> <span class="op">|</span> \
+<span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">path</span> <span class="vr">event</span>; <span class="kw">do</span>
+  <span class="cmd">echo</span> <span class="st">"Config changed: <span class="vr">$path</span>"</span>
+  nginx <span class="fl">-t</span> <span class="op">&&</span> systemctl reload nginx
+<span class="kw">done</span></pre>
+
+<h3>Common events</h3>
+<table>
+  <tr><th>Event</th><th>Triggered when</th></tr>
+  <tr><td><code>create</code></td><td>File or directory created</td></tr>
+  <tr><td><code>modify</code></td><td>File contents written to</td></tr>
+  <tr><td><code>close_write</code></td><td>File written and closed — safer than <code>modify</code> for processing</td></tr>
+  <tr><td><code>delete</code></td><td>File removed</td></tr>
+  <tr><td><code>moved_to</code></td><td>File moved into watched directory</td></tr>
+  <tr><td><code>moved_from</code></td><td>File moved out of watched directory</td></tr>
+  <tr><td><code>attrib</code></td><td>Permissions, timestamps, or ownership changed</td></tr>
+  <tr><td><code>access</code></td><td>File read</td></tr>
+</table>
+
+<h3>Format string tokens</h3>
+<pre><span class="cm"># Available tokens for --format</span>
+<span class="cm"># %w  — directory being watched</span>
+<span class="cm"># %f  — filename (empty if event is on the directory itself)</span>
+<span class="cm"># %e  — event name(s), comma-separated</span>
+<span class="cm"># %T  — timestamp (requires --timefmt)</span>
+
+<span class="cmd">inotifywait</span> <span class="fl">-m</span> <span class="fl">-q</span> \
+  <span class="fl">--timefmt</span> <span class="st">'%Y-%m-%d %H:%M:%S'</span> \
+  <span class="fl">--format</span>  <span class="st">'%T %e %w%f'</span> \
+  <span class="fl">-e</span> create,close_write \
+  <span class="pth">/var/spool/incoming</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7 — Practical Patterns</h2>
+
+<h3>Finding and cleaning up old files safely</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="fn">cleanup_old_files</span>() {
+  <span class="kw">local</span> <span class="vr">dir</span><span class="op">=</span><span class="st">"${1:?directory required}"</span>
+  <span class="kw">local</span> <span class="vr">days</span><span class="op">=</span><span class="st">"${2:-30}"</span>
+  <span class="kw">local</span> <span class="vr">dry_run</span><span class="op">=</span><span class="st">"${3:-false}"</span>
+
+  <span class="kw">local</span> <span class="vr">count</span><span class="op">=</span><span class="nu">0</span> <span class="vr">size</span><span class="op">=</span><span class="nu">0</span>
+
+  <span class="kw">while</span> <span class="cmd">IFS=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">file</span>; <span class="kw">do</span>
+    <span class="vr">fsize</span><span class="op">=</span>$(<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$file</span>"</span>)
+    (( <span class="vr">size</span> <span class="op">+=</span> <span class="vr">fsize</span> ))
+    (( <span class="vr">count</span>++ ))
+    <span class="kw">if</span> [[ <span class="vr">$dry_run</span> <span class="op">==</span> <span class="st">'false'</span> ]]; <span class="kw">then</span>
+      <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span>
+    <span class="kw">else</span>
+      <span class="cmd">echo</span> <span class="st">"[dry-run] would delete: <span class="vr">$file</span>"</span>
+    <span class="kw">fi</span>
+  <span class="kw">done</span> <span class="op"><</span>(<span class="cmd">find</span> <span class="st">"<span class="vr">$dir</span>"</span> <span class="fl">-type</span> f <span class="fl">-mtime</span> +<span class="vr">${days}</span> <span class="fl">-print0</span>)
+
+  <span class="cmd">printf</span> <span class="st">'Removed %d files (%.1f MB)\n'</span> <span class="st">"<span class="vr">$count</span>"</span> <span class="st">"$(echo "scale=1; $size/1048576" | bc)"</span>
+}</pre>
+
+<h3>Parallel checksum generation</h3>
+<pre><span class="cm"># Generate SHA256 checksums for all files — 8 parallel workers</span>
+<span class="cmd">find</span> <span class="pth">/data/release</span> <span class="fl">-type</span> f <span class="fl">-print0</span> <span class="op">|</span> \
+  <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-P8</span> <span class="fl">-n1</span> sha256sum <span class="op">>></span> <span class="pth">checksums.txt</span>
+
+<span class="cm"># Sort for deterministic output</span>
+<span class="cmd">sort</span> <span class="fl">-k2</span> <span class="pth">checksums.txt</span> <span class="fl">-o</span> <span class="pth">checksums.txt</span></pre>
+
+<h3>Auto-reload service on config change</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># watch_config.sh — reload a service whenever its config dir changes</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">CONFIG_DIR</span><span class="op">=</span><span class="st">"${1:?usage: $0 CONFIG_DIR SERVICE}"</span>
+<span class="vr">SERVICE</span><span class="op">=</span><span class="st">"${2:?usage: $0 CONFIG_DIR SERVICE}"</span>
+
+<span class="cmd">echo</span> <span class="st">"Watching <span class="vr">$CONFIG_DIR</span> for changes…"</span>
+
+<span class="cmd">inotifywait</span> <span class="fl">-m</span> <span class="fl">-r</span> <span class="fl">-q</span> \
+  <span class="fl">--format</span> <span class="st">'%w%f'</span> \
+  <span class="fl">-e</span> close_write,moved_to,delete \
+  <span class="st">"<span class="vr">$CONFIG_DIR</span>"</span> <span class="op">|</span> \
+<span class="kw">while</span> <span class="cmd">IFS=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">changed</span>; <span class="kw">do</span>
+  <span class="cmd">echo</span> <span class="st">"Changed: <span class="vr">$changed</span> — reloading <span class="vr">$SERVICE</span>"</span>
+  <span class="kw">if</span> systemctl reload <span class="st">"<span class="vr">$SERVICE</span>"</span> <span class="nu">2</span><span class="op">>&</span><span class="nu">1</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Reload OK"</span>
+  <span class="kw">else</span>
+    <span class="cmd">echo</span> <span class="er">"Reload FAILED — check journalctl -u <span class="vr">$SERVICE</span>"</span> <span class="op">>&2</span>
+  <span class="kw">fi</span>
+<span class="kw">done</span></pre>
+
+<h3>Find duplicate files by checksum</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="fn">find_duplicates</span>() {
+  <span class="kw">local</span> <span class="vr">dir</span><span class="op">=</span><span class="st">"${1:-.}"</span>
+  <span class="cm"># Group files by size first (cheap), then checksum only same-size groups</span>
+  <span class="cmd">find</span> <span class="st">"<span class="vr">$dir</span>"</span> <span class="fl">-type</span> f <span class="fl">-print0</span> <span class="op">|</span> \
+    <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="cmd">stat</span> <span class="fl">--format</span> <span class="st">'%s %n'</span> <span class="op">|</span> \
+    <span class="cmd">sort</span> <span class="fl">-n</span> <span class="op">|</span> \
+    <span class="cmd">awk</span> <span class="st">'{ size[$1] = size[$1] " " $2; count[$1]++ }
+         END { for (s in count) if (count[s]>1) print size[s] }'</span> <span class="op">|</span> \
+  <span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">files</span>; <span class="kw">do</span>
+    <span class="cm"># Checksum only the size-matched candidates</span>
+    <span class="cm"># shellcheck disable=SC2086</span>
+    <span class="cmd">md5sum</span> <span class="vr">$files</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'prev==$1 { print prev_f; print $2 } { prev=$1; prev_f=$2 }'</span>
+  <span class="kw">done</span>
+}</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Stale file report</h4>
+  <p>Write a script <code>stale_report.sh DIR [DAYS]</code> (default 14 days) that:</p>
+  <ul>
+    <li>Uses <code>find</code> with NUL delimiters to list files in DIR not modified within DAYS days</li>
+    <li>Groups them by extension and prints a summary table: extension, count, total size</li>
+    <li>Highlights groups over 100 MB with a warning prefix</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">DIR</span><span class="op">=</span><span class="st">"${1:?usage: $0 DIR [DAYS]}"</span>
+<span class="vr">DAYS</span><span class="op">=</span><span class="st">"${2:-14}"</span>
+
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">ext_count</span> <span class="vr">ext_size</span>
+
+<span class="kw">while</span> <span class="cmd">IFS=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">file</span>; <span class="kw">do</span>
+  <span class="vr">ext</span><span class="op">=</span><span class="st">"${file##*.}"</span>
+  [[ <span class="vr">$ext</span> <span class="op">==</span> <span class="vr">$file</span> ]] <span class="op">&&</span> <span class="vr">ext</span><span class="op">=</span><span class="st">'(none)'</span>   <span class="cm"># no extension</span>
+  <span class="vr">sz</span><span class="op">=</span>$(<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$file</span>"</span>)
+  (( <span class="vr">ext_count</span>[<span class="st">"<span class="vr">$ext</span>"</span>]++ ))
+  (( <span class="vr">ext_size</span>[<span class="st">"<span class="vr">$ext</span>"</span>] <span class="op">+=</span> <span class="vr">sz</span> ))
+<span class="kw">done</span> <span class="op"><</span>(<span class="cmd">find</span> <span class="st">"<span class="vr">$DIR</span>"</span> <span class="fl">-type</span> f <span class="fl">-mtime</span> +<span class="vr">$DAYS</span> <span class="fl">-print0</span>)
+
+<span class="cmd">printf</span> <span class="st">'%-15s %8s %12s\n'</span> <span class="st">'Extension'</span> <span class="st">'Count'</span> <span class="st">'Total Size'</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">'---------------------------------------'</span>
+
+<span class="kw">for</span> <span class="vr">ext</span> <span class="kw">in</span> <span class="st">"${!ext_count[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">bytes</span><span class="op">=</span><span class="st">"${ext_size[$ext]}"</span>
+  <span class="vr">mb</span><span class="op">=</span>$(( <span class="vr">bytes</span> / <span class="nu">1048576</span> ))
+  <span class="vr">prefix</span><span class="op">=</span><span class="st">''</span>
+  (( <span class="vr">mb</span> <span class="op">></span> <span class="nu">100</span> )) <span class="op">&&</span> <span class="vr">prefix</span><span class="op">=</span><span class="st">'[LARGE] '</span>
+  <span class="cmd">printf</span> <span class="st">'%s%-15s %8d %9d MB\n'</span> \
+    <span class="st">"<span class="vr">$prefix</span>"</span> <span class="st">".<span class="vr">$ext</span>"</span> <span class="st">"${ext_count[$ext]}"</span> <span class="st">"<span class="vr">$mb</span>"</span>
+<span class="kw">done</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-k3</span> <span class="fl">-rn</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Parallel image resize</h4>
+  <p>Write a script that:</p>
+  <ul>
+    <li>Accepts a source directory and an output directory as arguments</li>
+    <li>Uses <code>find</code> + <code>xargs -P</code> to resize all <code>.jpg</code> and <code>.png</code> files to 800px wide in parallel (use <code>convert</code> from ImageMagick)</li>
+    <li>Preserves directory structure under the output directory</li>
+    <li>Skips files that already exist in the output directory</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">SRC</span><span class="op">=</span><span class="st">"${1:?usage: $0 SRC_DIR OUT_DIR}"</span>
+<span class="vr">OUT</span><span class="op">=</span><span class="st">"${2:?usage: $0 SRC_DIR OUT_DIR}"</span>
+
+<span class="fn">resize_one</span>() {
+  <span class="kw">local</span> <span class="vr">src</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">src_base</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">out</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">local</span> <span class="vr">rel</span><span class="op">=</span><span class="st">"${src#${src_base}/}"</span>
+  <span class="kw">local</span> <span class="vr">dest</span><span class="op">=</span><span class="st">"<span class="vr">$out</span>/<span class="vr">$rel</span>"</span>
+
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$dest</span>"</span> ]] <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>   <span class="cm"># already done</span>
+
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"$(dirname "<span class="vr">$dest</span>")"</span>
+  <span class="cmd">convert</span> <span class="st">"<span class="vr">$src</span>"</span> <span class="fl">-resize</span> 800x <span class="st">"<span class="vr">$dest</span>"</span>
+  <span class="cmd">echo</span> <span class="st">"Resized: <span class="vr">$rel</span>"</span>
+}
+
+<span class="kw">export</span> <span class="fl">-f</span> resize_one
+
+<span class="cmd">find</span> <span class="st">"<span class="vr">$SRC</span>"</span> <span class="op">\(</span> <span class="fl">-iname</span> <span class="st">'*.jpg'</span> <span class="fl">-o</span> <span class="fl">-iname</span> <span class="st">'*.png'</span> <span class="op">\)</span> <span class="fl">-print0</span> <span class="op">|</span> \
+  <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-P"$(nproc)"</span> <span class="fl">-I{}</span> bash <span class="fl">-c</span> <span class="st">'resize_one "$@"'</span> _ {} <span class="st">"<span class="vr">$SRC</span>"</span> <span class="st">"<span class="vr">$OUT</span>"</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Open-handle diagnostic</h4>
+  <p>Write a function <code>file_users FILE</code> that:</p>
+  <ul>
+    <li>Uses <code>lsof</code> to list all processes with FILE open</li>
+    <li>Prints a formatted table: PID, user, access mode, command name</li>
+    <li>Returns exit code 1 if no processes have the file open (safe-to-delete signal)</li>
+    <li>Warns if the file shows as deleted but still held open</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="fn">file_users</span>() {
+  <span class="kw">local</span> <span class="vr">file</span><span class="op">=</span><span class="st">"${1:?file required}"</span>
+  <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">lines</span>
+
+  <span class="cm"># -F0 outputs NUL-separated fields; easier to parse than columns</span>
+  <span class="kw">local</span> <span class="vr">raw</span>
+  <span class="vr">raw</span><span class="op">=</span>$(<span class="cmd">lsof</span> <span class="fl">-nP</span> <span class="st">"<span class="vr">$file</span>"</span> <span class="nu">2</span><span class="op">>/</span>dev/null) <span class="op">||</span> <span class="kw">true</span>
+
+  <span class="kw">if</span> [[ <span class="fl">-z</span> <span class="st">"<span class="vr">$raw</span>"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"No processes have <span class="vr">$file</span> open. Safe to delete."</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+
+  <span class="kw">if</span> <span class="cmd">grep</span> <span class="fl">-q</span> <span class="st">'(deleted)'</span> <span class="op"><<<</span><span class="st">"<span class="vr">$raw</span>"</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="er">"WARNING: file is deleted but still held open — disk space not released!"</span> <span class="op">>&2</span>
+  <span class="kw">fi</span>
+
+  <span class="cmd">printf</span> <span class="st">'%-8s %-12s %-6s %s\n'</span> <span class="st">'PID'</span> <span class="st">'USER'</span> <span class="st">'MODE'</span> <span class="st">'COMMAND'</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">'------------------------------------------'</span>
+
+  <span class="cm"># Skip header line from lsof, parse remaining</span>
+  <span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">cmd</span> <span class="vr">pid</span> <span class="vr">user</span> <span class="vr">fd</span> <span class="vr">rest</span>; <span class="kw">do</span>
+    [[ <span class="vr">$cmd</span> <span class="op">==</span> <span class="st">'COMMAND'</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+    <span class="vr">mode</span><span class="op">=</span><span class="st">"${fd: -1}"</span>     <span class="cm"># last char of fd field: r/w/u</span>
+    <span class="cmd">printf</span> <span class="st">'%-8s %-12s %-6s %s\n'</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="st">"<span class="vr">$user</span>"</span> <span class="st">"<span class="vr">$mode</span>"</span> <span class="st">"<span class="vr">$cmd</span>"</span>
+  <span class="kw">done</span> <span class="op"><<<</span><span class="st">"<span class="vr">$raw</span>"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — File-event processor</h4>
+  <p>Write a script <code>job_runner.sh SPOOL_DIR</code> that:</p>
+  <ul>
+    <li>Uses <code>inotifywait</code> in monitor mode to watch SPOOL_DIR for <code>close_write</code> and <code>moved_to</code> events</li>
+    <li>On each event, processes the file (e.g. <code>wc -l</code> and move to a <code>done/</code> subdirectory)</li>
+    <li>Logs each action with a timestamp to a logfile in the spool directory</li>
+    <li>Handles the case where inotify-tools is not installed (print a clear error and exit 1)</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">SPOOL</span><span class="op">=</span><span class="st">"${1:?usage: $0 SPOOL_DIR}"</span>
+<span class="vr">LOG</span><span class="op">=</span><span class="st">"<span class="vr">$SPOOL</span>/job_runner.log"</span>
+<span class="vr">DONE</span><span class="op">=</span><span class="st">"<span class="vr">$SPOOL</span>/done"</span>
+
+<span class="cm"># Dependency check</span>
+<span class="kw">if</span> ! <span class="cmd">command</span> <span class="fl">-v</span> inotifywait <span class="op">></span>/dev/null <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>; <span class="kw">then</span>
+  <span class="cmd">echo</span> <span class="er">"ERROR: inotifywait not found. Install with: apt install inotify-tools"</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span>
+
+<span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$DONE</span>"</span>
+
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$(date '+%Y-%m-%d %H:%M:%S')"</span> <span class="st">"$*"</span> <span class="op">|</span> <span class="cmd">tee</span> <span class="fl">-a</span> <span class="st">"<span class="vr">$LOG</span>"</span>; }
+
+<span class="fn">process_job</span>() {
+  <span class="kw">local</span> <span class="vr">file</span><span class="op">=</span><span class="st">"<span class="vr">$SPOOL</span>/$1"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span> ]] <span class="op">||</span> <span class="kw">return</span>
+
+  <span class="kw">local</span> <span class="vr">lines</span>
+  <span class="vr">lines</span><span class="op">=</span>$(<span class="cmd">wc</span> <span class="fl">-l</span> <span class="op"><</span> <span class="st">"<span class="vr">$file</span>"</span>)
+  log <span class="st">"Processed <span class="vr">$1</span>: <span class="vr">$lines</span> lines"</span>
+  <span class="cmd">mv</span> <span class="st">"<span class="vr">$file</span>"</span> <span class="st">"<span class="vr">$DONE</span>/<span class="vr">$1</span>"</span>
+}
+
+log <span class="st">"Watching <span class="vr">$SPOOL</span> for new jobs…"</span>
+
+<span class="cmd">inotifywait</span> <span class="fl">-m</span> <span class="fl">-q</span> \
+  <span class="fl">--format</span> <span class="st">'%f'</span> \
+  <span class="fl">-e</span> close_write,moved_to \
+  <span class="st">"<span class="vr">$SPOOL</span>"</span> <span class="op">|</span> \
+<span class="kw">while</span> <span class="cmd">IFS=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">fname</span>; <span class="kw">do</span>
+  <span class="cm"># Skip the log file and done directory itself</span>
+  [[ <span class="vr">$fname</span> <span class="op">==</span> <span class="st">'job_runner.log'</span> <span class="op">||</span> <span class="vr">$fname</span> <span class="op">==</span> <span class="st">'done'</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+  process_job <span class="st">"<span class="vr">$fname</span>"</span>
+<span class="kw">done</span></pre>
+  </div>
+</div>
+
+</div>

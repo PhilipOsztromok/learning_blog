@@ -1,0 +1,730 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .danger { background: #200e0e; border-left: 4px solid #f07070; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #f97583; }
+  .st  { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw  { color: #f97583; }
+  .nu  { color: #ffab70; }
+  .sh  { color: #85e89d; }
+  .vr  { color: #ffab70; }
+  .op  { color: #e1e4e8; }
+  .er  { color: #f97583; font-weight: bold; }
+  .fn  { color: #b392f0; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 7 — Security: Writing Safe Scripts</h1>
+<p>Shell scripts are glue code that runs close to the operating system, often with
+elevated privileges, and routinely handles data from untrusted sources — user input,
+environment variables, filenames, network responses. A single unquoted variable or
+careless <span class="inline-code">eval</span> can turn a maintenance script into a
+privilege-escalation vector. This chapter covers the specific vulnerabilities that
+affect Bash scripts and the patterns that reliably prevent them.</p>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>1 — Injection Vulnerabilities</h2>
+
+<p>Shell injection happens when attacker-controlled data is interpreted as shell
+syntax rather than plain text. The root cause is almost always unquoted variable
+expansion or dynamic command construction.</p>
+
+<h3>Argument injection via unquoted variables</h3>
+<pre><span class="cm"># VULNERABLE: unquoted $filename undergoes word-splitting and globbing</span>
+<span class="vr">filename</span><span class="op">=</span><span class="st">"report 2024.pdf"</span>
+<span class="cmd">rm</span> <span class="vr">$filename</span>        <span class="cm"># runs: rm report 2024.pdf — two args, not one</span>
+
+<span class="vr">filename</span><span class="op">=</span><span class="st">"-rf /"</span>
+<span class="cmd">rm</span> <span class="vr">$filename</span>        <span class="cm"># runs: rm -rf /  ← catastrophic</span>
+
+<span class="cm"># SAFE: always double-quote variable expansions</span>
+<span class="cmd">rm</span> <span class="st">"<span class="vr">$filename</span>"</span>
+
+<span class="cm"># SAFE: use -- to end option processing before filenames</span>
+<span class="cmd">rm</span> <span class="fl">--</span> <span class="st">"<span class="vr">$filename</span>"</span>    <span class="cm"># even "-rf /" is treated as a literal filename</span></pre>
+
+<h3>Command injection via eval and dynamic commands</h3>
+<pre><span class="cm"># VULNERABLE: user input passed to eval</span>
+<span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">user_input</span>
+<span class="kw">eval</span> <span class="st">"echo Hello, <span class="vr">$user_input</span>"</span>
+<span class="cm"># Input: "; rm -rf ~" → runs: echo Hello, ; rm -rf ~</span>
+
+<span class="cm"># VULNERABLE: constructing commands by concatenation</span>
+<span class="vr">cmd</span><span class="op">=</span><span class="st">"convert <span class="vr">$input_file</span> -resize 800x <span class="vr">$output_file</span>"</span>
+<span class="kw">eval</span> <span class="st">"<span class="vr">$cmd</span>"</span>
+<span class="cm"># input_file="x.png -write /etc/passwd x.png" → writes /etc/passwd</span>
+
+<span class="cm"># SAFE: pass arguments as separate words — never concatenate into one string</span>
+<span class="cmd">convert</span> <span class="st">"<span class="vr">$input_file</span>"</span> <span class="fl">-resize</span> 800x <span class="st">"<span class="vr">$output_file</span>"</span>
+
+<span class="cm"># SAFE: when eval is truly needed, quote with printf %q</span>
+<span class="kw">eval</span> <span class="st">"myvar=$(printf '%q' "<span class="vr">$user_input</span>")"</span>
+<span class="cm"># printf %q shell-escapes the value so it can only ever be a string literal</span></pre>
+
+<h3>Injection via <code>$IFS</code> manipulation</h3>
+<pre><span class="cm"># If an attacker can set IFS, word-splitting changes everywhere</span>
+<span class="vr">IFS</span><span class="op">=</span><span class="st">"/"</span>
+<span class="vr">path</span><span class="op">=</span><span class="st">"/usr/bin/bash"</span>
+<span class="kw">for</span> <span class="vr">part</span> <span class="kw">in</span> <span class="vr">$path</span>; <span class="kw">do</span> <span class="cmd">echo</span> <span class="st">"<span class="vr">$part</span>"</span>; <span class="kw">done</span>   <span class="cm"># splits on / not space</span>
+
+<span class="cm"># Defence: reset IFS at the top of every script that may run in a
+# manipulated environment, or always quote expansions (quotes suppress IFS)</span>
+<span class="vr">IFS</span><span class="op">=</span>$<span class="st">' \t\n'</span>   <span class="cm"># restore default at script start</span></pre>
+
+<div class="danger">
+<strong>The golden rule:</strong> every variable that originates outside your script
+(arguments, environment, files, network, user input) is untrusted. Quote it,
+validate it, or both — never interpolate it raw into a command string.
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>2 — Safe Input Validation</h2>
+
+<pre><span class="cm"># Allowlist approach — only accept known-good patterns</span>
+<span class="fn">validate_username</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">if</span> [[ <span class="st">"<span class="vr">$name</span>"</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z0-9_-]{1,32}$</span> ]]; <span class="kw">then</span>
+    <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'Invalid username: %q\n'</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+}
+
+<span class="fn">validate_integer</span>() {
+  <span class="kw">local</span> <span class="vr">n</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">min</span><span class="op">=</span><span class="st">"${2:--2147483648}"</span>
+  <span class="kw">local</span> <span class="vr">max</span><span class="op">=</span><span class="st">"${3:-2147483647}"</span>
+  [[ <span class="st">"<span class="vr">$n</span>"</span> <span class="op">=~</span> <span class="rx">^-?[0-9]+$</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"not an integer: <span class="vr">$n</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  (( <span class="vr">n</span> <span class="op">>=</span> <span class="vr">min</span> <span class="op">&&</span> <span class="vr">n</span> <span class="op"><=</span> <span class="vr">max</span> )) <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"out of range: <span class="vr">$n</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+}
+
+<span class="fn">validate_path</span>() {
+  <span class="cm"># Reject path traversal and null bytes</span>
+  <span class="kw">local</span> <span class="vr">p</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">base</span><span class="op">=</span><span class="st">"${2:-/safe/basedir}"</span>   <span class="cm"># required prefix</span>
+  [[ <span class="st">"<span class="vr">$p</span>"</span> <span class="op">!=</span> <span class="rx">*".."*</span>  ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"traversal attempt: <span class="vr">$p</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  [[ <span class="st">"<span class="vr">$p</span>"</span> <span class="op">!=</span> <span class="rx">*$'\0'*</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"null byte in path"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="cm"># Resolve to canonical path then check prefix</span>
+  <span class="kw">local</span> <span class="vr">real</span>
+  <span class="vr">real</span><span class="op">=</span>$(<span class="cmd">realpath</span> <span class="fl">-m</span> <span class="st">"<span class="vr">$p</span>"</span>)   <span class="cm"># -m: don't require the path to exist</span>
+  [[ <span class="st">"<span class="vr">$real</span>"</span> <span class="op">==</span> <span class="st">"<span class="vr">$base</span>"</span><span class="op">/*</span> <span class="op">||</span> <span class="st">"<span class="vr">$real</span>"</span> <span class="op">==</span> <span class="st">"<span class="vr">$base</span>"</span> ]] <span class="op">||</span> {
+    <span class="cmd">echo</span> <span class="er">"path escapes base: <span class="vr">$real</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+}
+
+<span class="cm"># Always validate before use</span>
+<span class="fn">validate_username</span> <span class="st">"<span class="vr">$1</span>"</span> <span class="op">||</span> <span class="kw">exit</span> <span class="nu">1</span>
+<span class="fn">validate_path</span> <span class="st">"<span class="vr">$2</span>"</span> <span class="pth">/var/uploads</span> <span class="op">||</span> <span class="kw">exit</span> <span class="nu">1</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>3 — Safe <code>eval</code> Patterns</h2>
+
+<p><span class="inline-code">eval</span> is dangerous but sometimes unavoidable —
+for example when dynamically constructing variable names or sourcing configuration
+that must be Bash syntax. These patterns make it as safe as possible.</p>
+
+<pre><span class="cm"># printf %q — shell-quote a value so it survives one round of eval</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">config</span>
+<span class="fn">safe_set_var</span>() {
+  <span class="kw">local</span> <span class="vr">varname</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">value</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="cm"># Validate that varname is a legal identifier</span>
+  [[ <span class="st">"<span class="vr">$varname</span>"</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span> ]] <span class="op">||</span> {
+    <span class="cmd">echo</span> <span class="er">"invalid variable name: <span class="vr">$varname</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+  <span class="cm"># printf %q escapes the value; eval sees:  varname='safe value'</span>
+  <span class="kw">eval</span> <span class="st">"<span class="vr">$varname</span>=$(printf '%q' "<span class="vr">$value</span>")"</span>
+}
+
+<span class="fn">safe_set_var</span> greeting <span class="st">"hello; rm -rf ~"</span>
+<span class="cmd">echo</span> <span class="st">"<span class="vr">$greeting</span>"</span>   <span class="cm"># hello; rm -rf ~  — stored as literal string, not executed</span>
+
+<span class="cm"># declare -p round-trip is safe eval (output is already shell-quoted)</span>
+<span class="vr">arr</span><span class="op">=</span>( one two three )
+<span class="vr">serialised</span><span class="op">=</span>$(<span class="kw">declare</span> <span class="fl">-p</span> arr)
+<span class="kw">eval</span> <span class="st">"<span class="vr">$serialised</span>"</span>   <span class="cm"># safe: declare -p output is quoted by bash itself</span>
+
+<span class="cm"># Sourcing config files — risks and mitigations</span>
+<span class="cm"># Risk: source /user/provided/path.conf runs arbitrary code</span>
+<span class="cm"># Mitigation 1: check ownership and permissions first</span>
+<span class="fn">safe_source</span>() {
+  <span class="kw">local</span> <span class="vr">file</span><span class="op">=</span><span class="st">"$1"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span> ]]         <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"not a file: <span class="vr">$file</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  [[ <span class="op">!</span> <span class="fl">-L</span> <span class="st">"<span class="vr">$file</span>"</span> ]]       <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"symlink refused: <span class="vr">$file</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="cm"># Owned by root or current user, not world-writable</span>
+  <span class="kw">local</span> <span class="vr">owner</span> <span class="vr">perms</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">perms</span> <span class="vr">_</span> <span class="vr">owner</span> <span class="vr">_</span> <span class="op"><<<</span> $(<span class="cmd">ls</span> <span class="fl">-la</span> <span class="st">"<span class="vr">$file</span>"</span>)
+  [[ <span class="st">"<span class="vr">$owner</span>"</span> <span class="op">==</span> <span class="st">"root"</span> <span class="op">||</span> <span class="st">"<span class="vr">$owner</span>"</span> <span class="op">==</span> <span class="st">"<span class="vr">$USER</span>"</span> ]] <span class="op">||</span> {
+    <span class="cmd">echo</span> <span class="er">"refusing to source file owned by <span class="vr">$owner</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+  [[ <span class="st">"<span class="vr">${perms: -1}</span>"</span> <span class="op">!=</span> <span class="st">"w"</span> ]] <span class="op">||</span> {
+    <span class="cmd">echo</span> <span class="er">"world-writable config refused"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+  <span class="kw">source</span> <span class="st">"<span class="vr">$file</span>"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>4 — Temporary Files: Doing It Right</h2>
+
+<pre><span class="cm"># VULNERABLE: predictable temp filename → symlink attack</span>
+<span class="vr">tmpfile</span><span class="op">=</span><span class="pth">/tmp/myapp_$$</span>          <span class="cm"># attacker creates symlink before we do</span>
+<span class="cmd">echo</span> <span class="st">"secret data"</span> <span class="op">></span> <span class="st">"<span class="vr">$tmpfile</span>"</span>  <span class="cm"># writes to attacker's target</span>
+
+<span class="cm"># SAFE: mktemp creates a unique file atomically</span>
+<span class="vr">tmpfile</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)                       <span class="cm"># /tmp/tmp.XXXXXXXXXX</span>
+<span class="vr">tmpdir</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span>)                     <span class="cm"># directory</span>
+<span class="vr">tmpfile</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-t</span> myapp.XXXXXXXXXX)    <span class="cm"># custom prefix/template</span>
+
+<span class="cm"># ALWAYS register cleanup in a trap so temp files are deleted on exit,
+# error, or signal — including SIGINT</span>
+<span class="vr">TMPDIR</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span>)
+<span class="kw">trap</span> <span class="st">'rm -rf "$TMPDIR"'</span> EXIT
+
+<span class="cm"># Stacking traps — preserve existing EXIT handler</span>
+<span class="fn">add_exit_trap</span>() {
+  <span class="kw">local</span> <span class="vr">existing</span>
+  <span class="vr">existing</span><span class="op">=</span>$(<span class="kw">trap</span> <span class="fl">-p</span> EXIT <span class="op">|</span> <span class="cmd">sed</span> <span class="st">"s/trap -- '//;s/' EXIT//"</span>)
+  <span class="kw">trap</span> <span class="st">"${existing:+${existing};} $1"</span> EXIT
+}
+<span class="fn">add_exit_trap</span> <span class="st">'rm -f "$tmpfile"'</span>
+<span class="fn">add_exit_trap</span> <span class="st">'rm -rf "$tmpdir"'</span>
+
+<span class="cm"># Use a private temp directory under $TMPDIR (respects user's temp preference)</span>
+<span class="vr">WORK</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span> <span class="st">"${TMPDIR:-/tmp}/myapp.XXXXXXXXXX"</span>)
+<span class="kw">trap</span> <span class="st">'rm -rf "$WORK"'</span> EXIT
+
+<span class="cm"># Create files inside the private dir — no race risk from /tmp</span>
+<span class="vr">secrets</span><span class="op">=</span><span class="st">"${WORK}/secrets"</span>
+<span class="cmd">touch</span> <span class="st">"<span class="vr">$secrets</span>"</span>
+<span class="cmd">chmod</span> <span class="nu">600</span> <span class="st">"<span class="vr">$secrets</span>"</span>
+<span class="cmd">printf</span> <span class="st">'API_KEY=%s\n'</span> <span class="st">"<span class="vr">$API_KEY</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$secrets</span>"</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>5 — Privilege Separation and <code>sudo</code></h2>
+
+<pre><span class="cm"># Principle of least privilege: drop privileges as soon as possible</span>
+
+<span class="cm"># Check if running as root — refuse if not expected</span>
+<span class="kw">if</span> (( <span class="vr">EUID</span> <span class="op">==</span> <span class="nu">0</span> )); <span class="kw">then</span>
+  <span class="cmd">echo</span> <span class="er">"Do not run this script as root"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Or require root</span>
+<span class="kw">if</span> (( <span class="vr">EUID</span> <span class="op">!=</span> <span class="nu">0</span> )); <span class="kw">then</span>
+  <span class="cmd">exec</span> <span class="cmd">sudo</span> <span class="fl">--</span> <span class="st">"$0"</span> <span class="st">"$@"</span>   <span class="cm"># re-exec ourselves under sudo</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Privilege separation: do the privileged part in a minimal subshell,
+# then drop back to the original user for the rest</span>
+<span class="fn">run_as_root</span>() {
+  <span class="kw">local</span> <span class="vr">user</span><span class="op">=</span><span class="st">"${SUDO_USER:-$USER}"</span>
+  <span class="cm"># Only allow specific whitelisted commands</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    reload-nginx)  <span class="cmd">systemctl</span> reload nginx ;;
+    clear-cache)   <span class="cmd">find</span> <span class="pth">/var/cache/app</span> <span class="fl">-delete</span> ;;
+    <span class="op">*</span>) <span class="cmd">echo</span> <span class="er">"unknown privileged action: $1"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span> ;;
+  <span class="kw">esac</span>
+}
+
+<span class="cm"># sudoers entry for script-specific commands (add via visudo):
+# deploy ALL=(root) NOPASSWD: /usr/local/sbin/deploy-helper reload-nginx
+# deploy ALL=(root) NOPASSWD: /usr/local/sbin/deploy-helper clear-cache</span>
+
+<span class="cm"># NEVER pass user-supplied strings to sudo — validate first</span>
+<span class="cm"># BAD:
+#   sudo systemctl "$user_action" "$user_service"
+# GOOD:</span>
+<span class="kw">case</span> <span class="st">"<span class="vr">$user_action</span>"</span> <span class="kw">in</span>
+  start<span class="op">|</span>stop<span class="op">|</span>restart<span class="op">|</span>status) <span class="op">:</span> ;;
+  <span class="op">*</span>) <span class="cmd">echo</span> <span class="er">"invalid action"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span> ;;
+<span class="kw">esac</span>
+<span class="kw">case</span> <span class="st">"<span class="vr">$user_service</span>"</span> <span class="kw">in</span>
+  nginx<span class="op">|</span>redis<span class="op">|</span>postgres) <span class="op">:</span> ;;
+  <span class="op">*</span>) <span class="cmd">echo</span> <span class="er">"invalid service"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span> ;;
+<span class="kw">esac</span>
+<span class="cmd">sudo</span> <span class="cmd">systemctl</span> <span class="st">"<span class="vr">$user_action</span>"</span> <span class="st">"<span class="vr">$user_service</span>"</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>6 — Secrets Handling</h2>
+
+<p>Credentials in scripts are a perennial source of breaches. The most common
+mistakes are storing secrets in environment variables, command-line arguments, or
+hardcoded in the script itself.</p>
+
+<h3>Why environment variables are risky</h3>
+<pre><span class="cm"># Anyone who can read /proc/PID/environ sees your variables</span>
+<span class="cm"># ps aux shows command-line arguments — including passwords passed as args</span>
+
+<span class="cm"># BAD: hardcoded secret</span>
+<span class="vr">DB_PASS</span><span class="op">=</span><span class="st">"hunter2"</span>
+
+<span class="cm"># BAD: secret in command-line argument</span>
+<span class="cmd">mysql</span> <span class="fl">-u</span> root <span class="fl">-phunter2</span>   <span class="cm"># visible in ps aux output</span>
+
+<span class="cm"># BETTER: read from a file with restricted permissions</span>
+<span class="vr">DB_PASS_FILE</span><span class="op">=</span><span class="pth">/etc/myapp/db.secret</span>   <span class="cm"># chmod 400, owned by service user</span>
+<span class="vr">DB_PASS</span><span class="op">=</span>$(<span class="op"><</span> <span class="st">"<span class="vr">$DB_PASS_FILE</span>"</span>)
+
+<span class="cm"># BETTER: use mysql option file instead of -p flag</span>
+<span class="cm"># ~/.my.cnf or --defaults-extra-file=/path/to/file</span>
+<span class="cmd">mysql</span> <span class="fl">--defaults-extra-file</span><span class="op">=</span><span class="pth">/etc/myapp/mysql.cnf</span> <span class="fl">-u</span> myapp
+
+<span class="cm"># BEST: use a secrets manager and only hold in memory briefly</span>
+<span class="vr">DB_PASS</span><span class="op">=</span>$(<span class="cmd">vault</span> kv get <span class="fl">-field</span><span class="op">=</span>password secret/myapp/db)
+<span class="cm"># Use DB_PASS immediately, then unset it</span>
+<span class="cmd">mysql</span> <span class="fl">-u</span> myapp <span class="fl">-p"$DB_PASS"</span> <span class="fl">-e</span> <span class="st">"SELECT 1"</span>
+<span class="kw">unset</span> <span class="vr">DB_PASS</span>   <span class="cm"># remove from environment as soon as possible</span></pre>
+
+<h3>Passing secrets to child processes without the environment</h3>
+<pre><span class="cm"># Use process substitution or a temp file to avoid the environment entirely</span>
+
+<span class="cm"># Pass a secret via stdin instead of an argument</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$DB_PASS</span>"</span> <span class="op">|</span> <span class="cmd">some-program</span> <span class="fl">--password-stdin</span>
+
+<span class="cm"># Many tools support reading secrets from a file descriptor</span>
+<span class="kw">exec</span> <span class="nu">3</span><span class="op"><<<</span><span class="st">"<span class="vr">$DB_PASS</span>"</span>
+<span class="cmd">some-program</span> <span class="fl">--password-fd</span><span class="op">=</span><span class="nu">3</span>
+<span class="kw">exec</span> <span class="nu">3</span><span class="op"><&-</span>
+
+<span class="cm"># Scrubbing sensitive variables from the environment before exec'ing untrusted code</span>
+<span class="kw">unset</span> <span class="vr">AWS_SECRET_ACCESS_KEY</span> <span class="vr">DB_PASS</span> <span class="vr">GITHUB_TOKEN</span>
+<span class="cm"># Or use env -i to start with a clean environment</span>
+<span class="cmd">env</span> <span class="fl">-i</span> <span class="vr">HOME</span><span class="op">=</span><span class="st">"<span class="vr">$HOME</span>"</span> <span class="vr">PATH</span><span class="op">=</span><span class="st">"<span class="vr">$PATH</span>"</span> <span class="cmd">untrusted-program</span></pre>
+
+<h3>Preventing secrets from appearing in logs and traces</h3>
+<pre><span class="cm"># set -x traces every command — including ones with secrets in variables</span>
+
+<span class="cm"># Suppress tracing for a sensitive block</span>
+<span class="kw">set</span> <span class="fl">+x</span>
+<span class="vr">PASSWORD</span><span class="op">=</span>$(<span class="op"><</span> <span class="pth">/run/secrets/db_password</span>)
+<span class="kw">set</span> <span class="fl">-x</span>   <span class="cm"># re-enable if needed</span>
+
+<span class="cm"># Redirect xtrace away from the sensitive section</span>
+{
+  <span class="kw">local</span> <span class="vr">old_fd</span><span class="op">=</span><span class="vr">$BASH_XTRACEFD</span>
+  <span class="kw">exec</span> <span class="nu">20</span><span class="op">>/dev/null</span>; <span class="vr">BASH_XTRACEFD</span><span class="op">=</span><span class="nu">20</span>
+  <span class="vr">SENSITIVE</span><span class="op">=</span>$(<span class="cmd">read_secret</span>)
+  <span class="kw">exec</span> <span class="nu">20</span><span class="op">>&-</span>; <span class="vr">BASH_XTRACEFD</span><span class="op">=</span><span class="st">"<span class="vr">$old_fd</span>"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>7 — Hardening Script Startup</h2>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Recommended safety header for any script that handles untrusted data
+# or runs with elevated privileges</span>
+
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="cm"># -e  exit on first error
+# -u  treat unset variables as errors (prevents silent empty expansions)
+# -o pipefail  pipeline fails if any stage fails (not just the last)</span>
+
+<span class="cm"># Restrict PATH to known-good locations — prevents PATH hijacking</span>
+<span class="vr">PATH</span><span class="op">=</span><span class="pth">/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</span>
+<span class="kw">export</span> <span class="vr">PATH</span>
+
+<span class="cm"># Reset IFS to the default — env may have tampered with it</span>
+<span class="vr">IFS</span><span class="op">=</span>$<span class="st">' \t\n'</span>
+
+<span class="cm"># Restrict file creation permissions (no group/world write on new files)</span>
+<span class="cmd">umask</span> <span class="nu">077</span>
+
+<span class="cm"># Prevent core dumps (may contain secrets)</span>
+<span class="cmd">ulimit</span> <span class="fl">-c</span> <span class="nu">0</span>
+
+<span class="cm"># Clear dangerous environment variables</span>
+<span class="kw">unset</span> <span class="vr">CDPATH</span>        <span class="cm"># can redirect cd to unexpected directories</span>
+<span class="kw">unset</span> <span class="vr">BASH_ENV</span>      <span class="cm"># sourced by bash when invoked as sh</span>
+<span class="kw">unset</span> <span class="vr">ENV</span>           <span class="cm"># POSIX equivalent of BASH_ENV</span>
+<span class="kw">unset</span> <span class="vr">BASH_XTRACEFD</span> <span class="cm"># don't inherit someone else's trace fd</span>
+
+<span class="cm"># Absolute path for the script itself (guards against PATH tricks)</span>
+<span class="vr">SCRIPT_DIR</span><span class="op">=</span>$(<span class="cmd">cd</span> <span class="st">"$(dirname "${BASH_SOURCE[0]}")"</span> <span class="op">&&</span> <span class="cmd">pwd</span> <span class="fl">-P</span>)</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>8 — Common Vulnerability Checklist</h2>
+
+<table>
+  <tr><th>Vulnerability</th><th>Trigger</th><th>Fix</th></tr>
+  <tr><td>Argument injection</td><td>Unquoted <code>$var</code> in command</td><td>Always quote: <code>"$var"</code></td></tr>
+  <tr><td>Option injection</td><td><code>cmd $var</code> where var starts with <code>-</code></td><td>Use <code>cmd -- "$var"</code></td></tr>
+  <tr><td>Command injection via eval</td><td><code>eval "cmd $userdata"</code></td><td>Never eval user data; use <code>printf %q</code></td></tr>
+  <tr><td>PATH hijacking</td><td>Script inherits user's PATH</td><td>Set explicit PATH at startup</td></tr>
+  <tr><td>IFS manipulation</td><td>Inherited IFS changes word splitting</td><td>Reset IFS at script start</td></tr>
+  <tr><td>Symlink attack on temp files</td><td>Predictable <code>/tmp/name</code></td><td>Use <code>mktemp</code>; trap EXIT for cleanup</td></tr>
+  <tr><td>Path traversal</td><td>User-supplied path with <code>..</code></td><td>Validate with <code>realpath</code> and prefix check</td></tr>
+  <tr><td>Credential exposure</td><td>Secret in env var, CLI arg, or code</td><td>Use secret files or a secrets manager; <code>unset</code> after use</td></tr>
+  <tr><td>World-writable output</td><td>Default umask</td><td><code>umask 077</code> at startup</td></tr>
+  <tr><td>Unchecked exit codes</td><td>Continuing after a failed command</td><td><code>set -euo pipefail</code></td></tr>
+  <tr><td>Unset variable expansion</td><td><code>rm -rf "$dir/"</code> when <code>$dir</code> is empty</td><td><code>set -u</code>; use <code>${var:?error}</code></td></tr>
+  <tr><td>Glob in filenames</td><td>Untrusted filename containing <code>*?[]</code></td><td>Quote all filenames; use <code>--</code></td></tr>
+  <tr><td>TOCTOU (check-then-use)</td><td>Testing file, then acting — race window</td><td>Use atomic operations; <code>noclobber</code>, <code>flock</code></td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Vulnerability hunt</h4>
+  <p>The following script contains at least six distinct security vulnerabilities.
+  Identify each one, name the vulnerability class, and provide the corrected line.
+  Then rewrite the complete function safely.</p>
+<pre><span class="fn">deploy_release</span>() {
+  <span class="vr">version</span><span class="op">=</span><span class="vr">$1</span>
+  <span class="vr">deploy_dir</span><span class="op">=</span><span class="st">"/var/www/<span class="vr">$version</span>"</span>
+  <span class="vr">archive</span><span class="op">=</span><span class="st">"/tmp/<span class="vr">$version</span>.tar.gz"</span>
+  <span class="cmd">curl</span> <span class="fl">-so</span> <span class="vr">$archive</span> <span class="st">"https://releases.example.com/<span class="vr">$version</span>.tar.gz"</span>
+  <span class="cmd">tar</span> <span class="fl">-xzf</span> <span class="vr">$archive</span> <span class="fl">-C</span> <span class="vr">$deploy_dir</span>
+  <span class="vr">config</span><span class="op">=</span>$(<span class="cmd">cat</span> <span class="pth">/etc/myapp/deploy.conf</span>)
+  <span class="kw">eval</span> <span class="st">"<span class="vr">$config</span>"</span>
+  <span class="cmd">chmod</span> <span class="fl">-R</span> <span class="nu">777</span> <span class="st">"<span class="vr">$deploy_dir</span>"</span>
+  <span class="cmd">echo</span> <span class="st">"Deployed <span class="vr">$version</span> with DB_PASS=<span class="vr">$DB_PASS</span>"</span>
+}</pre>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="cm"># Vulnerabilities:
+# 1. $1 not quoted → word splitting/glob if version contains spaces or special chars
+# 2. $archive unquoted in curl → argument injection (also predictable /tmp path)
+# 3. $archive and $deploy_dir unquoted in tar → argument injection
+# 4. eval "$config" → arbitrary code execution from config file
+# 5. chmod -R 777 → world-writable deployed files
+# 6. echo "... DB_PASS=$DB_PASS" → credential leakage in logs/terminal
+
+<span class="fn">deploy_release</span>() {
+  <span class="kw">local</span> <span class="vr">version</span><span class="op">=</span><span class="st">"${1:?version required}"</span>
+
+  <span class="cm"># 1. Validate version is a safe identifier (no path traversal, no injection)</span>
+  [[ <span class="st">"<span class="vr">$version</span>"</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z0-9._-]+$</span> ]] <span class="op">||</span> {
+    <span class="cmd">printf</span> <span class="st">'Invalid version: %q\n'</span> <span class="st">"<span class="vr">$version</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+
+  <span class="cm"># 2. Use mktemp for the archive — not a predictable /tmp path</span>
+  <span class="kw">local</span> <span class="vr">archive</span>
+  <span class="vr">archive</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-t</span> deploy.XXXXXXXXXX.tar.gz)
+  <span class="kw">trap</span> <span class="st">'rm -f "$archive"'</span> RETURN
+
+  <span class="cm"># 3. Quote all variables used in commands</span>
+  <span class="kw">local</span> <span class="vr">deploy_dir</span><span class="op">=</span><span class="st">"/var/www/<span class="vr">$version</span>"</span>
+  <span class="cm"># Validate deploy_dir stays within /var/www/</span>
+  <span class="kw">local</span> <span class="vr">real_dir</span>
+  <span class="vr">real_dir</span><span class="op">=</span>$(<span class="cmd">realpath</span> <span class="fl">-m</span> <span class="st">"<span class="vr">$deploy_dir</span>"</span>)
+  [[ <span class="st">"<span class="vr">$real_dir</span>"</span> <span class="op">==</span> <span class="st">"/var/www/"</span><span class="op">*</span> ]] <span class="op">||</span> {
+    <span class="cmd">echo</span> <span class="er">"deploy_dir escapes /var/www/"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+
+  <span class="cmd">curl</span> <span class="fl">-so</span> <span class="st">"<span class="vr">$archive</span>"</span> <span class="st">"https://releases.example.com/<span class="vr">$version</span>.tar.gz"</span>
+  <span class="cmd">tar</span> <span class="fl">-xzf</span> <span class="st">"<span class="vr">$archive</span>"</span> <span class="fl">-C</span> <span class="st">"<span class="vr">$deploy_dir</span>"</span>
+
+  <span class="cm"># 4. Source config only after safety checks — never eval raw file content</span>
+  <span class="fn">safe_source</span> <span class="pth">/etc/myapp/deploy.conf</span>
+
+  <span class="cm"># 5. Least-privilege permissions</span>
+  <span class="cmd">chmod</span> <span class="fl">-R</span> <span class="nu">755</span> <span class="st">"<span class="vr">$deploy_dir</span>"</span>
+  <span class="cmd">find</span> <span class="st">"<span class="vr">$deploy_dir</span>"</span> <span class="fl">-name</span> <span class="st">'*.conf'</span> <span class="fl">-exec</span> <span class="cmd">chmod</span> <span class="nu">640</span> {} <span class="op">+</span>
+
+  <span class="cm"># 6. Never log credentials</span>
+  <span class="cmd">printf</span> <span class="st">'Deployed %s successfully\n'</span> <span class="st">"<span class="vr">$version</span>"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Safe argument parser</h4>
+  <p>Write a function <code>safe_cli_parser</code> that processes these arguments:
+  <code>--user NAME</code>, <code>--days N</code>, <code>--output FILE</code>, and
+  an optional <code>--verbose</code> flag. Enforce:</p>
+  <ul>
+    <li><code>NAME</code> matches <code>^[a-zA-Z0-9_-]{1,32}$</code></li>
+    <li><code>N</code> is an integer between 1 and 365</li>
+    <li><code>FILE</code> resolves inside <code>/var/reports/</code> — reject traversal</li>
+    <li>Unknown arguments cause an error with a usage message</li>
+    <li>All three required arguments must be provided</li>
+  </ul>
+  <p>Demonstrate it correctly rejecting: <code>--user "admin; rm -rf /"</code>,
+  <code>--days 999</code>, and <code>--output "../../etc/passwd"</code>.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="fn">safe_cli_parser</span>() {
+  <span class="kw">local</span> <span class="vr">user</span><span class="op">=</span><span class="st">""</span> <span class="vr">days</span><span class="op">=</span><span class="st">""</span> <span class="vr">output</span><span class="op">=</span><span class="st">""</span> <span class="vr">verbose</span><span class="op">=</span><span class="nu">0</span>
+
+  <span class="kw">while</span> (( <span class="vr">$#</span> <span class="op">></span> <span class="nu">0</span> )); <span class="kw">do</span>
+    <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+      <span class="fl">--user</span>)
+        [[ <span class="vr">$#</span> <span class="op">-ge</span> <span class="nu">2</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"--user requires a value"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+        [[ <span class="st">"$2"</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z0-9_-]{1,32}$</span> ]] <span class="op">||</span> {
+          <span class="cmd">printf</span> <span class="st">'Invalid --user value: %q\n'</span> <span class="st">"$2"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+        }
+        <span class="vr">user</span><span class="op">=</span><span class="st">"$2"</span>; <span class="kw">shift</span> <span class="nu">2</span> ;;
+      <span class="fl">--days</span>)
+        [[ <span class="vr">$#</span> <span class="op">-ge</span> <span class="nu">2</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"--days requires a value"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+        [[ <span class="st">"$2"</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]] <span class="op">&&</span> (( <span class="nu">10#$2</span> <span class="op">>=</span> <span class="nu">1</span> <span class="op">&&</span> <span class="nu">10#$2</span> <span class="op"><=</span> <span class="nu">365</span> )) <span class="op">||</span> {
+          <span class="cmd">printf</span> <span class="st">'--days must be 1-365, got: %q\n'</span> <span class="st">"$2"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+        }
+        <span class="vr">days</span><span class="op">=</span><span class="st">"$2"</span>; <span class="kw">shift</span> <span class="nu">2</span> ;;
+      <span class="fl">--output</span>)
+        [[ <span class="vr">$#</span> <span class="op">-ge</span> <span class="nu">2</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"--output requires a value"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+        <span class="kw">local</span> <span class="vr">real_out</span>
+        <span class="vr">real_out</span><span class="op">=</span>$(<span class="cmd">realpath</span> <span class="fl">-m</span> <span class="st">"$2"</span>)
+        [[ <span class="st">"<span class="vr">$real_out</span>"</span> <span class="op">==</span> <span class="st">"/var/reports/"</span><span class="op">*</span> ]] <span class="op">||</span> {
+          <span class="cmd">printf</span> <span class="st">'--output must be inside /var/reports/, got: %q\n'</span> \
+            <span class="st">"<span class="vr">$real_out</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+        }
+        <span class="vr">output</span><span class="op">=</span><span class="st">"<span class="vr">$real_out</span>"</span>; <span class="kw">shift</span> <span class="nu">2</span> ;;
+      <span class="fl">--verbose</span>) <span class="vr">verbose</span><span class="op">=</span><span class="nu">1</span>; <span class="kw">shift</span> ;;
+      <span class="op">*</span>)
+        <span class="cmd">printf</span> <span class="st">'Unknown argument: %q\n'</span> <span class="st">"$1"</span> <span class="op">>&2</span>
+        <span class="cmd">printf</span> <span class="st">'Usage: cmd --user NAME --days N --output FILE [--verbose]\n'</span> <span class="op">>&2</span>
+        <span class="kw">return</span> <span class="nu">1</span> ;;
+    <span class="kw">esac</span>
+  <span class="kw">done</span>
+
+  <span class="kw">for</span> <span class="vr">req</span> <span class="kw">in</span> user days output; <span class="kw">do</span>
+    [[ <span class="fl">-n</span> <span class="st">"${!req}"</span> ]] <span class="op">||</span> {
+      <span class="cmd">printf</span> <span class="st">'--%s is required\n'</span> <span class="st">"<span class="vr">$req</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+    }
+  <span class="kw">done</span>
+
+  <span class="cmd">printf</span> <span class="st">'OK: user=%s days=%s output=%s verbose=%d\n'</span> \
+    <span class="st">"<span class="vr">$user</span>"</span> <span class="st">"<span class="vr">$days</span>"</span> <span class="st">"<span class="vr">$output</span>"</span> <span class="st">"<span class="vr">$verbose</span>"</span>
+}
+
+<span class="cm"># Rejection tests</span>
+<span class="fn">safe_cli_parser</span> <span class="fl">--user</span> <span class="st">"admin; rm -rf /"</span> <span class="fl">--days</span> <span class="nu">7</span>   <span class="fl">--output</span> <span class="pth">/var/reports/r.txt</span>
+<span class="fn">safe_cli_parser</span> <span class="fl">--user</span> alice               <span class="fl">--days</span> <span class="nu">999</span> <span class="fl">--output</span> <span class="pth">/var/reports/r.txt</span>
+<span class="fn">safe_cli_parser</span> <span class="fl">--user</span> alice               <span class="fl">--days</span> <span class="nu">7</span>   <span class="fl">--output</span> <span class="pth">../../etc/passwd</span>
+<span class="cm"># All three should print errors and return 1</span>
+<span class="fn">safe_cli_parser</span> <span class="fl">--user</span> alice               <span class="fl">--days</span> <span class="nu">30</span>  <span class="fl">--output</span> <span class="pth">/var/reports/alice.csv</span> <span class="fl">--verbose</span>
+<span class="cm"># Should print: OK: user=alice days=30 output=/var/reports/alice.csv verbose=1</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Secure secret loader</h4>
+  <p>Write a <code>load_secrets FILE</code> function that reads a
+  <code>KEY=VALUE</code> config file and exports only the listed variables.
+  Requirements:</p>
+  <ul>
+    <li>Reject the file if it is world-readable (<code>chmod o-r</code> check)</li>
+    <li>Reject the file if it is a symlink</li>
+    <li>Reject the file if it is not owned by the current user or root</li>
+    <li>Parse lines manually — do <em>not</em> <code>source</code> or <code>eval</code>
+    the file</li>
+    <li>Accept only keys matching <code>^[A-Z_][A-Z0-9_]*$</code> and skip
+    malformed lines with a warning</li>
+    <li>Strip single and double quotes from values</li>
+    <li>After loading, overwrite the variable storing the file path with an empty
+    string and unset it</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="fn">load_secrets</span>() {
+  <span class="kw">local</span> <span class="vr">file</span><span class="op">=</span><span class="st">"$1"</span>
+
+  <span class="cm"># Existence</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span> ]] <span class="op">||</span> { <span class="cmd">printf</span> <span class="er">'load_secrets: not a file: %s\n'</span> <span class="st">"<span class="vr">$file</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="cm"># Not a symlink</span>
+  [[ <span class="op">!</span> <span class="fl">-L</span> <span class="st">"<span class="vr">$file</span>"</span> ]] <span class="op">||</span> { <span class="cmd">printf</span> <span class="er">'load_secrets: symlinks refused: %s\n'</span> <span class="st">"<span class="vr">$file</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="cm"># Permissions: not world-readable</span>
+  <span class="kw">local</span> <span class="vr">mode</span> <span class="vr">owner</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">mode</span> <span class="vr">_</span> <span class="vr">owner</span> <span class="op"><<<</span> $(<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%a %U'</span> <span class="st">"<span class="vr">$file</span>"</span>)
+  (( <span class="nu">10#$mode</span> <span class="op">%</span> <span class="nu">10</span> <span class="op">==</span> <span class="nu">0</span> )) <span class="op">||</span> {
+    <span class="cmd">printf</span> <span class="er">'load_secrets: file is world-readable (mode %s): %s\n'</span> \
+      <span class="st">"<span class="vr">$mode</span>"</span> <span class="st">"<span class="vr">$file</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+
+  <span class="cm"># Ownership: current user or root</span>
+  [[ <span class="st">"<span class="vr">$owner</span>"</span> <span class="op">==</span> <span class="st">"<span class="vr">$USER</span>"</span> <span class="op">||</span> <span class="st">"<span class="vr">$owner</span>"</span> <span class="op">==</span> <span class="st">"root"</span> ]] <span class="op">||</span> {
+    <span class="cmd">printf</span> <span class="er">'load_secrets: file owned by %s, expected %s or root\n'</span> \
+      <span class="st">"<span class="vr">$owner</span>"</span> <span class="st">"<span class="vr">$USER</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+
+  <span class="cm"># Parse manually — no eval/source</span>
+  <span class="kw">local</span> <span class="vr">lineno</span><span class="op">=</span><span class="nu">0</span> <span class="vr">key</span> <span class="vr">value</span> <span class="vr">raw</span>
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">raw</span> <span class="op">||</span> [[ <span class="fl">-n</span> <span class="st">"<span class="vr">$raw</span>"</span> ]]; <span class="kw">do</span>
+    (( <span class="vr">lineno</span>++ ))
+    <span class="cm"># Skip blank lines and comments</span>
+    [[ <span class="vr">$raw</span> <span class="op">=~</span> <span class="rx">^[[:space:]]*(#|$)</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+    <span class="cm"># Must be KEY=VALUE</span>
+    [[ <span class="vr">$raw</span> <span class="op">=~</span> <span class="rx">^([A-Z_][A-Z0-9_]*)=(.*)</span> ]] <span class="op">||</span> {
+      <span class="cmd">printf</span> <span class="st">'load_secrets: skipping malformed line %d: %q\n'</span> \
+        <span class="st">"<span class="vr">$lineno</span>"</span> <span class="st">"<span class="vr">$raw</span>"</span> <span class="op">>&2</span>; <span class="kw">continue</span>
+    }
+    <span class="vr">key</span><span class="op">=</span><span class="st">"${BASH_REMATCH[1]}"</span>
+    <span class="vr">value</span><span class="op">=</span><span class="st">"${BASH_REMATCH[2]}"</span>
+    <span class="cm"># Strip surrounding single or double quotes</span>
+    <span class="vr">value</span><span class="op">=</span><span class="st">"${value#\"}"</span>; <span class="vr">value</span><span class="op">=</span><span class="st">"${value%\"}"</span>
+    <span class="vr">value</span><span class="op">=</span><span class="st">"${value#\'}"</span>; <span class="vr">value</span><span class="op">=</span><span class="st">"${value%\'}"</span>
+    <span class="cm"># Export without eval</span>
+    <span class="kw">export</span> <span class="st">"<span class="vr">$key</span>"</span><span class="op">=</span><span class="st">"<span class="vr">$value</span>"</span>
+  <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$file</span>"</span>
+
+  <span class="cm"># Scrub the file path variable</span>
+  <span class="vr">file</span><span class="op">=</span><span class="st">""</span>
+  <span class="kw">unset</span> <span class="vr">file</span>
+}
+
+<span class="cm"># Test</span>
+<span class="cmd">touch</span> <span class="pth">/tmp/test_secrets.env</span>
+<span class="cmd">chmod</span> <span class="nu">600</span> <span class="pth">/tmp/test_secrets.env</span>
+<span class="cmd">printf</span> <span class="st">'DB_PASS="s3cr3t"\nAPI_KEY=abc123\nBAD LINE\n# comment\n'</span> \
+  <span class="op">></span> <span class="pth">/tmp/test_secrets.env</span>
+<span class="fn">load_secrets</span> <span class="pth">/tmp/test_secrets.env</span>
+<span class="cmd">echo</span> <span class="st">"DB_PASS=<span class="vr">$DB_PASS</span> API_KEY=<span class="vr">$API_KEY</span>"</span>
+<span class="cmd">rm</span> <span class="pth">/tmp/test_secrets.env</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Hardened script template</h4>
+  <p>Write a complete, production-ready Bash script skeleton called
+  <code>hardened_template.sh</code> that incorporates every defence from this chapter.
+  It should:</p>
+  <ul>
+    <li>Set all recommended startup options (<code>set -euo pipefail</code>, fixed PATH, IFS, umask, ulimit)</li>
+    <li>Unset dangerous environment variables</li>
+    <li>Declare a <code>die CODE MESSAGE</code> helper and a <code>cleanup</code> EXIT trap</li>
+    <li>Validate at least one argument using an allowlist regex</li>
+    <li>Create a private temp directory via <code>mktemp -d</code> registered in the EXIT trap</li>
+    <li>Demonstrate safe secret loading (read from a file, never echo)</li>
+    <li>Include a <code>--dry-run</code> flag that suppresses all destructive operations</li>
+    <li>Be fully ShellCheck-clean (no SC warnings)</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># hardened_template.sh — production-ready secure script skeleton</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="cm"># ── Security hardening ──────────────────────────────────────────────</span>
+<span class="vr">PATH</span><span class="op">=</span><span class="pth">/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</span>
+<span class="kw">export</span> <span class="vr">PATH</span>
+<span class="vr">IFS</span><span class="op">=</span>$<span class="st">' \t\n'</span>
+<span class="cmd">umask</span> <span class="nu">077</span>
+<span class="cmd">ulimit</span> <span class="fl">-c</span> <span class="nu">0</span>
+<span class="kw">unset</span> <span class="vr">CDPATH</span> <span class="vr">BASH_ENV</span> <span class="vr">ENV</span>
+
+<span class="cm"># ── Script identity ─────────────────────────────────────────────────</span>
+<span class="vr">SCRIPT_DIR</span><span class="op">=</span>$(<span class="cmd">cd</span> <span class="st">"$(dirname "${BASH_SOURCE[0]}")"</span> <span class="op">&&</span> <span class="cmd">pwd</span> <span class="fl">-P</span>)
+<span class="vr">SCRIPT_NAME</span><span class="op">=</span><span class="st">"${0##*/}"</span>
+
+<span class="cm"># ── Globals ─────────────────────────────────────────────────────────</span>
+<span class="vr">DRY_RUN</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">WORK</span><span class="op">=</span><span class="st">""</span>
+
+<span class="cm"># ── Helpers ─────────────────────────────────────────────────────────</span>
+<span class="fn">die</span>() {
+  <span class="kw">local</span> <span class="vr">code</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="cmd">printf</span> <span class="st">'%s: ERROR: %s\n'</span> <span class="st">"<span class="vr">$SCRIPT_NAME</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="st">"<span class="vr">$code</span>"</span>
+}
+
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'[%(%Y-%m-%d %H:%M:%S)T] %s\n'</span> <span class="fl">-1</span> <span class="st">"$*"</span>; }
+
+<span class="fn">cleanup</span>() {
+  [[ <span class="fl">-n</span> <span class="st">"<span class="vr">$WORK</span>"</span> ]] <span class="op">&&</span> <span class="cmd">rm</span> <span class="fl">-rf</span> <span class="st">"<span class="vr">$WORK</span>"</span>
+}
+<span class="kw">trap</span> cleanup EXIT
+
+<span class="cm"># ── Argument parsing ────────────────────────────────────────────────</span>
+<span class="fn">usage</span>() {
+  <span class="cmd">printf</span> <span class="st">'Usage: %s [--dry-run] --env (prod|staging|dev)\n'</span> <span class="st">"<span class="vr">$SCRIPT_NAME</span>"</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+}
+
+<span class="vr">TARGET_ENV</span><span class="op">=</span><span class="st">""</span>
+<span class="kw">while</span> (( <span class="vr">$#</span> <span class="op">></span> <span class="nu">0</span> )); <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    <span class="fl">--dry-run</span>)  <span class="vr">DRY_RUN</span><span class="op">=</span><span class="nu">1</span>; <span class="kw">shift</span> ;;
+    <span class="fl">--env</span>)
+      [[ <span class="vr">$#</span> <span class="op">-ge</span> <span class="nu">2</span> ]] <span class="op">||</span> <span class="fn">die</span> <span class="nu">1</span> <span class="st">"--env requires a value"</span>
+      [[ <span class="st">"$2"</span> <span class="op">=~</span> <span class="rx">^(prod|staging|dev)$</span> ]] <span class="op">||</span>
+        <span class="fn">die</span> <span class="nu">1</span> <span class="st">"--env must be prod, staging, or dev; got: $(printf '%q' "$2")"</span>
+      <span class="vr">TARGET_ENV</span><span class="op">=</span><span class="st">"$2"</span>; <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">-h</span><span class="op">|</span><span class="fl">--help</span>) <span class="fn">usage</span> ;;
+    <span class="op">*</span>) <span class="fn">die</span> <span class="nu">1</span> <span class="st">"Unknown argument: $(printf '%q' "$1")"</span> ;;
+  <span class="kw">esac</span>
+<span class="kw">done</span>
+[[ <span class="fl">-n</span> <span class="st">"<span class="vr">$TARGET_ENV</span>"</span> ]] <span class="op">||</span> <span class="fn">die</span> <span class="nu">1</span> <span class="st">"--env is required"</span>
+
+<span class="cm"># ── Setup ───────────────────────────────────────────────────────────</span>
+<span class="vr">WORK</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span> <span class="st">"${TMPDIR:-/tmp}/${SCRIPT_NAME%.sh}.XXXXXXXXXX"</span>)
+<span class="fn">log</span> <span class="st">"Work directory: <span class="vr">$WORK</span>"</span>
+
+<span class="cm"># ── Secret loading (no eval, no echo) ───────────────────────────────</span>
+<span class="vr">SECRET_FILE</span><span class="op">=</span><span class="st">"${SCRIPT_DIR}/secrets/${TARGET_ENV}.env"</span>
+<span class="kw">if</span> [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$SECRET_FILE</span>"</span> ]]; <span class="kw">then</span>
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span><span class="st">'='</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">k</span> <span class="vr">v</span> <span class="op">||</span> [[ <span class="fl">-n</span> <span class="st">"<span class="vr">$k</span>"</span> ]]; <span class="kw">do</span>
+    [[ <span class="vr">$k</span> <span class="op">=~</span> <span class="rx">^[A-Z_][A-Z0-9_]*$</span> ]] <span class="op">||</span> <span class="kw">continue</span>
+    <span class="vr">v</span><span class="op">=</span><span class="st">"${v#\"}"</span>; <span class="vr">v</span><span class="op">=</span><span class="st">"${v%\"}"</span>
+    <span class="kw">export</span> <span class="st">"<span class="vr">$k</span>"</span><span class="op">=</span><span class="st">"<span class="vr">$v</span>"</span>
+  <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$SECRET_FILE</span>"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Main work ───────────────────────────────────────────────────────</span>
+<span class="fn">log</span> <span class="st">"Starting deployment to <span class="vr">$TARGET_ENV</span>"</span>
+<span class="kw">if</span> (( <span class="vr">DRY_RUN</span> )); <span class="kw">then</span>
+  <span class="fn">log</span> <span class="st">"[DRY RUN] would deploy to <span class="vr">$TARGET_ENV</span> — skipping destructive steps"</span>
+<span class="kw">else</span>
+  <span class="fn">log</span> <span class="st">"Deploying..."</span>
+  <span class="cm"># ... real work here ...</span>
+<span class="kw">fi</span>
+
+<span class="fn">log</span> <span class="st">"Done"</span></pre>
+  </div>
+</div>
+
+</div>

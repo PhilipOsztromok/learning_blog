@@ -1,0 +1,894 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #f97583; }
+  .st  { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw  { color: #f97583; }
+  .nu  { color: #ffab70; }
+  .sh  { color: #85e89d; }
+  .vr  { color: #ffab70; }
+  .op  { color: #e1e4e8; }
+  .er  { color: #f97583; font-weight: bold; }
+  .fn  { color: #b392f0; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 11 — The Bash Completion System</h1>
+<p>Tab completion transforms a CLI tool from something you have to memorise
+into something you can explore. Bash's programmable completion system lets you
+attach arbitrary logic to any command: list subcommands, filter flags by context,
+query live data, or reflect a config file. This chapter builds a complete mental
+model of how the system works, then shows you how to write completions that are
+fast, correct, and genuinely useful.</p>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>1 — How Bash Completion Works</h2>
+
+<p>When you press Tab, Bash calls the completion function registered for the
+current command. That function reads context variables, calls
+<span class="inline-code">compgen</span> to generate candidate strings, and
+writes the results into <span class="inline-code">COMPREPLY</span>. Bash then
+either inserts the single match or displays the list.</p>
+
+<table>
+  <tr><th>Variable</th><th>Contents</th></tr>
+  <tr><td><code>COMP_WORDS</code></td><td>Array of words on the current command line</td></tr>
+  <tr><td><code>COMP_CWORD</code></td><td>Index into <code>COMP_WORDS</code> of the word being completed</td></tr>
+  <tr><td><code>COMP_LINE</code></td><td>The entire current command line as a string</td></tr>
+  <tr><td><code>COMP_POINT</code></td><td>Cursor position (byte offset into <code>COMP_LINE</code>)</td></tr>
+  <tr><td><code>COMP_KEY</code></td><td>Key that triggered completion (9 = Tab)</td></tr>
+  <tr><td><code>COMPREPLY</code></td><td>Array you populate with completion candidates</td></tr>
+  <tr><td><code>cur</code></td><td>Conventional local: <code>${COMP_WORDS[COMP_CWORD]}</code> — the partial word being typed</td></tr>
+  <tr><td><code>prev</code></td><td>Conventional local: <code>${COMP_WORDS[COMP_CWORD-1]}</code> — the word before <code>cur</code></td></tr>
+</table>
+
+<pre><span class="cm"># Minimal completion function skeleton</span>
+<span class="fn">_my_tool_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span><span class="op">=</span><span class="st">"${COMP_WORDS[COMP_CWORD]}"</span>
+  <span class="kw">local</span> <span class="vr">prev</span><span class="op">=</span><span class="st">"${COMP_WORDS[COMP_CWORD-1]}"</span>
+
+  <span class="cm"># Populate COMPREPLY with matching candidates</span>
+  <span class="cm"># compgen -W "list of words" -- "$cur"</span>
+  <span class="cm"># The -- "$cur" suffix filters the list to words starting with $cur</span>
+  <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"start stop restart status help"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+}
+
+<span class="cm"># Register the function for the command</span>
+<span class="kw">complete</span> <span class="fl">-F</span> _my_tool_complete my_tool
+
+<span class="cm"># Now:  my_tool st<Tab>  →  start  status  stop</span></pre>
+
+<div class="note">
+<strong>The bash-completion package</strong> (<span class="inline-code">bash-completion</span>)
+is installed on virtually every modern Linux system. It provides:
+<span class="inline-code">/usr/share/bash-completion/bash_completion</span> — the loader and
+helper functions; <span class="inline-code">/usr/share/bash-completion/completions/</span>
+— per-command completion files; <span class="inline-code">~/.local/share/bash-completion/completions/</span>
+— your own completions, auto-loaded without any <span class="inline-code">source</span>
+call once bash-completion is initialised.
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>2 — <code>compgen</code>: The Completion Generator</h2>
+
+<p><span class="inline-code">compgen</span> is the workhorse. It generates
+lists of candidates from many sources and filters them against a prefix.</p>
+
+<table>
+  <tr><th>Flag</th><th>Generates</th></tr>
+  <tr><td><code>-W "list"</code></td><td>Words from a space-separated list</td></tr>
+  <tr><td><code>-f</code></td><td>Filenames (like default completion)</td></tr>
+  <tr><td><code>-d</code></td><td>Directories only</td></tr>
+  <tr><td><code>-c</code></td><td>Command names (anything on PATH)</td></tr>
+  <tr><td><code>-b</code></td><td>Shell built-in names</td></tr>
+  <tr><td><code>-k</code></td><td>Shell reserved words</td></tr>
+  <tr><td><code>-A function</code></td><td>Function names defined in the shell</td></tr>
+  <tr><td><code>-A variable</code></td><td>Shell variable names</td></tr>
+  <tr><td><code>-A user</code></td><td>Usernames from <code>/etc/passwd</code></td></tr>
+  <tr><td><code>-A hostname</code></td><td>Hostnames from <code>/etc/hosts</code> and <code>~/.ssh/known_hosts</code></td></tr>
+  <tr><td><code>-A service</code></td><td>Service names from <code>/etc/services</code></td></tr>
+  <tr><td><code>-G "glob"</code></td><td>Files matching a glob pattern</td></tr>
+  <tr><td><code>-F function</code></td><td>Run a shell function; use its output as candidates</td></tr>
+  <tr><td><code>-X "pattern"</code></td><td>Filter: exclude candidates matching the pattern</td></tr>
+  <tr><td><code>-P "prefix"</code></td><td>Prepend prefix to each candidate</td></tr>
+  <tr><td><code>-S "suffix"</code></td><td>Append suffix to each candidate</td></tr>
+</table>
+
+<pre><span class="cm"># Generate words matching a prefix</span>
+<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"alpha beta gamma delta"</span> <span class="fl">--</span> <span class="st">"ga"</span>
+<span class="out"># gamma</span>
+
+<span class="cm"># All .conf files in /etc</span>
+<span class="cmd">compgen</span> <span class="fl">-G</span> <span class="st">"/etc/*.conf"</span> <span class="fl">--</span> <span class="st">"/etc/sy"</span>
+<span class="out"># /etc/sysctl.conf</span>
+
+<span class="cm"># Filenames only (no directories)</span>
+<span class="cmd">compgen</span> <span class="fl">-f</span> <span class="fl">-X</span> <span class="st""'!*.log'"</span> <span class="fl">--</span> <span class="st">""</span>   <span class="cm"># only .log files</span>
+
+<span class="cm"># Users whose name starts with "a"</span>
+<span class="cmd">compgen</span> <span class="fl">-A</span> user <span class="fl">--</span> <span class="st">"a"</span>
+
+<span class="cm"># Add a trailing = to option names (useful for --opt=VALUE style)</span>
+<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"--format --output --verbose"</span> <span class="fl">-S</span> <span class="st">"="</span> <span class="fl">--</span> <span class="st">"--fo"</span>
+<span class="out"># --format=</span>
+
+<span class="cm"># Combine sources with printf</span>
+<span class="vr">COMPREPLY</span><span class="op">=</span>( $(
+  <span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"--help --version"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>
+  <span class="cmd">compgen</span> <span class="fl">-f</span>                      <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>
+) )</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>3 — The <code>complete</code> Built-in</h2>
+
+<p><span class="inline-code">complete</span> registers what should happen when
+Tab is pressed after a specific command. The most important forms:</p>
+
+<pre><span class="cm"># -F FUNCTION — call a function to generate completions</span>
+<span class="kw">complete</span> <span class="fl">-F</span> _my_tool_complete my_tool
+
+<span class="cm"># -W "words" — complete from a fixed word list (no function needed)</span>
+<span class="kw">complete</span> <span class="fl">-W</span> <span class="st">"start stop restart status"</span> service
+
+<span class="cm"># -f — complete filenames (restore default file completion)</span>
+<span class="kw">complete</span> <span class="fl">-f</span> cat
+
+<span class="cm"># -d — complete directories only</span>
+<span class="kw">complete</span> <span class="fl">-d</span> cd
+
+<span class="cm"># -c — complete command names</span>
+<span class="kw">complete</span> <span class="fl">-c</span> which
+
+<span class="cm"># -A user — complete usernames</span>
+<span class="kw">complete</span> <span class="fl">-A</span> user su chown
+
+<span class="cm"># -o options modify completion behaviour</span>
+<span class="kw">complete</span> <span class="fl">-F</span> _my_complete <span class="fl">-o</span> default  my_tool
+<span class="cm">#  -o default  : fall back to default filename completion if COMPREPLY is empty</span>
+<span class="cm">#  -o nospace  : don't append a space after completing a single match</span>
+<span class="cm">#  -o filenames: treat results as filenames (apply quoting, add trailing /)</span>
+<span class="cm">#  -o nosort   : don't sort COMPREPLY before displaying</span>
+<span class="cm">#  -o bashdefault: fall back to bash-default completion, not just filename</span>
+
+<span class="cm"># Show all registered completions</span>
+<span class="kw">complete</span> <span class="fl">-p</span>
+
+<span class="cm"># Remove a completion</span>
+<span class="kw">complete</span> <span class="fl">-r</span> my_tool</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>4 — A Realistic Multi-Level Completion</h2>
+
+<p>Most CLI tools have subcommands with their own flags. The pattern is: check
+which word position we are in, dispatch to subcommand-specific logic based on
+what subcommand has already been typed.</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Completion for a hypothetical 'deploy' tool
+#
+# Usage:
+#   deploy [--env ENV] [--dry-run] SUBCOMMAND [ARGS]
+#
+# Subcommands:
+#   app   --name NAME --version VER
+#   db    migrate | rollback | status
+#   cert  renew --domain DOMAIN</span>
+
+<span class="fn">_deploy_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span><span class="op">=</span><span class="st">"${COMP_WORDS[COMP_CWORD]}"</span>
+  <span class="kw">local</span> <span class="vr">prev</span><span class="op">=</span><span class="st">"${COMP_WORDS[COMP_CWORD-1]}"</span>
+  <span class="kw">local</span> <span class="vr">words</span><span class="op">=</span>("<span class="st">${COMP_WORDS[@]}"</span>)
+
+  <span class="cm"># ── Global flags ────────────────────────────────────────────────</span>
+  <span class="kw">local</span> <span class="vr">global_flags</span><span class="op">=</span><span class="st">"--env --dry-run --help --version"</span>
+
+  <span class="cm"># ── Handle value completions for flags ──────────────────────────</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$prev</span>"</span> <span class="kw">in</span>
+    <span class="fl">--env</span><span class="op">|-</span>e)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"staging production canary"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+    <span class="fl">--name</span>)
+      <span class="cm"># Complete app names from a live source</span>
+      <span class="kw">local</span> <span class="vr">apps</span>
+      <span class="vr">apps</span><span class="op">=</span>$(<span class="cmd">deploy</span> list-apps <span class="nu">2</span><span class="op">>/dev/null</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"<span class="vr">$apps</span>"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+    <span class="fl">--domain</span>)
+      <span class="cm"># Complete known domains from ~/.deploy/domains</span>
+      <span class="kw">local</span> <span class="vr">domains</span>
+      <span class="vr">domains</span><span class="op">=</span>$(<span class="cmd">cat</span> <span class="st">"${HOME}/.deploy/domains"</span> <span class="nu">2</span><span class="op">>/dev/null</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"<span class="vr">$domains</span>"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+  <span class="kw">esac</span>
+
+  <span class="cm"># ── Find which subcommand (if any) has been typed ────────────────</span>
+  <span class="kw">local</span> <span class="vr">subcommand</span><span class="op">=</span><span class="st">""</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">1</span>; <span class="vr">i</span> <span class="op"><</span> <span class="vr">COMP_CWORD</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="kw">case</span> <span class="st">"${words[i]}"</span> <span class="kw">in</span>
+      app|db|cert) <span class="vr">subcommand</span><span class="op">=</span><span class="st">"${words[i]}"</span>; <span class="kw">break</span> ;;
+    <span class="kw">esac</span>
+  <span class="kw">done</span>
+
+  <span class="cm"># ── Dispatch based on subcommand ─────────────────────────────────</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$subcommand</span>"</span> <span class="kw">in</span>
+    <span class="st">""</span>)
+      <span class="cm"># No subcommand yet — offer subcommands + global flags</span>
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"app db cert <span class="vr">$global_flags</span>"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+    app)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"--name --version --strategy"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+    db)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"migrate rollback status --target"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+    cert)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"renew list revoke --domain --dry-run"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+  <span class="kw">esac</span>
+}
+
+<span class="kw">complete</span> <span class="fl">-F</span> _deploy_complete <span class="fl">-o</span> nosort deploy</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>5 — The bash-completion Helper Library</h2>
+
+<p>The <span class="inline-code">bash-completion</span> package provides helper
+functions that handle edge cases you would otherwise have to solve yourself —
+word splitting with quotes, cursor inside a quoted word, and others. Always use
+them when writing completions that will be distributed.</p>
+
+<pre><span class="cm"># Load the helpers — this is a no-op if already loaded</span>
+<span class="kw">if</span> [[ <span class="fl">-f</span> <span class="pth">/usr/share/bash-completion/bash_completion</span> ]]; <span class="kw">then</span>
+  <span class="kw">source</span> <span class="pth">/usr/share/bash-completion/bash_completion</span>
+<span class="kw">fi</span>
+
+<span class="fn">_my_tool_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span> <span class="vr">prev</span> <span class="vr">words</span> <span class="vr">cword</span>
+  <span class="cm"># _init_completion handles:
+  #   - setting cur, prev, words, cword correctly
+  #   - returning early if we should not complete (inside a redirect, etc.)
+  #   - dealing with quoted words containing spaces</span>
+  <span class="fn">_init_completion</span> <span class="op">||</span> <span class="kw">return</span>
+
+  <span class="cm"># _get_comp_words_by_ref is an alternative that fills named variables</span>
+  <span class="cm"># _get_comp_words_by_ref -n "=:" cur prev words cword</span>
+  <span class="cm"># The -n "=:" means "do not split on = or :"</span>
+
+  <span class="cm"># filedir — smarter than compgen -f, respects current quoting</span>
+  <span class="cm"># filedir     → all files and dirs</span>
+  <span class="cm"># filedir log → only .log files and dirs</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$prev</span>"</span> <span class="kw">in</span>
+    <span class="fl">--config</span><span class="op">|-</span>c)
+      <span class="fn">filedir</span> <span class="st">'@(conf|cfg|ini)'</span>   <span class="cm"># extglob pattern</span>
+      <span class="kw">return</span> ;;
+    <span class="fl">--output</span><span class="op">|-</span>o)
+      <span class="fn">filedir</span>                        <span class="cm"># any file</span>
+      <span class="kw">return</span> ;;
+    <span class="fl">--log-dir</span>)
+      <span class="fn">filedir</span> <span class="fl">-d</span>                     <span class="cm"># directories only</span>
+      <span class="kw">return</span> ;;
+  <span class="kw">esac</span>
+
+  <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"--config --output --log-dir --verbose --help"</span> \
+    <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+}
+
+<span class="kw">complete</span> <span class="fl">-F</span> _my_tool_complete <span class="fl">-o</span> default my_tool</pre>
+
+<h3>Key helper functions from bash-completion</h3>
+<table>
+  <tr><th>Helper</th><th>What it does</th></tr>
+  <tr><td><code>_init_completion</code></td><td>Sets <code>cur</code>, <code>prev</code>, <code>words</code>, <code>cword</code>; handles quoting and redirects</td></tr>
+  <tr><td><code>filedir [ext]</code></td><td>Complete files/dirs, optionally filtered by extension; respects current quoting</td></tr>
+  <tr><td><code>_get_comp_words_by_ref</code></td><td>Like <code>_init_completion</code> but gives control over split characters</td></tr>
+  <tr><td><code>_count_args</code></td><td>Count positional arguments already on the line (excludes flags)</td></tr>
+  <tr><td><code>_have CMD</code></td><td>Return 0 if <code>CMD</code> is available on PATH</td></tr>
+  <tr><td><code>_longopt CMD</code></td><td>Auto-generate completions from <code>CMD --help</code> output (many tools)</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>6 — Dynamic Completions from Live Data</h2>
+
+<p>The most useful completions query real state. The key discipline is
+<em>speed</em>: if a completion takes more than ~200 ms the user notices. Use
+caching for data that changes slowly.</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Completing from live data with a TTL cache</span>
+
+<span class="cm"># ── Cache helper ─────────────────────────────────────────────────</span>
+<span class="fn">_cached_compgen</span>() {
+  <span class="cm"># Usage: _cached_compgen CACHE_KEY TTL_SECS COMMAND [ARGS...]
+  # Runs COMMAND, caches output in /tmp, regenerates after TTL_SECS</span>
+  <span class="kw">local</span> <span class="vr">key</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">ttl</span><span class="op">=</span><span class="st">"$2"</span>; <span class="kw">shift</span> <span class="nu">2</span>
+  <span class="kw">local</span> <span class="vr">cache</span><span class="op">=</span><span class="st">"/tmp/.completion_cache_${key}"</span>
+
+  <span class="kw">if</span> [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$cache</span>"</span> ]]; <span class="kw">then</span>
+    <span class="kw">local</span> <span class="vr">age</span>
+    <span class="vr">age</span><span class="op">=</span>$(( <span class="vr">EPOCHSECONDS</span> - $(<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%Y'</span> <span class="st">"<span class="vr">$cache</span>"</span>) ))
+    (( <span class="vr">age</span> <span class="op"><</span> <span class="vr">ttl</span> )) <span class="op">&&</span> { <span class="cmd">cat</span> <span class="st">"<span class="vr">$cache</span>"</span>; <span class="kw">return</span>; }
+  <span class="kw">fi</span>
+
+  <span class="cm"># Run the command; write to cache in background so Tab feels instant</span>
+  <span class="st">"$@"</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">|</span> <span class="kw">tee</span> <span class="st">"<span class="vr">$cache</span>"</span>
+}
+
+<span class="cm"># ── Docker container completion ───────────────────────────────────</span>
+<span class="fn">_docker_containers</span>() {
+  <span class="fn">_cached_compgen</span> docker_containers <span class="nu">30</span> \
+    <span class="cmd">docker</span> ps <span class="fl">--format</span> <span class="st">'{{.Names}}'</span>
+}
+
+<span class="fn">_docker_images</span>() {
+  <span class="fn">_cached_compgen</span> docker_images <span class="nu">60</span> \
+    <span class="cmd">docker</span> images <span class="fl">--format</span> <span class="st">'{{.Repository}}:{{.Tag}}'</span>
+}
+
+<span class="fn">_myapp_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span> <span class="vr">prev</span> <span class="vr">words</span> <span class="vr">cword</span>
+  <span class="fn">_init_completion</span> <span class="op">||</span> <span class="kw">return</span>
+
+  <span class="kw">case</span> <span class="st">"<span class="vr">$prev</span>"</span> <span class="kw">in</span>
+    <span class="fl">--container</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> "$(<span class="fn">_docker_containers</span>)" <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+    <span class="fl">--image</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> "$(<span class="fn">_docker_images</span>)" <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+  <span class="kw">esac</span>
+
+  <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"--container --image --help"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+}
+
+<span class="kw">complete</span> <span class="fl">-F</span> _myapp_complete myapp
+
+<span class="cm"># ── Git branch completion (no caching needed — git is fast) ───────</span>
+<span class="fn">_git_branches</span>() {
+  <span class="cmd">git</span> branch <span class="fl">--format</span> <span class="st">'%(refname:short)'</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+}
+
+<span class="fn">_git_remote_branches</span>() {
+  <span class="cmd">git</span> branch <span class="fl">-r</span> <span class="fl">--format</span> <span class="st">'%(refname:short)'</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">|</span> \
+    <span class="cmd">sed</span> <span class="st">'s|origin/||'</span>
+}
+
+<span class="fn">_my_deploy_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span> <span class="vr">prev</span> <span class="vr">words</span> <span class="vr">cword</span>
+  <span class="fn">_init_completion</span> <span class="op">||</span> <span class="kw">return</span>
+
+  <span class="kw">case</span> <span class="st">"<span class="vr">$prev</span>"</span> <span class="kw">in</span>
+    <span class="fl">--branch</span><span class="op">|-</span>b)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> "$(<span class="fn">_git_branches</span>)" <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+  <span class="kw">esac</span>
+
+  <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"--branch --env --dry-run --help"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+}
+
+<span class="kw">complete</span> <span class="fl">-F</span> _my_deploy_complete my_deploy</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>7 — Installing and Distributing Completions</h2>
+
+<pre><span class="cm"># ── Drop-in directory (auto-loaded, no source needed) ────────────</span>
+<span class="cm"># System-wide: completions loaded for all users</span>
+<span class="pth">/usr/share/bash-completion/completions/my_tool</span>
+
+<span class="cm"># Per-user: takes precedence over system completions</span>
+<span class="pth">${HOME}/.local/share/bash-completion/completions/my_tool</span>
+
+<span class="cm"># Both directories are scanned when bash-completion initialises.</span>
+<span class="cm"># The file must be named exactly after the command, no extension.</span>
+
+<span class="cm"># ── Makefile install target ───────────────────────────────────────</span>
+<span class="cm"># PREFIX ?= /usr/local
+# install-completion:
+#     install -d $(PREFIX)/share/bash-completion/completions
+#     install -m644 completions/my_tool \
+#         $(PREFIX)/share/bash-completion/completions/my_tool</span>
+
+<span class="cm"># ── Lazy loading (completion-on-demand) ──────────────────────────</span>
+<span class="cm"># For large completion files, register a stub that sources the real
+# file on first Tab press. After sourcing, re-runs completion.</span>
+
+<span class="fn">_my_tool_loader</span>() {
+  <span class="cm"># Remove the stub</span>
+  <span class="kw">complete</span> <span class="fl">-r</span> my_tool
+  <span class="cm"># Source the real completion file</span>
+  <span class="kw">source</span> <span class="pth">/usr/local/share/my_tool/completions.bash</span>
+  <span class="cm"># Re-trigger completion on the current word</span>
+  <span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"${BASH_COMPLETION_VERSINFO:-}"</span> ]]; <span class="kw">then</span>
+    <span class="kw">local</span> <span class="vr">cur</span>; <span class="vr">cur</span><span class="op">=</span><span class="st">"${COMP_WORDS[COMP_CWORD]}"</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="kw">compgen</span> <span class="fl">-W</span> <span class="st">""</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+  <span class="kw">fi</span>
+  <span class="cm"># Call the real completion function that was just loaded</span>
+  _my_tool_complete
+}
+
+<span class="cm"># Register the loader stub instead of the real function</span>
+<span class="kw">complete</span> <span class="fl">-F</span> _my_tool_loader my_tool
+
+<span class="cm"># ── Sourcing in .bashrc (fallback for systems without bash-completion)</span>
+<span class="cm"># if ! shopt -oq posix; then
+#   [ -f /etc/bash_completion ] && source /etc/bash_completion
+#   [ -f ~/.bash_completion   ] && source ~/.bash_completion
+# fi</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>8 — Completion for Subcommand-Style Tools</h2>
+
+<p>Tools structured like <span class="inline-code">git</span>,
+<span class="inline-code">kubectl</span>, or
+<span class="inline-code">cargo</span> — with many subcommands each having
+their own flags — benefit from a table-driven approach that scales without
+repetition.</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Table-driven completion for a tool with many subcommands
+# Each subcommand's flags are stored in an associative array.</span>
+
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">_CLI_FLAGS</span>
+<span class="vr">_CLI_FLAGS</span>[<span class="st">""</span>]<span class="op">=</span><span class="st">"--config --verbose --quiet --help --version"</span>
+<span class="vr">_CLI_FLAGS</span>[build]<span class="op">=</span><span class="st">"--target --release --debug --features --no-default-features"</span>
+<span class="vr">_CLI_FLAGS</span>[test]<span class="op">=</span><span class="st">"--filter --timeout --parallel --coverage"</span>
+<span class="vr">_CLI_FLAGS</span>[deploy]<span class="op">=</span><span class="st">"--env --branch --strategy --dry-run --force"</span>
+<span class="vr">_CLI_FLAGS</span>[config]<span class="op">=</span><span class="st">"get set unset list"</span>
+<span class="vr">_CLI_FLAGS</span>[logs]<span class="op">=</span><span class="st">"--tail --follow --since --level --service"</span>
+
+<span class="fn">_cli_get_subcommand</span>() {
+  <span class="cm"># Scan COMP_WORDS[1..COMP_CWORD-1] for a known subcommand</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">1</span>; <span class="vr">i</span> <span class="op"><</span> <span class="vr">COMP_CWORD</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    [[ <span class="fl">-v</span> <span class="vr">_CLI_FLAGS</span>[<span class="st">"${COMP_WORDS[i]}"</span>] ]] <span class="op">&&</span> {
+      <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"${COMP_WORDS[i]}"</span>
+      <span class="kw">return</span>
+    }
+  <span class="kw">done</span>
+}
+
+<span class="fn">_cli_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span> <span class="vr">prev</span> <span class="vr">words</span> <span class="vr">cword</span>
+  <span class="fn">_init_completion</span> <span class="op">||</span> <span class="kw">return</span>
+
+  <span class="kw">local</span> <span class="vr">subcmd</span>
+  <span class="vr">subcmd</span><span class="op">=</span>$(<span class="fn">_cli_get_subcommand</span>)
+
+  <span class="kw">if</span> [[ <span class="fl">-z</span> <span class="st">"<span class="vr">$subcmd</span>"</span> ]]; <span class="kw">then</span>
+    <span class="cm"># No subcommand yet — offer global flags + all subcommands</span>
+    <span class="kw">local</span> <span class="vr">subcmds</span>
+    <span class="vr">subcmds</span><span class="op">=</span><span class="st">"${!_CLI_FLAGS[*]}"</span>
+    <span class="vr">subcmds</span><span class="op">=</span><span class="st">"${subcmds//[[:space:]]<span class="kw">$'</span><span class="st">\t'</span><span class="kw">}</span><span class="st">"</span>  <span class="cm"># remove empty key</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> \
+      <span class="fl">-W</span> <span class="st">"${_CLI_FLAGS[""]} ${!_CLI_FLAGS[*]}"</span> \
+      <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+  <span class="kw">else</span>
+    <span class="cm"># Subcommand is known — offer its flags</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> \
+      <span class="fl">-W</span> <span class="st">"${_CLI_FLAGS[$subcmd]:-} ${_CLI_FLAGS[""]}"</span> \
+      <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+  <span class="kw">fi</span>
+}
+
+<span class="kw">complete</span> <span class="fl">-F</span> _cli_complete <span class="fl">-o</span> nosort cli</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>9 — Debugging Completions</h2>
+
+<pre><span class="cm"># ── See what complete is registered for a command ────────────────</span>
+<span class="kw">complete</span> <span class="fl">-p</span> git
+<span class="out"># complete -o bashdefault -o default -o nospace -F __git_wrap__git_main git</span>
+
+<span class="cm"># ── Manually call a completion function ──────────────────────────</span>
+<span class="cm"># Simulate pressing Tab after "deploy --e"</span>
+<span class="vr">COMP_WORDS</span><span class="op">=</span>(deploy <span class="fl">--e</span>)
+<span class="vr">COMP_CWORD</span><span class="op">=</span><span class="nu">1</span>
+<span class="vr">COMP_LINE</span><span class="op">=</span><span class="st">"deploy --e"</span>
+<span class="vr">COMP_POINT</span><span class="op">=</span><span class="st">"${#COMP_LINE}"</span>
+_deploy_complete
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${COMPREPLY[@]}"</span>
+
+<span class="cm"># ── Trace execution ───────────────────────────────────────────────</span>
+<span class="cm"># Set xtrace in just the completion function to see what it does</span>
+<span class="fn">_deploy_complete</span>() {
+  <span class="kw">set</span> <span class="fl">-x</span>
+  <span class="cm"># ... function body ...</span>
+  <span class="kw">set</span> <span class="fl">+x</span>
+} <span class="nu">2</span><span class="op">></span><span class="pth">/tmp/completion_debug.log</span>
+
+<span class="cm"># ── FIGNORE: exclude file suffixes from completion ────────────────</span>
+<span class="vr">FIGNORE</span><span class="op">=</span><span class="st">".o:.pyc:.class"</span>   <span class="cm"># these extensions never appear in file completion</span>
+
+<span class="cm"># ── COMP_WORDBREAKS: characters that split words ──────────────────</span>
+<span class="cm"># Default: " \t\n\"'><=;|&(:"</span>
+<span class="cm"># If your tool uses : in identifiers (e.g. kubectl resource:name),
+# remove : from COMP_WORDBREAKS:</span>
+<span class="vr">COMP_WORDBREAKS</span><span class="op">=</span><span class="st">"${COMP_WORDBREAKS//:/}"</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Complete a backup tool</h4>
+  <p>Write a completion function for the following tool:</p>
+  <pre style="background:#0d0f1a; margin:0.5em 0;">backup.sh [OPTIONS] SOURCE DEST
+  Options:
+    --compress (-z)  : gzip | bzip2 | xz | none
+    --exclude (-e)   : glob pattern (can be given multiple times)
+    --dry-run        : no flag value
+    --log-file (-l)  : path to a log file
+    --retain (-r)    : number of days (integer)
+    --help</pre>
+  <p>Completion rules: <code>--compress</code> should offer the four named
+  values; <code>--log-file</code> should complete filenames with
+  <span class="inline-code">filedir</span>; <code>--exclude</code> should offer
+  common glob patterns (<code>*.tmp *.log .git node_modules</code>);
+  <code>SOURCE</code> and <code>DEST</code> are positional — both should
+  complete directories; all flag completions should be context-sensitive
+  (no duplication of already-present flags).
+  Use <span class="inline-code">_init_completion</span>.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># completions/backup.sh</span>
+
+<span class="fn">_backup_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span> <span class="vr">prev</span> <span class="vr">words</span> <span class="vr">cword</span>
+  <span class="fn">_init_completion</span> <span class="op">||</span> <span class="kw">return</span>
+
+  <span class="cm"># ── Flag value completions ───────────────────────────────────────</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$prev</span>"</span> <span class="kw">in</span>
+    <span class="fl">--compress</span><span class="op">|-</span>z)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"gzip bzip2 xz none"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+    <span class="fl">--log-file</span><span class="op">|-</span>l)
+      <span class="fn">filedir</span>
+      <span class="kw">return</span> ;;
+    <span class="fl">--exclude</span><span class="op">|-</span>e)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"'*.tmp' '*.log' '.git' 'node_modules' '*.pyc' '__pycache__'"</span> \
+        <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+    <span class="fl">--retain</span><span class="op">|-</span>r)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"7 14 30 60 90"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+  <span class="kw">esac</span>
+
+  <span class="cm"># ── Count positional args already on the line ────────────────────</span>
+  <span class="kw">local</span> <span class="vr">positionals</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">1</span>; <span class="vr">i</span> <span class="op"><</span> <span class="vr">cword</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    [[ <span class="st">"${words[i]}"</span> <span class="op">==</span> <span class="fl">-</span><span class="vr">*</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+    <span class="cm"># Skip values of flags that take an argument</span>
+    [[ <span class="st">"${words[i-1]}"</span> <span class="op">=~</span> <span class="rx">^(--compress|-z|--log-file|-l|--exclude|-e|--retain|-r)$</span> ]] \
+      <span class="op">&&</span> <span class="kw">continue</span>
+    (( positionals++ ))
+  <span class="kw">done</span>
+
+  <span class="cm"># ── Positional args: SOURCE and DEST are directories ─────────────</span>
+  <span class="kw">if</span> (( <span class="vr">positionals</span> <span class="op"><</span> <span class="nu">2</span> )) <span class="op">&&</span> [[ <span class="st">"<span class="vr">$cur</span>"</span> != <span class="fl">-</span><span class="vr">*</span> ]]; <span class="kw">then</span>
+    <span class="fn">filedir</span> <span class="fl">-d</span>
+    <span class="kw">return</span>
+  <span class="kw">fi</span>
+
+  <span class="cm"># ── Collect already-used non-repeatable flags ─────────────────────</span>
+  <span class="kw">local</span> <span class="vr">used</span><span class="op">=</span><span class="st">" ${words[*]} "</span>
+  <span class="kw">local</span> <span class="vr">all_flags</span><span class="op">=</span><span class="st">"--compress -z --exclude -e --dry-run --log-file -l --retain -r --help"</span>
+  <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">available</span><span class="op">=</span>()
+  <span class="kw">local</span> <span class="vr">flag</span>
+  <span class="kw">for</span> <span class="vr">flag</span> <span class="kw">in</span> <span class="vr">$all_flags</span>; <span class="kw">do</span>
+    <span class="cm"># Allow --exclude to be repeated; suppress others once used</span>
+    [[ <span class="vr">$flag</span> <span class="op">==</span> <span class="st">"--exclude"</span> <span class="op">||</span> <span class="vr">$flag</span> <span class="op">==</span> <span class="st">"-e"</span> ]] <span class="op">||</span> \
+      [[ <span class="st">"<span class="vr">$used</span>"</span> <span class="op">!=</span> <span class="rx">*" ${flag} "*</span> ]] <span class="op">&&</span> <span class="vr">available</span><span class="op">+=</span>(<span class="st">"<span class="vr">$flag</span>"</span>)
+  <span class="kw">done</span>
+
+  <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"${available[*]}"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+}
+
+<span class="kw">complete</span> <span class="fl">-F</span> _backup_complete <span class="fl">-o</span> default backup.sh backup</pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Dynamic completion from a config file</h4>
+  <p>Your tool <code>svc</code> manages services defined in
+  <code>~/.config/svc/services.conf</code>, one service name per line,
+  with optional <code>#</code> comments. Write a completion function that:</p>
+  <ul>
+    <li>Supports subcommands: <code>start stop restart status logs tail</code></li>
+    <li>After a subcommand that takes a service name, reads
+    <code>~/.config/svc/services.conf</code> and completes service names
+    (the config file changes rarely — cache it for 60 s)</li>
+    <li><code>svc logs</code> and <code>svc tail</code> additionally accept
+    <code>--follow</code>, <code>--lines N</code>, <code>--since TIMESTAMP</code></li>
+    <li><code>--lines</code> completes the values <code>50 100 200 500 all</code></li>
+    <li>Global flag <code>--config PATH</code> completes with
+    <span class="inline-code">filedir</span></li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># completions/svc</span>
+
+<span class="fn">_svc_services</span>() {
+  <span class="kw">local</span> <span class="vr">conf</span><span class="op">=</span><span class="st">"${HOME}/.config/svc/services.conf"</span>
+  <span class="kw">local</span> <span class="vr">cache</span><span class="op">=</span><span class="st">"/tmp/.svc_services_cache"</span>
+
+  <span class="kw">if</span> [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$cache</span>"</span> ]]; <span class="kw">then</span>
+    <span class="kw">local</span> <span class="vr">age</span>
+    <span class="vr">age</span><span class="op">=</span>$(( <span class="vr">EPOCHSECONDS</span> - $(<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%Y'</span> <span class="st">"<span class="vr">$cache</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">||</span> <span class="cmd">echo</span> <span class="nu">0</span>) ))
+    (( <span class="vr">age</span> <span class="op"><</span> <span class="nu">60</span> )) <span class="op">&&</span> { <span class="cmd">cat</span> <span class="st">"<span class="vr">$cache</span>"</span>; <span class="kw">return</span>; }
+  <span class="kw">fi</span>
+
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$conf</span>"</span> ]] <span class="op">||</span> <span class="kw">return</span>
+  <span class="cmd">grep</span> <span class="fl">-v</span> <span class="rx">'^[[:space:]]*#'</span> <span class="st">"<span class="vr">$conf</span>"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-v</span> <span class="rx">'^[[:space:]]*$'</span> <span class="op">|</span> <span class="kw">tee</span> <span class="st">"<span class="vr">$cache</span>"</span>
+}
+
+<span class="fn">_svc_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span> <span class="vr">prev</span> <span class="vr">words</span> <span class="vr">cword</span>
+  <span class="fn">_init_completion</span> <span class="op">||</span> <span class="kw">return</span>
+
+  <span class="kw">local</span> <span class="vr">subcmds</span><span class="op">=</span><span class="st">"start stop restart status logs tail"</span>
+  <span class="kw">local</span> <span class="vr">log_flags</span><span class="op">=</span><span class="st">"--follow --lines --since"</span>
+
+  <span class="cm"># Global flag values</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$prev</span>"</span> <span class="kw">in</span>
+    <span class="fl">--config</span>)
+      <span class="fn">filedir</span>; <span class="kw">return</span> ;;
+    <span class="fl">--lines</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"50 100 200 500 all"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+    <span class="fl">--since</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"1h 6h 24h yesterday today"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+  <span class="kw">esac</span>
+
+  <span class="cm"># Find subcommand</span>
+  <span class="kw">local</span> <span class="vr">subcmd</span><span class="op">=</span><span class="st">""</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">1</span>; <span class="vr">i</span> <span class="op"><</span> <span class="vr">cword</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    [[ <span class="st">" ${subcmds} "</span> <span class="op">==</span> <span class="rx">*" ${words[i]} "*</span> ]] <span class="op">&&</span> {
+      <span class="vr">subcmd</span><span class="op">=</span><span class="st">"${words[i]}"</span>; <span class="kw">break</span>
+    }
+  <span class="kw">done</span>
+
+  <span class="kw">if</span> [[ <span class="fl">-z</span> <span class="st">"<span class="vr">$subcmd</span>"</span> ]]; <span class="kw">then</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"<span class="vr">$subcmds</span> --config --help"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+    <span class="kw">return</span>
+  <span class="kw">fi</span>
+
+  <span class="cm"># Service name position (word after subcommand)</span>
+  <span class="kw">local</span> <span class="vr">service_typed</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">1</span>; <span class="vr">i</span> <span class="op"><</span> <span class="vr">cword</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    [[ <span class="st">"${words[i]}"</span> <span class="op">==</span> <span class="st">"<span class="vr">$subcmd</span>"</span> ]] <span class="op">&&</span> {
+      [[ <span class="st">"${words[i+1]:-}"</span> != <span class="fl">-</span><span class="vr">*</span> && <span class="fl">-n</span> <span class="st">"${words[i+1]:-}"</span> ]] \
+        <span class="op">&&</span> <span class="vr">service_typed</span><span class="op">=</span><span class="nu">1</span>
+      <span class="kw">break</span>
+    }
+  <span class="kw">done</span>
+
+  <span class="kw">if</span> (( ! <span class="vr">service_typed</span> )) <span class="op">&&</span> [[ <span class="st">"<span class="vr">$cur</span>"</span> != <span class="fl">-</span><span class="vr">*</span> ]]; <span class="kw">then</span>
+    <span class="kw">local</span> <span class="vr">svcs</span>; <span class="vr">svcs</span><span class="op">=</span>$(<span class="fn">_svc_services</span>)
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"<span class="vr">$svcs</span>"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+    <span class="kw">return</span>
+  <span class="kw">fi</span>
+
+  <span class="kw">case</span> <span class="st">"<span class="vr">$subcmd</span>"</span> <span class="kw">in</span>
+    logs|tail)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"<span class="vr">$log_flags</span>"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+    <span class="vr">*</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>() ;;
+  <span class="kw">esac</span>
+}
+
+<span class="kw">complete</span> <span class="fl">-F</span> _svc_complete <span class="fl">-o</span> nosort svc</pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Completion generator for git-style tools</h4>
+  <p>Write a reusable function <code>_make_subcmd_completion TOOL_NAME
+  SUBCOMMAND_FN FLAG_ARRAY_NAME</code> that installs a complete function for
+  any tool with subcommands, given:</p>
+  <ul>
+    <li><code>TOOL_NAME</code> — the command name to register</li>
+    <li><code>SUBCOMMAND_FN</code> — name of a function that prints available
+    subcommands (one per line); called once and cached for the session</li>
+    <li><code>FLAG_ARRAY_NAME</code> — name of an associative array mapping
+    subcommand names to their flag strings (empty key = global flags)</li>
+  </ul>
+  <p>The generated completion function must: offer global flags when no
+  subcommand is typed, offer subcommand-specific flags after a known
+  subcommand, and fall back to <code>-o default</code> for unknown subcommands.
+  Demonstrate by using it to add completions for a fictional
+  <code>proj</code> tool with subcommands <code>build test lint run</code>.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib/completion_factory.sh</span>
+
+<span class="fn">_make_subcmd_completion</span>() {
+  <span class="kw">local</span> <span class="vr">tool</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">subcmd_fn</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">flags_arr</span><span class="op">=</span><span class="st">"$3"</span>
+
+  <span class="cm"># Validate</span>
+  [[ <span class="vr">$tool</span>      <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_-]*$</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad tool name"</span>   <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  [[ <span class="vr">$subcmd_fn</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span>   ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad function name"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  [[ <span class="vr">$flags_arr</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span>   ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad array name"</span>   <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="cm"># Generate a session-scoped subcommand cache variable name</span>
+  <span class="kw">local</span> <span class="vr">cache_var</span><span class="op">=</span><span class="st">"__compcache_${tool//-/_}"</span>
+
+  <span class="cm"># Emit the completion function</span>
+  <span class="kw">eval</span> <span class="st">"
+    _${tool//-/_}_complete() {
+      local cur prev words cword
+      _init_completion || return
+
+      # Populate subcommand cache on first call
+      if [[ -z \"\${${cache_var}:-}\" ]]; then
+        ${cache_var}=\$( ${subcmd_fn} )
+      fi
+      local _subcmds=\"\${${cache_var}}\"
+
+      # Find typed subcommand
+      local _subcmd=\"\" i
+      for (( i=1; i < cword; i++ )); do
+        if printf '%s\n' \$_subcmds | grep -qxF \"\${words[i]}\"; then
+          _subcmd=\"\${words[i]}\"; break
+        fi
+      done
+
+      # Reference the flags associative array
+      declare -n _flags=${flags_arr}
+
+      if [[ -z \"\$_subcmd\" ]]; then
+        COMPREPLY=( \$(compgen -W \"\${_flags[\"\"]:+\${_flags[\"\"]}} \${_subcmds}\" -- \"\$cur\") )
+      else
+        local _sf=\"\${_flags[\"\$_subcmd\"]:-}\"
+        local _gf=\"\${_flags[\"\"]:+\${_flags[\"\"]}}\"
+        COMPREPLY=( \$(compgen -W \"\${_sf} \${_gf}\" -- \"\$cur\") )
+      fi
+    }
+    complete -F _${tool//-/_}_complete -o default ${tool}
+  "</span>
+}
+
+<span class="cm"># ── Demo: proj tool ──────────────────────────────────────────────</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">PROJ_FLAGS</span>
+<span class="vr">PROJ_FLAGS</span>[<span class="st">""</span>]<span class="op">=</span><span class="st">"--config --verbose --quiet --help"</span>
+<span class="vr">PROJ_FLAGS</span>[build]<span class="op">=</span><span class="st">"--target --release --debug --watch"</span>
+<span class="vr">PROJ_FLAGS</span>[test]<span class="op">=</span><span class="st">"--filter --coverage --watch --bail"</span>
+<span class="vr">PROJ_FLAGS</span>[lint]<span class="op">=</span><span class="st">"--fix --strict --format"</span>
+<span class="vr">PROJ_FLAGS</span>[run]<span class="op">=</span><span class="st">"--port --host --reload --env"</span>
+
+<span class="fn">_proj_subcommands</span>() {
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> build test lint run
+}
+
+<span class="fn">_make_subcmd_completion</span> proj _proj_subcommands PROJ_FLAGS</pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Complete a custom SSH wrapper</h4>
+  <p>Write completion for a script <code>sshjump HOST [COMMAND]</code> that
+  SSH's through a jump host to a target. The host list comes from two sources:
+  <code>~/.ssh/config</code> (extract <code>Host</code> lines, excluding
+  patterns with <code>*</code> or <code>?</code>) and
+  <code>~/.config/sshjump/hosts</code> (plain list, one per line, with
+  comments). Merge and deduplicate both sources, cache for 120 seconds.
+  After the host argument is satisfied, <code>COMMAND</code> should complete
+  with remote command names — offer a fixed set of useful ones
+  (<code>bash htop journalctl systemctl top</code>) plus whatever is on the
+  local PATH filtered to single-word commands (use <code>compgen -c</code>).</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># completions/sshjump</span>
+
+<span class="fn">_sshjump_hosts</span>() {
+  <span class="kw">local</span> <span class="vr">cache</span><span class="op">=</span><span class="st">"/tmp/.sshjump_hosts_cache"</span>
+
+  <span class="kw">if</span> [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$cache</span>"</span> ]]; <span class="kw">then</span>
+    <span class="kw">local</span> <span class="vr">age</span>
+    <span class="vr">age</span><span class="op">=</span>$(( <span class="vr">EPOCHSECONDS</span> - $(<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%Y'</span> <span class="st">"<span class="vr">$cache</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">||</span> <span class="cmd">echo</span> <span class="nu">0</span>) ))
+    (( <span class="vr">age</span> <span class="op"><</span> <span class="nu">120</span> )) <span class="op">&&</span> { <span class="cmd">cat</span> <span class="st">"<span class="vr">$cache</span>"</span>; <span class="kw">return</span>; }
+  <span class="kw">fi</span>
+
+  {
+    <span class="cm"># From ~/.ssh/config: Host lines without wildcards</span>
+    [[ <span class="fl">-f</span> <span class="st">"${HOME}/.ssh/config"</span> ]] <span class="op">&&</span> \
+      <span class="cmd">awk</span> <span class="st">'/^[Hh]ost[[:space:]]/{
+        for(i=2;i<=NF;i++) if($i !~ /[*?]/) print $i
+      }'</span> <span class="st">"${HOME}/.ssh/config"</span>
+
+    <span class="cm"># From ~/.config/sshjump/hosts</span>
+    [[ <span class="fl">-f</span> <span class="st">"${HOME}/.config/sshjump/hosts"</span> ]] <span class="op">&&</span> \
+      <span class="cmd">grep</span> <span class="fl">-v</span> <span class="rx">'^[[:space:]]*\(#\|$\)'</span> <span class="st">"${HOME}/.config/sshjump/hosts"</span>
+  } <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-u</span> <span class="op">|</span> <span class="kw">tee</span> <span class="st">"<span class="vr">$cache</span>"</span>
+}
+
+<span class="fn">_sshjump_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span> <span class="vr">prev</span> <span class="vr">words</span> <span class="vr">cword</span>
+  <span class="fn">_init_completion</span> <span class="op">||</span> <span class="kw">return</span>
+
+  <span class="cm"># Count non-flag positional args already typed</span>
+  <span class="kw">local</span> <span class="vr">positionals</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">1</span>; <span class="vr">i</span> <span class="op"><</span> <span class="vr">cword</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    [[ <span class="st">"${words[i]}"</span> <span class="op">==</span> <span class="fl">-</span><span class="vr">*</span> ]] <span class="op">||</span> (( positionals++ ))
+  <span class="kw">done</span>
+
+  <span class="kw">case</span> <span class="st">"<span class="vr">$positionals</span>"</span> <span class="kw">in</span>
+    <span class="nu">0</span>)  <span class="cm"># Completing HOST</span>
+      <span class="kw">local</span> <span class="vr">hosts</span>; <span class="vr">hosts</span><span class="op">=</span>$(<span class="fn">_sshjump_hosts</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"<span class="vr">$hosts</span>"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+    <span class="nu">1</span>)  <span class="cm"># Completing COMMAND</span>
+      <span class="kw">local</span> <span class="vr">well_known</span><span class="op">=</span><span class="st">"bash htop journalctl systemctl top ps df du tail grep"</span>
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"<span class="vr">$well_known</span>"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>
+                   <span class="cmd">compgen</span> <span class="fl">-c</span>                   <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="cm"># Deduplicate</span>
+      <span class="kw">local</span> <span class="fl">-A</span> <span class="vr">seen</span>
+      <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">uniq</span><span class="op">=</span>()
+      <span class="kw">local</span> <span class="vr">item</span>
+      <span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"${COMPREPLY[@]}"</span>; <span class="kw">do</span>
+        [[ <span class="fl">-v</span> <span class="vr">seen</span>[<span class="st">"<span class="vr">$item</span>"</span>] ]] <span class="op">||</span> { <span class="vr">uniq</span><span class="op">+=</span>(<span class="st">"<span class="vr">$item</span>"</span>); <span class="vr">seen</span>[<span class="st">"<span class="vr">$item</span>"</span>]<span class="op">=</span><span class="nu">1</span>; }
+      <span class="kw">done</span>
+      <span class="vr">COMPREPLY</span><span class="op">=</span>(<span class="st">"${uniq[@]}"</span>) ;;
+    <span class="vr">*</span>)  <span class="vr">COMPREPLY</span><span class="op">=</span>() ;;
+  <span class="kw">esac</span>
+}
+
+<span class="kw">complete</span> <span class="fl">-F</span> _sshjump_complete <span class="fl">-o</span> default sshjump</pre>
+  </div>
+</div>
+
+</div>

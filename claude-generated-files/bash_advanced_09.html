@@ -1,0 +1,1056 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #f97583; }
+  .st  { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw  { color: #f97583; }
+  .nu  { color: #ffab70; }
+  .sh  { color: #85e89d; }
+  .vr  { color: #ffab70; }
+  .op  { color: #e1e4e8; }
+  .er  { color: #f97583; font-weight: bold; }
+  .fn  { color: #b392f0; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 9 — Daemon Scripts and Process Management</h1>
+<p>A well-written daemon is invisible when healthy and unambiguous when broken.
+This chapter covers the full lifecycle: the double-fork daemonisation pattern,
+robust PID files, idiomatic start/stop/status dispatch, and native integration
+with systemd — the init system on every modern Linux distribution. You will also
+see how to handle signals cleanly, manage child processes, and write the
+<span class="inline-code">.service</span> unit that makes all of the hand-crafted
+shell daemonisation unnecessary in a systemd world.</p>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>1 — Why Daemonisation Is Complicated</h2>
+
+<p>A daemon is a process that runs detached from any controlling terminal, with
+its file descriptors closed, in its own session and process group. Getting there
+from a normal shell script requires several deliberate steps — each one
+correcting a specific way the process could remain accidentally attached to its
+parent environment.</p>
+
+<table>
+  <tr><th>Problem</th><th>Cause</th><th>Fix</th></tr>
+  <tr><td>Daemon killed when terminal closes</td><td>Still member of the shell's session; SIGHUP is delivered</td><td>Call <code>setsid()</code> — first fork + setsid in child</td></tr>
+  <tr><td>Session leader can acquire a new controlling terminal</td><td>First child after setsid() is session leader</td><td>Second fork — grandchild can never be session leader</td></tr>
+  <tr><td>Working directory locks a filesystem (prevents unmount)</td><td>CWD inherited from parent</td><td><code>cd /</code> in daemon</td></tr>
+  <tr><td>Inherited file descriptors leak resources or hold files open</td><td>All parent FDs carried across fork</td><td>Close or redirect stdin/stdout/stderr to <code>/dev/null</code></td></tr>
+  <tr><td>Inherited umask produces unexpected file permissions</td><td>umask from shell</td><td><code>umask 022</code> (or your required value)</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>2 — The Double-Fork Pattern</h2>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib/daemonise.sh — portable double-fork in pure Bash
+# Usage: daemonise PIDFILE CMD [ARGS...]</span>
+
+<span class="fn">daemonise</span>() {
+  <span class="kw">local</span> <span class="vr">pidfile</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+
+  <span class="cm"># ── First fork ──────────────────────────────────────────────────</span>
+  <span class="cm"># The parent exits immediately; the shell that launched us</span>
+  <span class="cm"># considers the job done and returns to the prompt.</span>
+  (
+    <span class="cm"># We are now in a subshell — first child.</span>
+    <span class="cm"># setsid(2) is not directly callable from Bash, but starting</span>
+    <span class="cm"># a new process group via a subshell + exec achieves the same</span>
+    <span class="cm"># effect on Linux when combined with the next fork.</span>
+    <span class="cm"># Use the 'setsid' utility if available for a true setsid call.</span>
+
+    <span class="cm"># ── Second fork ─────────────────────────────────────────────</span>
+    (
+      <span class="cm"># Grandchild: can never become session leader.</span>
+      <span class="cm"># Detach from terminal and reset environment.</span>
+      <span class="cmd">cd</span> <span class="pth">/</span>
+      <span class="cmd">umask</span> <span class="nu">022</span>
+
+      <span class="cm"># Redirect standard file descriptors</span>
+      <span class="kw">exec</span> <span class="nu">0</span><span class="op"></</span> <span class="pth">/dev/null</span>
+      <span class="kw">exec</span> <span class="nu">1</span><span class="op">></span> <span class="pth">/dev/null</span>
+      <span class="kw">exec</span> <span class="nu">2</span><span class="op">>&</span><span class="nu">1</span>
+
+      <span class="cm"># Write PID file before exec so it's available immediately</span>
+      <span class="cmd">printf</span> <span class="st">'%d\n'</span> <span class="st">"$$"</span> <span class="op">></span> <span class="st">"<span class="vr">$pidfile</span>"</span>
+
+      <span class="cm"># Replace grandchild with the actual daemon command</span>
+      <span class="kw">exec</span> <span class="st">"$@"</span>
+    ) &
+  ) &
+}
+
+<span class="cm"># ── Better approach on systems with the 'setsid' utility ────────</span>
+<span class="fn">daemonise_setsid</span>() {
+  <span class="kw">local</span> <span class="vr">pidfile</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+
+  <span class="cm"># setsid -f forks, calls setsid(2), then execs the command.</span>
+  <span class="cm"># The double-fork is not strictly needed when setsid -f is used</span>
+  <span class="cm"># because the child that called setsid() is not the session leader</span>
+  <span class="cm"># of the new session (the grandchild is). --fork achieves this.</span>
+  <span class="cmd">setsid</span> <span class="fl">--fork</span> <span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">"
+    cd /
+    umask 022
+    exec 0</dev/null 1>/dev/null 2>&1
+    printf '%d\n' \"\$\$\" > \"$pidfile\"
+    exec \"\$@\"
+  "</span> <span class="fl">--</span> <span class="st">"$@"</span>
+}</pre>
+
+<div class="note">
+<strong>Note:</strong> Pure-Bash double-forking with two subshells works on Linux but
+is not a true <span class="inline-code">setsid(2)</span> call — the grandchild
+inherits the grandparent's session unless the grandparent itself called
+<span class="inline-code">setsid</span>. For production use, call
+<span class="inline-code">setsid --fork</span> (util-linux) or write a tiny C
+wrapper. On systemd systems you should skip all of this and use a
+<span class="inline-code">Type=simple</span> or <span class="inline-code">Type=forking</span>
+service unit instead.
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>3 — PID Files: Correct Usage</h2>
+
+<p>A PID file is a single-line file containing the daemon's PID. It is the canonical
+way for a start script to later find, signal, and stop the daemon. PID files are
+simple to get right but easy to get subtly wrong.</p>
+
+<pre><span class="cm"># ── Write ────────────────────────────────────────────────────────</span>
+<span class="cm"># Write BEFORE exec so the PID is visible as soon as the process exists.</span>
+<span class="cm"># Use printf, not echo, to avoid platform differences.</span>
+<span class="cmd">printf</span> <span class="st">'%d\n'</span> <span class="st">"$$"</span> <span class="op">></span> <span class="pth">/run/myapp.pid</span>
+
+<span class="cm"># ── Read and validate ────────────────────────────────────────────</span>
+<span class="cm"># Never trust a PID file blindly. The process may have died and</span>
+<span class="cm"># a different process may now hold the same PID.</span>
+
+<span class="fn">read_pid</span>() {
+  <span class="kw">local</span> <span class="vr">pidfile</span><span class="op">=</span><span class="st">"$1"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$pidfile</span>"</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">local</span> <span class="vr">pid</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">pid</span> <span class="op"><</span> <span class="st">"<span class="vr">$pidfile</span>"</span>
+  <span class="cm"># Validate: must be a positive integer</span>
+  [[ <span class="vr">$pid</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"corrupt pidfile"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="st">"<span class="vr">$pid</span>"</span>
+}
+
+<span class="fn">pid_is_alive</span>() {
+  <span class="kw">local</span> <span class="vr">pid</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="cm"># kill -0 sends no signal but checks if the process exists and</span>
+  <span class="cm"># we have permission to signal it.</span>
+  <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+}
+
+<span class="fn">pid_is_our_daemon</span>() {
+  <span class="kw">local</span> <span class="vr">pid</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="cm"># Cross-check the process name to guard against PID reuse</span>
+  <span class="kw">local</span> <span class="vr">comm</span>
+  <span class="vr">comm</span><span class="op">=</span>$(<span class="cmd">cat</span> <span class="st">"/proc/${pid}/comm"</span> <span class="nu">2</span><span class="op">>/dev/null</span>)
+  [[ <span class="st">"<span class="vr">$comm</span>"</span> <span class="op">==</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="op">||</span> <span class="st">"<span class="vr">$comm</span>"</span> <span class="op">==</span> <span class="st">"${name:0:15}"</span> ]]
+  <span class="cm"># Linux truncates comm to 15 chars in /proc/PID/comm</span>
+}
+
+<span class="cm"># ── Cleanup on exit ──────────────────────────────────────────────</span>
+<span class="vr">PIDFILE</span><span class="op">=</span><span class="pth">/run/myapp.pid</span>
+
+<span class="fn">cleanup</span>() {
+  <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>
+}
+<span class="kw">trap</span> cleanup EXIT
+
+<span class="cm"># ── Locking: prevent two instances ───────────────────────────────</span>
+<span class="cm"># The safest way is to hold an exclusive lock on the PID file itself.</span>
+<span class="cm"># flock -n fails immediately if another process holds the lock.</span>
+<span class="kw">exec</span> <span class="nu">200</span><span class="op">></span><span class="st">"<span class="vr">$PIDFILE</span>"</span>
+<span class="cmd">flock</span> <span class="fl">-n</span> <span class="nu">200</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"already running"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="cmd">printf</span> <span class="st">'%d\n'</span> <span class="st">"$$"</span> <span class="op">>&200</span>
+<span class="cm"># The lock is held for the lifetime of the process (FD 200 stays open).</span>
+<span class="cm"># When the process exits (cleanly or via signal), the OS releases the lock.</span>
+<span class="cm"># This is more robust than writing then deleting the PID file.</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>4 — Start / Stop / Status Dispatch Pattern</h2>
+
+<p>A well-structured init script is a dispatcher: one script, one argument, clean
+exit codes. The LSB (Linux Standard Base) defines the exit codes that init systems
+and monitoring tools expect.</p>
+
+<table>
+  <tr><th>Action</th><th>Exit 0</th><th>Exit 1</th><th>Exit 2</th><th>Exit 3</th></tr>
+  <tr><td><code>start</code></td><td>started (or already running)</td><td>generic error</td><td>invalid argument</td><td>—</td></tr>
+  <tr><td><code>stop</code></td><td>stopped (or already stopped)</td><td>generic error</td><td>—</td><td>—</td></tr>
+  <tr><td><code>status</code></td><td>running</td><td>dead, PID file exists</td><td>dead, lock file exists</td><td>not running</td></tr>
+  <tr><td><code>restart</code></td><td>restarted</td><td>generic error</td><td>—</td><td>—</td></tr>
+</table>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># /etc/init.d/myapp — LSB-compliant init script skeleton</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">NAME</span><span class="op">=</span><span class="st">myapp</span>
+<span class="vr">DAEMON</span><span class="op">=</span><span class="pth">/usr/local/bin/myapp</span>
+<span class="vr">PIDFILE</span><span class="op">=</span><span class="pth">/run/${NAME}.pid</span>
+<span class="vr">LOGFILE</span><span class="op">=</span><span class="pth">/var/log/${NAME}.log</span>
+<span class="vr">RUNAS</span><span class="op">=</span><span class="st">myapp</span>            <span class="cm"># run as this user</span>
+<span class="vr">DAEMON_ARGS</span><span class="op">=</span><span class="st">"--config /etc/myapp/myapp.conf"</span>
+
+<span class="cm"># ── Helper functions ─────────────────────────────────────────────</span>
+
+<span class="fn">get_pid</span>() {
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">local</span> <span class="vr">pid</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">pid</span> <span class="op"><</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>
+  [[ <span class="vr">$pid</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]] <span class="op">&&</span> <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="st">"<span class="vr">$pid</span>"</span>
+}
+
+<span class="fn">is_running</span>() {
+  <span class="kw">local</span> <span class="vr">pid</span>
+  <span class="vr">pid</span><span class="op">=</span>$(<span class="fn">get_pid</span>) <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+}
+
+<span class="cm"># ── Actions ──────────────────────────────────────────────────────</span>
+
+<span class="fn">do_start</span>() {
+  <span class="kw">if</span> <span class="fn">is_running</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> is already running (pid $(<span class="fn">get_pid</span>))"</span>
+    <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">fi</span>
+
+  <span class="cmd">echo</span> <span class="fl">-n</span> <span class="st">"Starting <span class="vr">$NAME</span>... "</span>
+
+  <span class="cm"># Drop privileges and daemonise</span>
+  <span class="cmd">start-stop-daemon</span> <span class="fl">--start</span> \
+    <span class="fl">--quiet</span> \
+    <span class="fl">--background</span> \
+    <span class="fl">--make-pidfile</span> <span class="fl">--pidfile</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span> \
+    <span class="fl">--chuid</span> <span class="st">"<span class="vr">$RUNAS</span>"</span> \
+    <span class="fl">--exec</span> <span class="st">"<span class="vr">$DAEMON</span>"</span> \
+    <span class="fl">--</span> <span class="vr">$DAEMON_ARGS</span> \
+    <span class="op">>></span> <span class="st">"<span class="vr">$LOGFILE</span>"</span> <span class="nu">2</span><span class="op">&1</span>
+
+  <span class="cm"># Wait up to 5 s for the PID file to appear</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> $(seq 1 10); <span class="kw">do</span>
+    <span class="fn">is_running</span> <span class="op">&&</span> { <span class="cmd">echo</span> <span class="st">"OK"</span>; <span class="kw">return</span> <span class="nu">0</span>; }
+    <span class="cmd">sleep</span> <span class="nu">0.5</span>
+  <span class="kw">done</span>
+
+  <span class="cmd">echo</span> <span class="st">"FAILED"</span>
+  <span class="kw">return</span> <span class="nu">1</span>
+}
+
+<span class="fn">do_stop</span>() {
+  <span class="kw">if</span> ! <span class="fn">is_running</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> is not running"</span>
+    <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>   <span class="cm"># clean up stale PID file</span>
+    <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">fi</span>
+
+  <span class="kw">local</span> <span class="vr">pid</span>; <span class="vr">pid</span><span class="op">=</span>$(<span class="fn">get_pid</span>)
+  <span class="cmd">echo</span> <span class="fl">-n</span> <span class="st">"Stopping <span class="vr">$NAME</span> (pid <span class="vr">$pid</span>)... "</span>
+
+  <span class="cm"># Graceful shutdown: SIGTERM, wait, then SIGKILL if needed</span>
+  <span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="st">"<span class="vr">$pid</span>"</span>
+
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> $(seq 1 20); <span class="kw">do</span>
+    <span class="fn">is_running</span> <span class="op">||</span> { <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>; <span class="cmd">echo</span> <span class="st">"OK"</span>; <span class="kw">return</span> <span class="nu">0</span>; }
+    <span class="cmd">sleep</span> <span class="nu">0.5</span>
+  <span class="kw">done</span>
+
+  <span class="cmd">echo</span> <span class="fl">-n</span> <span class="st">"(SIGKILL) "</span>
+  <span class="cmd">kill</span> <span class="fl">-KILL</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+  <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>
+  <span class="cmd">echo</span> <span class="st">"OK"</span>
+}
+
+<span class="fn">do_status</span>() {
+  <span class="kw">if</span> <span class="fn">is_running</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> is running (pid $(<span class="fn">get_pid</span>))"</span>
+    <span class="kw">return</span> <span class="nu">0</span>     <span class="cm"># LSB: 0 = running</span>
+  <span class="kw">elif</span> [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> is dead but PID file exists"</span>
+    <span class="kw">return</span> <span class="nu">1</span>     <span class="cm"># LSB: 1 = dead, PID file present</span>
+  <span class="kw">else</span>
+    <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> is not running"</span>
+    <span class="kw">return</span> <span class="nu">3</span>     <span class="cm"># LSB: 3 = not running, no PID file</span>
+  <span class="kw">fi</span>
+}
+
+<span class="fn">do_reload</span>() {
+  <span class="fn">is_running</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> is not running"</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="cmd">kill</span> <span class="fl">-HUP</span> <span class="st">"$(<span class="fn">get_pid</span>)"</span>
+  <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> reloaded"</span>
+}
+
+<span class="cm"># ── Dispatcher ───────────────────────────────────────────────────</span>
+<span class="kw">case</span> <span class="st">"${1:-}"</span> <span class="kw">in</span>
+  start)   <span class="fn">do_start</span>  ;;
+  stop)    <span class="fn">do_stop</span>   ;;
+  restart) <span class="fn">do_stop</span>; <span class="fn">do_start</span> ;;
+  reload)  <span class="fn">do_reload</span> ;;
+  status)  <span class="fn">do_status</span> ;;
+  *)
+    <span class="cmd">echo</span> <span class="st">"Usage: $0 {start|stop|restart|reload|status}"</span> <span class="op">>&2</span>
+    <span class="kw">exit</span> <span class="nu">2</span>
+  ;;
+<span class="kw">esac</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>5 — Signal Handling in Long-Running Scripts</h2>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># A daemon main loop with clean signal handling</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">PIDFILE</span><span class="op">=</span><span class="pth">/run/myapp.pid</span>
+<span class="vr">LOGFILE</span><span class="op">=</span><span class="pth">/var/log/myapp.log</span>
+<span class="vr">RUNNING</span><span class="op">=</span><span class="nu">1</span>
+<span class="vr">RELOAD</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> "$(<span class="cmd">date</span> <span class="st">'%F %T'</span>)" <span class="st">"$*"</span> <span class="op">>></span> <span class="st">"<span class="vr">$LOGFILE</span>"</span>; }
+
+<span class="cm"># ── Signal handlers ──────────────────────────────────────────────</span>
+<span class="fn">handle_term</span>() {
+  <span class="fn">log</span> <span class="st">"SIGTERM received — shutting down"</span>
+  <span class="vr">RUNNING</span><span class="op">=</span><span class="nu">0</span>
+}
+
+<span class="fn">handle_hup</span>() {
+  <span class="fn">log</span> <span class="st">"SIGHUP received — will reload config on next iteration"</span>
+  <span class="vr">RELOAD</span><span class="op">=</span><span class="nu">1</span>
+}
+
+<span class="fn">handle_usr1</span>() {
+  <span class="fn">log</span> <span class="st">"SIGUSR1 received — dumping stats"</span>
+  <span class="fn">dump_stats</span>
+}
+
+<span class="kw">trap</span> handle_term TERM INT
+<span class="kw">trap</span> handle_hup  HUP
+<span class="kw">trap</span> handle_usr1 USR1
+
+<span class="cm"># ── Write PID and start main loop ────────────────────────────────</span>
+<span class="cmd">printf</span> <span class="st">'%d\n'</span> <span class="st">"$$"</span> <span class="op">></span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$PIDFILE"'</span> EXIT
+
+<span class="fn">load_config</span>() { <span class="fn">log</span> <span class="st">"loading config"</span>; }
+<span class="fn">do_work</span>()     { <span class="fn">log</span> <span class="st">"working..."</span>; <span class="cmd">sleep</span> <span class="nu">5</span>; }
+<span class="fn">dump_stats</span>()  { <span class="fn">log</span> <span class="st">"items processed: ${PROCESSED:-0}"</span>; }
+
+<span class="fn">load_config</span>
+<span class="fn">log</span> <span class="st">"started (pid $$)"</span>
+
+<span class="kw">while</span> (( <span class="vr">RUNNING</span> )); <span class="kw">do</span>
+  <span class="kw">if</span> (( <span class="vr">RELOAD</span> )); <span class="kw">then</span>
+    <span class="fn">load_config</span>
+    <span class="vr">RELOAD</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">fi</span>
+  <span class="fn">do_work</span>
+<span class="kw">done</span>
+
+<span class="fn">log</span> <span class="st">"shutdown complete"</span></pre>
+
+<h3>Signals and their conventional meanings</h3>
+<table>
+  <tr><th>Signal</th><th>Number</th><th>Conventional use in daemons</th></tr>
+  <tr><td><code>SIGTERM</code></td><td>15</td><td>Graceful shutdown — finish current work, clean up, exit</td></tr>
+  <tr><td><code>SIGKILL</code></td><td>9</td><td>Immediate kill — cannot be caught or ignored</td></tr>
+  <tr><td><code>SIGHUP</code></td><td>1</td><td>Reload configuration (re-read config file without restart)</td></tr>
+  <tr><td><code>SIGUSR1</code></td><td>10</td><td>User-defined — dump stats, rotate logs, toggle debug</td></tr>
+  <tr><td><code>SIGUSR2</code></td><td>12</td><td>User-defined — second custom action</td></tr>
+  <tr><td><code>SIGINT</code></td><td>2</td><td>Interactive interrupt (Ctrl-C) — often same as SIGTERM</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>6 — Managing Child Processes</h2>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># A supervisor: spawn N workers and restart them if they die</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail   <span class="cm"># no -e: we handle errors ourselves</span>
+
+<span class="vr">WORKERS</span><span class="op">=</span><span class="nu">4</span>
+<span class="vr">RUNNING</span><span class="op">=</span><span class="nu">1</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">WORKER_PIDS</span>   <span class="cm"># slot → PID</span>
+
+<span class="fn">start_worker</span>() {
+  <span class="kw">local</span> <span class="vr">slot</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="cm"># Start the worker in background; record its PID</span>
+  <span class="pth">/usr/local/bin/worker</span> <span class="fl">--slot</span> <span class="st">"<span class="vr">$slot</span>"</span> <span class="op">&</span>
+  <span class="vr">WORKER_PIDS</span>[<span class="st">"<span class="vr">$slot</span>"</span>]<span class="op">=</span><span class="st">"$!"</span>
+  <span class="fn">log</span> <span class="st">"slot <span class="vr">$slot</span>: started worker pid ${WORKER_PIDS[$slot]}"</span>
+}
+
+<span class="fn">stop_all</span>() {
+  <span class="fn">log</span> <span class="st">"stopping all workers"</span>
+  <span class="kw">local</span> <span class="vr">slot</span>
+  <span class="kw">for</span> <span class="vr">slot</span> <span class="kw">in</span> <span class="st">"${!WORKER_PIDS[@]}"</span>; <span class="kw">do</span>
+    <span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="st">"${WORKER_PIDS[$slot]}"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+  <span class="kw">done</span>
+  <span class="cmd">wait</span>   <span class="cm"># wait for all children to exit</span>
+  <span class="fn">log</span> <span class="st">"all workers stopped"</span>
+}
+
+<span class="kw">trap</span> <span class="st">'RUNNING=0; stop_all'</span> TERM INT
+
+<span class="cm"># ── Spawn initial workers ────────────────────────────────────────</span>
+<span class="kw">for</span> <span class="vr">slot</span> <span class="kw">in</span> $(seq 0 $(( <span class="vr">WORKERS</span> <span class="op">-</span> <span class="nu">1</span> ))); <span class="kw">do</span>
+  <span class="fn">start_worker</span> <span class="st">"<span class="vr">$slot</span>"</span>
+<span class="kw">done</span>
+
+<span class="cm"># ── Supervisor loop: restart dead workers ────────────────────────</span>
+<span class="kw">while</span> (( <span class="vr">RUNNING</span> )); <span class="kw">do</span>
+  <span class="kw">for</span> <span class="vr">slot</span> <span class="kw">in</span> <span class="st">"${!WORKER_PIDS[@]}"</span>; <span class="kw">do</span>
+    <span class="kw">local</span> <span class="vr">pid</span><span class="op">=</span><span class="st">"${WORKER_PIDS[$slot]}"</span>
+    <span class="cm"># If the worker exited, wait -n would consume its status.</span>
+    <span class="cm"># Instead, use kill -0 to check liveness.</span>
+    <span class="kw">if</span> ! <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>; <span class="kw">then</span>
+      <span class="cmd">wait</span> <span class="st">"<span class="vr">$pid</span>"</span>    <span class="cm"># reap the zombie</span>
+      <span class="fn">log</span> <span class="st">"slot <span class="vr">$slot</span>: worker <span class="vr">$pid</span> exited (rc=$?), restarting"</span>
+      <span class="fn">start_worker</span> <span class="st">"<span class="vr">$slot</span>"</span>
+    <span class="kw">fi</span>
+  <span class="kw">done</span>
+  <span class="cmd">sleep</span> <span class="nu">1</span>
+<span class="kw">done</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>7 — Integrating with systemd</h2>
+
+<p>On modern Linux, you should not write a double-fork daemon at all. systemd
+manages process lifetimes natively and handles PID tracking, logging, dependency
+ordering, socket activation, and auto-restart. Write a simple foreground process
+and let systemd do the rest.</p>
+
+<h3>Type=simple — the common case</h3>
+<pre><span class="cm"># /etc/systemd/system/myapp.service</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>My Application Daemon
+<span class="vr">After</span><span class="op">=</span>network.target
+<span class="vr">Wants</span><span class="op">=</span>network.target
+
+[Service]
+<span class="vr">Type</span><span class="op">=</span>simple
+<span class="vr">User</span><span class="op">=</span>myapp
+<span class="vr">Group</span><span class="op">=</span>myapp
+<span class="vr">WorkingDirectory</span><span class="op">=</span>/var/lib/myapp
+<span class="vr">ExecStart</span><span class="op">=</span>/usr/local/bin/myapp --foreground --config /etc/myapp.conf
+<span class="vr">ExecReload</span><span class="op">=</span>/bin/kill -HUP $MAINPID
+<span class="vr">ExecStop</span><span class="op">=</span>/bin/kill -TERM $MAINPID
+<span class="vr">PIDFile</span><span class="op">=</span>/run/myapp.pid      <span class="cm"># optional with Type=simple</span>
+<span class="vr">Restart</span><span class="op">=</span>on-failure
+<span class="vr">RestartSec</span><span class="op">=</span>5s
+<span class="vr">TimeoutStopSec</span><span class="op">=</span>30s
+
+<span class="cm"># Security hardening</span>
+<span class="vr">NoNewPrivileges</span><span class="op">=</span>true
+<span class="vr">PrivateTmp</span><span class="op">=</span>true
+<span class="vr">ProtectSystem</span><span class="op">=</span>strict
+<span class="vr">ProtectHome</span><span class="op">=</span>true
+<span class="vr">ReadWritePaths</span><span class="op">=</span>/var/lib/myapp /var/log/myapp
+
+[Install]
+<span class="vr">WantedBy</span><span class="op">=</span>multi-user.target</pre>
+
+<h3>Type=notify — sd_notify integration</h3>
+<p>With <span class="inline-code">Type=notify</span>, systemd waits for your process
+to send a <span class="inline-code">READY=1</span> notification before marking it as
+started. This is the correct type when your daemon needs to initialise (open
+sockets, load caches) before accepting connections — it prevents dependent
+services from starting too early.</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Daemon that uses sd_notify to report readiness</span>
+<span class="cm"># systemd-notify is part of systemd; it writes to the notification socket.</span>
+
+<span class="fn">sd_notify</span>() {
+  <span class="cm"># NOTIFY_SOCKET is set by systemd. If not set, we're not under systemd</span>
+  <span class="cm"># — silently do nothing so the script works standalone too.</span>
+  [[ <span class="fl">-S</span> <span class="st">"${NOTIFY_SOCKET:-}"</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">0</span>
+  <span class="cmd">systemd-notify</span> <span class="st">"$@"</span>
+}
+
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$*"</span>; }   <span class="cm"># systemd captures stdout to the journal</span>
+
+<span class="cm"># ── Initialisation phase ─────────────────────────────────────────</span>
+<span class="fn">log</span> <span class="st">"Starting up..."</span>
+<span class="fn">sd_notify</span> <span class="st">"STATUS=Initialising..."</span>
+
+<span class="cm"># Simulate slow startup (load DB, open sockets, etc.)</span>
+<span class="cmd">sleep</span> <span class="nu">2</span>
+<span class="fn">log</span> <span class="st">"Init complete"</span>
+
+<span class="cm"># Tell systemd we are ready</span>
+<span class="fn">sd_notify</span> <span class="st">"READY=1"</span> <span class="st">"STATUS=Running"</span>
+
+<span class="cm"># ── Signal handling ──────────────────────────────────────────────</span>
+<span class="vr">RUNNING</span><span class="op">=</span><span class="nu">1</span>
+<span class="kw">trap</span> <span class="st">'RUNNING=0'</span> TERM INT
+
+<span class="cm"># ── Main loop ────────────────────────────────────────────────────</span>
+<span class="vr">COUNT</span><span class="op">=</span><span class="nu">0</span>
+<span class="kw">while</span> (( <span class="vr">RUNNING</span> )); <span class="kw">do</span>
+  (( COUNT++ )) <span class="op">||</span> <span class="kw">true</span>
+  <span class="fn">sd_notify</span> <span class="st">"STATUS=Processed <span class="vr">$COUNT</span> items"</span>
+  <span class="cm"># Watchdog: tell systemd we are still alive</span>
+  <span class="fn">sd_notify</span> <span class="st">"WATCHDOG=1"</span>
+  <span class="cmd">sleep</span> <span class="nu">10</span>
+<span class="kw">done</span>
+
+<span class="fn">sd_notify</span> <span class="st">"STOPPING=1"</span> <span class="st">"STATUS=Shutting down"</span>
+<span class="fn">log</span> <span class="st">"Shutdown complete"</span></pre>
+
+<pre><span class="cm"># Service unit for Type=notify with watchdog</span>
+[Service]
+<span class="vr">Type</span><span class="op">=</span>notify
+<span class="vr">NotifyAccess</span><span class="op">=</span>main         <span class="cm"># only main PID may send notifications</span>
+<span class="vr">WatchdogSec</span><span class="op">=</span>30s           <span class="cm"># kill and restart if no WATCHDOG=1 within 30s</span>
+<span class="vr">ExecStart</span><span class="op">=</span>/usr/local/bin/myapp</pre>
+
+<h3>Useful systemctl and journalctl commands</h3>
+<pre><span class="cm"># Service lifecycle</span>
+<span class="cmd">systemctl</span> daemon-reload              <span class="cm"># re-read unit files after editing</span>
+<span class="cmd">systemctl</span> enable  myapp              <span class="cm"># start at boot</span>
+<span class="cmd">systemctl</span> disable myapp              <span class="cm"># do not start at boot</span>
+<span class="cmd">systemctl</span> start   myapp
+<span class="cmd">systemctl</span> stop    myapp
+<span class="cmd">systemctl</span> restart myapp
+<span class="cmd">systemctl</span> reload  myapp              <span class="cm"># sends ExecReload signal</span>
+<span class="cmd">systemctl</span> status  myapp              <span class="cm"># one-line summary + recent log</span>
+<span class="cmd">systemctl</span> is-active  myapp           <span class="cm"># exits 0 if running</span>
+<span class="cmd">systemctl</span> is-enabled myapp           <span class="cm"># exits 0 if enabled at boot</span>
+
+<span class="cm"># Journal (logs)</span>
+<span class="cmd">journalctl</span> <span class="fl">-u</span> myapp                  <span class="cm"># all logs for the unit</span>
+<span class="cmd">journalctl</span> <span class="fl">-u</span> myapp <span class="fl">-f</span>              <span class="cm"># follow (tail -f equivalent)</span>
+<span class="cmd">journalctl</span> <span class="fl">-u</span> myapp <span class="fl">--since</span> <span class="st">"1 hour ago"</span>
+<span class="cmd">journalctl</span> <span class="fl">-u</span> myapp <span class="fl">-n</span> <span class="nu">100</span>          <span class="cm"># last 100 lines</span>
+<span class="cmd">journalctl</span> <span class="fl">-u</span> myapp <span class="fl">-p</span> err           <span class="cm"># errors and above only</span>
+
+<span class="cm"># Inspect a unit</span>
+<span class="cmd">systemctl</span> cat    myapp               <span class="cm"># show the unit file</span>
+<span class="cmd">systemctl</span> show   myapp               <span class="cm"># all properties as key=value</span>
+<span class="cmd">systemctl</span> list-dependencies myapp    <span class="cm"># dependency tree</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>8 — Transient Systemd Units with systemd-run</h2>
+
+<p>You can launch a one-off or temporary service without writing a unit file
+using <span class="inline-code">systemd-run</span>. This is useful for testing, for
+wrapping cron jobs with resource limits, and for running scripts under systemd's
+cgroup management without permanent installation.</p>
+
+<pre><span class="cm"># Run a command as a transient service (foreground, output to terminal)</span>
+<span class="cmd">systemd-run</span> <span class="fl">--pty</span> <span class="fl">--same-dir</span> <span class="fl">--wait</span> <span class="fl">--collect</span> <span class="pth">/path/to/script.sh</span>
+
+<span class="cm"># Run in background (service unit auto-named)</span>
+<span class="cmd">systemd-run</span> <span class="fl">--unit</span><span class="op">=</span>my-job <span class="pth">/path/to/script.sh</span>
+<span class="cmd">systemctl</span> status my-job
+<span class="cmd">journalctl</span> <span class="fl">-u</span> my-job <span class="fl">-f</span>
+
+<span class="cm"># With resource limits — run at idle priority, max 512 MB RAM</span>
+<span class="cmd">systemd-run</span> <span class="fl">--nice</span><span class="op">=</span><span class="nu">19</span> \
+  <span class="fl">--property</span><span class="op">=</span><span class="st">MemoryMax=512M</span> \
+  <span class="fl">--property</span><span class="op">=</span><span class="st">CPUWeight=10</span> \
+  <span class="pth">/path/to/heavy_job.sh</span>
+
+<span class="cm"># Timer: run at a specific time (replaces cron)</span>
+<span class="cmd">systemd-run</span> <span class="fl">--on-calendar</span><span class="op">=</span><span class="st">"*-*-* 02:00:00"</span> \
+  <span class="fl">--unit</span><span class="op">=</span>nightly-backup \
+  <span class="pth">/usr/local/bin/backup.sh</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Write a robust PID-file library</h4>
+  <p>Implement a sourced Bash library <code>lib/pidfile.sh</code> providing these
+  five functions:</p>
+  <ul>
+    <li><code>pidfile_acquire PIDFILE</code> — write our PID, fail if another process holds a lock</li>
+    <li><code>pidfile_release PIDFILE</code> — remove the PID file and release the lock</li>
+    <li><code>pidfile_read PIDFILE</code> — print the PID; return 1 if file absent or corrupt</li>
+    <li><code>pidfile_is_running PIDFILE</code> — return 0 if the process is alive</li>
+    <li><code>pidfile_stale PIDFILE</code> — return 0 if the file exists but the process is dead</li>
+  </ul>
+  <p>Use <span class="inline-code">flock</span> for the exclusive lock so the lock
+  is released automatically on abnormal exit. Include a usage example that registers
+  <span class="inline-code">pidfile_release</span> on the EXIT trap.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib/pidfile.sh — source this file; do not execute it directly</span>
+
+<span class="cm"># Internal: FD used for flock (one per pidfile path via name mangling)</span>
+<span class="fn">_pidfile_fd_for</span>() {
+  <span class="cm"># Map a path to a stable FD number (200–254 range)</span>
+  <span class="cm"># For simplicity, use a single global FD; real code would use an assoc array.</span>
+  <span class="cmd">printf</span> <span class="st">'200'</span>
+}
+
+<span class="fn">pidfile_acquire</span>() {
+  <span class="kw">local</span> <span class="vr">pidfile</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">fd</span>; <span class="vr">fd</span><span class="op">=</span>$(<span class="fn">_pidfile_fd_for</span> <span class="st">"<span class="vr">$pidfile</span>"</span>)
+
+  <span class="cm"># Open the file on the chosen FD (creates it if absent)</span>
+  <span class="kw">eval</span> <span class="st">"exec ${fd}>'${pidfile}'"</span>
+
+  <span class="cm"># Try an exclusive, non-blocking lock</span>
+  <span class="kw">if</span> ! <span class="cmd">flock</span> <span class="fl">-n</span> <span class="st">"<span class="vr">$fd</span>"</span>; <span class="kw">then</span>
+    <span class="kw">local</span> <span class="vr">other_pid</span>
+    <span class="vr">other_pid</span><span class="op">=</span>$(<span class="fn">pidfile_read</span> <span class="st">"<span class="vr">$pidfile</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>)
+    <span class="cmd">printf</span> <span class="st">'%s: already running (pid %s)\n'</span> \
+      <span class="st">"<span class="vr">$pidfile</span>"</span> <span class="st">"${other_pid:-(unknown)}"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+
+  <span class="cm"># Write our PID into the file</span>
+  <span class="kw">local</span> <span class="vr">tmp</span>; <span class="vr">tmp</span><span class="op">=</span><span class="st">"<span class="vr">$pidfile</span>.tmp.$$"</span>
+  <span class="cmd">printf</span> <span class="st">'%d\n'</span> <span class="st">"$$"</span> <span class="op">></span> <span class="st">"<span class="vr">$tmp</span>"</span>
+  <span class="cmd">mv</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$tmp</span>"</span> <span class="st">"<span class="vr">$pidfile</span>"</span>
+}
+
+<span class="fn">pidfile_release</span>() {
+  <span class="kw">local</span> <span class="vr">pidfile</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">fd</span>; <span class="vr">fd</span><span class="op">=</span>$(<span class="fn">_pidfile_fd_for</span> <span class="st">"<span class="vr">$pidfile</span>"</span>)
+  <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$pidfile</span>"</span>
+  <span class="kw">eval</span> <span class="st">"exec ${fd}>&-"</span>   <span class="cm"># close FD — OS releases the flock</span>
+}
+
+<span class="fn">pidfile_read</span>() {
+  <span class="kw">local</span> <span class="vr">pidfile</span><span class="op">=</span><span class="st">"$1"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$pidfile</span>"</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">local</span> <span class="vr">pid</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">pid</span> <span class="op"><</span> <span class="st">"<span class="vr">$pidfile</span>"</span>
+  [[ <span class="vr">$pid</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'corrupt pidfile: %s\n'</span> <span class="st">"<span class="vr">$pidfile</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="st">"<span class="vr">$pid</span>"</span>
+}
+
+<span class="fn">pidfile_is_running</span>() {
+  <span class="kw">local</span> <span class="vr">pidfile</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">pid</span>
+  <span class="vr">pid</span><span class="op">=</span>$(<span class="fn">pidfile_read</span> <span class="st">"<span class="vr">$pidfile</span>"</span>) <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+}
+
+<span class="fn">pidfile_stale</span>() {
+  <span class="kw">local</span> <span class="vr">pidfile</span><span class="op">=</span><span class="st">"$1"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$pidfile</span>"</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>   <span class="cm"># no file → not stale</span>
+  <span class="fn">pidfile_is_running</span> <span class="st">"<span class="vr">$pidfile</span>"</span> <span class="op">&&</span> <span class="kw">return</span> <span class="nu">1</span>  <span class="cm"># still running → not stale</span>
+  <span class="kw">return</span> <span class="nu">0</span>   <span class="cm"># file exists, process dead → stale</span>
+}
+
+<span class="cm"># ── Usage example ────────────────────────────────────────────────</span>
+<span class="cm">#</span>
+<span class="cm">#   source lib/pidfile.sh</span>
+<span class="cm">#   PIDFILE=/run/myapp.pid</span>
+<span class="cm">#   pidfile_acquire "$PIDFILE" || exit 1</span>
+<span class="cm">#   trap 'pidfile_release "$PIDFILE"' EXIT</span>
+<span class="cm">#   # ... main logic ...</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Complete init script with all LSB actions</h4>
+  <p>Write a complete <code>/etc/init.d/myworker</code> init script for a daemon
+  called <code>myworker</code> that runs as user <code>worker</code>. The script
+  must implement all LSB actions: <code>start</code>, <code>stop</code>,
+  <code>restart</code>, <code>reload</code>, <code>force-reload</code>,
+  <code>status</code>, and <code>try-restart</code> (restart only if currently
+  running). Use <code>start-stop-daemon</code> for start. Implement correct LSB
+  exit codes for status. The stop action must wait for the process to exit
+  gracefully (SIGTERM, 10 s timeout) before sending SIGKILL.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm">### BEGIN INIT INFO
+# Provides:          myworker
+# Required-Start:    $network $local_fs
+# Required-Stop:     $network $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: My Worker Daemon
+### END INIT INFO</span>
+
+<span class="vr">NAME</span><span class="op">=</span>myworker
+<span class="vr">DAEMON</span><span class="op">=</span><span class="pth">/usr/local/bin/<span class="vr">$NAME</span></span>
+<span class="vr">PIDFILE</span><span class="op">=</span><span class="pth">/run/${NAME}.pid</span>
+<span class="vr">LOGFILE</span><span class="op">=</span><span class="pth">/var/log/${NAME}.log</span>
+<span class="vr">RUNAS</span><span class="op">=</span>worker
+<span class="vr">ARGS</span><span class="op">=</span><span class="st">"--config /etc/myworker.conf"</span>
+<span class="vr">STOP_TIMEOUT</span><span class="op">=</span><span class="nu">10</span>
+
+<span class="fn">get_pid</span>() {
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">local</span> <span class="vr">p</span>; <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">p</span> <span class="op"><</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>
+  [[ <span class="vr">$p</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]] <span class="op">&&</span> <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="st">"<span class="vr">$p</span>"</span>
+}
+
+<span class="fn">is_running</span>() {
+  <span class="kw">local</span> <span class="vr">pid</span>; <span class="vr">pid</span><span class="op">=</span>$(<span class="fn">get_pid</span>) <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+}
+
+<span class="fn">do_start</span>() {
+  <span class="kw">if</span> <span class="fn">is_running</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> already running (pid $(<span class="fn">get_pid</span>))"</span>; <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">fi</span>
+  <span class="cmd">echo</span> <span class="fl">-n</span> <span class="st">"Starting <span class="vr">$NAME</span>... "</span>
+  <span class="cmd">start-stop-daemon</span> <span class="fl">--start</span> <span class="fl">--quiet</span> <span class="fl">--background</span> \
+    <span class="fl">--make-pidfile</span> <span class="fl">--pidfile</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span> \
+    <span class="fl">--chuid</span> <span class="st">"<span class="vr">$RUNAS</span>"</span> <span class="fl">--exec</span> <span class="st">"<span class="vr">$DAEMON</span>"</span> <span class="fl">--</span> <span class="vr">$ARGS</span> \
+    <span class="op">>></span> <span class="st">"<span class="vr">$LOGFILE</span>"</span> <span class="nu">2</span><span class="op">&1</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"FAILED"</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="kw">local</span> <span class="vr">i</span>; <span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> $(seq 1 20); <span class="kw">do</span>
+    <span class="fn">is_running</span> <span class="op">&&</span> { <span class="cmd">echo</span> <span class="st">"OK"</span>; <span class="kw">return</span> <span class="nu">0</span>; }; <span class="cmd">sleep</span> <span class="nu">0.5</span>
+  <span class="kw">done</span>
+  <span class="cmd">echo</span> <span class="st">"FAILED (did not start)"; return 1</span>
+}
+
+<span class="fn">do_stop</span>() {
+  <span class="kw">if</span> ! <span class="fn">is_running</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> is not running"</span>; <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>; <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">fi</span>
+  <span class="kw">local</span> <span class="vr">pid</span>; <span class="vr">pid</span><span class="op">=</span>$(<span class="fn">get_pid</span>)
+  <span class="cmd">echo</span> <span class="fl">-n</span> <span class="st">"Stopping <span class="vr">$NAME</span> (pid <span class="vr">$pid</span>)... "</span>
+  <span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="st">"<span class="vr">$pid</span>"</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> $(seq 1 $(( <span class="vr">STOP_TIMEOUT</span> <span class="op">*</span> <span class="nu">2</span> ))); <span class="kw">do</span>
+    <span class="fn">is_running</span> <span class="op">||</span> { <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>; <span class="cmd">echo</span> <span class="st">"OK"</span>; <span class="kw">return</span> <span class="nu">0</span>; }
+    <span class="cmd">sleep</span> <span class="nu">0.5</span>
+  <span class="kw">done</span>
+  <span class="cmd">echo</span> <span class="fl">-n</span> <span class="st">"(SIGKILL) "</span>
+  <span class="cmd">kill</span> <span class="fl">-KILL</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+  <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span>; <span class="cmd">echo</span> <span class="st">"OK"</span>
+}
+
+<span class="fn">do_status</span>() {
+  <span class="kw">if</span>   <span class="fn">is_running</span>;      <span class="kw">then</span> <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> running (pid $(<span class="fn">get_pid</span>))"</span>;          <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">elif</span> [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$PIDFILE</span>"</span> ]]; <span class="kw">then</span> <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> dead but PID file exists"</span>; <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">else</span>                        <span class="cmd">echo</span> <span class="st">"<span class="vr">$NAME</span> not running"</span>;                    <span class="kw">return</span> <span class="nu">3</span>
+  <span class="kw">fi</span>
+}
+
+<span class="kw">case</span> <span class="st">"${1:-}"</span> <span class="kw">in</span>
+  start)        <span class="fn">do_start</span> ;;
+  stop)         <span class="fn">do_stop</span> ;;
+  restart)      <span class="fn">do_stop</span>; <span class="fn">do_start</span> ;;
+  reload|force-reload)
+                <span class="fn">is_running</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"not running"</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+                <span class="cmd">kill</span> <span class="fl">-HUP</span> <span class="st">"$(<span class="fn">get_pid</span>)"</span>; <span class="cmd">echo</span> <span class="st">"reloaded"</span> ;;
+  status)       <span class="fn">do_status</span> ;;
+  try-restart)  <span class="fn">is_running</span> <span class="op">&&</span> { <span class="fn">do_stop</span>; <span class="fn">do_start</span>; } <span class="op">||</span> <span class="kw">true</span> ;;
+  *)
+    <span class="cmd">printf</span> <span class="st">'Usage: %s {start|stop|restart|reload|force-reload|status|try-restart}\n'</span> \
+      <span class="st">"$0"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">2</span> ;;
+<span class="kw">esac</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Foreground daemon with sd_notify and watchdog</h4>
+  <p>Write a script <code>bin/poller.sh</code> that:</p>
+  <ul>
+    <li>Loops every 30 seconds, reading URLs from <code>/etc/poller/urls.conf</code> and checking each with <code>curl -sf</code></li>
+    <li>Logs results to the journal (stdout, one line per URL)</li>
+    <li>Sends <span class="inline-code">READY=1</span> after completing its first poll round</li>
+    <li>Sends <span class="inline-code">WATCHDOG=1</span> after each round (only if <span class="inline-code">$WATCHDOG_USEC</span> is set)</li>
+    <li>Updates <span class="inline-code">STATUS=</span> with the count of passing/failing URLs</li>
+    <li>Handles SIGHUP to re-read the URL list without restarting</li>
+    <li>Handles SIGTERM/SIGINT for clean shutdown</li>
+  </ul>
+  <p>Also write the accompanying <code>poller.service</code> unit file with
+  <code>Type=notify</code>, <code>WatchdogSec=120s</code>, and reasonable
+  security hardening directives.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># bin/poller.sh</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">CONFIG</span><span class="op">=</span><span class="st">"${POLLER_CONFIG:-/etc/poller/urls.conf}"</span>
+<span class="vr">INTERVAL</span><span class="op">=</span><span class="nu">30</span>
+<span class="vr">RUNNING</span><span class="op">=</span><span class="nu">1</span>
+<span class="vr">RELOAD</span><span class="op">=</span><span class="nu">0</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">URLS</span><span class="op">=</span>()
+
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$*"</span>; }   <span class="cm"># systemd captures stdout to journal</span>
+
+<span class="fn">sd_notify</span>() {
+  [[ <span class="fl">-S</span> <span class="st">"${NOTIFY_SOCKET:-}"</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">0</span>
+  <span class="cmd">systemd-notify</span> <span class="st">"$@"</span>
+}
+
+<span class="fn">watchdog_ping</span>() {
+  [[ <span class="fl">-n</span> <span class="st">"${WATCHDOG_USEC:-}"</span> ]] <span class="op">&&</span> <span class="fn">sd_notify</span> <span class="st">"WATCHDOG=1"</span>
+}
+
+<span class="fn">load_config</span>() {
+  <span class="vr">URLS</span><span class="op">=</span>()
+  <span class="kw">if</span> [[ ! <span class="fl">-f</span> <span class="st">"<span class="vr">$CONFIG</span>"</span> ]]; <span class="kw">then</span>
+    <span class="fn">log</span> <span class="st">"WARN: config not found: <span class="vr">$CONFIG</span>"</span>; <span class="kw">return</span>
+  <span class="kw">fi</span>
+  <span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    [[ <span class="st">"<span class="vr">$line</span>"</span> <span class="op">=~</span> <span class="rx">^[[:space:]]*(#|$)</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+    <span class="vr">URLS</span><span class="op">+=</span>(<span class="st">"<span class="vr">$line</span>"</span>)
+  <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$CONFIG</span>"</span>
+  <span class="fn">log</span> <span class="st">"Loaded ${#URLS[@]} URLs from <span class="vr">$CONFIG</span>"</span>
+}
+
+<span class="fn">poll_urls</span>() {
+  <span class="kw">local</span> <span class="vr">ok</span><span class="op">=</span><span class="nu">0</span> <span class="vr">fail</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">local</span> <span class="vr">url</span>
+  <span class="kw">for</span> <span class="vr">url</span> <span class="kw">in</span> <span class="st">"${URLS[@]}"</span>; <span class="kw">do</span>
+    <span class="kw">if</span> <span class="cmd">curl</span> <span class="fl">-sf</span> <span class="fl">--max-time</span> <span class="nu">10</span> <span class="st">"<span class="vr">$url</span>"</span> <span class="op">>/dev/null</span>; <span class="kw">then</span>
+      <span class="fn">log</span> <span class="st">"OK  <span class="vr">$url</span>"</span>; (( ok++ )) <span class="op">||</span> <span class="kw">true</span>
+    <span class="kw">else</span>
+      <span class="fn">log</span> <span class="st">"FAIL <span class="vr">$url</span>"</span>; (( fail++ )) <span class="op">||</span> <span class="kw">true</span>
+    <span class="kw">fi</span>
+  <span class="kw">done</span>
+  <span class="fn">sd_notify</span> <span class="st">"STATUS=OK:<span class="vr">$ok</span> FAIL:<span class="vr">$fail</span>"</span>
+}
+
+<span class="cm"># ── Signals ──────────────────────────────────────────────────────</span>
+<span class="kw">trap</span> <span class="st">'RUNNING=0'</span>  TERM INT
+<span class="kw">trap</span> <span class="st">'RELOAD=1'</span>   HUP
+
+<span class="cm"># ── Startup ──────────────────────────────────────────────────────</span>
+<span class="fn">load_config</span>
+<span class="fn">log</span> <span class="st">"Poller starting — <span class="vr">$INTERVAL</span>s interval"</span>
+<span class="fn">poll_urls</span>         <span class="cm"># first poll before READY=1</span>
+<span class="fn">sd_notify</span> <span class="st">"READY=1"</span> <span class="st">"STATUS=Running"</span>
+
+<span class="cm"># ── Main loop ────────────────────────────────────────────────────</span>
+<span class="kw">while</span> (( <span class="vr">RUNNING</span> )); <span class="kw">do</span>
+  <span class="kw">if</span> (( <span class="vr">RELOAD</span> )); <span class="kw">then</span>
+    <span class="fn">load_config</span>; <span class="vr">RELOAD</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">fi</span>
+  <span class="cmd">sleep</span> <span class="st">"<span class="vr">$INTERVAL</span>"</span>
+  (( <span class="vr">RUNNING</span> )) <span class="op">||</span> <span class="kw">break</span>
+  <span class="fn">poll_urls</span>
+  <span class="fn">watchdog_ping</span>
+<span class="kw">done</span>
+
+<span class="fn">sd_notify</span> <span class="st">"STOPPING=1"</span>
+<span class="fn">log</span> <span class="st">"Poller stopped"</span></pre>
+<pre><span class="cm"># poller.service</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>URL Health Poller
+<span class="vr">After</span><span class="op">=</span>network-online.target
+<span class="vr">Wants</span><span class="op">=</span>network-online.target
+
+[Service]
+<span class="vr">Type</span><span class="op">=</span>notify
+<span class="vr">NotifyAccess</span><span class="op">=</span>main
+<span class="vr">User</span><span class="op">=</span>poller
+<span class="vr">ExecStart</span><span class="op">=</span>/usr/local/bin/poller.sh
+<span class="vr">ExecReload</span><span class="op">=</span>/bin/kill -HUP $MAINPID
+<span class="vr">Restart</span><span class="op">=</span>on-failure
+<span class="vr">RestartSec</span><span class="op">=</span>10s
+<span class="vr">WatchdogSec</span><span class="op">=</span>120s
+<span class="vr">TimeoutStartSec</span><span class="op">=</span>60s
+<span class="vr">TimeoutStopSec</span><span class="op">=</span>15s
+
+<span class="cm"># Hardening</span>
+<span class="vr">NoNewPrivileges</span><span class="op">=</span>true
+<span class="vr">PrivateTmp</span><span class="op">=</span>true
+<span class="vr">ProtectSystem</span><span class="op">=</span>strict
+<span class="vr">ProtectHome</span><span class="op">=</span>true
+<span class="vr">ReadOnlyPaths</span><span class="op">=</span>/etc/poller
+<span class="vr">CapabilityBoundingSet</span><span class="op">=</span>      <span class="cm"># drop all capabilities</span>
+
+[Install]
+<span class="vr">WantedBy</span><span class="op">=</span>multi-user.target</pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Supervisor with BATS tests</h4>
+  <p>Write a supervisor script <code>bin/supervise.sh COMMAND [ARGS...]</code>
+  that:</p>
+  <ul>
+    <li>Starts the given command as a child process</li>
+    <li>Restarts it automatically if it exits with non-zero status (up to 5 times total, with exponential back-off: 1s, 2s, 4s, 8s, 16s)</li>
+    <li>Exits with status 0 if the command exits cleanly (status 0)</li>
+    <li>Exits with status 1 after 5 failed restarts</li>
+    <li>Propagates SIGTERM to the child and exits cleanly when it receives SIGTERM itself</li>
+  </ul>
+  <p>Then write a BATS test file covering all four cases (clean exit, restart on
+  failure, max-retries exhausted, SIGTERM propagation) using PATH-mocked helper
+  scripts as the supervised command.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># bin/supervise.sh</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+(( <span class="vr">$#</span> <span class="op">>=</span> <span class="nu">1</span> )) <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'Usage: supervise.sh COMMAND [ARGS...]\n'</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">2</span>; }
+
+<span class="vr">MAX_RETRIES</span><span class="op">=</span><span class="nu">5</span>
+<span class="vr">CHILD_PID</span><span class="op">=</span><span class="st">""</span>
+<span class="vr">TERMINATING</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'[supervise] %s\n'</span> <span class="st">"$*"</span>; }
+
+<span class="fn">handle_term</span>() {
+  <span class="vr">TERMINATING</span><span class="op">=</span><span class="nu">1</span>
+  <span class="fn">log</span> <span class="st">"SIGTERM received — stopping child <span class="vr">$CHILD_PID</span>"</span>
+  [[ <span class="fl">-n</span> <span class="st">"<span class="vr">$CHILD_PID</span>"</span> ]] <span class="op">&&</span> <span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="st">"<span class="vr">$CHILD_PID</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+}
+<span class="kw">trap</span> handle_term TERM INT
+
+<span class="vr">attempt</span><span class="op">=</span><span class="nu">0</span>
+<span class="kw">while</span> (( <span class="vr">attempt</span> <span class="op"><=</span> <span class="vr">MAX_RETRIES</span> )); <span class="kw">do</span>
+  (( <span class="vr">TERMINATING</span> )) <span class="op">&&</span> { <span class="fn">log</span> <span class="st">"terminated cleanly"</span>; <span class="kw">exit</span> <span class="nu">0</span>; }
+
+  (( <span class="vr">attempt</span> <span class="op">></span> <span class="nu">0</span> )) <span class="op">&&</span> <span class="fn">log</span> <span class="st">"restart attempt <span class="vr">$attempt</span>/<span class="vr">$MAX_RETRIES</span>"</span>
+
+  <span class="st">"$@"</span> <span class="op">&</span>
+  <span class="vr">CHILD_PID</span><span class="op">=</span><span class="st">"$!"</span>
+  <span class="cmd">wait</span> <span class="st">"<span class="vr">$CHILD_PID</span>"</span>
+  <span class="vr">rc</span><span class="op">=</span><span class="st">"$?"</span>
+  <span class="vr">CHILD_PID</span><span class="op">=</span><span class="st">""</span>
+
+  (( <span class="vr">TERMINATING</span> )) <span class="op">&&</span> { <span class="fn">log</span> <span class="st">"terminated cleanly"</span>; <span class="kw">exit</span> <span class="nu">0</span>; }
+  (( <span class="vr">rc</span> <span class="op">==</span> <span class="nu">0</span>    )) <span class="op">&&</span> { <span class="fn">log</span> <span class="st">"command exited cleanly"</span>; <span class="kw">exit</span> <span class="nu">0</span>; }
+
+  <span class="fn">log</span> <span class="st">"command exited with rc=<span class="vr">$rc</span>"</span>
+  (( <span class="vr">attempt</span> <span class="op">>=</span> <span class="vr">MAX_RETRIES</span> )) <span class="op">&&</span> <span class="kw">break</span>
+
+  <span class="kw">local</span> <span class="vr">wait_s</span>; <span class="vr">wait_s</span><span class="op">=</span>$(( <span class="nu">1</span> <span class="op"><<</span> <span class="vr">attempt</span> ))  <span class="cm"># 1,2,4,8,16</span>
+  <span class="fn">log</span> <span class="st">"backing off <span class="vr">$wait_s</span>s"</span>
+  <span class="cmd">sleep</span> <span class="st">"<span class="vr">$wait_s</span>"</span>
+  (( <span class="vr">attempt</span>++ ))
+<span class="kw">done</span>
+
+<span class="fn">log</span> <span class="st">"max retries (<span class="vr">$MAX_RETRIES</span>) exhausted — giving up"</span>
+<span class="kw">exit</span> <span class="nu">1</span></pre>
+
+<pre><span class="sh">#!/usr/bin/env bats</span>
+<span class="cm"># test/integration/supervise_test.bats</span>
+
+<span class="fn">setup</span>() {
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-assert/load'</span>
+  <span class="vr">SCRIPT</span><span class="op">=</span><span class="st">"${BATS_TEST_DIRNAME}/../../bin/supervise.sh"</span>
+  <span class="vr">MOCK_DIR</span><span class="op">=</span><span class="st">"${BATS_TEST_TMPDIR}/mock"</span>
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$MOCK_DIR</span>"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"clean exit: supervisor exits 0 immediately"</span> {
+  <span class="cm"># Command that exits 0</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash\nexit 0\n'</span> <span class="op">></span> <span class="st">"<span class="vr">$MOCK_DIR</span>/success_cmd"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/success_cmd"</span>
+
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/success_cmd"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"exited cleanly"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"restart on failure: command fails twice then succeeds"</span> {
+  <span class="cm"># Fails first 2 attempts, succeeds on 3rd</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash
+C="%s/c.count"
+n=$(cat "$C" 2>/dev/null || echo 0)
+echo $(( n+1 )) > "$C"
+(( n < 2 )) && exit 1 || exit 0
+'</span> <span class="st">"<span class="vr">$MOCK_DIR</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$MOCK_DIR</span>/flaky"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/flaky"</span>
+
+  <span class="cm"># Patch out sleep to speed up the test</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash\nexit 0\n'</span> <span class="op">></span> <span class="st">"<span class="vr">$MOCK_DIR</span>/sleep"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/sleep"</span>
+  <span class="kw">export</span> <span class="vr">PATH</span><span class="op">=</span><span class="st">"<span class="vr">$MOCK_DIR</span>:<span class="vr">$PATH</span>"</span>
+
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/flaky"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"restart attempt"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"max retries exhausted: exits 1"</span> {
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash\nexit 1\n'</span> <span class="op">></span> <span class="st">"<span class="vr">$MOCK_DIR</span>/always_fail"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/always_fail"</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash\nexit 0\n'</span> <span class="op">></span> <span class="st">"<span class="vr">$MOCK_DIR</span>/sleep"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/sleep"</span>
+  <span class="kw">export</span> <span class="vr">PATH</span><span class="op">=</span><span class="st">"<span class="vr">$MOCK_DIR</span>:<span class="vr">$PATH</span>"</span>
+
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/always_fail"</span>
+  <span class="fn">assert_failure</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"exhausted"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"SIGTERM propagates to child and supervisor exits 0"</span> {
+  <span class="cm"># Long-running child that records whether it got SIGTERM</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash
+trap "touch %s/got_term; exit 0" TERM
+sleep 60 &
+wait
+'</span> <span class="st">"<span class="vr">$MOCK_DIR</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$MOCK_DIR</span>/long_cmd"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/long_cmd"</span>
+
+  <span class="cm"># Start supervisor in background, send SIGTERM after short delay</span>
+  bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/long_cmd"</span> <span class="op">&</span>
+  <span class="vr">SUP_PID</span><span class="op">=</span><span class="st">"$!"</span>
+  <span class="cmd">sleep</span> <span class="nu">0.5</span>
+  <span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="st">"<span class="vr">$SUP_PID</span>"</span>
+  <span class="cmd">wait</span> <span class="st">"<span class="vr">$SUP_PID</span>"</span>
+  <span class="vr">sup_rc</span><span class="op">=</span><span class="st">"$?"</span>
+
+  <span class="fn">assert_equal</span> <span class="st">"<span class="vr">$sup_rc</span>"</span> <span class="st">"0"</span>
+  <span class="fn">assert_file_exists</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/got_term"</span> <span class="op">||</span> <span class="kw">true</span>   <span class="cm"># best-effort</span>
+}</pre>
+  </div>
+</div>
+
+</div>

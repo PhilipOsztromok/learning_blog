@@ -1,0 +1,739 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 10 — Writing Reusable Libraries</h1>
+<p>A script that works once is useful. A library of well-designed functions that any script can source is an asset.
+This chapter covers how to structure Bash libraries so they are safe to source, self-documenting, version-aware,
+and easy to distribute — turning a collection of helper functions into something you can genuinely depend on.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — The Source-vs-Execute Split</h2>
+
+<p>Every library file needs to answer two questions: <em>Am I being sourced or run directly?</em> and
+<em>Has something already sourced me?</em></p>
+
+<h3>The guard pattern: source-once</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib/logging.sh — safe to source multiple times</span>
+
+<span class="cm"># Guard: skip re-sourcing if already loaded</span>
+[[ <span class="fl">-n</span> <span class="st">"${_LIB_LOGGING_LOADED:-}"</span> ]] <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>
+<span class="kw">readonly</span> <span class="vr">_LIB_LOGGING_LOADED</span><span class="op">=</span><span class="nu">1</span>
+
+<span class="cm"># … function definitions follow …</span></pre>
+
+<p>The <span class="inline-code">return 0</span> exits the sourcing operation cleanly. If the file is executed directly
+(no sourcing parent), <span class="inline-code">return</span> would fail — that's actually what you want as a hard stop
+for pure libraries. For libraries that also have a self-test mode, use the
+<span class="inline-code">BASH_SOURCE</span> trick instead:</p>
+
+<pre><span class="cm"># At the bottom of the library file</span>
+<span class="kw">if</span> [[ <span class="st">"${BASH_SOURCE[0]}"</span> <span class="op">==</span> <span class="st">"${0}"</span> ]]; <span class="kw">then</span>
+  <span class="cm"># Script is being run directly — run self-tests</span>
+  <span class="fn">_lib_logging_self_test</span>
+<span class="kw">fi</span></pre>
+
+<div class="note">
+<strong><code>BASH_SOURCE[0]</code></strong> is the path of the current file.
+<strong><code>${0}</code></strong> is the name of the running script.
+They are equal only when the file is executed directly — when sourced,
+<code>${0}</code> remains the caller's name.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — Semantic Versioning Guards</h2>
+
+<p>When scripts depend on a specific version of a library, they should be able to assert compatibility at load time.</p>
+
+<pre><span class="cm"># lib/utils.sh</span>
+[[ <span class="fl">-n</span> <span class="st">"${_LIB_UTILS_LOADED:-}"</span> ]] <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>
+<span class="kw">readonly</span> <span class="vr">_LIB_UTILS_LOADED</span><span class="op">=</span><span class="nu">1</span>
+
+<span class="kw">readonly</span> <span class="vr">LIB_UTILS_VERSION</span><span class="op">=</span><span class="st">'2.4.1'</span>
+<span class="kw">readonly</span> <span class="vr">LIB_UTILS_VERSION_MAJOR</span><span class="op">=</span><span class="nu">2</span>
+<span class="kw">readonly</span> <span class="vr">LIB_UTILS_VERSION_MINOR</span><span class="op">=</span><span class="nu">4</span>
+
+<span class="cm"># Callers use this function to declare their minimum requirement</span>
+<span class="fn">lib_utils_require</span>() {
+  <span class="kw">local</span> <span class="vr">req_major</span><span class="op">=</span><span class="st">"${1:?major version required}"</span>
+  <span class="kw">local</span> <span class="vr">req_minor</span><span class="op">=</span><span class="st">"${2:-0}"</span>
+
+  <span class="kw">if</span> (( <span class="vr">LIB_UTILS_VERSION_MAJOR</span> <span class="op">!=</span> <span class="vr">req_major</span> )); <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'ERROR: lib/utils.sh major version mismatch (have %s, need %d.x)\n'</span> \
+      <span class="st">"<span class="vr">$LIB_UTILS_VERSION</span>"</span> <span class="st">"<span class="vr">$req_major</span>"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+
+  <span class="kw">if</span> (( <span class="vr">LIB_UTILS_VERSION_MINOR</span> <span class="op"><</span> <span class="vr">req_minor</span> )); <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'ERROR: lib/utils.sh too old (have %s, need %d.%d+)\n'</span> \
+      <span class="st">"<span class="vr">$LIB_UTILS_VERSION</span>"</span> <span class="st">"<span class="vr">$req_major</span>"</span> <span class="st">"<span class="vr">$req_minor</span>"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+}
+
+<span class="cm"># In a caller script:</span>
+<span class="cm"># source lib/utils.sh</span>
+<span class="cm"># lib_utils_require 2 3 || exit 1   # need at least 2.3</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — Namespace Discipline</h2>
+
+<p>Bash has a single global namespace for functions and variables. Libraries must be deliberate about
+what they export to avoid collisions with caller scripts.</p>
+
+<h3>Naming conventions</h3>
+<table>
+  <tr><th>Symbol type</th><th>Convention</th><th>Example</th></tr>
+  <tr><td>Public function</td><td><code>libname_verb_noun</code></td><td><code>log_info</code>, <code>http_get</code></td></tr>
+  <tr><td>Private function</td><td><code>_libname_verb_noun</code></td><td><code>_log_format_msg</code></td></tr>
+  <tr><td>Public constant</td><td><code>LIBNAME_CONSTANT</code> (readonly)</td><td><code>LOG_LEVEL_DEBUG</code></td></tr>
+  <tr><td>Private variable</td><td><code>_LIBNAME_VAR</code></td><td><code>_LOG_FD</code></td></tr>
+  <tr><td>Guard variable</td><td><code>_LIB_NAME_LOADED</code></td><td><code>_LIB_HTTP_LOADED</code></td></tr>
+</table>
+
+<h3>Containing side effects with <code>local</code></h3>
+<pre><span class="cm"># Bad — _tmp leaks into the caller's scope</span>
+<span class="fn">bad_function</span>() {
+  <span class="vr">_tmp</span><span class="op">=</span><span class="st">"$(some_command)"</span>
+  <span class="cm"># …</span>
+}
+
+<span class="cm"># Good — everything stays in local scope</span>
+<span class="fn">good_function</span>() {
+  <span class="kw">local</span> <span class="vr">_tmp</span>
+  <span class="vr">_tmp</span><span class="op">=</span><span class="st">"$(some_command)"</span>
+  <span class="cm"># …</span>
+}
+
+<span class="cm"># Returning values without subshells: use a nameref</span>
+<span class="fn">str_upper</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_result_ref</span><span class="op">=</span><span class="st">"${1:?nameref var required}"</span>
+  <span class="kw">local</span> <span class="vr">_input</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="vr">_result_ref</span><span class="op">=</span><span class="st">"${_input^^}"</span>   <span class="cm"># Bash 4+ case conversion</span>
+}
+
+<span class="cm"># Caller:</span>
+<span class="kw">declare</span> <span class="vr">upper</span>
+<span class="fn">str_upper</span> upper <span class="st">"hello world"</span>
+<span class="cmd">echo</span> <span class="st">"<span class="vr">$upper</span>"</span>   <span class="cm"># HELLO WORLD — no subshell, no fork</span></pre>
+
+<div class="warn">
+<strong>Nameref collision hazard:</strong> the nameref variable name and the caller's variable name must differ.
+If a caller passes <code>_result_ref</code> as the variable name, the nameref binds to itself.
+Using a double-underscore prefix (<code>__result</code>) reduces collision probability.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — Auto-Documentation with Structured Comments</h2>
+
+<p>Bash has no built-in doc system, but a consistent comment format makes it easy to generate
+reference docs with <span class="inline-code">grep</span> or <span class="inline-code">awk</span>.</p>
+
+<pre><span class="cm">##
+## log_info MESSAGE [CONTEXT...]
+##   Write an INFO-level log entry to stderr.
+##   MESSAGE  — the primary log message
+##   CONTEXT  — optional key=value pairs appended after the message
+##
+## Example:
+##   log_info "User logged in" user=alice ip=10.0.0.1
+##</span>
+<span class="fn">log_info</span>() {
+  <span class="fn">_log_write</span> <span class="st">'INFO'</span> <span class="st">"$@"</span>
+}</pre>
+
+<h3>Extracting docs at runtime</h3>
+<pre><span class="cm"># Extract all ## doc blocks and their function names from a library</span>
+<span class="fn">lib_help</span>() {
+  <span class="kw">local</span> <span class="vr">libfile</span><span class="op">=</span><span class="st">"${1:?library file required}"</span>
+  <span class="cmd">awk</span> <span class="st">'/^##/{
+    sub(/^## ?/, "")
+    doc = doc $0 "\n"
+    next
+  }
+  /^[a-zA-Z_][a-zA-Z0-9_]*\(\)/{
+    if (doc != "") { print "--- " $0; printf "%s", doc; print "" }
+    doc = ""
+    next
+  }
+  { doc = "" }'</span> <span class="st">"<span class="vr">$libfile</span>"</span>
+}</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — <code>declare -f</code> Introspection</h2>
+
+<p><span class="inline-code">declare -f</span> prints the definition of a loaded function.
+<span class="inline-code">declare -F</span> lists all defined function names. These are invaluable for
+debugging, mocking in tests, and building dynamic dispatch.</p>
+
+<pre><span class="cm"># List all functions defined by a library after sourcing it</span>
+<span class="vr">before</span><span class="op">=</span>$(<span class="cmd">declare</span> <span class="fl">-F</span>)
+<span class="kw">source</span> lib/http.sh
+<span class="vr">after</span><span class="op">=</span>$(<span class="cmd">declare</span> <span class="fl">-F</span>)
+<span class="cmd">comm</span> <span class="fl">-13</span> <span class="op"><</span>(<span class="cmd">sort</span> <span class="op"><<<</span><span class="st">"<span class="vr">$before</span>"</span>) <span class="op"><</span>(<span class="cmd">sort</span> <span class="op"><<<</span><span class="st">"<span class="vr">$after</span>"</span>)   <span class="cm"># new functions</span>
+
+<span class="cm"># Print the source of a specific function</span>
+<span class="cmd">declare</span> <span class="fl">-f</span> http_get
+
+<span class="cm"># Check if a function exists before calling it</span>
+<span class="fn">func_exists</span>() { <span class="cmd">declare</span> <span class="fl">-f</span> <span class="st">"$1"</span> <span class="op">></span>/dev/null <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>; }
+
+<span class="kw">if</span> <span class="fn">func_exists</span> http_retry; <span class="kw">then</span>
+  http_retry <span class="st">"$url"</span>
+<span class="kw">else</span>
+  http_get <span class="st">"$url"</span>
+<span class="kw">fi</span></pre>
+
+<h3>Dynamic dispatch via function name construction</h3>
+<pre><span class="cm"># A plugin pattern — call handler_TYPE if it exists, else default</span>
+<span class="fn">dispatch</span>() {
+  <span class="kw">local</span> <span class="vr">type</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">handler</span><span class="op">=</span><span class="st">"handle_${type}"</span>
+
+  <span class="kw">if</span> <span class="fn">func_exists</span> <span class="st">"<span class="vr">$handler</span>"</span>; <span class="kw">then</span>
+    <span class="st">"<span class="vr">$handler</span>"</span> <span class="st">"$@"</span>
+  <span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'No handler for type: %s\n'</span> <span class="st">"<span class="vr">$type</span>"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+}
+
+<span class="fn">handle_json</span>() { <span class="cmd">echo</span> <span class="st">"Handling JSON: $*"</span>; }
+<span class="fn">handle_csv</span>()  { <span class="cmd">echo</span> <span class="st">"Handling CSV: $*"</span>; }
+
+<span class="fn">dispatch</span> json data.json   <span class="cm"># → handle_json data.json</span>
+<span class="fn">dispatch</span> xml  data.xml    <span class="cm"># → No handler for type: xml</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — A Complete Library Template</h2>
+
+<p>Here is a production-ready skeleton you can copy as a starting point for any new library:</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># =============================================================================</span>
+<span class="cm"># lib/logging.sh — structured log helpers</span>
+<span class="cm"># Version: 1.0.0  |  Requires: bash >= 4.2</span>
+<span class="cm"># =============================================================================</span>
+
+<span class="cm"># Source guard</span>
+[[ <span class="fl">-n</span> <span class="st">"${_LIB_LOGGING_LOADED:-}"</span> ]] <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>
+<span class="kw">readonly</span> <span class="vr">_LIB_LOGGING_LOADED</span><span class="op">=</span><span class="nu">1</span>
+
+<span class="cm"># Bash version check</span>
+<span class="kw">if</span> (( <span class="vr">BASH_VERSINFO</span>[<span class="nu">0</span>] <span class="op"><</span> <span class="nu">4</span> <span class="op">||</span> ( <span class="vr">BASH_VERSINFO</span>[<span class="nu">0</span>] <span class="op">==</span> <span class="nu">4</span> <span class="op">&&</span> <span class="vr">BASH_VERSINFO</span>[<span class="nu">1</span>] <span class="op"><</span> <span class="nu">2</span> ) )); <span class="kw">then</span>
+  <span class="cmd">printf</span> <span class="st">'ERROR: lib/logging.sh requires bash >= 4.2 (have %s)\n'</span> \
+    <span class="st">"<span class="vr">$BASH_VERSION</span>"</span> <span class="op">>&2</span>
+  <span class="kw">return</span> <span class="nu">1</span>
+<span class="kw">fi</span>
+
+<span class="cm"># --- Public constants --------------------------------------------------------</span>
+<span class="kw">readonly</span> <span class="vr">LIB_LOGGING_VERSION</span><span class="op">=</span><span class="st">'1.0.0'</span>
+<span class="kw">readonly</span> <span class="vr">LOG_LEVEL_DEBUG</span><span class="op">=</span><span class="nu">0</span>
+<span class="kw">readonly</span> <span class="vr">LOG_LEVEL_INFO</span><span class="op">=</span><span class="nu">1</span>
+<span class="kw">readonly</span> <span class="vr">LOG_LEVEL_WARN</span><span class="op">=</span><span class="nu">2</span>
+<span class="kw">readonly</span> <span class="vr">LOG_LEVEL_ERROR</span><span class="op">=</span><span class="nu">3</span>
+
+<span class="cm"># --- Private state -----------------------------------------------------------</span>
+<span class="vr">_LOG_LEVEL</span><span class="op">=</span><span class="st">"${LOG_LEVEL:-$LOG_LEVEL_INFO}"</span>   <span class="cm"># caller may set LOG_LEVEL</span>
+<span class="vr">_LOG_FILE</span><span class="op">=</span><span class="st">"${LOG_FILE:-}"</span>                    <span class="cm"># empty = stderr only</span>
+<span class="vr">_LOG_COLOR</span><span class="op">=</span><span class="st">"${LOG_COLOR:-auto}"</span>              <span class="cm"># auto | always | never</span>
+
+<span class="cm"># Resolve colour mode once at load time</span>
+<span class="kw">if</span> [[ <span class="vr">$_LOG_COLOR</span> <span class="op">==</span> <span class="st">'auto'</span> ]]; <span class="kw">then</span>
+  [[ <span class="fl">-t</span> <span class="nu">2</span> ]] <span class="op">&&</span> <span class="vr">_LOG_COLOR</span><span class="op">=</span><span class="st">'always'</span> <span class="op">||</span> <span class="vr">_LOG_COLOR</span><span class="op">=</span><span class="st">'never'</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ANSI colours</span>
+<span class="kw">if</span> [[ <span class="vr">$_LOG_COLOR</span> <span class="op">==</span> <span class="st">'always'</span> ]]; <span class="kw">then</span>
+  <span class="vr">_C_DEBUG</span><span class="op">=</span><span class="st">'\e[0;36m'</span>   <span class="cm"># cyan</span>
+  <span class="vr">_C_INFO</span><span class="op">=</span><span class="st">'\e[0;32m'</span>    <span class="cm"># green</span>
+  <span class="vr">_C_WARN</span><span class="op">=</span><span class="st">'\e[0;33m'</span>    <span class="cm"># yellow</span>
+  <span class="vr">_C_ERROR</span><span class="op">=</span><span class="st">'\e[0;31m'</span>   <span class="cm"># red</span>
+  <span class="vr">_C_RESET</span><span class="op">=</span><span class="st">'\e[0m'</span>
+<span class="kw">else</span>
+  <span class="vr">_C_DEBUG</span><span class="op">=</span><span class="st">''</span> <span class="vr">_C_INFO</span><span class="op">=</span><span class="st">''</span> <span class="vr">_C_WARN</span><span class="op">=</span><span class="st">''</span> <span class="vr">_C_ERROR</span><span class="op">=</span><span class="st">''</span> <span class="vr">_C_RESET</span><span class="op">=</span><span class="st">''</span>
+<span class="kw">fi</span>
+
+<span class="cm"># --- Private helpers ---------------------------------------------------------</span>
+<span class="fn">_log_write</span>() {
+  <span class="kw">local</span> <span class="vr">level_name</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">level_num</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  (( <span class="vr">level_num</span> <span class="op"><</span> <span class="vr">_LOG_LEVEL</span> )) <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>
+
+  <span class="kw">local</span> <span class="vr">color_var</span><span class="op">=</span><span class="st">"_C_${level_name}"</span>
+  <span class="kw">local</span> <span class="vr">ts</span><span class="op">=</span><span class="st">"$(date '+%Y-%m-%dT%H:%M:%S')"</span>
+  <span class="kw">local</span> <span class="vr">line</span>
+  <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">line</span> <span class="st">'%s[%s] [%s] %s%s'</span> \
+    <span class="st">"${!color_var}"</span> <span class="st">"<span class="vr">$ts</span>"</span> <span class="st">"<span class="vr">$level_name</span>"</span> <span class="st">"$*"</span> <span class="st">"<span class="vr">$_C_RESET</span>"</span>
+
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$line</span>"</span> <span class="op">>&2</span>
+  [[ <span class="fl">-n</span> <span class="st">"<span class="vr">$_LOG_FILE</span>"</span> ]] <span class="op">&&</span> <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$line</span>"</span> <span class="op">>></span> <span class="st">"<span class="vr">$_LOG_FILE</span>"</span>
+}
+
+<span class="cm"># --- Public API --------------------------------------------------------------</span>
+<span class="cm">##</span>
+<span class="cm">## log_debug MESSAGE</span>
+<span class="cm">##   Write a DEBUG entry (visible when LOG_LEVEL=0)</span>
+<span class="cm">##</span>
+<span class="fn">log_debug</span>() { <span class="fn">_log_write</span> DEBUG <span class="st">"$LOG_LEVEL_DEBUG"</span> <span class="st">"$@"</span>; }
+
+<span class="cm">##</span>
+<span class="cm">## log_info MESSAGE</span>
+<span class="cm">##</span>
+<span class="fn">log_info</span>()  { <span class="fn">_log_write</span> INFO  <span class="st">"$LOG_LEVEL_INFO"</span>  <span class="st">"$@"</span>; }
+
+<span class="cm">##</span>
+<span class="cm">## log_warn MESSAGE</span>
+<span class="cm">##</span>
+<span class="fn">log_warn</span>()  { <span class="fn">_log_write</span> WARN  <span class="st">"$LOG_LEVEL_WARN"</span>  <span class="st">"$@"</span>; }
+
+<span class="cm">##</span>
+<span class="cm">## log_error MESSAGE</span>
+<span class="cm">##   Write an ERROR entry and return exit code 1</span>
+<span class="cm">##</span>
+<span class="fn">log_error</span>() { <span class="fn">_log_write</span> ERROR <span class="st">"$LOG_LEVEL_ERROR"</span> <span class="st">"$@"</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+<span class="cm">##</span>
+<span class="cm">## log_set_level LEVEL</span>
+<span class="cm">##   Set minimum log level: 0=DEBUG 1=INFO 2=WARN 3=ERROR</span>
+<span class="cm">##</span>
+<span class="fn">log_set_level</span>() { <span class="vr">_LOG_LEVEL</span><span class="op">=</span><span class="st">"${1:?level required}"</span>; }
+
+<span class="cm">##</span>
+<span class="cm">## log_set_file PATH</span>
+<span class="cm">##   Tee all log output to PATH in addition to stderr</span>
+<span class="cm">##</span>
+<span class="fn">log_set_file</span>() { <span class="vr">_LOG_FILE</span><span class="op">=</span><span class="st">"${1:?path required}"</span>; }
+
+<span class="cm"># --- Self-test ---------------------------------------------------------------</span>
+<span class="fn">_lib_logging_self_test</span>() {
+  <span class="cmd">echo</span> <span class="st">"=== lib/logging.sh self-test ==="</span>
+  <span class="fn">log_debug</span> <span class="st">"This is DEBUG"</span>
+  <span class="fn">log_info</span>  <span class="st">"This is INFO"</span>
+  <span class="fn">log_warn</span>  <span class="st">"This is WARN"</span>
+  <span class="fn">log_error</span> <span class="st">"This is ERROR"</span> <span class="op">||</span> <span class="kw">true</span>
+  <span class="fn">log_set_level</span> <span class="st">"$LOG_LEVEL_WARN"</span>
+  <span class="fn">log_info</span>  <span class="st">"You should NOT see this"</span>
+  <span class="fn">log_warn</span>  <span class="st">"You should see this"</span>
+  <span class="cmd">echo</span> <span class="st">"=== PASS ==="</span>
+}
+
+<span class="kw">if</span> [[ <span class="st">"${BASH_SOURCE[0]}"</span> <span class="op">==</span> <span class="st">"${0}"</span> ]]; <span class="kw">then</span>
+  <span class="fn">_lib_logging_self_test</span>
+<span class="kw">fi</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7 — Distribution and Sourcing Strategies</h2>
+
+<h3>Portable sourcing: finding the library relative to the script</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Works whether the script is on PATH, symlinked, or called by absolute path</span>
+<span class="vr">SCRIPT_DIR</span><span class="op">=</span>$(<span class="cmd">cd</span> <span class="st">"$(dirname "${BASH_SOURCE[0]}")"</span> <span class="op">&&</span> <span class="cmd">pwd</span> <span class="fl">-P</span>)
+<span class="kw">source</span> <span class="st">"<span class="vr">$SCRIPT_DIR</span>/../lib/logging.sh"</span>
+<span class="kw">source</span> <span class="st">"<span class="vr">$SCRIPT_DIR</span>/../lib/utils.sh"</span></pre>
+
+<div class="note">
+<span class="inline-code">pwd -P</span> resolves symlinks. This ensures the path is absolute and canonical
+even when the script is invoked via a symlink in <code>/usr/local/bin</code>.
+</div>
+
+<h3>A loader function for larger projects</h3>
+<pre><span class="cm"># lib/loader.sh — source multiple libraries with error checking</span>
+<span class="vr">_LIB_ROOT</span><span class="op">=</span>$(<span class="cmd">cd</span> <span class="st">"$(dirname "${BASH_SOURCE[0]}")"</span> <span class="op">&&</span> <span class="cmd">pwd</span> <span class="fl">-P</span>)
+
+<span class="fn">lib_load</span>() {
+  <span class="kw">local</span> <span class="vr">lib</span>
+  <span class="kw">for</span> <span class="vr">lib</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+    <span class="kw">local</span> <span class="vr">path</span><span class="op">=</span><span class="st">"<span class="vr">$_LIB_ROOT</span>/<span class="vr">${lib}</span>.sh"</span>
+    <span class="kw">if</span> [[ <span class="op">!</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$path</span>"</span> ]]; <span class="kw">then</span>
+      <span class="cmd">printf</span> <span class="st">'lib_load: library not found: %s\n'</span> <span class="st">"<span class="vr">$path</span>"</span> <span class="op">>&2</span>
+      <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">fi</span>
+    <span class="cm"># shellcheck source=/dev/null</span>
+    <span class="kw">source</span> <span class="st">"<span class="vr">$path</span>"</span> <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'lib_load: failed to source %s\n'</span> <span class="st">"<span class="vr">$path</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="kw">done</span>
+}
+
+<span class="cm"># Usage in a script:</span>
+<span class="cm"># source /opt/myapp/lib/loader.sh</span>
+<span class="cm"># lib_load logging utils http   # sources logging.sh, utils.sh, http.sh</span></pre>
+
+<h3>Single-file distribution via bundling</h3>
+<pre><span class="cm"># bundle.sh — concatenate all library files into one distributable</span>
+<span class="cm"># Strip duplicate shebangs and source guards, keeping functions</span>
+{
+  <span class="cmd">echo</span> <span class="sh">'#!/usr/bin/env bash'</span>
+  <span class="cmd">echo</span> <span class="st">'# Generated bundle — do not edit manually'</span>
+  <span class="kw">for</span> <span class="vr">lib</span> <span class="kw">in</span> lib/<span class="op">*</span>.sh; <span class="kw">do</span>
+    <span class="cmd">echo</span>; <span class="cmd">echo</span> <span class="st">"# ── <span class="vr">$lib</span> ──"</span>
+    <span class="cm"># Remove shebang lines from non-first files</span>
+    <span class="cmd">grep</span> <span class="fl">-v</span> <span class="rx">'^#!'</span> <span class="st">"<span class="vr">$lib</span>"</span>
+  <span class="kw">done</span>
+} <span class="op">></span> dist/myapp_bundle.sh
+<span class="cmd">chmod</span> +x dist/myapp_bundle.sh</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>8 — Testing Your Library</h2>
+
+<p>A library without tests is a library you'll break silently. Even a minimal
+inline self-test loop is better than nothing.</p>
+
+<pre><span class="cm"># Minimal test runner — no external dependencies</span>
+<span class="vr">_TESTS_RUN</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">_TESTS_FAILED</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="fn">assert_eq</span>() {
+  <span class="kw">local</span> <span class="vr">desc</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">expected</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">actual</span><span class="op">=</span><span class="st">"$3"</span>
+  (( <span class="vr">_TESTS_RUN</span>++ ))
+  <span class="kw">if</span> [[ <span class="st">"<span class="vr">$expected</span>"</span> <span class="op">==</span> <span class="st">"<span class="vr">$actual</span>"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'  PASS: %s\n'</span> <span class="st">"<span class="vr">$desc</span>"</span>
+  <span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'  FAIL: %s\n    expected: %q\n    actual:   %q\n'</span> \
+      <span class="st">"<span class="vr">$desc</span>"</span> <span class="st">"<span class="vr">$expected</span>"</span> <span class="st">"<span class="vr">$actual</span>"</span>
+    (( <span class="vr">_TESTS_FAILED</span>++ ))
+  <span class="kw">fi</span>
+}
+
+<span class="fn">assert_exit</span>() {
+  <span class="kw">local</span> <span class="vr">desc</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">expected_code</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">shift</span> <span class="nu">2</span>
+  (( <span class="vr">_TESTS_RUN</span>++ ))
+  <span class="st">"$@"</span>; <span class="kw">local</span> <span class="vr">rc</span><span class="op">=</span><span class="vr">$?</span>
+  <span class="kw">if</span> (( <span class="vr">rc</span> <span class="op">==</span> <span class="vr">expected_code</span> )); <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'  PASS: %s (exit %d)\n'</span> <span class="st">"<span class="vr">$desc</span>"</span> <span class="st">"<span class="vr">$rc</span>"</span>
+  <span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'  FAIL: %s (expected exit %d, got %d)\n'</span> \
+      <span class="st">"<span class="vr">$desc</span>"</span> <span class="st">"<span class="vr">$expected_code</span>"</span> <span class="st">"<span class="vr">$rc</span>"</span>
+    (( <span class="vr">_TESTS_FAILED</span>++ ))
+  <span class="kw">fi</span>
+}
+
+<span class="fn">test_summary</span>() {
+  <span class="cmd">printf</span> <span class="st">'\nResults: %d/%d passed\n'</span> \
+    <span class="st">"$(( _TESTS_RUN - _TESTS_FAILED ))"</span> <span class="st">"<span class="vr">$_TESTS_RUN</span>"</span>
+  (( <span class="vr">_TESTS_FAILED</span> <span class="op">==</span> <span class="nu">0</span> ))   <span class="cm"># exit 0 on success</span>
+}
+
+<span class="cm"># Example usage</span>
+<span class="fn">assert_eq</span> <span class="st">"str_upper converts hello"</span> <span class="st">"HELLO"</span> <span class="st">"$(str_upper <<< 'hello')"</span>
+<span class="fn">assert_exit</span> <span class="st">"log_error returns 1"</span> <span class="nu">1</span> log_error <span class="st">"test error"</span>
+<span class="fn">test_summary</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — lib/validate.sh</h4>
+  <p>Write a library <code>lib/validate.sh</code> with the following public functions, each returning exit 0 on success and printing an error message on failure:</p>
+  <ul>
+    <li><code>validate_nonempty VAR_NAME VALUE</code> — fails if VALUE is empty</li>
+    <li><code>validate_integer VAR_NAME VALUE</code> — fails if VALUE is not a whole number</li>
+    <li><code>validate_file VAR_NAME PATH</code> — fails if PATH does not exist as a readable file</li>
+    <li><code>validate_dir VAR_NAME PATH</code> — fails if PATH is not a directory</li>
+  </ul>
+  <p>Include source guard, version constant, and a self-test that runs when executed directly.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib/validate.sh — input validation helpers  v1.0.0</span>
+
+[[ <span class="fl">-n</span> <span class="st">"${_LIB_VALIDATE_LOADED:-}"</span> ]] <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>
+<span class="kw">readonly</span> <span class="vr">_LIB_VALIDATE_LOADED</span><span class="op">=</span><span class="nu">1</span>
+<span class="kw">readonly</span> <span class="vr">LIB_VALIDATE_VERSION</span><span class="op">=</span><span class="st">'1.0.0'</span>
+
+<span class="fn">_validate_fail</span>() {
+  <span class="cmd">printf</span> <span class="st">'validate: %s: %s\n'</span> <span class="st">"$1"</span> <span class="st">"$2"</span> <span class="op">>&2</span>
+  <span class="kw">return</span> <span class="nu">1</span>
+}
+
+<span class="cm">##</span>
+<span class="cm">## validate_nonempty VAR_NAME VALUE</span>
+<span class="cm">##</span>
+<span class="fn">validate_nonempty</span>() {
+  [[ <span class="fl">-n</span> <span class="st">"${2:-}"</span> ]] <span class="op">||</span> <span class="fn">_validate_fail</span> <span class="st">"$1"</span> <span class="st">"must not be empty"</span>
+}
+
+<span class="cm">##</span>
+<span class="cm">## validate_integer VAR_NAME VALUE</span>
+<span class="cm">##</span>
+<span class="fn">validate_integer</span>() {
+  [[ <span class="st">"${2:-}"</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]] <span class="op">||</span> \
+    <span class="fn">_validate_fail</span> <span class="st">"$1"</span> <span class="st">"'${2:-}' is not a non-negative integer"</span>
+}
+
+<span class="cm">##</span>
+<span class="cm">## validate_file VAR_NAME PATH</span>
+<span class="cm">##</span>
+<span class="fn">validate_file</span>() {
+  [[ <span class="fl">-f</span> <span class="st">"${2:-}"</span> <span class="op">&&</span> <span class="fl">-r</span> <span class="st">"${2:-}"</span> ]] <span class="op">||</span> \
+    <span class="fn">_validate_fail</span> <span class="st">"$1"</span> <span class="st">"'${2:-}' is not a readable file"</span>
+}
+
+<span class="cm">##</span>
+<span class="cm">## validate_dir VAR_NAME PATH</span>
+<span class="cm">##</span>
+<span class="fn">validate_dir</span>() {
+  [[ <span class="fl">-d</span> <span class="st">"${2:-}"</span> ]] <span class="op">||</span> <span class="fn">_validate_fail</span> <span class="st">"$1"</span> <span class="st">"'${2:-}' is not a directory"</span>
+}
+
+<span class="fn">_lib_validate_self_test</span>() {
+  <span class="kw">local</span> <span class="vr">pass</span><span class="op">=</span><span class="nu">0</span> <span class="vr">fail</span><span class="op">=</span><span class="nu">0</span>
+  <span class="fn">_chk</span>() {
+    <span class="kw">if</span> <span class="st">"$@"</span> <span class="nu">2</span><span class="op">>/</span>dev/null; <span class="kw">then</span> (( <span class="vr">pass</span>++ )); <span class="kw">else</span> (( <span class="vr">fail</span>++ )); <span class="kw">fi</span>
+  }
+  <span class="fn">_nochk</span>() {
+    <span class="kw">if</span> ! <span class="st">"$@"</span> <span class="nu">2</span><span class="op">>/</span>dev/null; <span class="kw">then</span> (( <span class="vr">pass</span>++ )); <span class="kw">else</span> (( <span class="vr">fail</span>++ )); <span class="kw">fi</span>
+  }
+  <span class="fn">_chk</span>   validate_nonempty X <span class="st">"hello"</span>
+  <span class="fn">_nochk</span> validate_nonempty X <span class="st">""</span>
+  <span class="fn">_chk</span>   validate_integer  N <span class="st">"42"</span>
+  <span class="fn">_nochk</span> validate_integer  N <span class="st">"abc"</span>
+  <span class="fn">_chk</span>   validate_file     F <span class="pth">/etc/hostname</span>
+  <span class="fn">_nochk</span> validate_file     F <span class="pth">/no/such/file</span>
+  <span class="fn">_chk</span>   validate_dir      D <span class="pth">/tmp</span>
+  <span class="fn">_nochk</span> validate_dir      D <span class="pth">/etc/hostname</span>
+  <span class="cmd">printf</span> <span class="st">'validate self-test: %d pass, %d fail\n'</span> <span class="st">"<span class="vr">$pass</span>"</span> <span class="st">"<span class="vr">$fail</span>"</span>
+  (( <span class="vr">fail</span> <span class="op">==</span> <span class="nu">0</span> ))
+}
+
+[[ <span class="st">"${BASH_SOURCE[0]}"</span> <span class="op">==</span> <span class="st">"${0}"</span> ]] <span class="op">&&</span> <span class="fn">_lib_validate_self_test</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Nameref return values</h4>
+  <p>Write a library <code>lib/strings.sh</code> using nameref (<code>local -n</code>) for all return values — no subshells. Include:</p>
+  <ul>
+    <li><code>str_trim RETVAR INPUT</code> — strip leading and trailing whitespace</li>
+    <li><code>str_repeat RETVAR STR N</code> — repeat STR N times</li>
+    <li><code>str_join RETVAR SEP ARRAY_NAME</code> — join array elements with SEP</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib/strings.sh  v1.0.0</span>
+
+[[ <span class="fl">-n</span> <span class="st">"${_LIB_STRINGS_LOADED:-}"</span> ]] <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>
+<span class="kw">readonly</span> <span class="vr">_LIB_STRINGS_LOADED</span><span class="op">=</span><span class="nu">1</span>
+
+<span class="cm">##</span>
+<span class="cm">## str_trim RETVAR INPUT</span>
+<span class="cm">##</span>
+<span class="fn">str_trim</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__str_trim_ret</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__s</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="vr">__s</span><span class="op">=</span><span class="st">"${__s#"${__s%%[![:space:]]*}"}"</span>   <span class="cm"># strip leading</span>
+  <span class="vr">__s</span><span class="op">=</span><span class="st">"${__s%"${__s##*[![:space:]]}"}"</span>   <span class="cm"># strip trailing</span>
+  <span class="vr">__str_trim_ret</span><span class="op">=</span><span class="st">"<span class="vr">$__s</span>"</span>
+}
+
+<span class="cm">##</span>
+<span class="cm">## str_repeat RETVAR STR N</span>
+<span class="cm">##</span>
+<span class="fn">str_repeat</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__str_repeat_ret</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__str</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">__n</span><span class="op">=</span><span class="st">"$3"</span> <span class="vr">__acc</span><span class="op">=</span><span class="st">''</span>
+  <span class="kw">local</span> <span class="vr">__i</span>
+  <span class="kw">for</span> (( <span class="vr">__i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">__i</span><span class="op"><</span><span class="vr">__n</span>; <span class="vr">__i</span>++ )); <span class="kw">do</span>
+    <span class="vr">__acc</span><span class="op">+=</span><span class="st">"<span class="vr">$__str</span>"</span>
+  <span class="kw">done</span>
+  <span class="vr">__str_repeat_ret</span><span class="op">=</span><span class="st">"<span class="vr">$__acc</span>"</span>
+}
+
+<span class="cm">##</span>
+<span class="cm">## str_join RETVAR SEP ARRAY_NAME</span>
+<span class="cm">##   ARRAY_NAME is the name of an existing array variable</span>
+<span class="cm">##</span>
+<span class="fn">str_join</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__str_join_ret</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__sep</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__arr</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">local</span> <span class="vr">__out</span><span class="op">=</span><span class="st">''</span> <span class="vr">__elem</span>
+  <span class="kw">for</span> <span class="vr">__elem</span> <span class="kw">in</span> <span class="st">"${__arr[@]}"</span>; <span class="kw">do</span>
+    [[ <span class="fl">-n</span> <span class="vr">$__out</span> ]] <span class="op">&&</span> <span class="vr">__out</span><span class="op">+=</span><span class="st">"<span class="vr">$__sep</span>"</span>
+    <span class="vr">__out</span><span class="op">+=</span><span class="st">"<span class="vr">$__elem</span>"</span>
+  <span class="kw">done</span>
+  <span class="vr">__str_join_ret</span><span class="op">=</span><span class="st">"<span class="vr">$__out</span>"</span>
+}
+
+[[ <span class="st">"${BASH_SOURCE[0]}"</span> <span class="op">==</span> <span class="st">"${0}"</span> ]] <span class="op">&&</span> {
+  <span class="kw">declare</span> <span class="vr">result</span>
+  <span class="fn">str_trim</span> result <span class="st">"  hello world  "</span>
+  <span class="cmd">echo</span> <span class="st">"trim:   '<span class="vr">$result</span>'"</span>
+  <span class="fn">str_repeat</span> result <span class="st">"ab"</span> <span class="nu">4</span>
+  <span class="cmd">echo</span> <span class="st">"repeat: '<span class="vr">$result</span>'"</span>
+  <span class="vr">words</span><span class="op">=</span>( one two three )
+  <span class="fn">str_join</span> result <span class="st">', '</span> words
+  <span class="cmd">echo</span> <span class="st">"join:   '<span class="vr">$result</span>'"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Auto-doc extractor</h4>
+  <p>Write a script <code>libdoc.sh LIBFILE</code> that:</p>
+  <ul>
+    <li>Parses the <code>##</code> doc-comment blocks from a library file (as shown in section 4)</li>
+    <li>Prints a clean reference page with each function's signature and description</li>
+    <li>Also accepts <code>--list</code> to print just the function names, one per line</li>
+    <li>Exits 1 if no documented functions are found</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">MODE</span><span class="op">=</span><span class="st">'full'</span>
+<span class="kw">if</span> [[ <span class="st">"${1:-}"</span> <span class="op">==</span> <span class="st">'--list'</span> ]]; <span class="kw">then</span>
+  <span class="vr">MODE</span><span class="op">=</span><span class="st">'list'</span>; <span class="kw">shift</span>
+<span class="kw">fi</span>
+<span class="vr">LIBFILE</span><span class="op">=</span><span class="st">"${1:?usage: $0 [--list] LIBFILE}"</span>
+[[ <span class="fl">-f</span> <span class="vr">$LIBFILE</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"Not found: $LIBFILE"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="vr">count</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="cmd">awk</span> <span class="fl">-v</span> <span class="vr">mode</span><span class="op">=</span><span class="st">"<span class="vr">$MODE</span>"</span> <span class="st">'
+BEGIN { doc = ""; in_doc = 0 }
+/^##/ {
+  sub(/^## ?/, "")
+  doc = doc $0 "\n"
+  in_doc = 1
+  next
+}
+in_doc && /^[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)/ {
+  match($0, /^[a-zA-Z_][a-zA-Z0-9_]*/)
+  fname = substr($0, RSTART, RLENGTH)
+  if (mode == "list") {
+    print fname
+  } else {
+    print "\033[0;36m" fname "\033[0m"
+    printf "%s", doc
+    print ""
+  }
+  count++
+  doc = ""; in_doc = 0
+  next
+}
+{ doc = ""; in_doc = 0 }
+END { exit (count == 0 ? 1 : 0) }
+'</span> <span class="st">"<span class="vr">$LIBFILE</span>"</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Loader with dependency resolution</h4>
+  <p>Extend the loader pattern so libraries can declare their own dependencies.
+  Write <code>lib/loader.sh</code> where each library file may include a line like:</p>
+  <pre style="margin:0.5em 0"><code># REQUIRES: utils logging</code></pre>
+  <p>The loader should parse this line and automatically source the listed libraries first,
+  detecting circular dependencies and aborting with a clear error if one is found.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib/loader.sh — dependency-aware library loader</span>
+
+[[ <span class="fl">-n</span> <span class="st">"${_LIB_LOADER_LOADED:-}"</span> ]] <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>
+<span class="kw">readonly</span> <span class="vr">_LIB_LOADER_LOADED</span><span class="op">=</span><span class="nu">1</span>
+
+<span class="vr">_LIB_ROOT</span><span class="op">=</span>$(<span class="cmd">cd</span> <span class="st">"$(dirname "${BASH_SOURCE[0]}")"</span> <span class="op">&&</span> <span class="cmd">pwd</span> <span class="fl">-P</span>)
+<span class="kw">declare</span> <span class="fl">-gA</span> <span class="vr">_LIB_LOADING</span>   <span class="cm"># currently in-flight (cycle detection)</span>
+
+<span class="fn">lib_load</span>() {
+  <span class="kw">local</span> <span class="vr">lib</span>
+  <span class="kw">for</span> <span class="vr">lib</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+    <span class="kw">local</span> <span class="vr">guard</span><span class="op">=</span><span class="st">"_LIB_${lib^^}_LOADED"</span>
+    [[ <span class="fl">-n</span> <span class="st">"${!guard:-}"</span> ]] <span class="op">&&</span> <span class="kw">continue</span>   <span class="cm"># already loaded</span>
+
+    <span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"${_LIB_LOADING[$lib]:-}"</span> ]]; <span class="kw">then</span>
+      <span class="cmd">printf</span> <span class="st">'lib_load: circular dependency detected: %s\n'</span> <span class="st">"<span class="vr">$lib</span>"</span> <span class="op">>&2</span>
+      <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">fi</span>
+
+    <span class="kw">local</span> <span class="vr">path</span><span class="op">=</span><span class="st">"<span class="vr">$_LIB_ROOT</span>/<span class="vr">$lib</span>.sh"</span>
+    [[ <span class="fl">-f</span> <span class="vr">$path</span> ]] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'lib_load: not found: %s\n'</span> <span class="st">"<span class="vr">$path</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+    <span class="cm"># Parse REQUIRES line (e.g.  # REQUIRES: utils logging)</span>
+    <span class="kw">local</span> <span class="vr">req_line</span>
+    <span class="vr">req_line</span><span class="op">=</span>$(<span class="cmd">grep</span> <span class="fl">-m1</span> <span class="rx">'^# REQUIRES:'</span> <span class="st">"<span class="vr">$path</span>"</span> <span class="op">||</span> <span class="kw">true</span>)
+    <span class="kw">if</span> [[ <span class="fl">-n</span> <span class="vr">$req_line</span> ]]; <span class="kw">then</span>
+      <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">deps</span>
+      <span class="cm"># shellcheck disable=SC2206</span>
+      <span class="vr">deps</span><span class="op">=</span>( ${req_line#*: } )
+      <span class="vr">_LIB_LOADING</span>[<span class="vr">$lib</span>]<span class="op">=</span><span class="nu">1</span>
+      lib_load <span class="st">"${deps[@]}"</span> <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+      <span class="kw">unset</span> <span class="st">'_LIB_LOADING[$lib]'</span>
+    <span class="kw">fi</span>
+
+    <span class="cm"># shellcheck source=/dev/null</span>
+    <span class="vr">_LIB_LOADING</span>[<span class="vr">$lib</span>]<span class="op">=</span><span class="nu">1</span>
+    <span class="kw">source</span> <span class="st">"<span class="vr">$path</span>"</span> <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">unset</span> <span class="st">'_LIB_LOADING[$lib]'</span>
+  <span class="kw">done</span>
+}</pre>
+  </div>
+</div>
+
+</div>

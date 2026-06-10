@@ -1,0 +1,1025 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #f97583; }
+  .st  { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw  { color: #f97583; }
+  .nu  { color: #ffab70; }
+  .sh  { color: #85e89d; }
+  .vr  { color: #ffab70; }
+  .op  { color: #e1e4e8; }
+  .er  { color: #f97583; font-weight: bold; }
+  .fn  { color: #b392f0; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 10 — Dynamic Dispatch and Metaprogramming</h1>
+<p>Metaprogramming is writing code that treats other code as data — inspecting
+it, generating it, or modifying it at runtime. Bash supports a surprisingly
+rich set of these techniques: introspecting function definitions with
+<span class="inline-code">declare -f</span>, calling functions by name stored
+in variables, building command-dispatch tables, generating functions in loops,
+and constructing code strings that are safely evaluated. Mastering these
+patterns produces dramatically shorter, more consistent, and more easily
+extended scripts — at the cost of code that is harder to follow if the reader
+is unfamiliar with the idioms. This chapter covers every major technique,
+explains when each is appropriate, and shows where the sharp edges are.</p>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>1 — Introspecting Functions with <code>declare -f</code></h2>
+
+<p><span class="inline-code">declare -f</span> prints the definition of a
+function exactly as Bash has parsed it. <span class="inline-code">declare -F</span>
+prints only the name (and, with <span class="inline-code">-p</span>, the source
+file and line number). These are the building blocks of every
+introspection-based pattern.</p>
+
+<pre><span class="cm"># Does this function exist?</span>
+<span class="fn">function_exists</span>() {
+  <span class="kw">declare</span> <span class="fl">-f</span> <span class="st">"$1"</span> <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>
+}
+
+<span class="cm"># Print full definition</span>
+<span class="fn">greet</span>() { <span class="cmd">echo</span> <span class="st">"hello <span class="vr">$1</span>"</span>; }
+
+<span class="cmd">declare</span> <span class="fl">-f</span> greet
+<span class="out"># greet ()
+# {
+#     echo "hello $1"
+# }</span>
+
+<span class="cm"># List all defined functions</span>
+<span class="cmd">declare</span> <span class="fl">-F</span>
+<span class="out"># declare -f greet
+# declare -f function_exists
+# ...</span>
+
+<span class="cm"># List function names only</span>
+<span class="cmd">declare</span> <span class="fl">-F</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{print $3}'</span>
+
+<span class="cm"># Where was a function defined? (requires extdebug)</span>
+<span class="cmd">shopt</span> <span class="fl">-s</span> extdebug
+<span class="cmd">declare</span> <span class="fl">-F</span> greet
+<span class="out"># greet 1 /path/to/lib.sh    ← name, line, file</span>
+<span class="cmd">shopt</span> <span class="fl">-u</span> extdebug
+
+<span class="cm"># Copy a function to a new name</span>
+<span class="fn">function_copy</span>() {
+  <span class="kw">local</span> <span class="vr">src</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">dst</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="fn">function_exists</span> <span class="st">"<span class="vr">$src</span>"</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"no such function: <span class="vr">$src</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="kw">local</span> <span class="vr">body</span>
+  <span class="cm"># Grab body then replace the name</span>
+  <span class="vr">body</span><span class="op">=</span>$(<span class="cmd">declare</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$src</span>"</span>)
+  <span class="kw">eval</span> <span class="st">"${dst}() ${body#*()}"</span>
+}
+
+<span class="fn">greet</span> world          <span class="cm"># → hello world</span>
+<span class="fn">function_copy</span> greet hello_alias
+<span class="fn">hello_alias</span> world    <span class="cm"># → hello world</span>
+
+<span class="cm"># Rename a function (copy + unset)</span>
+<span class="fn">function_rename</span>() {
+  <span class="fn">function_copy</span> <span class="st">"$1"</span> <span class="st">"$2"</span> <span class="op">&&</span> <span class="kw">unset</span> <span class="fl">-f</span> <span class="st">"$1"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>2 — Calling Functions by Name</h2>
+
+<p>The simplest metaprogramming trick in Bash: store a function name in a
+variable, then call it. Because Bash resolves commands by name at runtime,
+a variable holding a function name is a first-class function reference.</p>
+
+<pre><span class="fn">cmd_start</span>()   { <span class="cmd">echo</span> <span class="st">"starting..."</span>; }
+<span class="fn">cmd_stop</span>()    { <span class="cmd">echo</span> <span class="st">"stopping..."</span>; }
+<span class="fn">cmd_status</span>()  { <span class="cmd">echo</span> <span class="st">"running"</span>; }
+
+<span class="cm"># Direct call via variable</span>
+<span class="vr">action</span><span class="op">=</span>start
+<span class="st">"cmd_${action}"</span>        <span class="cm"># calls cmd_start</span>
+
+<span class="cm"># Validated call — never call an arbitrary variable without validation</span>
+<span class="fn">dispatch</span>() {
+  <span class="kw">local</span> <span class="vr">action</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"cmd_${action}"</span>
+  <span class="kw">if</span> <span class="fn">function_exists</span> <span class="st">"<span class="vr">$fn</span>"</span>; <span class="kw">then</span>
+    <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"$@"</span>
+  <span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'Unknown action: %s\n'</span> <span class="st">"<span class="vr">$action</span>"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+}
+
+<span class="fn">dispatch</span> start
+<span class="fn">dispatch</span> stop
+<span class="fn">dispatch</span> unknown   <span class="cm"># → Unknown action: unknown</span>
+
+<span class="cm"># Passing a function as a callback (higher-order functions)</span>
+<span class="fn">apply_to_each</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">item</span>
+  <span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+    <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"<span class="vr">$item</span>"</span>
+  <span class="kw">done</span>
+}
+
+<span class="fn">shout</span>() { <span class="cmd">printf</span> <span class="st">'%s!\n'</span> <span class="st">"${1^^}"</span>; }
+<span class="fn">apply_to_each</span> shout alpha beta gamma
+<span class="out"># ALPHA!
+# BETA!
+# GAMMA!</span>
+
+<span class="cm"># map/filter/reduce in pure Bash using function callbacks</span>
+<span class="fn">array_map</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">result</span><span class="op">=</span>()
+  <span class="kw">local</span> <span class="vr">item</span>
+  <span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+    <span class="vr">result</span><span class="op">+=</span>( "$(<span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"<span class="vr">$item</span>"</span>)" )
+  <span class="kw">done</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${result[@]}"</span>
+}
+
+<span class="fn">double</span>() { <span class="cmd">printf</span> <span class="st">'%d'</span> $(( <span class="vr">$1</span> <span class="op">*</span> <span class="nu">2</span> )); }
+<span class="fn">array_map</span> double <span class="nu">1</span> <span class="nu">2</span> <span class="nu">3</span> <span class="nu">4</span>
+<span class="out"># 2
+# 4
+# 6
+# 8</span>
+
+<span class="fn">array_filter</span>() {
+  <span class="kw">local</span> <span class="vr">pred</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">item</span>
+  <span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+    <span class="st">"<span class="vr">$pred</span>"</span> <span class="st">"<span class="vr">$item</span>"</span> <span class="op">&&</span> <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$item</span>"</span>
+  <span class="kw">done</span>
+}
+
+<span class="fn">is_even</span>() { (( <span class="vr">$1</span> <span class="op">%</span> <span class="nu">2</span> <span class="op">==</span> <span class="nu">0</span> )); }
+<span class="fn">array_filter</span> is_even <span class="nu">1</span> <span class="nu">2</span> <span class="nu">3</span> <span class="nu">4</span> <span class="nu">5</span> <span class="nu">6</span>
+<span class="out"># 2
+# 4
+# 6</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>3 — Command-Dispatch Tables</h2>
+
+<p>An associative array that maps command names to function names (or to short
+inline strings) is the Bash equivalent of a jump table. It is cleaner than a
+long <span class="inline-code">case</span> statement and trivially extensible at
+runtime.</p>
+
+<pre><span class="cm"># ── Dispatch table via associative array ─────────────────────────</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">CMDS</span>
+<span class="vr">CMDS</span>[start]<span class="op">=</span>do_start
+<span class="vr">CMDS</span>[stop]<span class="op">=</span>do_stop
+<span class="vr">CMDS</span>[reload]<span class="op">=</span>do_reload
+<span class="vr">CMDS</span>[status]<span class="op">=</span>do_status
+<span class="vr">CMDS</span>[help]<span class="op">=</span>do_help
+
+<span class="fn">run_cmd</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">if</span> [[ <span class="fl">-v</span> <span class="vr">CMDS</span>[<span class="st">"<span class="vr">$name</span>"</span>] ]]; <span class="kw">then</span>
+    <span class="st">"${CMDS[$name]}"</span> <span class="st">"$@"</span>
+  <span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'%s: unknown command "%s"\nAvailable: %s\n'</span> \
+      <span class="st">"<span class="vr">$0</span>"</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="st">"${!CMDS[*]}"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+}
+
+<span class="cm"># Register a new command at runtime</span>
+<span class="fn">register_cmd</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="fn">function_exists</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"no such function: <span class="vr">$fn</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="vr">CMDS</span>[<span class="st">"<span class="vr">$name</span>"</span>]<span class="op">=</span><span class="st">"<span class="vr">$fn</span>"</span>
+}
+
+<span class="cm"># ── Dispatch table with metadata ─────────────────────────────────</span>
+<span class="cm"># Store description alongside function name using a compound key</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">CMD_FN</span> <span class="vr">CMD_DESC</span>
+
+<span class="fn">register</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">desc</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="vr">CMD_FN</span>[<span class="st">"<span class="vr">$name</span>"</span>]<span class="op">=</span><span class="st">"<span class="vr">$fn</span>"</span>
+  <span class="vr">CMD_DESC</span>[<span class="st">"<span class="vr">$name</span>"</span>]<span class="op">=</span><span class="st">"<span class="vr">$desc</span>"</span>
+}
+
+<span class="fn">print_help</span>() {
+  <span class="cmd">printf</span> <span class="st">'Available commands:\n'</span>
+  <span class="kw">local</span> <span class="vr">name</span>
+  <span class="kw">for</span> <span class="vr">name</span> <span class="kw">in</span> $(printf <span class="st">'%s\n'</span> <span class="st">"${!CMD_FN[@]}"</span> <span class="op">|</span> <span class="cmd">sort</span>); <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">'  %-15s %s\n'</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="st">"${CMD_DESC[$name]}"</span>
+  <span class="kw">done</span>
+}
+
+<span class="fn">register</span> start  do_start  <span class="st">"Start the service"</span>
+<span class="fn">register</span> stop   do_stop   <span class="st">"Stop the service"</span>
+<span class="fn">register</span> status do_status <span class="st">"Show service status"</span>
+<span class="fn">register</span> help   print_help <span class="st">"Show this message"</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>4 — Plugin Systems</h2>
+
+<p>A naming convention is all you need for a plugin system in Bash. Define a
+hook name (e.g. <span class="inline-code">plugin_init</span>,
+<span class="inline-code">plugin_run</span>) and source plugin files. Each plugin
+that defines a function matching the naming convention is automatically
+discovered and invoked.</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Plugin system: load *.plugin.sh files and call their hooks</span>
+
+<span class="vr">PLUGIN_DIR</span><span class="op">=</span><span class="st">"${PLUGIN_DIR:-/etc/myapp/plugins}"</span>
+
+<span class="cm"># ── Load all plugins ─────────────────────────────────────────────</span>
+<span class="fn">load_plugins</span>() {
+  <span class="kw">local</span> <span class="vr">file</span>
+  <span class="kw">for</span> <span class="vr">file</span> <span class="kw">in</span> <span class="st">"<span class="vr">$PLUGIN_DIR</span>"</span>/*.plugin.sh; <span class="kw">do</span>
+    [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span> ]] <span class="op">||</span> <span class="kw">continue</span>
+    <span class="cm"># Snapshot functions before sourcing</span>
+    <span class="kw">local</span> <span class="fl">-A</span> <span class="vr">before</span>
+    <span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+      <span class="vr">before</span>[<span class="st">"${line##* }"</span>]<span class="op">=</span><span class="nu">1</span>
+    <span class="kw">done</span> < <(<span class="cmd">declare</span> <span class="fl">-F</span>)
+
+    <span class="kw">source</span> <span class="st">"<span class="vr">$file</span>"</span>
+
+    <span class="cm"># Find newly added functions</span>
+    <span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+      <span class="kw">local</span> <span class="vr">fname</span><span class="op">=</span><span class="st">"${line##* }"</span>
+      [[ <span class="fl">-v</span> <span class="vr">before</span>[<span class="st">"<span class="vr">$fname</span>"</span>] ]] <span class="op">||</span> \
+        <span class="cmd">printf</span> <span class="st">'[plugin] loaded %s from %s\n'</span> <span class="st">"<span class="vr">$fname</span>"</span> <span class="st">"<span class="vr">$file</span>"</span>
+    <span class="kw">done</span> < <(<span class="cmd">declare</span> <span class="fl">-F</span>)
+  <span class="kw">done</span>
+}
+
+<span class="cm"># ── Invoke a hook in all plugins that define it ───────────────────</span>
+<span class="fn">run_hook</span>() {
+  <span class="kw">local</span> <span class="vr">hook</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">fn</span>
+  <span class="cm"># List all functions matching plugin_*_HOOKNAME pattern</span>
+  <span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">fn</span>; <span class="kw">do</span>
+    [[ <span class="vr">$fn</span> <span class="op">=~</span> <span class="rx">^plugin_[a-z_]+_</span><span class="vr">${hook}</span><span class="rx">$</span> ]] <span class="op">||</span> <span class="kw">continue</span>
+    <span class="cmd">printf</span> <span class="st">'[hook:%s] %s\n'</span> <span class="st">"<span class="vr">$hook</span>"</span> <span class="st">"<span class="vr">$fn</span>"</span>
+    <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"$@"</span>
+  <span class="kw">done</span> < <(<span class="cmd">declare</span> <span class="fl">-F</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{print $3}'</span>)
+}
+
+<span class="cm"># ── Example plugin file: /etc/myapp/plugins/slack.plugin.sh ──────</span>
+<span class="cm">#
+#   plugin_slack_init()  { echo "Slack plugin loaded"; }
+#   plugin_slack_run()   { curl -s "$SLACK_URL" -d "text=$*"; }
+#   plugin_slack_finish(){ echo "Slack plugin done"; }
+#</span>
+
+<span class="fn">load_plugins</span>
+<span class="fn">run_hook</span> init
+<span class="fn">run_hook</span> run   <span class="st">"build completed"</span>
+<span class="fn">run_hook</span> finish</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>5 — Generating Functions at Runtime</h2>
+
+<p>When a set of functions differ only in a parameter — a resource name, a
+prefix, a verb — generate them in a loop instead of copy-pasting. This is the
+Bash equivalent of a factory function or decorator.</p>
+
+<pre><span class="cm"># ── Generate CRUD functions for multiple resource types ──────────</span>
+<span class="kw">for</span> <span class="vr">resource</span> <span class="kw">in</span> user group project; <span class="kw">do</span>
+  <span class="kw">eval</span> <span class="st">"
+    ${resource}_create() {
+      printf 'Creating %s: %%s\n' \"${resource}\" \"\$1\"
+    }
+    ${resource}_delete() {
+      printf 'Deleting %s: %%s\n' \"${resource}\" \"\$1\"
+    }
+    ${resource}_list() {
+      printf 'Listing all %ss\n' \"${resource}\"
+    }
+  "</span>
+<span class="kw">done</span>
+
+<span class="fn">user_create</span> alice     <span class="cm"># → Creating user: alice</span>
+<span class="fn">group_delete</span> admins   <span class="cm"># → Deleting group: admins</span>
+<span class="fn">project_list</span>          <span class="cm"># → Listing all projects</span>
+
+<span class="cm"># ── Safer alternative: printf-built function strings ─────────────</span>
+<span class="cm"># Avoid embedding $resource directly in eval strings when the value
+# comes from outside the script — use printf %q to quote it.</span>
+<span class="fn">make_getter</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">value</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="cm"># printf %q produces a shell-quoted string safe for eval</span>
+  <span class="kw">local</span> <span class="vr">qval</span>; <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">qval</span> <span class="st">'%q'</span> <span class="st">"<span class="vr">$value</span>"</span>
+  <span class="kw">eval</span> <span class="st">"get_${name}() { printf '%s' ${qval}; }"</span>
+}
+
+<span class="fn">make_getter</span> hostname <span class="st">"webserver-01"</span>
+<span class="fn">make_getter</span> region   <span class="st">"us-east-1"</span>
+
+<span class="fn">get_hostname</span>    <span class="cm"># → webserver-01</span>
+<span class="fn">get_region</span>      <span class="cm"># → us-east-1</span>
+
+<span class="cm"># ── Memoisation decorator ─────────────────────────────────────────</span>
+<span class="cm"># Wrap any function so its results are cached by argument</span>
+<span class="fn">memoize</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="fn">function_exists</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"no such function: <span class="vr">$fn</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="cm"># Copy original to __orig_FUNCNAME</span>
+  <span class="fn">function_copy</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"__orig_${fn}"</span>
+
+  <span class="cm"># Replace fn with a caching wrapper</span>
+  <span class="kw">eval</span> <span class="st">"
+    declare -A __memo_${fn}
+    ${fn}() {
+      local _key=\"\$*\"
+      local -n _cache=__memo_${fn}
+      if [[ -v _cache[\"\$_key\"] ]]; then
+        printf '%s' \"\${_cache[\$_key]}\"
+        return
+      fi
+      local _result
+      _result=\$( __orig_${fn} \"\$@\" )
+      _cache[\"\$_key\"]=\"\$_result\"
+      printf '%s' \"\$_result\"
+    }
+  "</span>
+}
+
+<span class="fn">slow_upper</span>() { <span class="cmd">sleep</span> <span class="nu">1</span>; <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"${1^^}"</span>; }
+<span class="fn">memoize</span> slow_upper
+
+<span class="fn">slow_upper</span> hello   <span class="cm"># takes ~1s</span>
+<span class="fn">slow_upper</span> hello   <span class="cm"># instant — cache hit</span>
+<span class="fn">slow_upper</span> world   <span class="cm"># takes ~1s — different key</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>6 — Safe eval Patterns</h2>
+
+<p><span class="inline-code">eval</span> is necessary for some metaprogramming
+tasks in Bash, but it is the single most dangerous command in the language.
+Every unsanitised piece of data that reaches <span class="inline-code">eval</span>
+is a command-injection vulnerability. Use these patterns to stay safe.</p>
+
+<pre><span class="cm"># ── Rule 1: never eval externally-sourced data directly ──────────</span>
+
+<span class="cm"># WRONG: $name comes from user input or a file</span>
+<span class="kw">eval</span> <span class="st">"${name}_init()"</span>   <span class="cm"># name='; rm -rf /' → catastrophic</span>
+
+<span class="cm"># RIGHT: validate with an allowlist before eval</span>
+[[ <span class="vr">$name</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad name"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="kw">eval</span> <span class="st">"${name}_init() { echo initialised; }"</span>
+
+<span class="cm"># ── Rule 2: use printf %q for values that cannot be allowlisted ──</span>
+<span class="fn">safe_set_var</span>() {
+  <span class="kw">local</span> <span class="vr">varname</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">value</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="cm"># Validate name is a legal identifier</span>
+  [[ <span class="vr">$varname</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">local</span> <span class="vr">qval</span>
+  <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">qval</span> <span class="st">'%q'</span> <span class="st">"<span class="vr">$value</span>"</span>   <span class="cm"># escapes all shell metacharacters</span>
+  <span class="kw">eval</span> <span class="st">"<span class="vr">$varname</span>=<span class="vr">$qval</span>"</span>
+}
+
+<span class="fn">safe_set_var</span> greeting <span class="st">"hello world; rm -rf /"</span>
+<span class="cmd">echo</span> <span class="st">"<span class="vr">$greeting</span>"</span>    <span class="cm"># → hello world; rm -rf /   (treated as literal string)</span>
+
+<span class="cm"># ── Rule 3: use declare -p round-trip for structured data ─────────</span>
+<span class="cm"># declare -p produces output that eval can safely consume because
+# Bash itself generates it — no untrusted input involved.</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">original</span><span class="op">=</span>([key1]<span class="op">=</span>val1 [key2]<span class="op">=</span><span class="st">"value with spaces"</span>)
+
+<span class="cm"># Serialise</span>
+<span class="vr">serialised</span><span class="op">=</span>$(<span class="cmd">declare</span> <span class="fl">-p</span> original)
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$serialised</span>"</span>
+<span class="out"># declare -A original=([key1]="val1" [key2]="value with spaces" )</span>
+
+<span class="cm"># Deserialise into a new name</span>
+<span class="kw">eval</span> <span class="st">"${serialised/original/restored}"</span>
+<span class="cmd">declare</span> <span class="fl">-p</span> restored
+<span class="out"># declare -A restored=([key1]="val1" [key2]="value with spaces" )</span>
+
+<span class="cm"># ── Rule 4: prefer declare -n (namerefs) over eval for indirection</span>
+<span class="cm"># nameref is safe — it only allows variable access, not code execution</span>
+
+<span class="cm"># AVOID (eval for indirection):</span>
+<span class="vr">varname</span><span class="op">=</span>myarray
+<span class="kw">eval</span> <span class="st">"echo \${<span class="vr">$varname</span>[@]}"</span>
+
+<span class="cm"># PREFER (nameref):</span>
+<span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">ref</span><span class="op">=</span><span class="vr">$varname</span>
+<span class="cmd">echo</span> <span class="st">"${ref[@]}"</span>    <span class="cm"># no eval, no injection risk</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>7 — Namerefs: Safe Indirect Variable Access</h2>
+
+<p><span class="inline-code">declare -n</span> creates a nameref — a variable that
+is an alias for another variable whose name is its value. Namerefs let you pass
+array names to functions without using <span class="inline-code">eval</span>, and
+they support all compound-variable operations.</p>
+
+<pre><span class="cm"># ── Basic nameref ────────────────────────────────────────────────</span>
+<span class="vr">original</span><span class="op">=</span><span class="st">"hello"</span>
+<span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">ref</span><span class="op">=</span>original
+<span class="cmd">echo</span> <span class="st">"<span class="vr">$ref</span>"</span>         <span class="cm"># → hello</span>
+<span class="vr">ref</span><span class="op">=</span><span class="st">"world"</span>
+<span class="cmd">echo</span> <span class="st">"<span class="vr">$original</span>"</span>    <span class="cm"># → world  (same storage)</span>
+
+<span class="cm"># ── Passing arrays by name ────────────────────────────────────────</span>
+<span class="fn">array_sum</span>() {
+  <span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">_arr</span><span class="op">=</span><span class="st">"$1"</span>   <span class="cm"># _arr is an alias for the named array</span>
+  <span class="kw">local</span> <span class="vr">sum</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">local</span> <span class="vr">x</span>
+  <span class="kw">for</span> <span class="vr">x</span> <span class="kw">in</span> <span class="st">"${_arr[@]}"</span>; <span class="kw">do</span>
+    (( sum += x ))
+  <span class="kw">done</span>
+  <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="st">"<span class="vr">$sum</span>"</span>
+}
+
+<span class="vr">numbers</span><span class="op">=</span>(<span class="nu">10</span> <span class="nu">20</span> <span class="nu">30</span> <span class="nu">40</span>)
+<span class="fn">array_sum</span> numbers    <span class="cm"># → 100</span>
+
+<span class="cm"># ── Returning values via nameref (avoids subshell) ────────────────</span>
+<span class="fn">parse_kv</span>() {
+  <span class="cm"># $1 = name of associative array to populate
+  # $2 = string of key=value pairs (space-separated)</span>
+  <span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">_out</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">pair</span> <span class="vr">k</span> <span class="vr">v</span>
+  <span class="kw">for</span> <span class="vr">pair</span> <span class="kw">in</span> <span class="vr">$2</span>; <span class="kw">do</span>
+    <span class="vr">k</span><span class="op">=</span><span class="st">"${pair%%=*}"</span>
+    <span class="vr">v</span><span class="op">=</span><span class="st">"${pair#*=}"</span>
+    <span class="vr">_out</span>[<span class="st">"<span class="vr">$k</span>"</span>]<span class="op">=</span><span class="st">"<span class="vr">$v</span>"</span>
+  <span class="kw">done</span>
+}
+
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">config</span>
+<span class="fn">parse_kv</span> config <span class="st">"host=localhost port=5432 dbname=mydb"</span>
+<span class="cmd">printf</span> <span class="st">'host=%s port=%s\n'</span> <span class="st">"${config[host]}"</span> <span class="st">"${config[port]}"</span>
+<span class="out"># host=localhost port=5432</span>
+
+<span class="cm"># ── Nameref caution: circular reference ──────────────────────────</span>
+<span class="vr">a</span><span class="op">=</span>b
+<span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">b</span><span class="op">=</span>a   <span class="cm"># b → a → b: circular!</span>
+<span class="cm"># Bash detects this and prints a warning; $b evaluates to empty.</span>
+
+<span class="cm"># ── Use a unique prefix for internal namerefs in functions ────────</span>
+<span class="cm"># If a function uses -n ref=$1 and the caller passes "ref" as the
+# array name, there is a self-reference collision. Use an unlikely
+# prefix (double underscore + function name) to avoid it.</span>
+<span class="fn">safe_push</span>() {
+  <span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">__safe_push_arr</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="vr">__safe_push_arr</span><span class="op">+=</span>(<span class="st">"$@"</span>)
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>8 — Generating Code at Runtime</h2>
+
+<p>Sometimes the right output of a script is another script. Code generation —
+emitting shell code as text — is a legitimate and powerful technique for
+configuration management, test fixtures, and build systems.</p>
+
+<pre><span class="cm"># ── Emit a self-contained script from a template ─────────────────</span>
+<span class="fn">generate_deploy_script</span>() {
+  <span class="kw">local</span> <span class="vr">env</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">version</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">outfile</span><span class="op">=</span><span class="st">"$3"</span>
+
+  <span class="cm"># Validate inputs before embedding in generated code</span>
+  [[ <span class="vr">$env</span>     <span class="op">=~</span> <span class="rx">^[a-z]+$</span>      ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad env"</span>     <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  [[ <span class="vr">$version</span> <span class="op">=~</span> <span class="rx">^[0-9]+\.[0-9]+\.[0-9]+$</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad version"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="cm"># Heredoc with NO quoting on the delimiter = variable expansion</span>
+  <span class="cm"># Heredoc with QUOTED delimiter ('EOF') = literal output, no expansion</span>
+  <span class="cmd">cat</span> <span class="op">></span> <span class="st">"<span class="vr">$outfile</span>"</span> <span class="op"><<</span>EOF
+<span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Auto-generated deploy script</span>
+<span class="cm"># Generated: $(date -u '+%F %T UTC')</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="vr">ENV</span><span class="op">=</span>${env}
+<span class="vr">VERSION</span><span class="op">=</span>${version}
+<span class="cmd">echo</span> <span class="st">"Deploying v\${VERSION} to \${ENV}"</span>
+<span class="cm"># ... rest of deploy logic ...</span>
+EOF
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$outfile</span>"</span>
+}
+
+<span class="fn">generate_deploy_script</span> staging <span class="nu">1.4</span><span class="nu">.2</span> <span class="pth">/tmp/deploy_staging.sh</span>
+
+<span class="cm"># ── Emit a config file from variable state ────────────────────────</span>
+<span class="fn">emit_env_file</span>() {
+  <span class="cm"># Print all variables matching PREFIX_* as KEY=value env file</span>
+  <span class="kw">local</span> <span class="vr">prefix</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">var</span> <span class="vr">val</span> <span class="vr">qval</span>
+  <span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span><span class="st">'='</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">var</span> <span class="vr">val</span>; <span class="kw">do</span>
+    [[ <span class="vr">$var</span> <span class="op">==</span> <span class="rx">"${prefix}_"</span><span class="vr">*</span> ]] <span class="op">||</span> <span class="kw">continue</span>
+    <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">qval</span> <span class="st">'%q'</span> <span class="st">"<span class="vr">$val</span>"</span>
+    <span class="cmd">printf</span> <span class="st">'%s=%s\n'</span> <span class="st">"<span class="vr">$var</span>"</span> <span class="st">"<span class="vr">$qval</span>"</span>
+  <span class="kw">done</span> < <(<span class="kw">declare</span> <span class="fl">-x</span>)
+}
+
+<span class="kw">export</span> <span class="vr">APP_HOST</span><span class="op">=</span>localhost
+<span class="kw">export</span> <span class="vr">APP_PORT</span><span class="op">=</span><span class="nu">8080</span>
+<span class="kw">export</span> <span class="vr">APP_DB</span><span class="op">=</span><span class="st">"my database"</span>
+<span class="fn">emit_env_file</span> APP
+<span class="out"># APP_DB=my\ database
+# APP_HOST=localhost
+# APP_PORT=8080</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>9 — Tracing and Decorating Functions</h2>
+
+<pre><span class="cm"># ── Automatically wrap every function with a timing decorator ─────</span>
+<span class="fn">trace_all_functions</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span>
+  <span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">fn</span>; <span class="kw">do</span>
+    <span class="cm"># Skip internal and already-wrapped functions</span>
+    [[ <span class="vr">$fn</span> <span class="op">==</span> __<span class="vr">*</span> <span class="op">||</span> <span class="vr">$fn</span> <span class="op">==</span> trace_<span class="vr">*</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+    <span class="fn">function_copy</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"__orig_${fn}"</span>
+    <span class="kw">eval</span> <span class="st">"
+      ${fn}() {
+        local _t0=\${EPOCHREALTIME}
+        __orig_${fn} \"\$@\"
+        local _rc=\$?
+        local _elapsed
+        printf -v _elapsed '%.3f' \"\$(echo \"\${EPOCHREALTIME} - \${_t0}\" | bc)\"
+        printf '[trace] %s() %.3fs rc=%d\n' '${fn}' \"\${_elapsed}\" \"\${_rc}\" >&2
+        return \$_rc
+      }
+    "</span>
+  <span class="kw">done</span> < <(<span class="cmd">declare</span> <span class="fl">-F</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{print $3}'</span>)
+}
+
+<span class="cm"># ── before/after hooks on a specific function ─────────────────────</span>
+<span class="fn">add_before_hook</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">hook</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="fn">function_copy</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"__orig_${fn}"</span>
+  <span class="kw">eval</span> <span class="st">"${fn}() { ${hook} \"\$@\"; __orig_${fn} \"\$@\"; }"</span>
+}
+
+<span class="fn">add_after_hook</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">hook</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="fn">function_copy</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"__orig_${fn}"</span>
+  <span class="kw">eval</span> <span class="st">"
+    ${fn}() {
+      __orig_${fn} \"\$@\"
+      local _rc=\$?
+      ${hook} \"\$@\"
+      return \$_rc
+    }
+  "</span>
+}
+
+<span class="fn">deploy</span>()         { <span class="cmd">echo</span> <span class="st">"deploying..."</span>; }
+<span class="fn">pre_deploy_log</span>() { <span class="cmd">echo</span> <span class="st">"[audit] deploy started by $USER"</span>; }
+<span class="fn">post_deploy_log</span>(){ <span class="cmd">echo</span> <span class="st">"[audit] deploy finished"</span>; }
+
+<span class="fn">add_before_hook</span> deploy pre_deploy_log
+<span class="fn">add_after_hook</span>  deploy post_deploy_log
+
+<span class="fn">deploy</span>
+<span class="out"># [audit] deploy started by alice
+# deploying...
+# [audit] deploy finished</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Build a subcommand CLI dispatcher</h4>
+  <p>Write a script <code>bin/cli.sh</code> that acts as a dispatcher for
+  subcommands, similar to how <span class="inline-code">git</span> or
+  <span class="inline-code">kubectl</span> work. Requirements:</p>
+  <ul>
+    <li>Subcommands are loaded from <code>lib/commands/</code> — each file is
+    named <code>CMD.sh</code> and must define <code>cmd_CMD_run()</code> and
+    optionally <code>cmd_CMD_help()</code></li>
+    <li>Running <code>cli.sh SUBCMD [ARGS...]</code> sources the right file
+    then calls <code>cmd_SUBCMD_run "$@"</code></li>
+    <li>Running <code>cli.sh help [SUBCMD]</code> calls <code>cmd_SUBCMD_help</code>
+    if defined, or prints a generic list of available subcommands</li>
+    <li>Running <code>cli.sh</code> with no arguments prints the command list and
+    exits 1</li>
+    <li>Unknown subcommands print a helpful error and exit 2</li>
+  </ul>
+  <p>Also write two example command files: <code>lib/commands/greet.sh</code>
+  (prints "Hello, NAME!") and <code>lib/commands/shout.sh</code> (prints the
+  argument in uppercase).</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># bin/cli.sh</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">CMD_DIR</span><span class="op">=</span><span class="st">"${CMD_DIR:-${BASH_SOURCE[0]%/*}/../lib/commands}"</span>
+
+<span class="fn">function_exists</span>() { <span class="kw">declare</span> <span class="fl">-f</span> <span class="st">"$1"</span> <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>; }
+
+<span class="fn">list_commands</span>() {
+  <span class="kw">local</span> <span class="vr">f</span>
+  <span class="cmd">printf</span> <span class="st">'Available commands:\n'</span>
+  <span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="st">"<span class="vr">$CMD_DIR</span>"</span>/*.sh; <span class="kw">do</span>
+    [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$f</span>"</span> ]] <span class="op">||</span> <span class="kw">continue</span>
+    <span class="cmd">printf</span> <span class="st">'  %s\n'</span> <span class="st">"${f##*/}"</span>
+    <span class="st">"${f%.sh}"</span>   <span class="cm"># prints just the name without .sh</span>
+  <span class="kw">done</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s|.*/||; s|\.sh||'</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="fl">-I{}</span> <span class="cmd">printf</span> <span class="st">'  {}\n'</span>
+}
+
+<span class="fn">load_command</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>
+  [[ <span class="vr">$name</span> <span class="op">=~</span> <span class="rx">^[a-z][a-z0-9_-]*$</span> ]] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'Invalid command name\n'</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="kw">local</span> <span class="vr">file</span><span class="op">=</span><span class="st">"<span class="vr">$CMD_DIR</span>/<span class="vr">$name</span>.sh"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">source</span> <span class="st">"<span class="vr">$file</span>"</span>
+}
+
+<span class="vr">subcmd</span><span class="op">=</span><span class="st">"${1:-}"</span>
+
+<span class="kw">if</span> [[ <span class="fl">-z</span> <span class="st">"<span class="vr">$subcmd</span>"</span> ]]; <span class="kw">then</span>
+  <span class="fn">list_commands</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span>
+
+<span class="kw">if</span> [[ <span class="st">"<span class="vr">$subcmd</span>"</span> <span class="op">==</span> <span class="st">"help"</span> ]]; <span class="kw">then</span>
+  <span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"${2:-}"</span> ]]; <span class="kw">then</span>
+    <span class="fn">load_command</span> <span class="st">"<span class="vr">$2</span>"</span> <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'Unknown command: %s\n'</span> <span class="st">"<span class="vr">$2</span>"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">2</span>; }
+    <span class="fn">function_exists</span> <span class="st">"cmd_${2}_help"</span> <span class="op">&&</span> <span class="st">"cmd_${2}_help"</span> <span class="op">||</span> <span class="cmd">printf</span> <span class="st">'No help for %s\n'</span> <span class="st">"<span class="vr">$2</span>"</span>
+  <span class="kw">else</span>
+    <span class="fn">list_commands</span>
+  <span class="kw">fi</span>
+  <span class="kw">exit</span> <span class="nu">0</span>
+<span class="kw">fi</span>
+
+<span class="kw">if</span> ! <span class="fn">load_command</span> <span class="st">"<span class="vr">$subcmd</span>"</span>; <span class="kw">then</span>
+  <span class="cmd">printf</span> <span class="st">'%s: unknown command "%s"\n'</span> <span class="st">"${0##*/}"</span> <span class="st">"<span class="vr">$subcmd</span>"</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">2</span>
+<span class="kw">fi</span>
+
+<span class="vr">fn</span><span class="op">=</span><span class="st">"cmd_${subcmd}_run"</span>
+<span class="fn">function_exists</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="op">||</span> {
+  <span class="cmd">printf</span> <span class="st">'%s: %s defines no cmd_%s_run function\n'</span> \
+    <span class="st">"${0##*/}"</span> <span class="st">"<span class="vr">$subcmd</span>.sh"</span> <span class="st">"<span class="vr">$subcmd</span>"</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+}
+
+<span class="kw">shift</span>
+<span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"$@"</span></pre>
+<pre><span class="cm"># lib/commands/greet.sh</span>
+<span class="fn">cmd_greet_run</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"${1:-World}"</span>
+  <span class="cmd">printf</span> <span class="st">'Hello, %s!\n'</span> <span class="st">"<span class="vr">$name</span>"</span>
+}
+<span class="fn">cmd_greet_help</span>() {
+  <span class="cmd">printf</span> <span class="st">'Usage: cli.sh greet [NAME]\n  Prints a greeting.\n'</span>
+}</pre>
+<pre><span class="cm"># lib/commands/shout.sh</span>
+<span class="fn">cmd_shout_run</span>() {
+  <span class="kw">local</span> <span class="vr">msg</span><span class="op">=</span><span class="st">"${*:-NOTHING}"</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${msg^^}"</span>
+}
+<span class="fn">cmd_shout_help</span>() {
+  <span class="cmd">printf</span> <span class="st">'Usage: cli.sh shout MESSAGE\n  Prints MESSAGE in uppercase.\n'</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Generic CRUD factory with namerefs</h4>
+  <p>Write a function <code>make_resource RESOURCE_NAME ARRAY_NAME</code> that
+  generates four functions for a given resource type: <code>RESOURCE_add</code>,
+  <code>RESOURCE_remove</code>, <code>RESOURCE_list</code>, and
+  <code>RESOURCE_contains</code>. All four functions operate on the array
+  variable named by <code>ARRAY_NAME</code> using <span class="inline-code">declare -n</span>.
+  Then demonstrate by creating <code>tag_*</code> functions operating on a
+  <code>TAGS</code> array, and <code>server_*</code> functions operating on a
+  <code>SERVERS</code> array. Do not use <span class="inline-code">eval</span> for
+  the array access — only for function definition.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="fn">function_exists</span>() { <span class="kw">declare</span> <span class="fl">-f</span> <span class="st">"$1"</span> <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>; }
+
+<span class="fn">make_resource</span>() {
+  <span class="kw">local</span> <span class="vr">res</span><span class="op">=</span><span class="st">"$1"</span>     <span class="cm"># e.g. "tag"</span>
+  <span class="kw">local</span> <span class="vr">arrname</span><span class="op">=</span><span class="st">"$2"</span>  <span class="cm"># e.g. "TAGS"</span>
+
+  <span class="cm"># Validate both names are legal identifiers</span>
+  [[ <span class="vr">$res</span>     <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad resource name"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  [[ <span class="vr">$arrname</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad array name"</span>    <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="kw">eval</span> <span class="st">"
+    ${res}_add() {
+      declare -n __${res}_arr=${arrname}
+      __${res}_arr+=(\"\$1\")
+    }
+
+    ${res}_remove() {
+      declare -n __${res}_arr=${arrname}
+      local item=\$1 i new=()
+      for i in \"\${__${res}_arr[@]}\"; do
+        [[ \"\$i\" == \"\$item\" ]] || new+=(\"\$i\")
+      done
+      __${res}_arr=(\"\${new[@]}\")
+    }
+
+    ${res}_list() {
+      declare -n __${res}_arr=${arrname}
+      printf '%s\n' \"\${__${res}_arr[@]}\"
+    }
+
+    ${res}_contains() {
+      declare -n __${res}_arr=${arrname}
+      local item=\$1 i
+      for i in \"\${__${res}_arr[@]}\"; do
+        [[ \"\$i\" == \"\$item\" ]] && return 0
+      done
+      return 1
+    }
+  "</span>
+}
+
+<span class="cm"># ── Demo ─────────────────────────────────────────────────────────</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">TAGS</span><span class="op">=</span>()
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">SERVERS</span><span class="op">=</span>()
+
+<span class="fn">make_resource</span> tag    TAGS
+<span class="fn">make_resource</span> server SERVERS
+
+<span class="fn">tag_add</span> production
+<span class="fn">tag_add</span> europe
+<span class="fn">tag_add</span> production   <span class="cm"># duplicate (allowed — remove for set semantics)</span>
+<span class="fn">tag_list</span>
+<span class="out"># production
+# europe
+# production</span>
+
+<span class="fn">tag_remove</span> production
+<span class="fn">tag_list</span>
+<span class="out"># europe
+# production</span>
+
+<span class="fn">tag_contains</span> europe  <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"europe: yes"</span>
+<span class="fn">tag_contains</span> asia    <span class="op">||</span> <span class="cmd">echo</span> <span class="st">"asia: no"</span>
+
+<span class="fn">server_add</span> web-01
+<span class="fn">server_add</span> web-02
+<span class="fn">server_list</span>
+<span class="out"># web-01
+# web-02</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Memoisation library with TTL</h4>
+  <p>Extend the memoisation pattern from Section 5 into a proper library
+  <code>lib/memo.sh</code>. The <code>memo_wrap FUNCTION [TTL_SECONDS]</code>
+  function should wrap any function so that:</p>
+  <ul>
+    <li>Results are cached by argument string</li>
+    <li>Cached results expire after TTL seconds (default: no expiry)</li>
+    <li>A cache miss calls the original function and stores both the result
+    and the timestamp</li>
+    <li><code>memo_clear FUNCTION</code> invalidates the entire cache for
+    that function</li>
+    <li><code>memo_stats FUNCTION</code> prints hit count, miss count, and
+    current cache size</li>
+  </ul>
+  <p>Demonstrate with a function that simulates a slow API call
+  (<code>sleep 1</code>) and show the cache working with a 5-second TTL.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib/memo.sh</span>
+
+<span class="fn">function_exists</span>() { <span class="kw">declare</span> <span class="fl">-f</span> <span class="st">"$1"</span> <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>; }
+
+<span class="fn">function_copy</span>() {
+  <span class="kw">local</span> <span class="vr">body</span>
+  <span class="vr">body</span><span class="op">=</span>$(<span class="cmd">declare</span> <span class="fl">-f</span> <span class="st">"$1"</span>) <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">eval</span> <span class="st">"${2}() ${body#*()}"</span>
+}
+
+<span class="fn">memo_wrap</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">ttl</span><span class="op">=</span><span class="st">"${2:-0}"</span>   <span class="cm"># 0 = no expiry</span>
+
+  <span class="fn">function_exists</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"no such function: <span class="vr">$fn</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="fn">function_copy</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"__memo_orig_${fn}"</span>
+
+  <span class="cm"># Per-function cache and stats arrays</span>
+  <span class="kw">eval</span> <span class="st">"
+    declare -A __memo_cache_${fn}
+    declare -A __memo_ts_${fn}
+    __memo_hits_${fn}=0
+    __memo_misses_${fn}=0
+  "</span>
+
+  <span class="kw">eval</span> <span class="st">"
+    ${fn}() {
+      local _key=\"\$*\"
+      local -n _cache=__memo_cache_${fn}
+      local -n _ts=__memo_ts_${fn}
+      local _now
+      printf -v _now '%d' \"\${EPOCHSECONDS}\"
+
+      if [[ -v _cache[\"\$_key\"] ]]; then
+        local _age=$(( _now - _ts[\$_key] ))
+        if (( ${ttl} == 0 || _age < ${ttl} )); then
+          (( __memo_hits_${fn}++ )) || true
+          printf '%s' \"\${_cache[\$_key]}\"
+          return
+        fi
+      fi
+
+      (( __memo_misses_${fn}++ )) || true
+      local _result
+      _result=\$( __memo_orig_${fn} \"\$@\" )
+      _cache[\"\$_key\"]=\"\$_result\"
+      _ts[\"\$_key\"]=\"\$_now\"
+      printf '%s' \"\$_result\"
+    }
+  "</span>
+}
+
+<span class="fn">memo_clear</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">eval</span> <span class="st">"__memo_cache_${fn}=(); __memo_ts_${fn}=()"</span>
+}
+
+<span class="fn">memo_stats</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">_c</span><span class="op">=</span><span class="st">"__memo_cache_${fn}"</span>
+  <span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">_h</span><span class="op">=</span><span class="st">"__memo_hits_${fn}"</span>
+  <span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">_m</span><span class="op">=</span><span class="st">"__memo_misses_${fn}"</span>
+  <span class="cmd">printf</span> <span class="st">'%s: hits=%d misses=%d size=%d\n'</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="st">"<span class="vr">$_h</span>"</span> <span class="st">"<span class="vr">$_m</span>"</span> <span class="st">"${#_c[@]}"</span>
+}
+
+<span class="cm"># ── Demo ─────────────────────────────────────────────────────────</span>
+<span class="fn">fake_api_call</span>() {
+  <span class="cmd">sleep</span> <span class="nu">1</span>
+  <span class="cmd">printf</span> <span class="st">'result_for_%s'</span> <span class="st">"$1"</span>
+}
+
+<span class="fn">memo_wrap</span> fake_api_call <span class="nu">5</span>   <span class="cm"># 5-second TTL</span>
+
+<span class="cmd">time</span> <span class="fn">fake_api_call</span> foo   <span class="cm"># miss → ~1s</span>
+<span class="cmd">time</span> <span class="fn">fake_api_call</span> foo   <span class="cm"># hit  → instant</span>
+<span class="cmd">time</span> <span class="fn">fake_api_call</span> bar   <span class="cm"># miss → ~1s</span>
+<span class="fn">memo_stats</span> fake_api_call
+<span class="out"># fake_api_call: hits=1 misses=2 size=2</span>
+
+<span class="cmd">sleep</span> <span class="nu">6</span>                   <span class="cm"># let cache expire</span>
+<span class="cmd">time</span> <span class="fn">fake_api_call</span> foo   <span class="cm"># miss again → ~1s</span>
+<span class="fn">memo_stats</span> fake_api_call
+<span class="out"># fake_api_call: hits=1 misses=3 size=2</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Config-driven function generator</h4>
+  <p>Write a script that reads a configuration file in this format:</p>
+<pre style="margin:0.5em 0; background:#0d0f1a;">ALIAS greet  "printf 'Hi, %s\n'"
+ALIAS bye    "printf 'Goodbye, %s\n'"
+ALIAS shout  "printf '%s\n' \"\${1^^}\""
+WRAP  greet  audit_log
+WRAP  shout  rate_limit</pre>
+  <p>The <code>ALIAS name body</code> directive creates a function called
+  <code>name</code> using the body string (safely, without allowing injection).
+  The <code>WRAP fn decorator</code> directive wraps <code>fn</code> so that
+  <code>decorator</code> is called before it (the decorator receives the same
+  arguments). Validate that both function names and wrapper names are legal
+  identifiers. Include working implementations of <code>audit_log</code> and
+  <code>rate_limit</code> so the demo runs.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="fn">function_exists</span>() { <span class="kw">declare</span> <span class="fl">-f</span> <span class="st">"$1"</span> <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>; }
+
+<span class="fn">function_copy</span>() {
+  <span class="kw">local</span> <span class="vr">body</span>; <span class="vr">body</span><span class="op">=</span>$(<span class="cmd">declare</span> <span class="fl">-f</span> <span class="st">"$1"</span>) <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">eval</span> <span class="st">"${2}() ${body#*()}"</span>
+}
+
+<span class="fn">is_ident</span>() { [[ <span class="vr">$1</span> <span class="op">=~</span> <span class="rx">^[a-zA-Z_][a-zA-Z0-9_]*$</span> ]]; }
+
+<span class="cm"># ── Decorators ────────────────────────────────────────────────────</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">_RATE_LAST</span>
+<span class="vr">RATE_LIMIT_SECS</span><span class="op">=</span><span class="nu">2</span>
+
+<span class="fn">audit_log</span>() {
+  <span class="cmd">printf</span> <span class="st">'[audit] %s called with: %s\n'</span> <span class="st">"${FUNCNAME[1]}"</span> <span class="st">"$*"</span>
+}
+
+<span class="fn">rate_limit</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"${FUNCNAME[1]}"</span>
+  <span class="kw">local</span> <span class="vr">now</span><span class="op">=</span><span class="st">"${EPOCHSECONDS}"</span>
+  <span class="kw">local</span> <span class="vr">last</span><span class="op">=</span><span class="st">"${_RATE_LAST[$fn]:-0}"</span>
+  <span class="kw">if</span> (( now - last < <span class="vr">RATE_LIMIT_SECS</span> )); <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'[rate-limit] %s called too quickly, skipping\n'</span> <span class="st">"<span class="vr">$fn</span>"</span> <span class="op">>&2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">fi</span>
+  <span class="vr">_RATE_LAST</span>[<span class="st">"<span class="vr">$fn</span>"</span>]<span class="op">=</span><span class="st">"<span class="vr">$now</span>"</span>
+}
+
+<span class="cm"># ── Config parser ────────────────────────────────────────────────</span>
+<span class="fn">load_config</span>() {
+  <span class="kw">local</span> <span class="vr">file</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">directive</span> <span class="vr">name</span> <span class="vr">rest</span>
+
+  <span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    [[ <span class="vr">$line</span> <span class="op">=~</span> <span class="rx">^[[:space:]]*(#|$)</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+    <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">directive</span> <span class="vr">name</span> <span class="vr">rest</span> <span class="op"><<<</span> <span class="st">"<span class="vr">$line</span>"</span>
+
+    <span class="fn">is_ident</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="op">||</span> {
+      <span class="cmd">printf</span> <span class="st">'Invalid identifier: %s\n'</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="op">>&2</span>; <span class="kw">continue</span>
+    }
+
+    <span class="kw">case</span> <span class="st">"<span class="vr">$directive</span>"</span> <span class="kw">in</span>
+      ALIAS)
+        <span class="cm"># rest is the body string — strip surrounding quotes</span>
+        <span class="kw">local</span> <span class="vr">body</span><span class="op">=</span><span class="st">"${rest#\"}"</span>; <span class="vr">body</span><span class="op">=</span><span class="st">"${body%\"}"</span>
+        <span class="cm"># Embed body literally — it's from a trusted config file</span>
+        <span class="cm"># In a hardened implementation, scan body for dangerous patterns</span>
+        <span class="kw">eval</span> <span class="st">"${name}() { ${body} \"\$@\"; }"</span>
+        <span class="cmd">printf</span> <span class="st">'[config] defined %s()\n'</span> <span class="st">"<span class="vr">$name</span>"</span>
+        ;;
+      WRAP)
+        <span class="kw">local</span> <span class="vr">dec</span><span class="op">=</span><span class="st">"<span class="vr">$rest</span>"</span>
+        <span class="fn">is_ident</span> <span class="st">"<span class="vr">$dec</span>"</span> <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'Invalid decorator: %s\n'</span> <span class="st">"<span class="vr">$dec</span>"</span> <span class="op">>&2</span>; <span class="kw">continue</span>; }
+        <span class="fn">function_exists</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="op">||</span> {
+          <span class="cmd">printf</span> <span class="st">'WRAP: function not defined yet: %s\n'</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="op">>&2</span>; <span class="kw">continue</span>
+        }
+        <span class="fn">function_exists</span> <span class="st">"<span class="vr">$dec</span>"</span> <span class="op">||</span> {
+          <span class="cmd">printf</span> <span class="st">'WRAP: decorator not defined: %s\n'</span> <span class="st">"<span class="vr">$dec</span>"</span> <span class="op">>&2</span>; <span class="kw">continue</span>
+        }
+        <span class="fn">function_copy</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="st">"__wrapped_${name}"</span>
+        <span class="kw">eval</span> <span class="st">"${name}() { ${dec} \"\$@\" || return; __wrapped_${name} \"\$@\"; }"</span>
+        <span class="cmd">printf</span> <span class="st">'[config] wrapped %s() with %s()\n'</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="st">"<span class="vr">$dec</span>"</span>
+        ;;
+      *) <span class="cmd">printf</span> <span class="st">'Unknown directive: %s\n'</span> <span class="st">"<span class="vr">$directive</span>"</span> <span class="op">>&2</span> ;;
+    <span class="kw">esac</span>
+  <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$file</span>"</span>
+}
+
+<span class="cm"># ── Demo ─────────────────────────────────────────────────────────</span>
+<span class="fn">load_config</span> functions.conf
+
+<span class="fn">greet</span> Alice        <span class="cm"># [audit] then Hi, Alice</span>
+<span class="fn">shout</span> hello        <span class="cm"># [rate_limit check] then HELLO</span>
+<span class="fn">shout</span> hello        <span class="cm"># rate-limited on rapid second call</span>
+<span class="fn">bye</span> Bob            <span class="cm"># Goodbye, Bob</span></pre>
+  </div>
+</div>
+
+</div>

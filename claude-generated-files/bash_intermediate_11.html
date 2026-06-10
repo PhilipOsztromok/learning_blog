@@ -1,0 +1,782 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 11 — Building Complete CLI Tools</h1>
+<p>There is a gap between "a script that works for me" and "a tool I can hand to a colleague."
+Closing that gap means robust option parsing, a helpful <span class="inline-code">--help</span> page,
+a <span class="inline-code">--version</span> flag, shell tab completion, and — for complex tools —
+a man-page stub. This chapter builds all of it.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — Long-Option Parsing with <code>getopt</code></h2>
+
+<p>The shell built-in <span class="inline-code">getopts</span> handles short options only.
+For long options (<span class="inline-code">--verbose</span>, <span class="inline-code">--output FILE</span>) you need
+the external <span class="inline-code">getopt</span> (note: no <em>s</em>), which reorders and normalises
+the argument list before your loop sees it.</p>
+
+<div class="warn">
+<strong>Two different tools:</strong> <code>getopts</code> (built-in, POSIX, short options only) vs
+<code>getopt</code> (external GNU utility, long options, requires <code>--</code> sentinel).
+Always use the GNU version: <code>getopt --version</code> should say "util-linux". The BSD version
+shipped on macOS is limited — install GNU getopt via Homebrew if needed.
+</div>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "$0")"</span>
+<span class="vr">VERSION</span><span class="op">=</span><span class="st">'1.2.0'</span>
+
+<span class="cm"># Define accepted options</span>
+<span class="cm">#   Short: -v -o FILE -q -h</span>
+<span class="cm">#   Long:  --verbose --output FILE --quiet --help --version</span>
+<span class="vr">_OPTS</span><span class="op">=</span>$(<span class="cmd">getopt</span> \
+  <span class="fl">--name</span>    <span class="st">"<span class="vr">$PROG</span>"</span> \
+  <span class="fl">--options</span> <span class="st">'vo:qh'</span> \
+  <span class="fl">--longoptions</span> <span class="st">'verbose,output:,quiet,help,version'</span> \
+  <span class="fl">--</span> <span class="st">"$@"</span>) <span class="op">||</span> { usage; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="cm"># Replace positional parameters with the normalised list</span>
+<span class="kw">eval</span> <span class="kw">set</span> <span class="fl">--</span> <span class="st">"<span class="vr">$_OPTS</span>"</span>
+
+<span class="cm"># Defaults</span>
+<span class="vr">VERBOSE</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">QUIET</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">OUTPUT</span><span class="op">=</span><span class="st">''</span>
+
+<span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    <span class="fl">-v</span> <span class="op">|</span> <span class="fl">--verbose</span>)  <span class="vr">VERBOSE</span><span class="op">=</span><span class="nu">1</span>;     <span class="kw">shift</span>   ;;
+    <span class="fl">-q</span> <span class="op">|</span> <span class="fl">--quiet</span>)    <span class="vr">QUIET</span><span class="op">=</span><span class="nu">1</span>;       <span class="kw">shift</span>   ;;
+    <span class="fl">-o</span> <span class="op">|</span> <span class="fl">--output</span>)   <span class="vr">OUTPUT</span><span class="op">=</span><span class="st">"$2"</span>;  <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">-h</span> <span class="op">|</span> <span class="fl">--help</span>)     usage;         <span class="kw">exit</span> <span class="nu">0</span>  ;;
+         <span class="fl">--version</span>)  version;       <span class="kw">exit</span> <span class="nu">0</span>  ;;
+    <span class="fl">--</span>)              <span class="kw">shift</span>;         <span class="kw">break</span>   ;;
+    <span class="op">*</span>)               usage;         <span class="kw">exit</span> <span class="nu">1</span>  ;;
+  <span class="kw">esac</span>
+<span class="kw">done</span>
+
+<span class="cm"># Remaining positional arguments</span>
+<span class="vr">ARGS</span><span class="op">=</span>( <span class="st">"$@"</span> )</pre>
+
+<p>After <span class="inline-code">eval set -- "$_OPTS"</span>, <span class="inline-code">getopt</span> guarantees that
+option arguments are separate tokens, abbreviated options are expanded, and
+<span class="inline-code">--</span> marks the end of options. Your <span class="inline-code">while</span> loop just needs
+to handle the canonical forms.</p>
+
+<h3>A purely manual alternative (no external tool)</h3>
+<p>When you cannot depend on GNU <span class="inline-code">getopt</span> being present, a manual
+<span class="inline-code">while/case</span> loop handles most real-world needs:</p>
+
+<pre><span class="kw">while</span> [[ <span class="vr">$#</span> <span class="op">-gt</span> <span class="nu">0</span> ]]; <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    <span class="fl">-v</span> <span class="op">|</span> <span class="fl">--verbose</span>)  <span class="vr">VERBOSE</span><span class="op">=</span><span class="nu">1</span>; <span class="kw">shift</span> ;;
+    <span class="fl">-o</span> <span class="op">|</span> <span class="fl">--output</span>)
+      [[ <span class="vr">$#</span> <span class="fl">-lt</span> <span class="nu">2</span> ]] <span class="op">&&</span> { <span class="cmd">echo</span> <span class="er">"$1 requires an argument"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+      <span class="vr">OUTPUT</span><span class="op">=</span><span class="st">"$2"</span>; <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">--output=</span><span class="op">*</span>)  <span class="vr">OUTPUT</span><span class="op">=</span><span class="st">"${1#--output=}"</span>; <span class="kw">shift</span> ;;   <span class="cm"># --output=FILE form</span>
+    <span class="fl">-h</span> <span class="op">|</span> <span class="fl">--help</span>)    usage; <span class="kw">exit</span> <span class="nu">0</span> ;;
+    <span class="fl">--version</span>)      version; <span class="kw">exit</span> <span class="nu">0</span> ;;
+    <span class="fl">--</span>)             <span class="kw">shift</span>; <span class="kw">break</span> ;;
+    <span class="fl">-</span><span class="op">*</span>)             <span class="cmd">echo</span> <span class="er">"Unknown option: $1"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span> ;;
+    <span class="op">*</span>)              <span class="kw">break</span> ;;   <span class="cm"># first non-option: stop parsing</span>
+  <span class="kw">esac</span>
+<span class="kw">done</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — Generating <code>--help</code> Output</h2>
+
+<p>A good help page answers: what does the tool do, how do I call it, what are my options,
+and where can I find more. Keep it concise but complete.</p>
+
+<h3>Heredoc approach — simple and readable</h3>
+<pre><span class="fn">usage</span>() {
+  <span class="cmd">cat</span> <span class="op"><<</span><span class="st">EOF</span>
+Usage: <span class="vr">$PROG</span> [OPTIONS] FILE [FILE...]
+
+Process one or more input FILEs and write results to stdout or --output.
+
+Options:
+  <span class="fl">-o</span>, <span class="fl">--output</span> FILE    Write output to FILE instead of stdout
+  <span class="fl">-v</span>, <span class="fl">--verbose</span>        Show detailed progress
+  <span class="fl">-q</span>, <span class="fl">--quiet</span>          Suppress all non-error output
+  <span class="fl">-h</span>, <span class="fl">--help</span>           Show this help and exit
+      <span class="fl">--version</span>        Show version and exit
+
+Examples:
+  <span class="vr">$PROG</span> input.txt
+  <span class="vr">$PROG</span> <span class="fl">--output</span> result.txt *.log
+  <span class="vr">$PROG</span> <span class="fl">--verbose</span> <span class="fl">--output</span> /dev/stderr data.csv
+
+Exit codes:
+  0  Success
+  1  Usage error
+  2  Input file not found
+  3  Permission denied
+EOF
+}</pre>
+
+<h3>Usage-string extraction — DRY alternative</h3>
+<p>Embed the usage string in a comment block at the top of the script, then extract it at runtime.
+This keeps the help in one place and makes it visible to <span class="inline-code">grep</span> without running the tool:</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># USAGE: mytool [OPTIONS] FILE [FILE...]
+#
+# Process input files.
+#
+# Options:
+#   -o, --output FILE   Output destination
+#   -v, --verbose       Verbose output
+#   -h, --help          Show this help
+#</span>
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "$0")"</span>
+
+<span class="fn">usage</span>() {
+  <span class="cm"># Print every line between '# USAGE:' and the first non-comment line</span>
+  <span class="cmd">sed</span> <span class="fl">-n</span> <span class="rx">'/^# USAGE:/,/^[^#]/{ /^[^#]/d; s/^# \?//; p }'</span> <span class="st">"${BASH_SOURCE[0]}"</span>
+}</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — <code>--version</code> and Exit Codes</h2>
+
+<pre><span class="fn">version</span>() {
+  <span class="cmd">printf</span> <span class="st">'%s %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"<span class="vr">$VERSION</span>"</span>
+}
+
+<span class="cm"># Conventional exit codes (document them in --help)</span>
+<span class="kw">readonly</span> <span class="vr">EX_OK</span><span class="op">=</span><span class="nu">0</span>          <span class="cm"># success</span>
+<span class="kw">readonly</span> <span class="vr">EX_USAGE</span><span class="op">=</span><span class="nu">1</span>       <span class="cm"># bad arguments / options</span>
+<span class="kw">readonly</span> <span class="vr">EX_NOINPUT</span><span class="op">=</span><span class="nu">2</span>     <span class="cm"># input file missing</span>
+<span class="kw">readonly</span> <span class="vr">EX_NOPERM</span><span class="op">=</span><span class="nu">3</span>      <span class="cm"># permission denied</span>
+<span class="kw">readonly</span> <span class="vr">EX_SOFTWARE</span><span class="op">=</span><span class="nu">4</span>    <span class="cm"># internal error</span>
+
+<span class="cm"># Consistent die() helper — always writes to stderr</span>
+<span class="fn">die</span>() {
+  <span class="kw">local</span> <span class="vr">code</span><span class="op">=</span><span class="st">"${1}"</span>; <span class="kw">shift</span>
+  <span class="cmd">printf</span> <span class="st">'%s: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="st">"<span class="vr">$code</span>"</span>
+}
+
+<span class="cm"># Usage:</span>
+<span class="cm"># die "$EX_NOINPUT" "file not found: $file"</span>
+<span class="cm"># die "$EX_USAGE"   "--output requires an argument"</span></pre>
+
+<div class="note">
+Distinguish between <strong>usage errors</strong> (wrong arguments — print a usage hint and exit 1)
+and <strong>runtime errors</strong> (file not found, network timeout — print the error and exit with a
+specific code). Users and scripts calling your tool depend on predictable exit codes.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — Subcommand Dispatch</h2>
+
+<p>Tools that do more than one thing (like <span class="inline-code">git</span> or <span class="inline-code">docker</span>)
+use subcommands. The cleanest pattern keeps each subcommand in its own function and dispatches
+by name:</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># myapp — a tool with subcommands</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "$0")"</span>
+
+<span class="fn">cmd_init</span>()   { <span class="cmd">echo</span> <span class="st">"Initialising..."</span>; }
+<span class="fn">cmd_build</span>()  { <span class="cmd">echo</span> <span class="st">"Building..."</span>;     }
+<span class="fn">cmd_deploy</span>() { <span class="cmd">echo</span> <span class="st">"Deploying..."</span>;    }
+
+<span class="fn">cmd_help</span>() {
+  <span class="cmd">cat</span> <span class="op"><<</span><span class="st">EOF</span>
+Usage: <span class="vr">$PROG</span> COMMAND [OPTIONS]
+
+Commands:
+  init     Initialise a new project
+  build    Build the project
+  deploy   Deploy to the configured target
+  help     Show this help
+EOF
+}
+
+<span class="cm"># Dispatch — fail fast with a helpful message for unknown commands</span>
+<span class="vr">COMMAND</span><span class="op">=</span><span class="st">"${1:-help}"</span>; <span class="kw">shift</span> <span class="op">||</span> <span class="kw">true</span>
+
+<span class="kw">if</span> <span class="cmd">declare</span> <span class="fl">-f</span> <span class="st">"cmd_${COMMAND}"</span> <span class="op">></span>/dev/null <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>; <span class="kw">then</span>
+  <span class="st">"cmd_${COMMAND}"</span> <span class="st">"$@"</span>
+<span class="kw">else</span>
+  <span class="cmd">printf</span> <span class="st">'%s: unknown command: %s\n\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"<span class="vr">$COMMAND</span>"</span> <span class="op">>&2</span>
+  cmd_help <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — Shell Tab Completion with <code>bash_completion</code></h2>
+
+<p>Tab completion transforms a tool from something you look up into something you
+<em>discover</em>. The bash completion system calls a function you register via
+<span class="inline-code">complete</span> whenever the user presses Tab after your tool's name.</p>
+
+<h3>How it works</h3>
+<pre><span class="cm"># The completion system sets these variables before calling your function:</span>
+<span class="cm">#   COMP_WORDS  — array of all words on the current command line</span>
+<span class="cm">#   COMP_CWORD  — index of the word currently being completed</span>
+<span class="cm">#   COMPREPLY   — array your function fills with completion candidates</span>
+
+<span class="fn">_mytool_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span><span class="op">=</span><span class="st">"${COMP_WORDS[$COMP_CWORD]}"</span>
+  <span class="kw">local</span> <span class="vr">prev</span><span class="op">=</span><span class="st">"${COMP_WORDS[$COMP_CWORD-1]}"</span>
+
+  <span class="cm"># Complete option arguments</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$prev</span>"</span> <span class="kw">in</span>
+    <span class="fl">-o</span> <span class="op">|</span> <span class="fl">--output</span>)
+      <span class="cm"># Complete filenames</span>
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-f</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+    <span class="fl">--format</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">'json csv tsv text'</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+      <span class="kw">return</span> ;;
+  <span class="kw">esac</span>
+
+  <span class="cm"># Complete options and subcommands when the user typed a dash or nothing</span>
+  <span class="kw">if</span> [[ <span class="vr">$cur</span> <span class="op">==</span> <span class="fl">-</span><span class="op">*</span> ]]; <span class="kw">then</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> \
+      <span class="st">'--verbose --quiet --output --format --help --version'</span> \
+      <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+  <span class="kw">else</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">'init build deploy help'</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+  <span class="kw">fi</span>
+}
+
+<span class="cm"># Register the completion function for mytool</span>
+<span class="cmd">complete</span> <span class="fl">-F</span> _mytool_complete mytool</pre>
+
+<h3>Key <code>compgen</code> actions</h3>
+<table>
+  <tr><th>Flag</th><th>Completes</th></tr>
+  <tr><td><code>-W 'word1 word2'</code></td><td>Fixed word list</td></tr>
+  <tr><td><code>-f</code></td><td>Filenames in current directory</td></tr>
+  <tr><td><code>-d</code></td><td>Directories only</td></tr>
+  <tr><td><code>-u</code></td><td>Usernames</td></tr>
+  <tr><td><code>-g</code></td><td>Group names</td></tr>
+  <tr><td><code>-c</code></td><td>Commands on PATH</td></tr>
+  <tr><td><code>-A function</code></td><td>Function names</td></tr>
+  <tr><td><code>-v</code></td><td>Shell variable names</td></tr>
+</table>
+
+<h3>Distributing the completion file</h3>
+<pre><span class="cm"># Users source this from ~/.bashrc, or you install it system-wide:</span>
+<span class="cm">#   /etc/bash_completion.d/mytool       — system-wide (Debian/Ubuntu)</span>
+<span class="cm">#   /usr/share/bash-completion/completions/mytool  — XDG location</span>
+<span class="cm">#   ~/.local/share/bash-completion/completions/mytool  — per-user</span>
+
+<span class="cm"># The file itself contains only the function definition and the complete call.</span>
+<span class="cm"># mytool.bash-completion:</span>
+<span class="fn">_mytool_complete</span>() { <span class="cm"># … as above …</span> }
+<span class="cmd">complete</span> <span class="fl">-F</span> _mytool_complete mytool</pre>
+
+<div class="note">
+<strong>Dynamic completions:</strong> instead of a hard-coded <code>-W</code> word list, call your own tool
+to get completions at runtime. Many tools support a hidden <code>--complete</code> flag that prints
+valid values for a given context. This keeps the completion script and the tool in sync automatically.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — Dynamic Completions from the Tool Itself</h2>
+
+<pre><span class="cm"># --complete-subcommands and --complete-options flags for self-describing tools</span>
+<span class="kw">case</span> <span class="st">"${1:-}"</span> <span class="kw">in</span>
+  <span class="fl">--complete-subcommands</span>)
+    <span class="cm"># Print all subcommand names, one per line</span>
+    <span class="cmd">declare</span> <span class="fl">-F</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'/^declare -f cmd_/{ sub(/^declare -f cmd_/, ""); print }'</span>
+    <span class="kw">exit</span> <span class="nu">0</span> ;;
+  <span class="fl">--complete-options</span>)
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">'--verbose'</span> <span class="st">'--quiet'</span> <span class="st">'--output'</span> <span class="st">'--format'</span> <span class="st">'--help'</span> <span class="st">'--version'</span>
+    <span class="kw">exit</span> <span class="nu">0</span> ;;
+<span class="kw">esac</span>
+
+<span class="cm"># Completion script uses the tool itself to stay in sync</span>
+<span class="fn">_mytool_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span><span class="op">=</span><span class="st">"${COMP_WORDS[$COMP_CWORD]}"</span>
+  <span class="kw">local</span> <span class="vr">prev</span><span class="op">=</span><span class="st">"${COMP_WORDS[$COMP_CWORD-1]}"</span>
+
+  <span class="kw">if</span> [[ <span class="vr">$cur</span> <span class="op">==</span> <span class="fl">-</span><span class="op">*</span> ]]; <span class="kw">then</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"$(mytool --complete-options)"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+  <span class="kw">else</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"$(mytool --complete-subcommands)"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+  <span class="kw">fi</span>
+}
+<span class="cmd">complete</span> <span class="fl">-F</span> _mytool_complete mytool</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7 — Man-Page Stubs</h2>
+
+<p>A man page is the canonical reference. Writing full nroff/troff is painful;
+<span class="inline-code">help2man</span> generates a reasonable first draft from your <span class="inline-code">--help</span>
+and <span class="inline-code">--version</span> output. For a hand-crafted stub that covers most use cases:</p>
+
+<pre><span class="cm">#!/bin/sh</span>
+<span class="cm"># Generate and preview a man page stub</span>
+<span class="cm"># Install help2man: apt install help2man / brew install help2man</span>
+
+help2man <span class="fl">--no-info</span> <span class="fl">--name</span> <span class="st">'process input files'</span> \
+  <span class="fl">--output</span> mytool.1 <span class="pth">./mytool</span>
+
+<span class="cm"># Preview</span>
+man <span class="fl">-l</span> mytool.1
+
+<span class="cm"># Install</span>
+<span class="cmd">sudo</span> <span class="cmd">cp</span> mytool.1 <span class="pth">/usr/local/share/man/man1/</span>
+<span class="cmd">sudo</span> mandb</pre>
+
+<h3>Minimal hand-written man stub format</h3>
+<pre><span class="cm">.\" mytool.1 — minimal man page</span>
+.TH MYTOOL 1 "<span class="vr">$(date '+%B %Y')"</span>" <span class="st">"1.2.0"</span> <span class="st">"User Commands"</span>
+.SH NAME
+mytool \- process input files
+.SH SYNOPSIS
+.B mytool
+[\fIOPTIONS\fR] \fIFILE\fR [\fIFILE\fR...]
+.SH DESCRIPTION
+Process one or more input files and write results to stdout.
+.SH OPTIONS
+.TP
+\fB\-o\fR, \fB\-\-output\fR \fIFILE\fR
+Write output to FILE instead of stdout.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Show detailed progress messages.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display help and exit.
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Usage error.
+.SH AUTHOR
+Your Name &lt;you@example.com&gt;</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>8 — Putting It All Together: A Reference Template</h2>
+
+<p>Here is a complete, production-ready CLI tool skeleton combining everything above:</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># =============================================================================</span>
+<span class="cm"># mytool — one-line description</span>
+<span class="cm">#</span>
+<span class="cm"># USAGE: mytool [OPTIONS] FILE [FILE...]</span>
+<span class="cm">#</span>
+<span class="cm"># Options:</span>
+<span class="cm">#   -o, --output FILE   Write output to FILE (default: stdout)</span>
+<span class="cm">#   -v, --verbose       Increase verbosity</span>
+<span class="cm">#   -q, --quiet         Suppress non-error output</span>
+<span class="cm">#   -h, --help          Show this help and exit</span>
+<span class="cm">#       --version       Show version and exit</span>
+<span class="cm"># =============================================================================</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "${BASH_SOURCE[0]}")"</span>
+<span class="vr">VERSION</span><span class="op">=</span><span class="st">'1.0.0'</span>
+
+<span class="cm"># ── Exit codes ────────────────────────────────────────────────────────────────</span>
+<span class="kw">readonly</span> <span class="vr">EX_OK</span><span class="op">=</span><span class="nu">0</span> <span class="vr">EX_USAGE</span><span class="op">=</span><span class="nu">1</span> <span class="vr">EX_NOINPUT</span><span class="op">=</span><span class="nu">2</span> <span class="vr">EX_NOPERM</span><span class="op">=</span><span class="nu">3</span>
+
+<span class="cm"># ── Helpers ───────────────────────────────────────────────────────────────────</span>
+<span class="fn">die</span>()     { <span class="cmd">printf</span> <span class="st">'%s: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="st">"${_exit_code:-1}"</span>; }
+<span class="fn">warn</span>()    { (( <span class="vr">QUIET</span> )) <span class="op">||</span> <span class="cmd">printf</span> <span class="st">'%s: warning: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>; }
+<span class="fn">verbose</span>() { (( <span class="vr">VERBOSE</span> )) <span class="op">&&</span> <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$*"</span> <span class="op">>&2</span> <span class="op">||</span> <span class="kw">true</span>; }
+
+<span class="fn">usage</span>() {
+  <span class="cmd">sed</span> <span class="fl">-n</span> <span class="rx">'/^# USAGE:/,/^# ===/{/^# ===/d; s/^# \?//; p}'</span> \
+    <span class="st">"${BASH_SOURCE[0]}"</span>
+}
+<span class="fn">version</span>() { <span class="cmd">printf</span> <span class="st">'%s %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"<span class="vr">$VERSION</span>"</span>; }
+
+<span class="cm"># ── Argument parsing ──────────────────────────────────────────────────────────</span>
+<span class="vr">VERBOSE</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">QUIET</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">OUTPUT</span><span class="op">=</span><span class="st">''</span>
+
+<span class="kw">while</span> [[ <span class="vr">$#</span> <span class="op">-gt</span> <span class="nu">0</span> ]]; <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    <span class="fl">-v</span><span class="op">|</span><span class="fl">--verbose</span>)  <span class="vr">VERBOSE</span><span class="op">=</span><span class="nu">1</span>;          <span class="kw">shift</span>   ;;
+    <span class="fl">-q</span><span class="op">|</span><span class="fl">--quiet</span>)    <span class="vr">QUIET</span><span class="op">=</span><span class="nu">1</span>;            <span class="kw">shift</span>   ;;
+    <span class="fl">-o</span><span class="op">|</span><span class="fl">--output</span>)   <span class="vr">OUTPUT</span><span class="op">=</span><span class="st">"${2:?--output requires FILE}"</span>; <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">--output=</span><span class="op">*</span>)   <span class="vr">OUTPUT</span><span class="op">=</span><span class="st">"${1#--output=}"</span>; <span class="kw">shift</span>   ;;
+    <span class="fl">-h</span><span class="op">|</span><span class="fl">--help</span>)     usage;              <span class="kw">exit</span> <span class="nu">0</span>  ;;
+    <span class="fl">--version</span>)     version;            <span class="kw">exit</span> <span class="nu">0</span>  ;;
+    <span class="fl">--</span>)            <span class="kw">shift</span>;             <span class="kw">break</span>   ;;
+    <span class="fl">-</span><span class="op">*</span>)            _exit_code<span class="op">=</span><span class="vr">$EX_USAGE</span> <span class="fn">die</span> <span class="st">"unknown option: $1"</span> ;;
+    <span class="op">*</span>)             <span class="kw">break</span>                        ;;
+  <span class="kw">esac</span>
+<span class="kw">done</span>
+
+(( <span class="vr">$#</span> <span class="op">></span> <span class="nu">0</span> )) <span class="op">||</span> { usage <span class="op">>&2</span>; <span class="kw">exit</span> <span class="st">"<span class="vr">$EX_USAGE</span>"</span>; }
+
+<span class="cm"># ── Output setup ──────────────────────────────────────────────────────────────</span>
+<span class="kw">if</span> [[ <span class="fl">-n</span> <span class="vr">$OUTPUT</span> ]]; <span class="kw">then</span>
+  <span class="kw">exec</span> <span class="nu">1</span><span class="op">></span> <span class="st">"<span class="vr">$OUTPUT</span>"</span>   <span class="cm"># redirect stdout to file for the rest of the script</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Main logic ────────────────────────────────────────────────────────────────</span>
+<span class="fn">process_file</span>() {
+  <span class="kw">local</span> <span class="vr">f</span><span class="op">=</span><span class="st">"$1"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$f</span>"</span> ]] <span class="op">||</span> { _exit_code<span class="op">=</span><span class="vr">$EX_NOINPUT</span> <span class="fn">die</span> <span class="st">"file not found: $f"</span>; }
+  [[ <span class="fl">-r</span> <span class="st">"<span class="vr">$f</span>"</span> ]] <span class="op">||</span> { _exit_code<span class="op">=</span><span class="vr">$EX_NOPERM</span>  <span class="fn">die</span> <span class="st">"permission denied: $f"</span>; }
+  <span class="fn">verbose</span> <span class="st">"Processing: $f"</span>
+  <span class="cm"># … actual work …</span>
+  <span class="cmd">cat</span> <span class="st">"<span class="vr">$f</span>"</span>
+}
+
+<span class="kw">for</span> <span class="vr">file</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+  process_file <span class="st">"<span class="vr">$file</span>"</span>
+<span class="kw">done</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Robust option parser</h4>
+  <p>Write a script <code>csvcut.sh</code> that accepts the following interface:</p>
+  <pre><code>Usage: csvcut [OPTIONS] FILE [FILE...]
+
+  -f, --fields LIST     Comma-separated field numbers or names (required)
+  -d, --delimiter CHAR  Input delimiter (default: ,)
+  -H, --no-header       Input has no header row
+  -o, --output FILE     Write to FILE instead of stdout
+  -h, --help
+      --version</code></pre>
+  <p>Use a manual <code>while/case</code> loop. Validate that <code>--fields</code> was provided;
+  exit 1 with a usage hint if it was not. Actual CSV processing can be a stub
+  (<code>echo "Would process: $*"</code>) — focus on the option handling.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># USAGE: csvcut [OPTIONS] FILE [FILE...]
+#
+#   -f, --fields LIST     Comma-separated field numbers (required)
+#   -d, --delimiter CHAR  Input delimiter (default: ,)
+#   -H, --no-header       Input has no header row
+#   -o, --output FILE     Write to FILE instead of stdout
+#   -h, --help            Show this help
+#       --version         Show version
+#</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "$0")"</span>
+<span class="vr">VERSION</span><span class="op">=</span><span class="st">'1.0.0'</span>
+
+<span class="fn">usage</span>()   { <span class="cmd">sed</span> <span class="fl">-n</span> <span class="rx">'/^# USAGE:/,/^#$/{ s/^# \?//; p }'</span> <span class="st">"${BASH_SOURCE[0]}"</span>; }
+<span class="fn">version</span>() { <span class="cmd">printf</span> <span class="st">'%s %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"<span class="vr">$VERSION</span>"</span>; }
+<span class="fn">die</span>()     { <span class="cmd">printf</span> <span class="st">'%s: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="vr">FIELDS</span><span class="op">=</span><span class="st">''</span>
+<span class="vr">DELIM</span><span class="op">=</span><span class="st">','</span>
+<span class="vr">NO_HEADER</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">OUTPUT</span><span class="op">=</span><span class="st">''</span>
+
+<span class="kw">while</span> [[ <span class="vr">$#</span> <span class="fl">-gt</span> <span class="nu">0</span> ]]; <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    <span class="fl">-f</span><span class="op">|</span><span class="fl">--fields</span>)     <span class="vr">FIELDS</span><span class="op">=</span><span class="st">"${2:?--fields requires LIST}"</span>;    <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">--fields=</span><span class="op">*</span>)      <span class="vr">FIELDS</span><span class="op">=</span><span class="st">"${1#--fields=}"</span>;                   <span class="kw">shift</span>   ;;
+    <span class="fl">-d</span><span class="op">|</span><span class="fl">--delimiter</span>)  <span class="vr">DELIM</span><span class="op">=</span><span class="st">"${2:?--delimiter requires CHAR}"</span>;   <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">--delimiter=</span><span class="op">*</span>)   <span class="vr">DELIM</span><span class="op">=</span><span class="st">"${1#--delimiter=}"</span>;                  <span class="kw">shift</span>   ;;
+    <span class="fl">-H</span><span class="op">|</span><span class="fl">--no-header</span>)  <span class="vr">NO_HEADER</span><span class="op">=</span><span class="nu">1</span>;                               <span class="kw">shift</span>   ;;
+    <span class="fl">-o</span><span class="op">|</span><span class="fl">--output</span>)     <span class="vr">OUTPUT</span><span class="op">=</span><span class="st">"${2:?--output requires FILE}"</span>;      <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">--output=</span><span class="op">*</span>)      <span class="vr">OUTPUT</span><span class="op">=</span><span class="st">"${1#--output=}"</span>;                    <span class="kw">shift</span>   ;;
+    <span class="fl">-h</span><span class="op">|</span><span class="fl">--help</span>)       usage; <span class="kw">exit</span> <span class="nu">0</span>                               ;;
+    <span class="fl">--version</span>)       version; <span class="kw">exit</span> <span class="nu">0</span>                             ;;
+    <span class="fl">--</span>)              <span class="kw">shift</span>; <span class="kw">break</span>                                 ;;
+    <span class="fl">-</span><span class="op">*</span>)              <span class="fn">die</span> <span class="st">"unknown option: $1"</span>                     ;;
+    <span class="op">*</span>)               <span class="kw">break</span>                                         ;;
+  <span class="kw">esac</span>
+<span class="kw">done</span>
+
+[[ <span class="fl">-n</span> <span class="vr">$FIELDS</span> ]] <span class="op">||</span> { usage <span class="op">>&2</span>; <span class="fn">die</span> <span class="st">"--fields is required"</span>; }
+(( <span class="vr">$#</span> <span class="op">></span> <span class="nu">0</span> )) <span class="op">||</span> { usage <span class="op">>&2</span>; <span class="fn">die</span> <span class="st">"at least one FILE is required"</span>; }
+
+[[ <span class="fl">-n</span> <span class="vr">$OUTPUT</span> ]] <span class="op">&&</span> <span class="kw">exec</span> <span class="nu">1</span><span class="op">></span><span class="st">"<span class="vr">$OUTPUT</span>"</span>
+
+<span class="cmd">printf</span> <span class="st">'fields=%s delim=%q no_header=%d files=%s\n'</span> \
+  <span class="st">"<span class="vr">$FIELDS</span>"</span> <span class="st">"<span class="vr">$DELIM</span>"</span> <span class="st">"<span class="vr">$NO_HEADER</span>"</span> <span class="st">"$*"</span>
+<span class="cm"># Real CSV processing would go here</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Subcommand tool</h4>
+  <p>Build a tool <code>vaultctl</code> with subcommands <code>add</code>, <code>get</code>,
+  <code>list</code>, and <code>delete</code> that manages a simple key=value store in
+  <code>~/.vaultctl/store</code>. Requirements:</p>
+  <ul>
+    <li>Each subcommand has its own <code>--help</code></li>
+    <li>The top-level <code>help</code> command lists all subcommands with one-line descriptions</li>
+    <li>Unknown subcommands print an error and list the available ones</li>
+    <li><code>add KEY VALUE</code>, <code>get KEY</code>, <code>list</code>, <code>delete KEY</code></li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "$0")"</span>
+<span class="vr">STORE_DIR</span><span class="op">=</span><span class="st">"${HOME}/.vaultctl"</span>
+<span class="vr">STORE</span><span class="op">=</span><span class="st">"<span class="vr">$STORE_DIR</span>/store"</span>
+<span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$STORE_DIR</span>"</span>
+<span class="cmd">chmod</span> <span class="nu">700</span> <span class="st">"<span class="vr">$STORE_DIR</span>"</span>
+<span class="op">:</span> <span class="st">"${STORE:?}"</span>   <span class="cm"># ensure path is non-empty</span>
+
+<span class="fn">cmd_add</span>() {
+  [[ <span class="st">"${1:-}"</span> <span class="op">==</span> <span class="st">'--help'</span> ]] <span class="op">&&</span> { <span class="cmd">echo</span> <span class="st">"Usage: $PROG add KEY VALUE"</span>; <span class="kw">return</span>; }
+  <span class="kw">local</span> <span class="vr">key</span><span class="op">=</span><span class="st">"${1:?add requires KEY}"</span> <span class="vr">val</span><span class="op">=</span><span class="st">"${2:?add requires VALUE}"</span>
+  <span class="cm"># Remove existing key then append</span>
+  <span class="cmd">sed</span> <span class="fl">-i</span> <span class="rx">"/^${key}=/d"</span> <span class="st">"<span class="vr">$STORE</span>"</span> <span class="nu">2</span><span class="op">>/</span>dev/null <span class="op">||</span> <span class="kw">true</span>
+  <span class="cmd">printf</span> <span class="st">'%s=%s\n'</span> <span class="st">"<span class="vr">$key</span>"</span> <span class="st">"<span class="vr">$val</span>"</span> <span class="op">>></span> <span class="st">"<span class="vr">$STORE</span>"</span>
+  <span class="cmd">chmod</span> <span class="nu">600</span> <span class="st">"<span class="vr">$STORE</span>"</span>
+  <span class="cmd">echo</span> <span class="st">"Stored: <span class="vr">$key</span>"</span>
+}
+
+<span class="fn">cmd_get</span>() {
+  [[ <span class="st">"${1:-}"</span> <span class="op">==</span> <span class="st">'--help'</span> ]] <span class="op">&&</span> { <span class="cmd">echo</span> <span class="st">"Usage: $PROG get KEY"</span>; <span class="kw">return</span>; }
+  <span class="kw">local</span> <span class="vr">key</span><span class="op">=</span><span class="st">"${1:?get requires KEY}"</span>
+  <span class="kw">local</span> <span class="vr">val</span>
+  <span class="vr">val</span><span class="op">=</span>$(<span class="cmd">grep</span> <span class="fl">-m1</span> <span class="rx">"^${key}="</span> <span class="st">"<span class="vr">$STORE</span>"</span> <span class="nu">2</span><span class="op">>/</span>dev/null <span class="op">||</span> <span class="kw">true</span>)
+  [[ <span class="fl">-n</span> <span class="vr">$val</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"key not found: $key"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${val#*=}"</span>
+}
+
+<span class="fn">cmd_list</span>() {
+  [[ <span class="st">"${1:-}"</span> <span class="op">==</span> <span class="st">'--help'</span> ]] <span class="op">&&</span> { <span class="cmd">echo</span> <span class="st">"Usage: $PROG list"</span>; <span class="kw">return</span>; }
+  [[ <span class="fl">-f</span> <span class="vr">$STORE</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"(empty)"</span>; <span class="kw">return</span>; }
+  <span class="cmd">awk</span> <span class="fl">-F=</span> <span class="st">'{ printf "%-20s %s\n", $1, $2 }'</span> <span class="st">"<span class="vr">$STORE</span>"</span>
+}
+
+<span class="fn">cmd_delete</span>() {
+  [[ <span class="st">"${1:-}"</span> <span class="op">==</span> <span class="st">'--help'</span> ]] <span class="op">&&</span> { <span class="cmd">echo</span> <span class="st">"Usage: $PROG delete KEY"</span>; <span class="kw">return</span>; }
+  <span class="kw">local</span> <span class="vr">key</span><span class="op">=</span><span class="st">"${1:?delete requires KEY}"</span>
+  <span class="cmd">sed</span> <span class="fl">-i</span> <span class="rx">"/^${key}=/d"</span> <span class="st">"<span class="vr">$STORE</span>"</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"Deleted: <span class="vr">$key</span>"</span>
+}
+
+<span class="fn">cmd_help</span>() {
+  <span class="cmd">cat</span> <span class="op"><<</span><span class="st">EOF</span>
+Usage: <span class="vr">$PROG</span> COMMAND [ARGS]
+
+Commands:
+  add    KEY VALUE   Store a key/value pair
+  get    KEY         Retrieve a value by key
+  list               List all stored keys
+  delete KEY         Remove a key
+  help               Show this help
+
+Run '<span class="vr">$PROG</span> COMMAND --help' for command-specific help.
+EOF
+}
+
+<span class="vr">CMD</span><span class="op">=</span><span class="st">"${1:-help}"</span>; <span class="kw">shift</span> <span class="op">||</span> <span class="kw">true</span>
+<span class="kw">if</span> <span class="cmd">declare</span> <span class="fl">-f</span> <span class="st">"cmd_${CMD}"</span> <span class="op">>/</span>dev/null <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>; <span class="kw">then</span>
+  <span class="st">"cmd_${CMD}"</span> <span class="st">"$@"</span>
+<span class="kw">else</span>
+  <span class="cmd">printf</span> <span class="st">'%s: unknown command: %s\n\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"<span class="vr">$CMD</span>"</span> <span class="op">>&2</span>
+  cmd_help <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Tab completion script</h4>
+  <p>Write a bash completion file <code>vaultctl.bash-completion</code> for the <code>vaultctl</code>
+  tool from Exercise 2. It should:</p>
+  <ul>
+    <li>Complete subcommand names at the first position</li>
+    <li>Complete <code>--help</code> at the second position for any subcommand</li>
+    <li>For <code>get</code> and <code>delete</code>, complete available key names by reading
+    <code>~/.vaultctl/store</code></li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="cm"># vaultctl.bash-completion
+# Source in ~/.bashrc or install to /etc/bash_completion.d/</span>
+
+<span class="fn">_vaultctl_complete</span>() {
+  <span class="kw">local</span> <span class="vr">cur</span><span class="op">=</span><span class="st">"${COMP_WORDS[$COMP_CWORD]}"</span>
+  <span class="kw">local</span> <span class="vr">prev</span><span class="op">=</span><span class="st">"${COMP_WORDS[$COMP_CWORD-1]}"</span>
+  <span class="kw">local</span> <span class="vr">subcmd</span><span class="op">=</span><span class="st">"${COMP_WORDS[1]:-}"</span>
+  <span class="kw">local</span> <span class="vr">store</span><span class="op">=</span><span class="st">"${HOME}/.vaultctl/store"</span>
+
+  <span class="cm"># Position 1: complete subcommands</span>
+  <span class="kw">if</span> (( <span class="vr">COMP_CWORD</span> <span class="op">==</span> <span class="nu">1</span> )); <span class="kw">then</span>
+    <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">'add get list delete help'</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) )
+    <span class="kw">return</span>
+  <span class="kw">fi</span>
+
+  <span class="cm"># Position 2+: subcommand-specific completions</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$subcmd</span>"</span> <span class="kw">in</span>
+    get<span class="op">|</span>delete)
+      <span class="cm"># Complete key names from store file</span>
+      <span class="kw">local</span> <span class="vr">keys</span><span class="op">=</span><span class="st">''</span>
+      [[ <span class="fl">-f</span> <span class="vr">$store</span> ]] <span class="op">&&</span> <span class="vr">keys</span><span class="op">=</span>$(<span class="cmd">awk</span> <span class="fl">-F=</span> <span class="st">'{ print $1 }'</span> <span class="st">"<span class="vr">$store</span>"</span>)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">"<span class="vr">$keys</span> --help"</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+    add)
+      <span class="cm"># After 'add KEY', nothing to complete (VALUE is free-form)</span>
+      (( <span class="vr">COMP_CWORD</span> <span class="op">==</span> <span class="nu">2</span> )) <span class="op">&&</span>
+        <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">'--help'</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+    list<span class="op">|</span>help)
+      <span class="vr">COMPREPLY</span><span class="op">=</span>( $(<span class="cmd">compgen</span> <span class="fl">-W</span> <span class="st">'--help'</span> <span class="fl">--</span> <span class="st">"<span class="vr">$cur</span>"</span>) ) ;;
+  <span class="kw">esac</span>
+}
+
+<span class="cmd">complete</span> <span class="fl">-F</span> _vaultctl_complete vaultctl</pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Self-contained tool skeleton</h4>
+  <p>Using the reference template from section 8, create a complete tool
+  <code>lsrecent</code> that:</p>
+  <ul>
+    <li>Lists files modified within the last N hours (default: 24)</li>
+    <li>Accepts <code>-n/--hours N</code>, <code>-s/--sort (name|size|time)</code>,
+    <code>-l/--long</code> (show size and timestamp), <code>-h/--help</code>, <code>--version</code></li>
+    <li>Takes an optional directory argument (default: current directory)</li>
+    <li>Includes an embedded usage-string comment and a completion-aware
+    <code>--complete-options</code> hidden flag</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># USAGE: lsrecent [OPTIONS] [DIR]
+#
+# List files modified within the last N hours.
+#
+# Options:
+#   -n, --hours N       Lookback window in hours (default: 24)
+#   -s, --sort FIELD    Sort by: name, size, time (default: time)
+#   -l, --long          Show size and modification timestamp
+#   -h, --help          Show this help and exit
+#       --version       Show version and exit
+#</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "${BASH_SOURCE[0]}")"</span>
+<span class="vr">VERSION</span><span class="op">=</span><span class="st">'1.0.0'</span>
+
+<span class="fn">usage</span>()   { <span class="cmd">sed</span> <span class="fl">-n</span> <span class="rx">'/^# USAGE:/,/^#$/{ s/^# \?//; p }'</span> <span class="st">"${BASH_SOURCE[0]}"</span>; }
+<span class="fn">version</span>() { <span class="cmd">printf</span> <span class="st">'%s %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"<span class="vr">$VERSION</span>"</span>; }
+<span class="fn">die</span>()     { <span class="cmd">printf</span> <span class="st">'%s: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="cm"># Hidden flag for completion</span>
+[[ <span class="st">"${1:-}"</span> <span class="op">==</span> <span class="st">'--complete-options'</span> ]] <span class="op">&&</span> {
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">'--hours'</span> <span class="st">'--sort'</span> <span class="st">'--long'</span> <span class="st">'--help'</span> <span class="st">'--version'</span>; <span class="kw">exit</span> <span class="nu">0</span>; }
+
+<span class="vr">HOURS</span><span class="op">=</span><span class="nu">24</span>
+<span class="vr">SORT</span><span class="op">=</span><span class="st">'time'</span>
+<span class="vr">LONG</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="kw">while</span> [[ <span class="vr">$#</span> <span class="fl">-gt</span> <span class="nu">0</span> ]]; <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    <span class="fl">-n</span><span class="op">|</span><span class="fl">--hours</span>)    <span class="vr">HOURS</span><span class="op">=</span><span class="st">"${2:?--hours requires N}"</span>;    <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">--hours=</span><span class="op">*</span>)    <span class="vr">HOURS</span><span class="op">=</span><span class="st">"${1#--hours=}"</span>;               <span class="kw">shift</span>   ;;
+    <span class="fl">-s</span><span class="op">|</span><span class="fl">--sort</span>)     <span class="vr">SORT</span><span class="op">=</span><span class="st">"${2:?--sort requires FIELD}"</span>;  <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="fl">--sort=</span><span class="op">*</span>)      <span class="vr">SORT</span><span class="op">=</span><span class="st">"${1#--sort=}"</span>;                 <span class="kw">shift</span>   ;;
+    <span class="fl">-l</span><span class="op">|</span><span class="fl">--long</span>)     <span class="vr">LONG</span><span class="op">=</span><span class="nu">1</span>;                              <span class="kw">shift</span>   ;;
+    <span class="fl">-h</span><span class="op">|</span><span class="fl">--help</span>)     usage; <span class="kw">exit</span> <span class="nu">0</span>                        ;;
+    <span class="fl">--version</span>)     version; <span class="kw">exit</span> <span class="nu">0</span>                      ;;
+    <span class="fl">--</span>)            <span class="kw">shift</span>; <span class="kw">break</span>                          ;;
+    <span class="fl">-</span><span class="op">*</span>)            <span class="fn">die</span> <span class="st">"unknown option: $1"</span>              ;;
+    <span class="op">*</span>)             <span class="kw">break</span>                                  ;;
+  <span class="kw">esac</span>
+<span class="kw">done</span>
+
+<span class="vr">DIR</span><span class="op">=</span><span class="st">"${1:-.}"</span>
+[[ <span class="fl">-d</span> <span class="vr">$DIR</span> ]] <span class="op">||</span> <span class="fn">die</span> <span class="st">"not a directory: $DIR"</span>
+[[ <span class="vr">$SORT</span> <span class="op">=~</span> <span class="rx">^(name|size|time)$</span> ]] <span class="op">||</span> <span class="fn">die</span> <span class="st">"--sort must be name, size, or time"</span>
+[[ <span class="vr">$HOURS</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]] <span class="op">||</span> <span class="fn">die</span> <span class="st">"--hours must be a positive integer"</span>
+
+<span class="cm"># find uses minutes; convert hours</span>
+<span class="vr">MINS</span><span class="op">=</span>$(( <span class="vr">HOURS</span> <span class="op">*</span> <span class="nu">60</span> ))
+
+<span class="kw">if</span> (( <span class="vr">LONG</span> )); <span class="kw">then</span>
+  <span class="cm"># Print: size mtime path</span>
+  <span class="cmd">find</span> <span class="st">"<span class="vr">$DIR</span>"</span> <span class="fl">-type</span> f <span class="fl">-mmin</span> <span class="fl">-</span><span class="vr">${MINS}</span> <span class="fl">-print0</span> <span class="op">|</span> \
+    <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="cmd">stat</span> <span class="fl">--format</span> <span class="st">'%s %y %n'</span> <span class="op">|</span> \
+    <span class="kw">case</span> <span class="vr">$SORT</span> <span class="kw">in</span>
+      name) <span class="cmd">sort</span> <span class="fl">-k3</span>  ;;
+      size) <span class="cmd">sort</span> <span class="fl">-k1</span> <span class="fl">-rn</span> ;;
+      time) <span class="cmd">sort</span> <span class="fl">-k2</span> <span class="fl">-r</span>  ;;
+    <span class="kw">esac</span>
+<span class="kw">else</span>
+  <span class="kw">case</span> <span class="vr">$SORT</span> <span class="kw">in</span>
+    name) <span class="cmd">find</span> <span class="st">"<span class="vr">$DIR</span>"</span> <span class="fl">-type</span> f <span class="fl">-mmin</span> <span class="fl">-</span><span class="vr">${MINS}</span> <span class="op">|</span> <span class="cmd">sort</span> ;;
+    size) <span class="cmd">find</span> <span class="st">"<span class="vr">$DIR</span>"</span> <span class="fl">-type</span> f <span class="fl">-mmin</span> <span class="fl">-</span><span class="vr">${MINS}</span> <span class="fl">-print0</span> <span class="op">|</span>
+            <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="cmd">stat</span> <span class="fl">--format</span> <span class="st">'%s %n'</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-rn</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ print $2 }'</span> ;;
+    time) <span class="cmd">find</span> <span class="st">"<span class="vr">$DIR</span>"</span> <span class="fl">-type</span> f <span class="fl">-mmin</span> <span class="fl">-</span><span class="vr">${MINS}</span> <span class="fl">-print0</span> <span class="op">|</span>
+            <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="cmd">stat</span> <span class="fl">--format</span> <span class="st">'%Y %n'</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-rn</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ print $2 }'</span> ;;
+  <span class="kw">esac</span>
+<span class="kw">fi</span></pre>
+  </div>
+</div>
+
+</div>

@@ -1,0 +1,1068 @@
+<!-- ============================================================
+     BASH INTERMEDIATE: Topic 8 — Network Operations from the Shell
+     Subject: Bash / Linux Shell Scripting (Intermediate)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+  .sh  { color: #e8a87d; }
+  .vr  { color: #ffd580; }
+  .op  { color: #e8a87d; }
+  .er  { color: #e05c5c; }
+  .fn  { color: #7ab8ff; }
+  .rx  { color: #ff9eb5; }
+
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 12px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+    background: #1a1d27;
+    color: #7ecfa0;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; color: #7ab8ff; opacity: 0.8; }
+
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+
+  .exercise-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-block .ex-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+  .exercise-block .ex-task {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .exercise-block .ex-hint {
+    font-size: 0.85em;
+    color: #a0a4b8;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-solution-toggle {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    color: #7ecfa0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .exercise-block .ex-solution-toggle:hover { background: #1e2235; }
+  .exercise-block .ex-solution { display: none; margin-top: 12px; }
+  .exercise-block .ex-solution.visible { display: block; }
+  .exercise-block .sol-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+</style>
+
+<script>
+function toggleSolution(btn) {
+  var sol = btn.nextElementSibling;
+  if (sol.classList.contains('visible')) {
+    sol.classList.remove('visible');
+    btn.textContent = '▶ Show Sample Solution';
+  } else {
+    sol.classList.add('visible');
+    btn.textContent = '▼ Hide Solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>🌐 Intermediate Topic 8 — Network Operations from the Shell</h2>
+  <p class="section-intro">Shell scripts are first-class network citizens. <code>curl</code> alone covers the vast majority of HTTP work: downloading files, calling REST APIs, sending webhooks, checking service health, and posting alerts. Below HTTP, bash's built-in <code>/dev/tcp</code> pseudo-device handles raw TCP without any external tool. This chapter covers <code>curl</code> in production depth — headers, authentication, retries, rate limiting, parallel downloads — along with <code>wget</code> for mirroring, <code>/dev/tcp</code> for low-level probing, and the patterns used in real monitoring and deployment scripts.</p>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. curl IN DEPTH
+  ═══════════════════════════════════════════ -->
+  <h2>1 — <code>curl</code> In Depth</h2>
+
+  <p><code>curl</code> is the workhorse. The flags you use every day are only a fraction of what it offers. Understanding its output model — where the body goes, where headers go, how to capture the HTTP status code — is what separates scripts that work from scripts that silently fail.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🌐 Core curl flags and output model</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Output control ────────────────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-s</span>   URL           <span class="cm"># silent: suppress progress/errors</span>
+<span class="cmd">curl</span> <span class="fl">-S</span>   URL           <span class="cm"># show errors even when silent (-sS together)</span>
+<span class="cmd">curl</span> <span class="fl">-o</span> <span class="pth">FILE</span> URL        <span class="cm"># write body to FILE instead of stdout</span>
+<span class="cmd">curl</span> <span class="fl">-O</span>   URL           <span class="cm"># write to filename from URL</span>
+<span class="cmd">curl</span> <span class="fl">-L</span>   URL           <span class="cm"># follow redirects (3xx)</span>
+<span class="cmd">curl</span> <span class="fl">-I</span>   URL           <span class="cm"># HEAD only — show response headers, no body</span>
+<span class="cmd">curl</span> <span class="fl">-v</span>   URL           <span class="cm"># verbose: show all request and response headers</span>
+
+<span class="cm"># ── Capture HTTP status code separately ───────────────────────</span>
+<span class="cm"># -w writes a format string AFTER the response body</span>
+<span class="vr">http_code</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-o</span> <span class="pth">/dev/null</span> <span class="fl">-w</span> <span class="st">'%{http_code}'</span> URL<span class="st">)</span>
+
+<span class="cm"># Body + status in one call — split on the last newline</span>
+<span class="vr">response</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-w</span> <span class="st">$'\n%{http_code}'</span> URL<span class="st">)</span>
+<span class="vr">status</span>=<span class="st">"${response##*$'\n'}"</span>
+<span class="vr">body</span>=<span class="st">"${response%$'\n'*}"</span>
+
+<span class="cm"># ── Useful -w variables ───────────────────────────────────────</span>
+<span class="cm"># %{http_code}      HTTP status (200, 404, etc.)</span>
+<span class="cm"># %{time_total}     total elapsed seconds</span>
+<span class="cm"># %{time_connect}   time to TCP connect</span>
+<span class="cm"># %{size_download}  bytes downloaded</span>
+<span class="cm"># %{speed_download} bytes/second</span>
+<span class="cm"># %{redirect_url}   final URL after redirects</span>
+<span class="cm"># %{content_type}   Content-Type header value</span>
+
+<span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-o</span> <span class="pth">/dev/null</span> \
+     <span class="fl">-w</span> <span class="st">'status=%{http_code}  time=%{time_total}s  size=%{size_download}B\n'</span> \
+     https://example.com
+
+<span class="cm"># ── Timeouts ──────────────────────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">--connect-timeout</span> <span class="nu">5</span>   <span class="cm"># max seconds to establish TCP connection</span>
+<span class="cmd">curl</span> <span class="fl">--max-time</span>       <span class="nu">30</span>   <span class="cm"># max total seconds for the whole transfer</span>
+<span class="cm"># Always set both — without them curl hangs indefinitely</span>
+
+<span class="cm"># ── Request methods and bodies ────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-X</span> GET    URL
+<span class="cmd">curl</span> <span class="fl">-X</span> POST   <span class="fl">-d</span> <span class="st">'key=val'</span>                URL
+<span class="cmd">curl</span> <span class="fl">-X</span> POST   <span class="fl">-d</span> <span class="st">'{"x":1}'</span> \
+               <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span>  URL
+<span class="cmd">curl</span> <span class="fl">-X</span> PUT    <span class="fl">-d</span> @payload.json \
+               <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span>  URL
+<span class="cmd">curl</span> <span class="fl">-X</span> DELETE URL
+<span class="cmd">curl</span> <span class="fl">-X</span> PATCH  <span class="fl">-d</span> <span class="st">'{"field":"value"}'</span> \
+               <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span>  URL
+
+<span class="cm"># ── Headers ───────────────────────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-H</span> <span class="st">'Accept: application/json'</span>           URL
+<span class="cmd">curl</span> <span class="fl">-H</span> <span class="st">'Authorization: Bearer TOKEN'</span>        URL
+<span class="cmd">curl</span> <span class="fl">-H</span> <span class="st">'X-API-Key: SECRET'</span>                  URL
+<span class="cmd">curl</span> <span class="fl">-H</span> <span class="st">'Authorization: Basic BASE64CREDS'</span>   URL
+<span class="cm"># Or let curl encode basic auth:</span>
+<span class="cmd">curl</span> <span class="fl">-u</span> <span class="st">'user:password'</span>                       URL
+
+<span class="cm"># ── Dump response headers to a file ──────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-sSD</span> headers.txt <span class="fl">-o</span> body.json URL
+<span class="cm"># -D FILE writes response headers; -o FILE writes body</span>
+
+<span class="cm"># ── SSL / TLS ─────────────────────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-k</span>              URL   <span class="cm"># skip cert verification (dev only)</span>
+<span class="cmd">curl</span> <span class="fl">--cacert</span> ca.pem  URL   <span class="cm"># custom CA bundle</span>
+<span class="cmd">curl</span> <span class="fl">--cert</span> cl.pem \
+     <span class="fl">--key</span>  cl-key.pem URL  <span class="cm"># mutual TLS (client cert)</span></code>
+    </div>
+  </div>
+
+  <h3>Retries and rate limiting</h3>
+  <div class="platform-block">
+    <div class="pb-header">🌐 curl built-in retry and production-safe wrappers</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Built-in retry flags (curl 7.12+) ─────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">--retry</span>           <span class="nu">3</span>    <span class="cm"># retry up to N times on transient failures</span>
+<span class="cmd">curl</span> <span class="fl">--retry-delay</span>     <span class="nu">2</span>    <span class="cm"># seconds between retries</span>
+<span class="cmd">curl</span> <span class="fl">--retry-max-time</span>  <span class="nu">60</span>   <span class="cm"># total retry budget in seconds</span>
+<span class="cmd">curl</span> <span class="fl">--retry-connrefused</span>    <span class="cm"># also retry on connection refused</span>
+<span class="cm"># curl retries on: network errors, 408, 429, 500, 502, 503, 504</span>
+<span class="cm"># curl does NOT retry on 4xx errors by default</span>
+
+<span class="cm"># ── Production-safe curl wrapper ──────────────────────────────</span>
+<span class="fn">api_call</span>() {
+    <span class="cm"># Usage: api_call METHOD URL [extra curl args...]</span>
+    <span class="kw">local</span> <span class="vr">method</span>=<span class="st">"$1"</span> <span class="vr">url</span>=<span class="st">"$2"</span>; <span class="kw">shift</span> <span class="nu">2</span>
+    <span class="kw">local</span> <span class="vr">response</span> <span class="vr">status</span> <span class="vr">body</span>
+
+    <span class="vr">response</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span>                    \
+                    <span class="fl">-X</span> <span class="st">"$method"</span>            \
+                    <span class="fl">--connect-timeout</span> <span class="nu">10</span>   \
+                    <span class="fl">--max-time</span>       <span class="nu">30</span>   \
+                    <span class="fl">--retry</span>          <span class="nu">3</span>    \
+                    <span class="fl">--retry-delay</span>    <span class="nu">2</span>    \
+                    <span class="fl">--retry-connrefused</span>    \
+                    <span class="fl">-w</span> <span class="st">$'\n%{http_code}'</span>   \
+                    <span class="st">"$@"</span>                    \
+                    <span class="st">"$url"</span><span class="st">)</span>
+
+    <span class="vr">status</span>=<span class="st">"${response##*$'\n'}"</span>
+    <span class="vr">body</span>=<span class="st">"${response%$'\n'*}"</span>
+
+    <span class="kw">if</span> [[ <span class="st">"$status"</span> -ge <span class="nu">200</span> && <span class="st">"$status"</span> -lt <span class="nu">300</span> ]]; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$body"</span>
+        <span class="kw">return</span> <span class="nu">0</span>
+    <span class="kw">fi</span>
+
+    <span class="cmd">printf</span> <span class="er">'HTTP %s from %s: %s\n'</span> <span class="st">"$status"</span> <span class="st">"$url"</span> \
+           <span class="st">"$(jq -r '.message // .error // "no message"' &lt;&lt;&lt; "$body" 2>/dev/null || printf '%s' "$body")"</span> <span class="op">>&amp;2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+}
+
+<span class="cm"># Usage:</span>
+<span class="vr">users</span>=<span class="st">$(</span><span class="fn">api_call</span> GET https://api.example.com/users \
+         <span class="fl">-H</span> <span class="st">"Authorization: Bearer $TOKEN"</span><span class="st">)</span>
+
+<span class="fn">api_call</span> POST https://api.example.com/items \
+         <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span> \
+         <span class="fl">-d</span> <span class="st">'{"name":"widget"}'</span>
+
+<span class="cm"># ── Manual rate limiting (honour 429 Retry-After) ─────────────</span>
+<span class="fn">curl_rate_limited</span>() {
+    <span class="kw">local</span> <span class="vr">url</span>=<span class="st">"$1"</span>; <span class="kw">shift</span>
+    <span class="kw">local</span> <span class="vr">attempt</span>
+
+    <span class="kw">for</span> (( <span class="vr">attempt</span>=<span class="nu">1</span>; attempt<=<span class="nu">5</span>; attempt++ )); <span class="kw">do</span>
+        <span class="kw">local</span> <span class="vr">headers</span> <span class="vr">body</span> <span class="vr">status</span>
+        <span class="kw">local</span> <span class="vr">tmphead</span>; <span class="vr">tmphead</span>=<span class="st">$(</span><span class="cmd">mktemp</span><span class="st">)</span>
+
+        <span class="vr">body</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-w</span> <span class="st">$'\n%{http_code}'</span> <span class="fl">-D</span> <span class="st">"$tmphead"</span> <span class="st">"$@"</span> <span class="st">"$url"</span><span class="st">)</span>
+        <span class="vr">status</span>=<span class="st">"${body##*$'\n'}"</span>
+        <span class="vr">body</span>=<span class="st">"${body%$'\n'*}"</span>
+
+        <span class="kw">if</span> [[ <span class="st">"$status"</span> == <span class="st">"429"</span> ]]; <span class="kw">then</span>
+            <span class="kw">local</span> <span class="vr">retry_after</span>
+            <span class="vr">retry_after</span>=<span class="st">$(</span><span class="cmd">grep</span> <span class="fl">-i</span> <span class="st">'Retry-After:'</span> <span class="st">"$tmphead"</span> | \
+                          <span class="cmd">awk</span> <span class="st">'{print $2}'</span> | <span class="cmd">tr</span> <span class="fl">-d</span> <span class="st">$'\r'</span><span class="st">)</span>
+            <span class="vr">retry_after</span>=<span class="st">${retry_after:-5}</span>
+            <span class="cmd">printf</span> <span class="st">'Rate limited — sleeping %ds (attempt %d/5)\n'</span> \
+                   <span class="st">"$retry_after"</span> <span class="st">"$attempt"</span> <span class="op">>&amp;2</span>
+            <span class="cmd">sleep</span> <span class="st">"$retry_after"</span>
+            <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$tmphead"</span>
+            <span class="kw">continue</span>
+        <span class="kw">fi</span>
+
+        <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$tmphead"</span>
+        <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$body"</span>
+        [[ <span class="st">"$status"</span> -ge <span class="nu">200</span> && <span class="st">"$status"</span> -lt <span class="nu">300</span> ]]
+        <span class="kw">return</span>
+    <span class="kw">done</span>
+
+    <span class="cmd">printf</span> <span class="er">'Rate limit exceeded after 5 attempts\n'</span> <span class="op">>&amp;2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+}</code>
+    </div>
+  </div>
+
+  <h3>File transfer and parallel downloads</h3>
+  <div class="platform-block">
+    <div class="pb-header">🌐 Downloading files, progress display, parallel fetches</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Download with progress bar ────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-L</span> <span class="fl">--progress-bar</span> <span class="fl">-o</span> output.tar.gz URL
+
+<span class="cm"># ── Resume an interrupted download ────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-C</span> - <span class="fl">-o</span> partial.tar.gz URL   <span class="cm"># -C - = auto-detect resume offset</span>
+
+<span class="cm"># ── Download only if remote is newer (conditional GET) ────────</span>
+<span class="cmd">curl</span> <span class="fl">-z</span> existing_file.txt <span class="fl">-o</span> existing_file.txt URL
+<span class="cm"># Sends If-Modified-Since based on local file's mtime</span>
+
+<span class="cm"># ── Parallel downloads with xargs ─────────────────────────────</span>
+<span class="cm"># Download 4 URLs concurrently</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${urls[@]}"</span> | \
+    <span class="cmd">xargs</span> <span class="fl">-P4</span> <span class="fl">-I{}</span> <span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-L</span> <span class="fl">-o</span> <span class="st">'{}'</span>.html <span class="st">'{}'</span>
+
+<span class="cm"># ── Upload a file ─────────────────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-F</span> <span class="st">"file=@/path/to/upload.txt"</span> URL          <span class="cm"># multipart form</span>
+<span class="cmd">curl</span> <span class="fl">-T</span> <span class="pth">/path/to/file</span> ftp://server/dest/         <span class="cm"># FTP PUT</span>
+<span class="cmd">curl</span> <span class="fl">-X</span> PUT <span class="fl">--data-binary</span> @file.bin URL          <span class="cm"># binary body</span>
+
+<span class="cm"># ── Send form data (URL-encoded) ──────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-d</span> <span class="st">'user=alice&pass=secret'</span> URL
+<span class="cmd">curl</span> <span class="fl">--data-urlencode</span> <span class="st">'msg=hello world'</span> URL   <span class="cm"># auto URL-encodes spaces</span>
+
+<span class="cm"># ── Cookies ───────────────────────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-c</span> cookies.txt <span class="fl">-b</span> cookies.txt URL   <span class="cm"># save + send cookies</span>
+
+<span class="cm"># ── Use a config file to avoid repeating flags ────────────────</span>
+<span class="cm"># ~/.curlrc or a project-specific file</span>
+<span class="cmd">cat</span> <span class="op">&gt;</span> <span class="pth">.curlrc</span> <span class="op">&lt;&lt;</span><span class="st">'EOF'</span>
+<span class="st">silent</span>
+<span class="st">show-error</span>
+<span class="st">location</span>
+<span class="st">connect-timeout = 10</span>
+<span class="st">max-time = 60</span>
+<span class="st">retry = 3</span>
+<span class="st">EOF</span>
+<span class="cmd">curl</span> <span class="fl">--config</span> <span class="pth">.curlrc</span> URL</code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. HTTP HEALTH CHECKS
+  ═══════════════════════════════════════════ -->
+  <h2>2 — HTTP Health Checks and Service Monitoring</h2>
+
+  <div class="platform-block">
+    <div class="pb-header">🌐 Health check patterns used in production scripts</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Simple: is the service up? ────────────────────────────────</span>
+<span class="fn">http_ok</span>() {
+    <span class="kw">local</span> <span class="vr">url</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">code</span>
+    <span class="vr">code</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-o</span> <span class="pth">/dev/null</span> <span class="fl">-w</span> <span class="st">'%{http_code}'</span> \
+              <span class="fl">--connect-timeout</span> <span class="nu">5</span> <span class="fl">--max-time</span> <span class="nu">10</span> <span class="st">"$url"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span><span class="st">)</span>
+    [[ <span class="st">"$code"</span> -ge <span class="nu">200</span> && <span class="st">"$code"</span> -lt <span class="nu">400</span> ]]
+}
+
+<span class="fn">http_ok</span> https://api.example.com/health && <span class="cmd">echo</span> <span class="st">"up"</span> || <span class="cmd">echo</span> <span class="st">"down"</span>
+
+<span class="cm"># ── Check multiple services and report status ─────────────────</span>
+<span class="fn">check_services</span>() {
+    <span class="kw">local</span> <span class="vr">-a</span> <span class="vr">endpoints</span>=( <span class="st">"$@"</span> )
+    <span class="kw">local</span> <span class="vr">ok</span>=<span class="nu">0</span> <span class="vr">failed</span>=<span class="nu">0</span>
+
+    <span class="cmd">printf</span> <span class="st">'%-45s %-6s %s\n'</span> <span class="st">"ENDPOINT"</span> <span class="st">"CODE"</span> <span class="st">"TIME"</span>
+    <span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">65</span>}; <span class="cmd">echo</span>
+
+    <span class="kw">local</span> <span class="vr">url</span>
+    <span class="kw">for</span> <span class="vr">url</span> <span class="kw">in</span> <span class="st">"${endpoints[@]}"</span>; <span class="kw">do</span>
+        <span class="kw">local</span> <span class="vr">result</span>
+        <span class="vr">result</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-o</span> <span class="pth">/dev/null</span> \
+                      <span class="fl">--connect-timeout</span> <span class="nu">5</span> <span class="fl">--max-time</span> <span class="nu">10</span> \
+                      <span class="fl">-w</span> <span class="st">'%{http_code} %{time_total}'</span> \
+                      <span class="st">"$url"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> \
+                      || <span class="cmd">echo</span> <span class="st">"000 0"</span><span class="st">)</span>
+        <span class="kw">local</span> <span class="vr">code</span>=<span class="st">"${result% *}"</span>
+        <span class="kw">local</span> <span class="vr">time</span>=<span class="st">"${result#* }"</span>
+
+        <span class="kw">local</span> <span class="vr">colour</span>=<span class="st">'\033[32m'</span>   <span class="cm"># green</span>
+        <span class="kw">if</span>   [[ <span class="st">"$code"</span> == <span class="st">"000"</span> ]]; <span class="kw">then</span> <span class="vr">colour</span>=<span class="st">'\033[31m'</span>; (( failed++ ))  <span class="cm"># red</span>
+        <span class="kw">elif</span> (( code >= <span class="nu">400</span> ));      <span class="kw">then</span> <span class="vr">colour</span>=<span class="st">'\033[31m'</span>; (( failed++ ))
+        <span class="kw">elif</span> (( code >= <span class="nu">300</span> ));      <span class="kw">then</span> <span class="vr">colour</span>=<span class="st">'\033[33m'</span>; (( ok++ ))     <span class="cm"># yellow</span>
+        <span class="kw">else</span>                               (( ok++ ))
+        <span class="kw">fi</span>
+
+        <span class="cmd">printf</span> <span class="st">"%-45s ${colour}%-6s\033[0m %ss\n"</span> \
+               <span class="st">"$url"</span> <span class="st">"$code"</span> <span class="st">"$time"</span>
+    <span class="kw">done</span>
+
+    <span class="cmd">printf</span> <span class="st">'\n%d OK, %d failed\n'</span> <span class="st">"$ok"</span> <span class="st">"$failed"</span>
+    (( failed == <span class="nu">0</span> ))
+}
+
+<span class="fn">check_services</span> \
+    https://api.example.com/health \
+    https://app.example.com/ping \
+    https://db.example.com:8080/status
+
+<span class="cm"># ── Wait until a service becomes healthy (deploy pattern) ─────</span>
+<span class="fn">wait_for_http</span>() {
+    <span class="kw">local</span> <span class="vr">url</span>=<span class="st">"$1"</span> <span class="vr">timeout</span>=<span class="st">"${2:-60}"</span>
+    <span class="kw">local</span> <span class="vr">deadline</span>=$(( $(date '+%s') + timeout ))
+
+    <span class="cmd">printf</span> <span class="st">'Waiting for %s (timeout: %ds)...'</span> <span class="st">"$url"</span> <span class="st">"$timeout"</span>
+    <span class="kw">while</span> (( $(date '+%s') < deadline )); <span class="kw">do</span>
+        <span class="kw">if</span> <span class="fn">http_ok</span> <span class="st">"$url"</span>; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="st">' ready\n'</span>; <span class="kw">return</span> <span class="nu">0</span>
+        <span class="kw">fi</span>
+        <span class="cmd">printf</span> <span class="st">'.'</span>
+        <span class="cmd">sleep</span> <span class="nu">2</span>
+    <span class="kw">done</span>
+    <span class="cmd">printf</span> <span class="st">' TIMEOUT\n'</span> <span class="op">>&amp;2</span>
+    <span class="kw">return</span> <span class="nu">1</span>
+}
+
+<span class="fn">wait_for_http</span> http://localhost:8080/health <span class="nu">120</span>
+<span class="cmd">echo</span> <span class="st">"Service is up — starting smoke tests"</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. SENDING NOTIFICATIONS
+  ═══════════════════════════════════════════ -->
+  <h2>3 — Sending Notifications via HTTP APIs</h2>
+
+  <div class="platform-block">
+    <div class="pb-header">🌐 Webhook notifications: Slack, Teams, generic HTTP</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Slack webhook ─────────────────────────────────────────────</span>
+<span class="fn">slack_notify</span>() {
+    <span class="kw">local</span> <span class="vr">webhook</span>=<span class="st">"${SLACK_WEBHOOK_URL:?SLACK_WEBHOOK_URL not set}"</span>
+    <span class="kw">local</span> <span class="vr">message</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">colour</span>=<span class="st">"${2:-good}"</span>   <span class="cm"># good | warning | danger</span>
+
+    <span class="kw">local</span> <span class="vr">payload</span>
+    <span class="vr">payload</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-n</span> \
+        <span class="fl">--arg</span> <span class="st">msg</span>    <span class="st">"$message"</span> \
+        <span class="fl">--arg</span> <span class="st">colour</span> <span class="st">"$colour"</span> \
+        <span class="st">'{attachments: [{text: $msg, color: $colour, mrkdwn_in: ["text"]}]}'</span><span class="st">)</span>
+
+    <span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-X</span> POST \
+         <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span> \
+         <span class="fl">--connect-timeout</span> <span class="nu">5</span> <span class="fl">--max-time</span> <span class="nu">15</span> \
+         <span class="fl">-d</span> <span class="st">"$payload"</span> <span class="st">"$webhook"</span> <span class="op">&gt;</span> <span class="pth">/dev/null</span>
+}
+
+<span class="cm"># ── PagerDuty / generic alert ─────────────────────────────────</span>
+<span class="fn">pagerduty_alert</span>() {
+    <span class="kw">local</span> <span class="vr">routing_key</span>=<span class="st">"${PD_ROUTING_KEY:?}"</span>
+    <span class="kw">local</span> <span class="vr">summary</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">severity</span>=<span class="st">"${2:-error}"</span>   <span class="cm"># critical|error|warning|info</span>
+
+    <span class="kw">local</span> <span class="vr">payload</span>
+    <span class="vr">payload</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-n</span> \
+        <span class="fl">--arg</span> <span class="st">key</span>  <span class="st">"$routing_key"</span> \
+        <span class="fl">--arg</span> <span class="st">sum</span>  <span class="st">"$summary"</span>     \
+        <span class="fl">--arg</span> <span class="st">sev</span>  <span class="st">"$severity"</span>    \
+        <span class="fl">--arg</span> <span class="st">src</span>  <span class="st">"$(hostname)"</span>  \
+        <span class="st">'{
+          routing_key:  $key,
+          event_action: "trigger",
+          payload: {
+            summary:  $sum,
+            severity: $sev,
+            source:   $src
+          }
+        }'</span><span class="st">)</span>
+
+    <span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-X</span> POST \
+         <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span> \
+         <span class="fl">-d</span> <span class="st">"$payload"</span> \
+         https://events.pagerduty.com/v2/enqueue
+}
+
+<span class="cm"># ── Generic webhook dispatcher ────────────────────────────────</span>
+<span class="fn">send_webhook</span>() {
+    <span class="kw">local</span> <span class="vr">url</span>=<span class="st">"$1"</span> <span class="vr">payload</span>=<span class="st">"$2"</span>
+    <span class="kw">local</span> <span class="vr">secret</span>=<span class="st">"${WEBHOOK_SECRET:-}"</span>
+    <span class="kw">local</span> <span class="vr">extra_headers</span>=()
+
+    <span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"$secret"</span> ]]; <span class="kw">then</span>
+        <span class="cm"># HMAC-SHA256 signature (GitHub-style)</span>
+        <span class="kw">local</span> <span class="vr">sig</span>
+        <span class="vr">sig</span>=<span class="st">"sha256=$(printf '%s' "$payload" | openssl dgst -sha256 -hmac "$secret" -hex | awk '{print $2}')"</span>
+        <span class="vr">extra_headers</span>=( <span class="fl">-H</span> <span class="st">"X-Hub-Signature-256: $sig"</span> )
+    <span class="kw">fi</span>
+
+    <span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-X</span> POST \
+         <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span> \
+         <span class="st">"${extra_headers[@]}"</span> \
+         <span class="fl">--connect-timeout</span> <span class="nu">5</span> <span class="fl">--max-time</span> <span class="nu">15</span> \
+         <span class="fl">-d</span> <span class="st">"$payload"</span> <span class="st">"$url"</span>
+}</code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. /dev/tcp — RAW TCP FROM BASH
+  ═══════════════════════════════════════════ -->
+  <h2>4 — <code>/dev/tcp</code>: Raw TCP Connections from Bash</h2>
+
+  <p>Bash has a built-in virtual filesystem under <code>/dev/tcp/HOST/PORT</code> and <code>/dev/udp/HOST/PORT</code>. Opening a file descriptor to these paths establishes a TCP (or UDP) connection — no external tools needed. This is invaluable when you're on a minimal system where <code>curl</code>, <code>netcat</code>, and <code>telnet</code> aren't available.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🌐 /dev/tcp for port checks, HTTP, and raw protocol probes</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── TCP port reachability check ───────────────────────────────</span>
+<span class="fn">tcp_port_open</span>() {
+    <span class="kw">local</span> <span class="vr">host</span>=<span class="st">"$1"</span> <span class="vr">port</span>=<span class="st">"$2"</span> <span class="vr">timeout</span>=<span class="st">"${3:-5}"</span>
+    <span class="cm"># timeout command wraps the redirect to enforce deadline</span>
+    <span class="kw">timeout</span> <span class="st">"$timeout"</span> <span class="kw">bash</span> <span class="fl">-c</span> \
+        <span class="st">"&gt;/dev/tcp/${host}/${port}"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>
+}
+
+<span class="fn">tcp_port_open</span> db.example.com <span class="nu">5432</span>  && <span class="cmd">echo</span> <span class="st">"DB reachable"</span> || <span class="cmd">echo</span> <span class="st">"DB unreachable"</span>
+<span class="fn">tcp_port_open</span> redis.internal  <span class="nu">6379</span>  && <span class="cmd">echo</span> <span class="st">"Redis up"</span>
+
+<span class="cm"># ── Raw HTTP request via /dev/tcp ─────────────────────────────</span>
+<span class="fn">http_get_raw</span>() {
+    <span class="kw">local</span> <span class="vr">host</span>=<span class="st">"$1"</span> <span class="vr">path</span>=<span class="st">"${2:-/}"</span> <span class="vr">port</span>=<span class="st">"${3:-80}"</span>
+    <span class="kw">exec</span> <span class="nu">3</span><span class="op">&lt;&gt;</span><span class="pth">/dev/tcp/"${host}"/"${port}"</span>
+    <span class="cmd">printf</span> <span class="st">'GET %s HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n'</span> \
+           <span class="st">"$path"</span> <span class="st">"$host"</span> <span class="op">>&amp;3</span>
+    <span class="cmd">cat</span> <span class="op">&lt;&amp;3</span>
+    <span class="kw">exec</span> <span class="nu">3</span><span class="op">&gt;&amp;-</span>
+}
+
+<span class="cm"># Use it like curl on a system without curl:</span>
+<span class="fn">http_get_raw</span> example.com / <span class="nu">80</span> | <span class="cmd">head</span> <span class="fl">-20</span>
+
+<span class="cm"># ── Check if a service speaks a specific protocol ─────────────</span>
+<span class="fn">smtp_banner</span>() {
+    <span class="kw">local</span> <span class="vr">host</span>=<span class="st">"$1"</span> <span class="vr">port</span>=<span class="st">"${2:-25}"</span>
+    <span class="kw">exec</span> <span class="nu">3</span><span class="op">&lt;&gt;</span><span class="pth">/dev/tcp/"${host}"/"${port}"</span>
+    <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-t</span> <span class="nu">5</span> <span class="vr">banner</span> <span class="op">&lt;&amp;3</span>
+    <span class="kw">exec</span> <span class="nu">3</span><span class="op">&gt;&amp;-</span>
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$banner"</span>
+}
+<span class="fn">smtp_banner</span> mail.example.com     <span class="out">→ 220 mail.example.com ESMTP Postfix</span>
+
+<span class="cm"># ── Check multiple ports in a loop ────────────────────────────</span>
+<span class="fn">scan_ports</span>() {
+    <span class="kw">local</span> <span class="vr">host</span>=<span class="st">"$1"</span>; <span class="kw">shift</span>
+    <span class="kw">local</span> <span class="vr">port</span>
+    <span class="cmd">printf</span> <span class="st">'Port scan: %s\n'</span> <span class="st">"$host"</span>
+    <span class="kw">for</span> <span class="vr">port</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+        <span class="kw">if</span> <span class="fn">tcp_port_open</span> <span class="st">"$host"</span> <span class="st">"$port"</span> <span class="nu">2</span>; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="st">'  %-6s \033[32mOPEN\033[0m\n'</span>  <span class="st">"$port"</span>
+        <span class="kw">else</span>
+            <span class="cmd">printf</span> <span class="st">'  %-6s \033[31mCLOSED\033[0m\n'</span> <span class="st">"$port"</span>
+        <span class="kw">fi</span>
+    <span class="kw">done</span>
+}
+
+<span class="fn">scan_ports</span> db.internal <span class="nu">22</span> <span class="nu">80</span> <span class="nu">443</span> <span class="nu">5432</span> <span class="nu">6379</span> <span class="nu">27017</span></code>
+      <div class="pb-note"><code>/dev/tcp</code> is a bash-only feature — it doesn't exist as a real filesystem entry; the kernel never sees it. It's handled entirely by bash's redirection code. It won't work in <code>sh</code>, <code>dash</code>, or <code>zsh</code> without bash.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. wget
+  ═══════════════════════════════════════════ -->
+  <h2>5 — <code>wget</code> for Mirroring and Recursive Downloads</h2>
+
+  <p><code>wget</code> and <code>curl</code> overlap heavily for simple downloads, but <code>wget</code> has built-in recursive site mirroring and a simpler interface for batch operations. It also handles retries more transparently for download-focused use cases.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🌐 wget key patterns</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Basic download ────────────────────────────────────────────</span>
+<span class="cmd">wget</span> URL                      <span class="cm"># download to current dir, show progress</span>
+<span class="cmd">wget</span> <span class="fl">-q</span>   URL                  <span class="cm"># quiet</span>
+<span class="cmd">wget</span> <span class="fl">-O</span> outfile URL            <span class="cm"># write to specific file</span>
+<span class="cmd">wget</span> <span class="fl">-P</span> /dest/ URL             <span class="cm"># write to directory</span>
+
+<span class="cm"># ── Resume and retry ──────────────────────────────────────────</span>
+<span class="cmd">wget</span> <span class="fl">-c</span>   URL                  <span class="cm"># continue/resume partial download</span>
+<span class="cmd">wget</span> <span class="fl">--tries</span>=<span class="nu">5</span> URL             <span class="cm"># retry up to 5 times</span>
+<span class="cmd">wget</span> <span class="fl">--wait</span>=<span class="nu">2</span> URL              <span class="cm"># wait 2s between retries</span>
+<span class="cmd">wget</span> <span class="fl">--timeout</span>=<span class="nu">30</span> URL          <span class="cm"># 30s total timeout</span>
+
+<span class="cm"># ── Check existence without downloading body ──────────────────</span>
+<span class="cmd">wget</span> <span class="fl">-q</span> <span class="fl">--spider</span> URL           <span class="cm"># exit 0 if URL exists, 1 if not</span>
+<span class="cmd">wget</span> <span class="fl">-q</span> <span class="fl">--spider</span> URL <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> && <span class="cmd">echo</span> <span class="st">"exists"</span>
+
+<span class="cm"># ── Mirror a website ──────────────────────────────────────────</span>
+<span class="cmd">wget</span> <span class="fl">--mirror</span> \
+     <span class="fl">--convert-links</span> \       <span class="cm"># rewrite links for local viewing</span>
+     <span class="fl">--adjust-extension</span> \    <span class="cm"># add .html to pages</span>
+     <span class="fl">--page-requisites</span> \     <span class="cm"># also download CSS/JS/images</span>
+     <span class="fl">--no-parent</span> \           <span class="cm"># don't go up to parent dirs</span>
+     <span class="fl">-P</span> ./mirror/ URL
+
+<span class="cm"># ── Download a list of URLs from a file ───────────────────────</span>
+<span class="cmd">wget</span> <span class="fl">-i</span> urls.txt <span class="fl">-P</span> downloads/
+
+<span class="cm"># ── wget vs curl: when to use which ──────────────────────────</span>
+<span class="cm"># wget: recursive, mirroring, simple batch downloads</span>
+<span class="cm"># curl: APIs, custom headers/methods, piping, complex auth</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Quick Reference</h2>
+
+  <table class="ref-table">
+    <thead><tr><th>Task</th><th>Command</th></tr></thead>
+    <tbody>
+      <tr><td>GET, body to stdout</td><td><code>curl -sS URL</code></td></tr>
+      <tr><td>GET, save to file</td><td><code>curl -sS -L -o file URL</code></td></tr>
+      <tr><td>GET, just the HTTP status</td><td><code>curl -sS -o /dev/null -w '%{http_code}' URL</code></td></tr>
+      <tr><td>POST JSON</td><td><code>curl -sS -X POST -H 'Content-Type: application/json' -d '{}' URL</code></td></tr>
+      <tr><td>POST JSON from file</td><td><code>curl -sS -X POST -H 'Content-Type: application/json' -d @file.json URL</code></td></tr>
+      <tr><td>Bearer token auth</td><td><code>curl -H "Authorization: Bearer $TOKEN" URL</code></td></tr>
+      <tr><td>Basic auth</td><td><code>curl -u user:pass URL</code></td></tr>
+      <tr><td>Follow redirects</td><td><code>curl -L URL</code></td></tr>
+      <tr><td>Set both timeouts</td><td><code>curl --connect-timeout 5 --max-time 30 URL</code></td></tr>
+      <tr><td>Retry 3 times</td><td><code>curl --retry 3 --retry-delay 2 URL</code></td></tr>
+      <tr><td>Response headers to file</td><td><code>curl -D headers.txt -o body.json URL</code></td></tr>
+      <tr><td>Resume download</td><td><code>curl -C - -o file URL</code></td></tr>
+      <tr><td>TCP port reachable?</td><td><code>timeout 5 bash -c "&gt;/dev/tcp/host/port"</code></td></tr>
+      <tr><td>Raw GET via /dev/tcp</td><td><code>exec 3&lt;&gt;/dev/tcp/host/80; printf 'GET / HTTP/1.0\r\n\r\n' &gt;&amp;3; cat &lt;&amp;3</code></td></tr>
+      <tr><td>Check URL exists</td><td><code>wget -q --spider URL</code></td></tr>
+      <tr><td>Download list of URLs</td><td><code>wget -i urls.txt -P dest/</code></td></tr>
+      <tr><td>Mirror a site</td><td><code>wget --mirror --convert-links --page-requisites URL</code></td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXERCISES
+  ═══════════════════════════════════════════ -->
+  <h2>✏️ Exercises</h2>
+
+  <!-- Exercise 1 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 1</div>
+    <div class="ex-task">Write a script called <code>http_monitor.sh</code> that reads a list of URLs from a file (one per line, lines starting with <code>#</code> are comments), checks each URL every N seconds (configurable via <code>INTERVAL</code>, default 60), and logs to a TSV file with columns: timestamp, URL, HTTP status, response time in ms, and UP/DOWN status. When a URL changes state (UP→DOWN or DOWN→UP) it should print a highlighted alert to stderr. Run until interrupted with Ctrl-C, handling the SIGINT cleanly.</div>
+    <div class="ex-hint">Hint: maintain an associative array of last-known states. Use <code>curl -w '%{http_code} %{time_total}'</code>. Convert float seconds to ms with integer arithmetic after stripping the decimal. In the SIGINT trap, print a summary of how long each URL was down.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># http_monitor.sh URL_FILE [LOG_FILE]</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">URL_FILE</span>=<span class="st">"${1:?Usage: http_monitor.sh URL_FILE [LOG_FILE]}"</span>
+<span class="vr">LOG_FILE</span>=<span class="st">"${2:-http_monitor.tsv}"</span>
+<span class="vr">INTERVAL</span>=<span class="st">${INTERVAL:-60}</span>
+
+[[ <span class="fl">-f</span> <span class="st">"$URL_FILE"</span> ]] || { <span class="cmd">printf</span> <span class="er">'Not found: %s\n'</span> <span class="st">"$URL_FILE"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">last_state</span>=()
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">down_since</span>=()
+<span class="vr">start_time</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s'</span><span class="st">)</span>
+
+<span class="cm"># Write TSV header if file is new</span>
+[[ <span class="fl">-f</span> <span class="st">"$LOG_FILE"</span> ]] || \
+    <span class="cmd">printf</span> <span class="st">'timestamp\turl\thttp_code\tms\tstatus\n'</span> <span class="op">&gt;</span> <span class="st">"$LOG_FILE"</span>
+
+<span class="fn">check_url</span>() {
+    <span class="kw">local</span> <span class="vr">url</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">ts</span>; <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">ts</span> <span class="st">'%(%Y-%m-%d %H:%M:%S)T'</span> <span class="fl">-1</span>
+    <span class="kw">local</span> <span class="vr">result</span>
+    <span class="vr">result</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-o</span> <span class="pth">/dev/null</span> \
+                  <span class="fl">--connect-timeout</span> <span class="nu">5</span> <span class="fl">--max-time</span> <span class="nu">15</span> \
+                  <span class="fl">-w</span> <span class="st">'%{http_code} %{time_total}'</span> \
+                  <span class="st">"$url"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> \
+                  || <span class="cmd">echo</span> <span class="st">"000 0"</span><span class="st">)</span>
+
+    <span class="kw">local</span> <span class="vr">code</span>=<span class="st">"${result% *}"</span>
+    <span class="kw">local</span> <span class="vr">secs</span>=<span class="st">"${result#* }"</span>
+    <span class="cm"># Convert float secs to int ms (remove decimal point, trim leading zeros)</span>
+    <span class="kw">local</span> <span class="vr">ms</span>; <span class="vr">ms</span>=<span class="st">$(</span><span class="cmd">printf</span> <span class="st">'%.0f'</span> <span class="st">"$(echo "$secs * 1000" | bc)"</span><span class="st">)</span>
+
+    <span class="kw">local</span> <span class="vr">status</span>
+    (( code >= <span class="nu">200</span> && code < <span class="nu">400</span> )) && <span class="vr">status</span>=<span class="st">"UP"</span> || <span class="vr">status</span>=<span class="st">"DOWN"</span>
+
+    <span class="cm"># Log to TSV</span>
+    <span class="cmd">printf</span> <span class="st">'%s\t%s\t%s\t%s\t%s\n'</span> \
+           <span class="st">"$ts"</span> <span class="st">"$url"</span> <span class="st">"$code"</span> <span class="st">"$ms"</span> <span class="st">"$status"</span> <span class="op">&gt;&gt;</span> <span class="st">"$LOG_FILE"</span>
+
+    <span class="cm"># State change detection</span>
+    <span class="kw">local</span> <span class="vr">prev</span>=<span class="st">"${last_state[$url]:-UNKNOWN}"</span>
+    <span class="kw">if</span> [[ <span class="st">"$prev"</span> != <span class="st">"$status"</span> ]]; <span class="kw">then</span>
+        <span class="kw">if</span> [[ <span class="st">"$status"</span> == <span class="st">"DOWN"</span> ]]; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="st">'\033[31m[%s] DOWN: %s (HTTP %s)\033[0m\n'</span> <span class="st">"$ts"</span> <span class="st">"$url"</span> <span class="st">"$code"</span> <span class="op">>&amp;2</span>
+            <span class="vr">down_since</span>[<span class="st">"$url"</span>]=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s'</span><span class="st">)</span>
+        <span class="kw">else</span>
+            <span class="kw">local</span> <span class="vr">outage</span>=<span class="st">""</span>
+            [[ <span class="fl">-v</span> <span class="st">"down_since[$url]"</span> ]] && \
+                <span class="vr">outage</span>=<span class="st">" (was down for $(( $(date '+%s') - down_since[$url] ))s)"</span>
+            <span class="cmd">printf</span> <span class="st">'\033[32m[%s] UP: %s%s\033[0m\n'</span> \
+                   <span class="st">"$ts"</span> <span class="st">"$url"</span> <span class="st">"$outage"</span> <span class="op">>&amp;2</span>
+            <span class="kw">unset</span> <span class="st">"down_since[$url]"</span>
+        <span class="kw">fi</span>
+    <span class="kw">fi</span>
+    <span class="vr">last_state</span>[<span class="st">"$url"</span>]=<span class="st">"$status"</span>
+}
+
+<span class="cm"># Graceful shutdown</span>
+<span class="cmd">trap</span> <span class="st">'
+    printf "\n\033[1mMonitor stopped. Summary:\033[0m\n" >&2
+    for u in "${!last_state[@]}"; do
+        printf "  %-40s %s\n" "$u" "${last_state[$u]}" >&2
+    done
+    printf "Runtime: %ds\n" "$(( $(date +%s) - start_time ))" >&2
+    exit 0
+'</span> INT TERM
+
+<span class="cm"># Main loop</span>
+<span class="cmd">printf</span> <span class="st">'Monitoring %s, interval=%ds, log=%s\n'</span> <span class="st">"$URL_FILE"</span> <span class="st">"$INTERVAL"</span> <span class="st">"$LOG_FILE"</span> <span class="op">>&amp;2</span>
+<span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span>
+    <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">url</span>; <span class="kw">do</span>
+        [[ <span class="st">"$url"</span> =~ ^[[:space:]]*($|#) ]] && <span class="kw">continue</span>
+        <span class="fn">check_url</span> <span class="st">"$url"</span>
+    <span class="kw">done</span> <span class="op">&lt;</span> <span class="st">"$URL_FILE"</span>
+    <span class="cmd">sleep</span> <span class="st">"$INTERVAL"</span>
+<span class="kw">done</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 2 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 2</div>
+    <div class="ex-task">Write a function called <code>download_with_verify()</code> that downloads a file from a URL and verifies its integrity against a known checksum. It should accept the URL, the expected checksum, and the hash algorithm (sha256 or sha512) as arguments, write the file to a configurable <code>DOWNLOAD_DIR</code>, skip the download if the file already exists and matches the checksum, and clean up a partial download on failure. Print a clear success/failure message.</div>
+    <div class="ex-hint">Hint: use <code>curl -L -o "$dest"</code> for the download. Use <code>sha256sum</code> or <code>sha512sum</code> to compute the hash of the downloaded file. Compare the first field of their output to the expected checksum. Use a trap inside the function to remove the partial file if interrupted.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="fn">download_with_verify</span>() {
+    <span class="kw">local</span> <span class="vr">url</span>=<span class="st">"${1:?url required}"</span>
+    <span class="kw">local</span> <span class="vr">expected</span>=<span class="st">"${2:?expected checksum required}"</span>
+    <span class="kw">local</span> <span class="vr">algo</span>=<span class="st">"${3:-sha256}"</span>
+    <span class="kw">local</span> <span class="vr">destdir</span>=<span class="st">"${DOWNLOAD_DIR:-.}"</span>
+
+    <span class="kw">local</span> <span class="vr">filename</span>=<span class="st">"${url##*/}"</span>
+    <span class="kw">local</span> <span class="vr">dest</span>=<span class="st">"${destdir}/${filename}"</span>
+
+    <span class="kw">local</span> <span class="vr">sum_cmd</span>
+    <span class="kw">case</span> <span class="st">"$algo"</span> <span class="kw">in</span>
+        sha256<span class="op">)</span> <span class="vr">sum_cmd</span>=<span class="st">"sha256sum"</span> ;;
+        sha512<span class="op">)</span> <span class="vr">sum_cmd</span>=<span class="st">"sha512sum"</span> ;;
+        md5<span class="op">)</span>    <span class="vr">sum_cmd</span>=<span class="st">"md5sum"</span>    ;;
+        <span class="op">*</span><span class="op">)</span> <span class="cmd">printf</span> <span class="er">'Unknown algo: %s\n'</span> <span class="st">"$algo"</span> <span class="op">>&amp;2</span>; <span class="kw">return</span> <span class="nu">1</span> ;;
+    <span class="kw">esac</span>
+
+    <span class="fn">_verify</span>() {
+        <span class="kw">local</span> <span class="vr">actual</span>
+        <span class="vr">actual</span>=<span class="st">$(</span><span class="cmd">"$sum_cmd"</span> <span class="st">"$dest"</span> | <span class="cmd">awk</span> <span class="st">'{print $1}'</span><span class="st">)</span>
+        [[ <span class="st">"$actual"</span> == <span class="st">"$expected"</span> ]]
+    }
+
+    <span class="kw">if</span> [[ <span class="fl">-f</span> <span class="st">"$dest"</span> ]]; <span class="kw">then</span>
+        <span class="kw">if</span> <span class="fn">_verify</span>; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="st">'[skip] %s already exists and checksum matches\n'</span> <span class="st">"$filename"</span>
+            <span class="kw">return</span> <span class="nu">0</span>
+        <span class="kw">fi</span>
+        <span class="cmd">printf</span> <span class="st">'[warn] %s exists but checksum mismatch — re-downloading\n'</span> <span class="st">"$filename"</span> <span class="op">>&amp;2</span>
+        <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$dest"</span>
+    <span class="kw">fi</span>
+
+    <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"$destdir"</span>
+
+    <span class="cm"># Cleanup partial download on any failure</span>
+    <span class="cmd">trap</span> <span class="st">"rm -f '$dest'; printf '\033[31m[fail]\033[0m Download interrupted: %s\n' '$filename' >&2"</span> \
+         ERR RETURN INT
+
+    <span class="cmd">printf</span> <span class="st">'[down] %s → %s\n'</span> <span class="st">"$url"</span> <span class="st">"$dest"</span>
+    <span class="cmd">curl</span> <span class="fl">-fsSL</span> \
+         <span class="fl">--connect-timeout</span> <span class="nu">10</span> \
+         <span class="fl">--max-time</span> <span class="nu">300</span>       \
+         <span class="fl">--retry</span> <span class="nu">3</span>            \
+         <span class="fl">--retry-delay</span> <span class="nu">2</span>      \
+         <span class="fl">-o</span> <span class="st">"$dest"</span>           \
+         <span class="st">"$url"</span>
+
+    <span class="kw">if</span> <span class="fn">_verify</span>; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">'\033[32m[ok]\033[0m   %s (%s verified)\n'</span> <span class="st">"$filename"</span> <span class="st">"$algo"</span>
+        <span class="kw">trap</span> - ERR RETURN INT
+    <span class="kw">else</span>
+        <span class="kw">local</span> <span class="vr">actual</span>; <span class="vr">actual</span>=<span class="st">$(</span><span class="cmd">"$sum_cmd"</span> <span class="st">"$dest"</span> | <span class="cmd">awk</span> <span class="st">'{print $1}'</span><span class="st">)</span>
+        <span class="cmd">printf</span> <span class="er">'[fail] Checksum mismatch for %s\n  expected: %s\n  got:      %s\n'</span> \
+               <span class="st">"$filename"</span> <span class="st">"$expected"</span> <span class="st">"$actual"</span> <span class="op">>&amp;2</span>
+        <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$dest"</span>
+        <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">fi</span>
+}
+
+<span class="cm"># Example usage:</span>
+<span class="vr">DOWNLOAD_DIR</span>=<span class="pth">/tmp/downloads</span> \
+<span class="fn">download_with_verify</span> \
+    https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
+    af986793a515d500ab2d35f8d2aecd656e764504d683bd632d62991dc4f8eca0  \
+    sha256</code>
+    </div>
+  </div>
+
+  <!-- Exercise 3 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 3</div>
+    <div class="ex-task">Write a script called <code>tcp_probe.sh</code> that acts as a connectivity diagnostic tool. It should accept a host as its argument and then test: DNS resolution (using <code>getent hosts</code> or <code>dig</code>), TCP connectivity to a configurable list of ports (from <code>PORTS</code> env var, default <code>22 80 443</code>), and an HTTP health check if port 80 or 443 is open. Use <code>/dev/tcp</code> for the port checks and output a structured report. All checks should have a configurable timeout defaulting to 3 seconds.</div>
+    <div class="ex-hint">Hint: run DNS check first — if that fails, the port checks will also fail and you can report that. For each port check use <code>timeout $TIMEOUT bash -c "&gt;/dev/tcp/$host/$port"</code>. For HTTP, do a <code>/dev/tcp</code> GET and check for an HTTP response line. Use <code>SECONDS</code> or <code>date +%s%N</code> to measure each check's latency.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># tcp_probe.sh HOST</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">HOST</span>=<span class="st">"${1:?Usage: tcp_probe.sh HOST}"</span>
+<span class="vr">PORTS</span>=( ${PORTS:-22 80 443} )
+<span class="vr">TIMEOUT</span>=<span class="st">${TIMEOUT:-3}</span>
+
+<span class="fn">ms_now</span>() { <span class="cmd">date</span> <span class="st">'+%s%N'</span>; }
+
+<span class="fn">elapsed_ms</span>() {
+    <span class="kw">local</span> <span class="vr">t0</span>=<span class="st">$1</span>
+    <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="st">$(( ($(ms_now) - t0) / 1000000 ))</span>
+}
+
+<span class="fn">print_result</span>() {
+    <span class="kw">local</span> <span class="vr">label</span>=<span class="st">"$1"</span> <span class="vr">ok</span>=<span class="st">"$2"</span> <span class="vr">detail</span>=<span class="st">"${3:-}"</span>
+    <span class="kw">if</span> [[ <span class="st">"$ok"</span> == <span class="st">"0"</span> ]]; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">'  \033[32m✓\033[0m %-25s %s\n'</span> <span class="st">"$label"</span> <span class="st">"$detail"</span>
+    <span class="kw">else</span>
+        <span class="cmd">printf</span> <span class="st">'  \033[31m✗\033[0m %-25s %s\n'</span> <span class="st">"$label"</span> <span class="st">"$detail"</span>
+    <span class="kw">fi</span>
+}
+
+<span class="cmd">printf</span> <span class="st">'\033[1mTCP Probe: %s\033[0m\n\n'</span> <span class="st">"$HOST"</span>
+<span class="cmd">printf</span> <span class="st">'DNS RESOLUTION\n'</span>
+
+<span class="cm"># ── DNS check ─────────────────────────────────────────────────</span>
+<span class="kw">local</span> <span class="vr">t0</span>; <span class="vr">t0</span>=<span class="st">$(</span><span class="fn">ms_now</span><span class="st">)</span>
+<span class="kw">local</span> <span class="vr">ip</span>
+<span class="kw">if</span> <span class="vr">ip</span>=<span class="st">$(</span><span class="cmd">getent</span> hosts <span class="st">"$HOST"</span> 2<span class="op">&gt;</span><span class="pth">/dev/null</span> | <span class="cmd">awk</span> <span class="st">'{print $1; exit}'</span><span class="st">)</span> && [[ <span class="fl">-n</span> <span class="st">"$ip"</span> ]]; <span class="kw">then</span>
+    <span class="fn">print_result</span> <span class="st">"DNS"</span> <span class="nu">0</span> <span class="st">"$ip ($(elapsed_ms $t0)ms)"</span>
+<span class="kw">else</span>
+    <span class="fn">print_result</span> <span class="st">"DNS"</span> <span class="nu">1</span> <span class="st">"FAILED — cannot resolve $HOST"</span>
+    <span class="cmd">printf</span> <span class="st">'\nAll port checks skipped (DNS failed).\n'</span>
+    <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Port checks ───────────────────────────────────────────────</span>
+<span class="cmd">printf</span> <span class="st">'\nPORT CHECKS\n'</span>
+<span class="kw">local</span> <span class="vr">open_ports</span>=()
+
+<span class="kw">for</span> <span class="vr">port</span> <span class="kw">in</span> <span class="st">"${PORTS[@]}"</span>; <span class="kw">do</span>
+    <span class="vr">t0</span>=<span class="st">$(</span><span class="fn">ms_now</span><span class="st">)</span>
+    <span class="kw">if</span> <span class="kw">timeout</span> <span class="st">"$TIMEOUT"</span> <span class="kw">bash</span> <span class="fl">-c</span> \
+           <span class="st">"&gt;/dev/tcp/${HOST}/${port}"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>; <span class="kw">then</span>
+        <span class="fn">print_result</span> <span class="st">"Port $port"</span> <span class="nu">0</span> <span class="st">"OPEN ($(elapsed_ms $t0)ms)"</span>
+        <span class="vr">open_ports</span>+=( <span class="st">"$port"</span> )
+    <span class="kw">else</span>
+        <span class="fn">print_result</span> <span class="st">"Port $port"</span> <span class="nu">1</span> <span class="st">"CLOSED or filtered"</span>
+    <span class="kw">fi</span>
+<span class="kw">done</span>
+
+<span class="cm"># ── HTTP check if 80 or 443 is open ───────────────────────────</span>
+<span class="kw">local</span> <span class="vr">http_port</span>=<span class="st">""</span>
+<span class="kw">for</span> <span class="vr">p</span> <span class="kw">in</span> <span class="st">"${open_ports[@]}"</span>; <span class="kw">do</span>
+    [[ <span class="st">"$p"</span> == <span class="st">"80"</span> || <span class="st">"$p"</span> == <span class="st">"8080"</span> ]] && { <span class="vr">http_port</span>=<span class="st">"$p"</span>; <span class="kw">break</span>; }
+<span class="kw">done</span>
+
+<span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"$http_port"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'\nHTTP PROBE (port %s)\n'</span> <span class="st">"$http_port"</span>
+    <span class="vr">t0</span>=<span class="st">$(</span><span class="fn">ms_now</span><span class="st">)</span>
+    <span class="kw">local</span> <span class="vr">banner</span>=<span class="st">""</span>
+    <span class="kw">exec</span> <span class="nu">7</span><span class="op">&lt;&gt;</span><span class="pth">/dev/tcp/"${HOST}"/"${http_port}"</span>
+    <span class="cmd">printf</span> <span class="st">'HEAD / HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n'</span> \
+           <span class="st">"$HOST"</span> <span class="op">>&amp;7</span>
+    <span class="kw">if</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-t</span> <span class="st">"$TIMEOUT"</span> <span class="vr">banner</span> <span class="op">&lt;&amp;7</span>; <span class="kw">then</span>
+        <span class="fn">print_result</span> <span class="st">"HTTP response"</span> <span class="nu">0</span> <span class="st">"${banner//$'\r'/} ($(elapsed_ms $t0)ms)"</span>
+    <span class="kw">else</span>
+        <span class="fn">print_result</span> <span class="st">"HTTP response"</span> <span class="nu">1</span> <span class="st">"No response within ${TIMEOUT}s"</span>
+    <span class="kw">fi</span>
+    <span class="kw">exec</span> <span class="nu">7</span><span class="op">&gt;&amp;-</span>
+<span class="kw">elif</span> <span class="kw">for</span> <span class="vr">p</span> <span class="kw">in</span> <span class="st">"${open_ports[@]}"</span>; <span class="kw">do</span> [[ <span class="st">"$p"</span> == <span class="st">"443"</span> ]] && <span class="kw">break</span>; <span class="kw">done</span>; <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'\nHTTP PROBE (443 — use curl for HTTPS)\n'</span>
+    <span class="vr">t0</span>=<span class="st">$(</span><span class="fn">ms_now</span><span class="st">)</span>
+    <span class="kw">local</span> <span class="vr">code</span>
+    <span class="vr">code</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-o</span> <span class="pth">/dev/null</span> <span class="fl">-w</span> <span class="st">'%{http_code}'</span> \
+              <span class="fl">--connect-timeout</span> <span class="st">"$TIMEOUT"</span> <span class="fl">--max-time</span> <span class="st">"$((TIMEOUT*2))"</span> \
+              <span class="st">"https://${HOST}/"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="cmd">echo</span> <span class="st">"000"</span><span class="st">)</span>
+    <span class="fn">print_result</span> <span class="st">"HTTPS"</span> <span class="st">$(( code < 400 ? 0 : 1 ))</span> <span class="st">"HTTP $code ($(elapsed_ms $t0)ms)"</span>
+<span class="kw">fi</span>
+
+<span class="cmd">printf</span> <span class="st">'\n'</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 4 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 4</div>
+    <div class="ex-task">Write a script called <code>api_poll.sh</code> that polls a JSON API endpoint on a configurable interval, compares the response to the previous one, and logs changes. Usage: <code>api_poll.sh URL FIELD</code> where <code>FIELD</code> is a jq expression (e.g. <code>.status</code> or <code>.data.count</code>). When the value of <code>FIELD</code> changes, print a timestamped change record to stdout and optionally call a webhook (<code>ALERT_WEBHOOK</code> env var). After 10 consecutive failed requests, exit with an error.</div>
+    <div class="ex-hint">Hint: store the previous value in a variable, initially empty (treat first run as baseline). Use <code>jq -r "$FIELD"</code> to extract the field. Track consecutive failures with a counter that resets on success. For the webhook, use <code>curl -X POST -d "$payload"</code> with a JSON body built by <code>jq -n</code>.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># api_poll.sh URL JQ_FIELD</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">URL</span>=<span class="st">"${1:?Usage: api_poll.sh URL JQ_FIELD}"</span>
+<span class="vr">FIELD</span>=<span class="st">"${2:?jq field expression required}"</span>
+<span class="vr">INTERVAL</span>=<span class="st">${INTERVAL:-30}</span>
+<span class="vr">ALERT_WEBHOOK</span>=<span class="st">"${ALERT_WEBHOOK:-}"</span>
+
+<span class="vr">prev_value</span>=<span class="st">""</span>
+<span class="vr">fail_count</span>=<span class="nu">0</span>
+<span class="kw">readonly</span> <span class="vr">MAX_FAILS</span>=<span class="nu">10</span>
+
+<span class="cmd">printf</span> <span class="st">'Polling %s field=%s interval=%ds\n'</span> <span class="st">"$URL"</span> <span class="st">"$FIELD"</span> <span class="st">"$INTERVAL"</span> <span class="op">>&amp;2</span>
+<span class="cmd">printf</span> <span class="st">'timestamp\told_value\tnew_value\n'</span>  <span class="cm"># TSV header</span>
+
+<span class="cmd">trap</span> <span class="st">'printf "\nStopped.\n" >&2; exit 0'</span> INT TERM
+
+<span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span>
+    <span class="kw">local</span> <span class="vr">body</span> <span class="vr">status</span>
+    <span class="vr">body</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-w</span> <span class="st">$'\n%{http_code}'</span> \
+                <span class="fl">--connect-timeout</span> <span class="nu">5</span> <span class="fl">--max-time</span> <span class="nu">15</span> \
+                <span class="st">"$URL"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="cmd">echo</span> <span class="st">$'null\n000'</span><span class="st">)</span>
+    <span class="vr">status</span>=<span class="st">"${body##*$'\n'}"</span>
+    <span class="vr">body</span>=<span class="st">"${body%$'\n'*}"</span>
+
+    <span class="kw">if</span> [[ <span class="st">"$status"</span> -lt <span class="nu">200</span> || <span class="st">"$status"</span> -ge <span class="nu">400</span> ]]; <span class="kw">then</span>
+        (( fail_count++ ))
+        <span class="cmd">printf</span> <span class="er">'[fail %d/%d] HTTP %s\n'</span> <span class="st">"$fail_count"</span> <span class="st">"$MAX_FAILS"</span> <span class="st">"$status"</span> <span class="op">>&amp;2</span>
+        (( fail_count >= MAX_FAILS )) && {
+            <span class="cmd">printf</span> <span class="er">'%d consecutive failures — aborting\n'</span> <span class="st">"$MAX_FAILS"</span> <span class="op">>&amp;2</span>
+            <span class="kw">exit</span> <span class="nu">1</span>
+        }
+        <span class="cmd">sleep</span> <span class="st">"$INTERVAL"</span>
+        <span class="kw">continue</span>
+    <span class="kw">fi</span>
+    <span class="vr">fail_count</span>=<span class="nu">0</span>
+
+    <span class="kw">local</span> <span class="vr">current</span>
+    <span class="vr">current</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">"$FIELD"</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$body"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="cmd">echo</span> <span class="st">"PARSE_ERROR"</span><span class="st">)</span>
+
+    <span class="kw">if</span> [[ <span class="fl">-z</span> <span class="st">"$prev_value"</span> ]]; <span class="kw">then</span>
+        <span class="cm"># First run — just establish baseline</span>
+        <span class="cmd">printf</span> <span class="st">'[baseline] %s = %s\n'</span> <span class="st">"$FIELD"</span> <span class="st">"$current"</span> <span class="op">>&amp;2</span>
+    <span class="kw">elif</span> [[ <span class="st">"$current"</span> != <span class="st">"$prev_value"</span> ]]; <span class="kw">then</span>
+        <span class="kw">local</span> <span class="vr">ts</span>; <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">ts</span> <span class="st">'%(%Y-%m-%d %H:%M:%S)T'</span> <span class="fl">-1</span>
+        <span class="cm"># Log change as TSV</span>
+        <span class="cmd">printf</span> <span class="st">'%s\t%s\t%s\n'</span> <span class="st">"$ts"</span> <span class="st">"$prev_value"</span> <span class="st">"$current"</span>
+
+        <span class="cm"># Optional webhook alert</span>
+        <span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"$ALERT_WEBHOOK"</span> ]]; <span class="kw">then</span>
+            <span class="kw">local</span> <span class="vr">payload</span>
+            <span class="vr">payload</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-n</span> \
+                <span class="fl">--arg</span> <span class="st">ts</span>    <span class="st">"$ts"</span>         \
+                <span class="fl">--arg</span> <span class="st">url</span>   <span class="st">"$URL"</span>        \
+                <span class="fl">--arg</span> <span class="st">field</span> <span class="st">"$FIELD"</span>      \
+                <span class="fl">--arg</span> <span class="st">old</span>   <span class="st">"$prev_value"</span> \
+                <span class="fl">--arg</span> <span class="st">new</span>   <span class="st">"$current"</span>   \
+                <span class="st">'{ts:$ts, url:$url, field:$field, old:$old, "new":$new}'</span><span class="st">)</span>
+            <span class="cmd">curl</span> <span class="fl">-sS</span> <span class="fl">-X</span> POST \
+                 <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span> \
+                 <span class="fl">--max-time</span> <span class="nu">10</span> \
+                 <span class="fl">-d</span> <span class="st">"$payload"</span> <span class="st">"$ALERT_WEBHOOK"</span> <span class="op">&gt;</span> <span class="pth">/dev/null</span> <span class="nu">2</span><span class="op">&gt;&amp;1</span> || <span class="kw">true</span>
+        <span class="kw">fi</span>
+    <span class="kw">fi</span>
+    <span class="vr">prev_value</span>=<span class="st">"$current"</span>
+    <span class="cmd">sleep</span> <span class="st">"$INTERVAL"</span>
+<span class="kw">done</span></code>
+    </div>
+  </div>
+
+</div><!-- /lx-lesson -->
