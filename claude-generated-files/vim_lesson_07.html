@@ -1,0 +1,497 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-section { color: #7a8aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0.9em 0 0.3em 0; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; }
+  .lx-lesson .cmd-key { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 220px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  .lx-lesson .mode-badge {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    padding: 0.15em 0.55em; border-radius: 3px; margin-right: 0.3em; vertical-align: middle;
+  }
+  .lx-lesson .mode-normal  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }
+  .lx-lesson .mode-insert  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }
+  .lx-lesson .mode-command { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }
+  .lx-lesson .vimrc-box {
+    background: #0e1018; border: 1px solid #3a3d4e; border-radius: 6px;
+    padding: 1.1em 1.3em; margin: 1em 0; font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.9rem; line-height: 1.7;
+  }
+  .lx-lesson .vimrc-box .vc { color: #5a6a8a; font-style: italic; }   /* vimrc comment */
+  .lx-lesson .vimrc-box .vs { color: #79b8ff; }                        /* vimrc setting keyword */
+  .lx-lesson .vimrc-box .vv { color: #ffab70; }                        /* vimrc value */
+  .lx-lesson .vimrc-box .vk { color: #f97583; }                        /* vimrc key/map */
+  .lx-lesson .vimrc-box .vm { color: #85e89d; }                        /* vimrc map target */
+  .lx-lesson .vimrc-box .vt { color: #9ecbff; }                        /* vimrc string */
+  .lx-lesson .workflow-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0;
+  }
+  .lx-lesson .workflow-box h4 { color: #4f8ef7; margin: 0 0 0.7em 0; font-size: 0.95rem; }
+  .lx-lesson .workflow-step { display: flex; gap: 1em; align-items: baseline; padding: 0.4em 0; border-bottom: 1px solid #2a2d3e; }
+  .lx-lesson .workflow-step:last-child { border-bottom: none; }
+  .lx-lesson .step-num { color: #4f8ef7; font-family: 'Consolas', monospace; font-weight: bold; min-width: 1.5em; }
+  .lx-lesson .step-cmd { color: #ffab70; font-family: 'Consolas', monospace; min-width: 160px; }
+  .lx-lesson .step-desc { color: #c9d8ff; font-size: 0.92rem; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #b392f0; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 7 — Configuration</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Why Configuration Matters</h2>
+
+<p>Out of the box, Vim is a capable but deliberately spartan editor. Its default settings prioritise compatibility with ancient systems over convenience for modern workflows. The good news: Vim's configuration system is among the most powerful of any editor — you can remap any key, define your own commands, add abbreviations, and change dozens of behaviours, all from a single plain-text file.</p>
+
+<p>This chapter builds a foundational <code>.vimrc</code> — the configuration file Vim reads on startup — that turns the defaults into something genuinely comfortable for daily use.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The .vimrc File</h2>
+
+<h3>Location</h3>
+
+<table>
+  <tr><th>System</th><th>Location</th></tr>
+  <tr><td>macOS / Linux</td><td><code>~/.vimrc</code> (a hidden file in your home directory)</td></tr>
+  <tr><td>Windows</td><td><code>C:\Users\yourlogin\.vimrc</code> or <code>C:\Users\yourlogin\_vimrc</code></td></tr>
+  <tr><td>Vim 8+ (any)</td><td><code>~/.vim/vimrc</code> (no dot, inside the <code>.vim</code> directory) — preferred modern location</td></tr>
+</table>
+
+<p>If the file does not exist, create it. Vim reads it automatically every time it starts.</p>
+
+<h3>Syntax basics</h3>
+
+<p>The <code>.vimrc</code> is a plain text file containing Vim commands, one per line — exactly as you would type them at the <code>:</code> prompt, but without the leading colon. Comments begin with <code>"</code> (a double-quote character).</p>
+
+<div class="vimrc-box">
+<span class="vc">" This is a comment — anything after " on a line is ignored</span><br>
+<span class="vs">set</span> <span class="vv">number</span>          <span class="vc">" same as :set number at the command prompt</span><br>
+<span class="vs">syntax</span> <span class="vv">on</span>           <span class="vc">" same as :syntax on</span><br>
+</div>
+
+<h3>Reloading your config without restarting</h3>
+
+<p>After editing <code>.vimrc</code> you can apply changes immediately without closing Vim:</p>
+
+<pre><span class="kw">:</span><span class="cmd">source ~/.vimrc</span>    <span class="cm"># reload the vimrc file</span>
+<span class="kw">:</span><span class="cmd">so %</span>               <span class="cm"># if you are currently editing vimrc, source the current file</span></pre>
+
+<div class="warn">
+  <strong>The portability trade-off:</strong> A heavily customised Vim feels fast and natural on your own machine, but when you SSH into a server or pair program on someone else's machine, you are working with vanilla Vim again. The advice to keep your config lean is not about limiting power — it is about ensuring you stay comfortable in stock Vim. Aim for a config that enhances rather than replaces Vim's native behaviour.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Essential Settings</h2>
+
+<p>These are the settings most Vim users consider non-negotiable. Add them to your <code>.vimrc</code> and they will apply every time Vim opens.</p>
+
+<div class="vimrc-box">
+<span class="vc">" ── Sensible defaults ──────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">nocompatible</span>     <span class="vc">" disable Vi compatibility mode — unlock all Vim features</span><br>
+<span class="vs">filetype</span> <span class="vv">on</span>          <span class="vc">" detect file type for syntax and indentation rules</span><br>
+<span class="vs">filetype</span> <span class="vv">plugin on</span>   <span class="vc">" load filetype-specific plugins</span><br>
+<span class="vs">filetype</span> <span class="vv">indent on</span>   <span class="vc">" load filetype-specific indentation rules</span><br>
+<br>
+<span class="vc">" ── Display ─────────────────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">number</span>           <span class="vc">" show line numbers  (abbrev: se nu)</span><br>
+<span class="vs">set</span> <span class="vv">relativenumber</span>   <span class="vc">" show relative line numbers alongside absolute</span><br>
+<span class="vs">set</span> <span class="vv">cursorline</span>       <span class="vc">" highlight the line the cursor is on</span><br>
+<span class="vs">set</span> <span class="vv">wrap</span>             <span class="vc">" wrap long lines (default); set nowrap to disable</span><br>
+<span class="vs">set</span> <span class="vv">showmatch</span>        <span class="vc">" briefly highlight matching bracket when cursor is on one</span><br>
+<span class="vs">set</span> <span class="vv">showcmd</span>          <span class="vc">" show partial command in status bar as you type</span><br>
+<span class="vs">set</span> <span class="vv">ruler</span>            <span class="vc">" show line/column in status bar</span><br>
+<span class="vs">syntax</span> <span class="vv">on</span>            <span class="vc">" enable syntax highlighting</span><br>
+<br>
+<span class="vc">" ── Search ──────────────────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">ignorecase</span>       <span class="vc">" case-insensitive search (abbrev: ic)</span><br>
+<span class="vs">set</span> <span class="vv">smartcase</span>        <span class="vc">" override ignorecase when pattern has uppercase</span><br>
+<span class="vs">set</span> <span class="vv">hlsearch</span>         <span class="vc">" highlight all search matches</span><br>
+<span class="vs">set</span> <span class="vv">incsearch</span>        <span class="vc">" show matches as you type the pattern</span><br>
+<br>
+<span class="vc">" ── Indentation ─────────────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">tabstop=4</span>        <span class="vc">" a Tab character is displayed as 4 spaces wide</span><br>
+<span class="vs">set</span> <span class="vv">shiftwidth=4</span>     <span class="vc">" number of spaces used for indentation (&gt;&gt; and &lt;&lt;)</span><br>
+<span class="vs">set</span> <span class="vv">expandtab</span>        <span class="vc">" insert spaces instead of tab characters</span><br>
+<span class="vs">set</span> <span class="vv">autoindent</span>       <span class="vc">" copy indent from previous line when starting a new one</span><br>
+<span class="vs">set</span> <span class="vv">smartindent</span>      <span class="vc">" smart auto-indentation for code blocks</span><br>
+<br>
+<span class="vc">" ── Clipboard ───────────────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">clipboard=unnamedplus</span>  <span class="vc">" use system clipboard for all yank/delete/paste</span><br>
+<br>
+<span class="vc">" ── Behaviour ───────────────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">hidden</span>           <span class="vc">" allow switching buffers without saving first</span><br>
+<span class="vs">set</span> <span class="vv">confirm</span>          <span class="vc">" ask instead of silently failing on :q with unsaved changes</span><br>
+<span class="vs">set</span> <span class="vv">history=1000</span>     <span class="vc">" remember 1000 commands in history (default is 20)</span><br>
+<span class="vs">set</span> <span class="vv">undolevels=1000</span>  <span class="vc">" allow 1000 levels of undo</span><br>
+<span class="vs">set</span> <span class="vv">backspace=indent,eol,start</span>  <span class="vc">" make Backspace work as expected in Insert mode</span><br>
+<span class="vs">set</span> <span class="vv">wildmenu</span>         <span class="vc">" enhanced Tab completion menu for commands</span><br>
+<span class="vs">set</span> <span class="vv">wildmode=list:longest</span>  <span class="vc">" complete to longest common match, then list options</span><br>
+</div>
+
+<div class="note">
+  <strong><code>set nocompatible</code> — always put this first.</strong> Without it, Vim runs in a compatibility mode designed to behave like the original <code>vi</code>, which disables many features introduced in Vim. Place it as the very first line of your <code>.vimrc</code>.
+</div>
+
+<h3>Checking and toggling settings</h3>
+
+<pre><span class="kw">:</span><span class="cmd">set</span>                  <span class="cm"># show all non-default settings currently active</span>
+<span class="kw">:</span><span class="cmd">set all</span>              <span class="cm"># show every setting with its current value</span>
+<span class="kw">:</span><span class="cmd">set number?</span>          <span class="cm"># query the current value of a specific setting</span>
+<span class="kw">:</span><span class="cmd">set nonu</span>             <span class="cm"># disable a boolean setting by prepending "no"</span>
+<span class="kw">:</span><span class="cmd">set nu!</span>              <span class="cm"># toggle a boolean setting with !</span>
+<span class="kw">:</span><span class="cmd">help option-summary</span>  <span class="cm"># browse the full list of all settings in Vim's built-in help</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Colour Schemes and Syntax Highlighting</h2>
+
+<pre><span class="kw">:</span><span class="cmd">syntax on</span>            <span class="cm"># enable syntax colouring (add to .vimrc without the colon)</span>
+<span class="kw">:</span><span class="cmd">syntax off</span>           <span class="cm"># disable syntax colouring</span>
+<span class="kw">:</span><span class="cmd">colorscheme</span> <span class="st">desert</span>  <span class="cm"># switch to the 'desert' colour scheme</span>
+<span class="kw">:</span><span class="cmd">colorscheme</span> <span class="st">morning</span> <span class="cm"># light theme</span>
+<span class="kw">:</span><span class="cmd">colorscheme</span> <span class="st">delek</span>   <span class="cm"># another built-in option</span>
+<span class="kw">:</span><span class="cmd">colorscheme</span> <span class="kw">&lt;Tab&gt;</span>   <span class="cm"># Tab through all installed colour schemes</span></pre>
+
+<p>To list all available schemes: <code>:colorscheme &lt;Space&gt;&lt;Tab&gt;</code> — this opens the wildmenu showing all options.</p>
+
+<p>To make your chosen scheme permanent, add this to <code>.vimrc</code>:</p>
+
+<div class="vimrc-box">
+<span class="vs">colorscheme</span> <span class="vt">desert</span>
+</div>
+
+<div class="tip">
+  <strong>Installing additional colour schemes:</strong> Place <code>.vim</code> colour files in <code>~/.vim/colors/</code>. Hundreds of schemes are available online. Popular choices include <em>gruvbox</em>, <em>molokai</em>, <em>solarized</em>, and <em>nord</em>. With a plugin manager (see the tip at the end of this chapter), installing them is a one-liner.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Key Mappings</h2>
+
+<p>Key mappings let you reassign any key (or key sequence) to any action. This is one of the most powerful customisation tools in Vim — the right mappings can eliminate dozens of keystrokes from your daily workflow.</p>
+
+<h3>Mapping commands</h3>
+
+<table>
+  <tr><th>Command</th><th>Mode</th><th>Use</th></tr>
+  <tr><td><code>nnoremap</code></td><td>Normal</td><td>Map a key in Normal mode (recommended)</td></tr>
+  <tr><td><code>inoremap</code></td><td>Insert</td><td>Map a key in Insert mode</td></tr>
+  <tr><td><code>vnoremap</code></td><td>Visual</td><td>Map a key in Visual mode</td></tr>
+  <tr><td><code>noremap</code></td><td>Normal + Visual + Operator</td><td>Map in multiple modes at once</td></tr>
+  <tr><td><code>nmap</code> / <code>map</code></td><td>Normal</td><td>Map without the "no-remap" safety — <strong>avoid</strong></td></tr>
+</table>
+
+<div class="note">
+  <strong>Always use <code>noremap</code> variants, never plain <code>map</code>.</strong> The difference is that <code>noremap</code> (no-remap) prevents recursive mappings — if you map key A to key B, and later map key B to something else, <code>noremap</code> still runs the original action of B. Plain <code>map</code> would chain them, causing hard-to-debug loops. Use <code>nnoremap</code> for Normal mode, <code>inoremap</code> for Insert mode.
+</div>
+
+<h3>Mapping syntax</h3>
+
+<pre><span class="cm">" Syntax: noremap {lhs} {rhs}
+" lhs = key to press, rhs = what it does</span>
+
+<span class="cm">" Special key notation:</span>
+<span class="cm">"   &lt;Space&gt;  = spacebar</span>
+<span class="cm">"   &lt;CR&gt;    = Enter (Carriage Return)</span>
+<span class="cm">"   &lt;Esc&gt;   = Escape</span>
+<span class="cm">"   &lt;Tab&gt;   = Tab</span>
+<span class="cm">"   &lt;C-f&gt;  = Ctrl+f</span>
+<span class="cm">"   &lt;leader&gt; = your leader key (see below)</span></pre>
+
+<h3>Practical mappings to add to .vimrc</h3>
+
+<div class="vimrc-box">
+<span class="vc">" ── Key mappings ────────────────────────────────────────</span><br>
+<br>
+<span class="vc">" Space scrolls forward a page (like PgDn)</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;Space&gt; &lt;C-f&gt;</span><br>
+<br>
+<span class="vc">" Tab jumps to the next sentence in Normal mode</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;Tab&gt; )</span><br>
+<br>
+<span class="vc">" jj in Insert mode acts as Escape — keeps fingers on home row</span><br>
+<span class="vk">inoremap</span> <span class="vm">jj &lt;Esc&gt;</span><br>
+<br>
+<span class="vc">" Clear search highlights with Enter in Normal mode</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;CR&gt; :nohlsearch&lt;CR&gt;</span><br>
+<br>
+<span class="vc">" Save with Ctrl+s in Normal and Insert mode</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-s&gt; :w&lt;CR&gt;</span><br>
+<span class="vk">inoremap</span> <span class="vm">&lt;C-s&gt; &lt;Esc&gt;:w&lt;CR&gt;a</span><br>
+<br>
+<span class="vc">" Move between windows with Ctrl+direction (no need for Ctrl+W prefix)</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-h&gt; &lt;C-w&gt;h</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-j&gt; &lt;C-w&gt;j</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-k&gt; &lt;C-w&gt;k</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-l&gt; &lt;C-w&gt;l</span><br>
+<br>
+<span class="vc">" Navigate buffers quickly</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;F2&gt; :bprevious&lt;CR&gt;</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;F3&gt; :bnext&lt;CR&gt;</span><br>
+</div>
+
+<h3>The leader key</h3>
+
+<p>The <em>leader key</em> is a namespace prefix for your own custom mappings. By convention it is set to <code>\</code> (backslash) by default, but most users change it to <code>,</code> (comma) or <code>&lt;Space&gt;</code> for easier reach. It prevents your mappings from clashing with Vim's built-in commands.</p>
+
+<div class="vimrc-box">
+<span class="vc">" Set leader key to comma</span><br>
+<span class="vs">let</span> <span class="vv">mapleader</span> = <span class="vt">","</span><br>
+<br>
+<span class="vc">" Now define leader mappings — press , then the letter</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;leader&gt;w :w&lt;CR&gt;</span>          <span class="vc">" ,w = save file</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;leader&gt;q :q&lt;CR&gt;</span>          <span class="vc">" ,q = quit</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;leader&gt;e :e ~/.vimrc&lt;CR&gt;</span>  <span class="vc">" ,e = open vimrc for editing</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;leader&gt;s :source ~/.vimrc&lt;CR&gt;</span>  <span class="vc">" ,s = reload vimrc</span><br>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Abbreviations</h2>
+
+<p>Abbreviations (<code>:ab</code> or <code>:iabbrev</code>) expand short trigger strings into longer text when you type them in Insert mode followed by a space, Enter, or punctuation. They are useful for fixing common typos, expanding jargon, and inserting frequently used phrases.</p>
+
+<pre><span class="cm">" In the command line (interactive, not in .vimrc):</span>
+<span class="kw">:</span><span class="cmd">ab</span> <span class="vr">_me</span> <span class="st">philip.osztromok@email.com</span>   <span class="cm"># type _me + space → expands</span>
+<span class="kw">:</span><span class="cmd">ab</span> <span class="vr">recieve</span> <span class="st">receive</span>                  <span class="cm"># auto-correct typo</span>
+<span class="kw">:</span><span class="cmd">ab</span> <span class="vr">_ys</span> <span class="st">Youngster</span>                     <span class="cm"># shorthand for a word</span></pre>
+
+<div class="vimrc-box">
+<span class="vc">" ── Abbreviations in .vimrc ────────────────────────────</span><br>
+<br>
+<span class="vc">" Typo corrections</span><br>
+<span class="vk">iabbrev</span> <span class="vv">recieve</span>     <span class="vt">receive</span><br>
+<span class="vk">iabbrev</span> <span class="vv">teh</span>         <span class="vt">the</span><br>
+<span class="vk">iabbrev</span> <span class="vv">dont</span>        <span class="vt">don't</span><br>
+<span class="vk">iabbrev</span> <span class="vv">occured</span>     <span class="vt">occurred</span><br>
+<span class="vk">iabbrev</span> <span class="vv">seperate</span>    <span class="vt">separate</span><br>
+<br>
+<span class="vc">" Quick expansions — underscore prefix avoids accidental triggers</span><br>
+<span class="vk">iabbrev</span> <span class="vv">_em</span>         <span class="vt">yourname@example.com</span><br>
+<span class="vk">iabbrev</span> <span class="vv">_sig</span>        <span class="vt">Kind regards,&lt;CR&gt;Your Name</span><br>
+<span class="vk">iabbrev</span> <span class="vv">_dt</span>         <span class="vt">&lt;C-r&gt;=strftime('%Y-%m-%d')&lt;CR&gt;</span>  <span class="vc">" inserts today's date</span><br>
+</div>
+
+<div class="tip">
+  <strong>Preventing expansion:</strong> If you genuinely need to type an abbreviation trigger without expanding it, press <code>Ctrl+V</code> immediately before the space or Enter that would trigger expansion. This inserts a literal space without triggering the abbreviation.
+</div>
+
+<div class="tip">
+  <strong>Use the underscore prefix convention:</strong> Prefixing your personal abbreviations with <code>_</code> (e.g. <code>_me</code>, <code>_sig</code>) means they can never conflict with ordinary words — no English word starts with an underscore. This is a widely followed convention among Vim users.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Custom Commands</h2>
+
+<p>The <code>:command</code> statement (abbreviated <code>:com</code>) lets you define your own Command-mode commands. This is perfect for wrapping external tools you run frequently.</p>
+
+<pre><span class="cm">" Syntax: :command! CommandName action
+" ! overwrites if it already exists
+" Command names MUST start with an uppercase letter</span>
+
+<span class="kw">:</span><span class="cmd">command!</span> <span class="vr">PY</span>  <span class="st">!python3 %</span>     <span class="cm"># run current Python file (:PY to execute)</span>
+<span class="kw">:</span><span class="cmd">command!</span> <span class="vr">WC</span>  <span class="st">!wc %</span>          <span class="cm"># word count of current file</span>
+<span class="kw">:</span><span class="cmd">command!</span> <span class="vr">LS</span>  <span class="st">!ls -la</span>        <span class="cm"># list directory contents</span></pre>
+
+<p>The <code>%</code> in these commands is a special placeholder that expands to the current filename. So <code>:PY</code> runs <code>python3 app.py</code> (or whatever the current file is named).</p>
+
+<div class="vimrc-box">
+<span class="vc">" ── Custom commands ─────────────────────────────────────</span><br>
+<span class="vs">command!</span> <span class="vv">PY</span>    <span class="vt">!python3 %</span><br>
+<span class="vs">command!</span> <span class="vv">WC</span>    <span class="vt">!wc -w %</span><br>
+<span class="vs">command!</span> <span class="vv">TODAY</span> <span class="vt">r!date +\%Y-\%m-\%d</span>  <span class="vc">" insert today's date below cursor</span><br>
+<span class="vs">command!</span> <span class="vv">SH</span>    <span class="vt">!bash %</span>       <span class="vc">" run current file as a shell script</span><br>
+</div>
+
+<h3>Running external commands interactively</h3>
+
+<p>Without defining a custom command, you can run any shell command with <code>:!</code>:</p>
+
+<pre><span class="kw">:</span><span class="cmd">!</span><span class="st">ls</span>              <span class="cm"># list directory contents</span>
+<span class="kw">:</span><span class="cmd">!</span><span class="st">python3 %</span>       <span class="cm"># run current file (% = current filename)</span>
+<span class="kw">:</span><span class="cmd">!</span><span class="st">git status</span>      <span class="cm"># check git status without leaving Vim</span>
+<span class="kw">:</span><span class="cmd">!</span><span class="st">git diff %</span>      <span class="cm"># diff current file against last commit</span>
+<span class="kw">:</span><span class="cmd">!</span><span class="st">chmod +x %</span>      <span class="cm"># make current file executable</span></pre>
+
+<p>After the command finishes, press <code>Enter</code> to return to Vim. The output is displayed in a full-screen shell overlay.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>A Complete Starter .vimrc</h2>
+
+<p>Here is a well-commented, complete starter configuration you can use as a base and adapt to your own preferences. Every line is explained.</p>
+
+<div class="vimrc-box">
+<span class="vc">" ════════════════════════════════════════════════════════</span><br>
+<span class="vc">"  .vimrc — starter configuration</span><br>
+<span class="vc">" ════════════════════════════════════════════════════════</span><br>
+<br>
+<span class="vc">" Must be first — disable Vi compatibility, enable all Vim features</span><br>
+<span class="vs">set</span> <span class="vv">nocompatible</span><br>
+<br>
+<span class="vc">" ── File type detection ─────────────────────────────────</span><br>
+<span class="vs">filetype</span> <span class="vv">plugin indent on</span><br>
+<br>
+<span class="vc">" ── Appearance ──────────────────────────────────────────</span><br>
+<span class="vs">syntax</span> <span class="vv">on</span><br>
+<span class="vs">colorscheme</span> <span class="vt">desert</span>            <span class="vc">" change to your preferred scheme</span><br>
+<span class="vs">set</span> <span class="vv">number</span>                    <span class="vc">" absolute line numbers</span><br>
+<span class="vs">set</span> <span class="vv">relativenumber</span>            <span class="vc">" relative numbers alongside absolute</span><br>
+<span class="vs">set</span> <span class="vv">cursorline</span>                <span class="vc">" highlight current line</span><br>
+<span class="vs">set</span> <span class="vv">showcmd</span>                   <span class="vc">" show partial commands in status bar</span><br>
+<span class="vs">set</span> <span class="vv">ruler</span>                     <span class="vc">" show line/col in status bar</span><br>
+<span class="vs">set</span> <span class="vv">showmatch</span>                 <span class="vc">" highlight matching brackets</span><br>
+<br>
+<span class="vc">" ── Search ──────────────────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">ignorecase</span>                <span class="vc">" case-insensitive search</span><br>
+<span class="vs">set</span> <span class="vv">smartcase</span>                 <span class="vc">" case-sensitive when pattern has uppercase</span><br>
+<span class="vs">set</span> <span class="vv">hlsearch</span>                  <span class="vc">" highlight all matches</span><br>
+<span class="vs">set</span> <span class="vv">incsearch</span>                 <span class="vc">" incremental search as you type</span><br>
+<br>
+<span class="vc">" ── Indentation ─────────────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">tabstop=4</span>                 <span class="vc">" tab width</span><br>
+<span class="vs">set</span> <span class="vv">shiftwidth=4</span>              <span class="vc">" indent width</span><br>
+<span class="vs">set</span> <span class="vv">expandtab</span>                 <span class="vc">" spaces instead of tabs</span><br>
+<span class="vs">set</span> <span class="vv">autoindent</span>                <span class="vc">" copy indent from previous line</span><br>
+<br>
+<span class="vc">" ── Behaviour ───────────────────────────────────────────</span><br>
+<span class="vs">set</span> <span class="vv">hidden</span>                    <span class="vc">" allow unsaved buffers to be hidden</span><br>
+<span class="vs">set</span> <span class="vv">backspace=indent,eol,start</span><span class="vc">" sensible backspace in Insert mode</span><br>
+<span class="vs">set</span> <span class="vv">history=1000</span>              <span class="vc">" command history size</span><br>
+<span class="vs">set</span> <span class="vv">undolevels=1000</span>           <span class="vc">" generous undo history</span><br>
+<span class="vs">set</span> <span class="vv">wildmenu</span>                  <span class="vc">" enhanced command completion</span><br>
+<span class="vs">set</span> <span class="vv">wildmode=list:longest</span>     <span class="vc">" completion behaviour</span><br>
+<span class="vs">set</span> <span class="vv">clipboard=unnamedplus</span>     <span class="vc">" use system clipboard</span><br>
+<br>
+<span class="vc">" ── Leader key ──────────────────────────────────────────</span><br>
+<span class="vs">let</span> <span class="vv">mapleader</span> = <span class="vt">","</span><br>
+<br>
+<span class="vc">" ── Key mappings ────────────────────────────────────────</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;Space&gt;    &lt;C-f&gt;</span>       <span class="vc">" Space = page forward</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;CR&gt;       :nohlsearch&lt;CR&gt;</span>  <span class="vc">" Enter clears search highlights</span><br>
+<span class="vk">inoremap</span> <span class="vm">jj         &lt;Esc&gt;</span>       <span class="vc">" jj exits Insert mode</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-h&gt;      &lt;C-w&gt;h</span>      <span class="vc">" Ctrl+direction to move between windows</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-j&gt;      &lt;C-w&gt;j</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-k&gt;      &lt;C-w&gt;k</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;C-l&gt;      &lt;C-w&gt;l</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;leader&gt;e  :e ~/.vimrc&lt;CR&gt;</span>   <span class="vc">" ,e = edit vimrc</span><br>
+<span class="vk">nnoremap</span> <span class="vm">&lt;leader&gt;s  :source ~/.vimrc&lt;CR&gt;</span>  <span class="vc">" ,s = reload vimrc</span><br>
+<br>
+<span class="vc">" ── Abbreviations ───────────────────────────────────────</span><br>
+<span class="vk">iabbrev</span>  <span class="vv">recieve</span>    <span class="vt">receive</span><br>
+<span class="vk">iabbrev</span>  <span class="vv">teh</span>        <span class="vt">the</span><br>
+<span class="vk">iabbrev</span>  <span class="vv">dont</span>       <span class="vt">don't</span><br>
+<br>
+<span class="vc">" ── Custom commands ─────────────────────────────────────</span><br>
+<span class="vs">command!</span> <span class="vv">PY</span>    <span class="vt">!python3 %</span><br>
+<span class="vs">command!</span> <span class="vv">WC</span>    <span class="vt">!wc -w %</span><br>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Help System</h2>
+
+<p>Vim has a comprehensive built-in help system that is worth using. Every setting, command, and mapping is documented.</p>
+
+<pre><span class="kw">:</span><span class="cmd">help</span>                   <span class="cm"># open the help index</span>
+<span class="kw">:</span><span class="cmd">help</span> <span class="st">option-summary</span>    <span class="cm"># list of all settings with brief descriptions</span>
+<span class="kw">:</span><span class="cmd">help</span> <span class="st">:map</span>              <span class="cm"># help for the map command</span>
+<span class="kw">:</span><span class="cmd">help</span> <span class="st">set</span>               <span class="cm"># help for the set command</span>
+<span class="kw">:</span><span class="cmd">help</span> <span class="st">normal</span>            <span class="cm"># help on Normal mode commands</span>
+<span class="kw">:</span><span class="cmd">help</span> <span class="st">vimrc</span>             <span class="cm"># help on the vimrc file itself</span>
+<span class="kw">:</span><span class="cmd">help</span> <span class="st">insert.txt</span>        <span class="cm"># full Insert mode documentation</span></pre>
+
+<p>Inside the help window, use <code>Ctrl+]</code> to follow a hyperlink (shown in <code>|pipes|</code>) and <code>Ctrl+O</code> to go back. Close the help window with <code>:q</code>.</p>
+
+<div class="tip">
+  <strong>Plugin managers:</strong> Once you are comfortable with the basics, a plugin manager dramatically simplifies adding third-party tools. The most popular options are <strong>vim-plug</strong> (minimal, fast), <strong>Vundle</strong> (classic), and <strong>lazy.nvim</strong> (for Neovim). A single line in your <code>.vimrc</code> can install colour schemes, file trees, Git integration, and language servers — without cluttering your config.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Commands Introduced in This Chapter</h2>
+
+<div class="cmd-ref">
+  <h4>Chapter 7 — Command Reference</h4>
+
+  <div class="cmd-section">Vimrc</div>
+  <div class="cmd-row"><span class="cmd-key">:source ~/.vimrc</span><span class="cmd-desc">Reload the vimrc without restarting Vim</span></div>
+  <div class="cmd-row"><span class="cmd-key">:so %</span><span class="cmd-desc">Source the current file (when editing vimrc)</span></div>
+
+  <div class="cmd-section">Settings</div>
+  <div class="cmd-row"><span class="cmd-key">:set</span><span class="cmd-desc">Show all non-default settings currently active</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set all</span><span class="cmd-desc">Show every setting with its current value</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set {option}?</span><span class="cmd-desc">Query the current value of an option</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set no{option}</span><span class="cmd-desc">Disable a boolean option</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set {option}!</span><span class="cmd-desc">Toggle a boolean option on/off</span></div>
+  <div class="cmd-row"><span class="cmd-key">set nocompatible</span><span class="cmd-desc">Disable Vi compatibility (always first in vimrc)</span></div>
+  <div class="cmd-row"><span class="cmd-key">set number / nonu</span><span class="cmd-desc">Show / hide line numbers</span></div>
+  <div class="cmd-row"><span class="cmd-key">set relativenumber</span><span class="cmd-desc">Relative line numbers</span></div>
+  <div class="cmd-row"><span class="cmd-key">set cursorline</span><span class="cmd-desc">Highlight the current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">set showmatch</span><span class="cmd-desc">Highlight matching brackets</span></div>
+  <div class="cmd-row"><span class="cmd-key">set showcmd</span><span class="cmd-desc">Show partial commands in status bar</span></div>
+  <div class="cmd-row"><span class="cmd-key">set hidden</span><span class="cmd-desc">Allow switching buffers without saving first</span></div>
+  <div class="cmd-row"><span class="cmd-key">set wildmenu</span><span class="cmd-desc">Enhanced Tab-completion menu</span></div>
+  <div class="cmd-row"><span class="cmd-key">set tabstop=4</span><span class="cmd-desc">Tab display width</span></div>
+  <div class="cmd-row"><span class="cmd-key">set shiftwidth=4</span><span class="cmd-desc">Indent width for &gt;&gt; and &lt;&lt;</span></div>
+  <div class="cmd-row"><span class="cmd-key">set expandtab</span><span class="cmd-desc">Insert spaces instead of tab characters</span></div>
+  <div class="cmd-row"><span class="cmd-key">set clipboard=unnamedplus</span><span class="cmd-desc">Use system clipboard by default</span></div>
+  <div class="cmd-row"><span class="cmd-key">set history=1000</span><span class="cmd-desc">Increase command history size</span></div>
+  <div class="cmd-row"><span class="cmd-key">set undolevels=1000</span><span class="cmd-desc">Increase undo history depth</span></div>
+  <div class="cmd-row"><span class="cmd-key">:help option-summary</span><span class="cmd-desc">Browse all available settings in built-in help</span></div>
+
+  <div class="cmd-section">Colour schemes &amp; syntax</div>
+  <div class="cmd-row"><span class="cmd-key">:syntax on / off</span><span class="cmd-desc">Enable / disable syntax highlighting</span></div>
+  <div class="cmd-row"><span class="cmd-key">:colorscheme {name}</span><span class="cmd-desc">Switch to a colour scheme</span></div>
+  <div class="cmd-row"><span class="cmd-key">:colorscheme &lt;Tab&gt;</span><span class="cmd-desc">Browse all available colour schemes</span></div>
+
+  <div class="cmd-section">Key mappings (vimrc)</div>
+  <div class="cmd-row"><span class="cmd-key">nnoremap {key} {action}</span><span class="cmd-desc">Map a key in Normal mode (safe, non-recursive)</span></div>
+  <div class="cmd-row"><span class="cmd-key">inoremap {key} {action}</span><span class="cmd-desc">Map a key in Insert mode</span></div>
+  <div class="cmd-row"><span class="cmd-key">vnoremap {key} {action}</span><span class="cmd-desc">Map a key in Visual mode</span></div>
+  <div class="cmd-row"><span class="cmd-key">let mapleader = ","</span><span class="cmd-desc">Set the leader key to comma</span></div>
+
+  <div class="cmd-section">Abbreviations</div>
+  <div class="cmd-row"><span class="cmd-key">:ab {trigger} {expansion}</span><span class="cmd-desc">Define an abbreviation (interactive)</span></div>
+  <div class="cmd-row"><span class="cmd-key">iabbrev {trigger} {expansion}</span><span class="cmd-desc">Define an abbreviation in vimrc</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+V (in Insert)</span><span class="cmd-desc">Prevent the next character from triggering an abbreviation</span></div>
+
+  <div class="cmd-section">Custom commands &amp; shell</div>
+  <div class="cmd-row"><span class="cmd-key">:command! {Name} {action}</span><span class="cmd-desc">Define a custom Command-mode command</span></div>
+  <div class="cmd-row"><span class="cmd-key">:! {shell-command}</span><span class="cmd-desc">Run a shell command from within Vim</span></div>
+  <div class="cmd-row"><span class="cmd-key">% (in :! commands)</span><span class="cmd-desc">Expands to the current filename</span></div>
+
+  <div class="cmd-section">Help</div>
+  <div class="cmd-row"><span class="cmd-key">:help</span><span class="cmd-desc">Open the help index</span></div>
+  <div class="cmd-row"><span class="cmd-key">:help {topic}</span><span class="cmd-desc">Open help for a specific topic or setting</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+] (in help)</span><span class="cmd-desc">Follow a help hyperlink</span></div>
+</div>
+
+</div>

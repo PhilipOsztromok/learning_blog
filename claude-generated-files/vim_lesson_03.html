@@ -1,0 +1,410 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-section { color: #7a8aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0.9em 0 0.3em 0; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; }
+  .lx-lesson .cmd-key { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 160px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  .lx-lesson .mode-badge {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    padding: 0.15em 0.55em; border-radius: 3px; margin-right: 0.3em; vertical-align: middle;
+  }
+  .lx-lesson .mode-normal  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }
+  .lx-lesson .mode-insert  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }
+  .lx-lesson .mode-command { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }
+  .lx-lesson .demo-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0;
+  }
+  .lx-lesson .demo-box h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.95rem; }
+  .lx-lesson .demo-text {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.88rem;
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 4px;
+    padding: 0.8em 1em; margin: 0.6em 0; line-height: 1.7; color: #c9d8ff;
+  }
+  .lx-lesson .cursor { background: #4f8ef7; color: #12141e; border-radius: 2px; padding: 0 1px; }
+  .lx-lesson .highlight-word { color: #ffab70; font-weight: bold; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 3 — Moving Around</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Why Movement Matters</h2>
+
+<p>In most editors, moving around the file is an afterthought — you use the mouse, or hold arrow keys until you get where you want to go. In Vim, movement is a first-class skill. Because all editing happens in Normal mode using keyboard commands, the speed at which you can navigate directly determines the speed at which you can edit.</p>
+
+<p>Vim's movement commands are also the foundation of its <em>operator + motion</em> grammar. Commands like "delete the next three words" or "copy from here to the end of the paragraph" are built by combining an editing operator with a movement command. Learning to move precisely and quickly therefore unlocks not just navigation but the entire editing system.</p>
+
+<p>Everything in this chapter is a <span class="mode-badge mode-normal">NORMAL</span> mode command unless stated otherwise.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The HJKL Keys — Character Movement</h2>
+
+<p>Vim uses <code>h</code>, <code>j</code>, <code>k</code>, and <code>l</code> as arrow keys. This is not an arbitrary choice — it has its roots in the original ADM-3A terminal from the 1970s, on which the arrow symbols were actually printed on those keys. The layout has a practical advantage: these four keys sit on the home row of the keyboard, right where your fingers already rest. You never need to move your hand to the arrow cluster.</p>
+
+<table>
+  <tr><th>Key</th><th>Direction</th><th>Memory aid</th></tr>
+  <tr><td><code>h</code></td><td>Left (← )</td><td>Leftmost of the four keys</td></tr>
+  <tr><td><code>j</code></td><td>Down (↓ )</td><td>The letter j has a tail that points down</td></tr>
+  <tr><td><code>k</code></td><td>Up (↑ )</td><td>k is above j on the keyboard</td></tr>
+  <tr><td><code>l</code></td><td>Right (→ )</td><td>Rightmost of the four keys</td></tr>
+</table>
+
+<div class="tip">
+  <strong>Arrow keys still work</strong> — Vim accepts arrow keys for movement in both Normal and Insert mode. However, using them forces your right hand off the home row and across to the arrow cluster on every navigation. Most Vim users find that after a few days of consciously using HJKL, it becomes automatic and they never want to go back.
+</div>
+
+<h3>Multiplying movement with counts</h3>
+
+<p>Any movement command can be prefixed with a number to repeat it that many times. This is one of the most efficient features of Vim navigation — instead of holding a key down and watching the cursor drift, you specify exactly how far you want to go.</p>
+
+<pre><span class="vr">5</span><span class="cmd">j</span>      <span class="cm"># move 5 lines down</span>
+<span class="vr">10</span><span class="cmd">l</span>     <span class="cm"># move 10 characters to the right</span>
+<span class="vr">3</span><span class="cmd">k</span>      <span class="cm"># move 3 lines up</span>
+<span class="vr">8</span><span class="cmd">h</span>      <span class="cm"># move 8 characters to the left</span></pre>
+
+<p>Counts work with almost every movement command in this chapter — not just HJKL. When you see a new command, assume a count prefix will work unless stated otherwise.</p>
+
+<div class="note">
+  <strong>Relative line numbers and counts:</strong> When <code>:set relativenumber</code> is enabled (introduced in Chapter 1), the number shown next to each line is its distance from the cursor. This makes count-based jumps trivial — you glance at the line you want, read off its number, and type that number followed by <code>j</code> or <code>k</code>.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Word-Level Movement</h2>
+
+<p>Moving character by character is slow even with counts. For navigating within a line or across a paragraph, <em>word-level</em> movements are far more efficient.</p>
+
+<table>
+  <tr><th>Key</th><th>Movement</th></tr>
+  <tr><td><code>w</code></td><td>Forward to the <strong>start</strong> of the next word</td></tr>
+  <tr><td><code>W</code></td><td>Forward to the start of the next WORD (whitespace-delimited — ignores punctuation)</td></tr>
+  <tr><td><code>e</code></td><td>Forward to the <strong>end</strong> of the current (or next) word</td></tr>
+  <tr><td><code>E</code></td><td>Forward to the end of the current WORD</td></tr>
+  <tr><td><code>b</code></td><td>Backward to the <strong>start</strong> of the current (or previous) word</td></tr>
+  <tr><td><code>B</code></td><td>Backward to the start of the current WORD</td></tr>
+  <tr><td><code>ge</code></td><td>Backward to the <strong>end</strong> of the previous word</td></tr>
+</table>
+
+<div class="note">
+  <strong>word vs WORD:</strong> In Vim, a lowercase <em>word</em> is a sequence of letters, digits, and underscores — roughly what a programmer would call an identifier. An uppercase <em>WORD</em> is any sequence of non-whitespace characters. So in the text <code>file-name.txt</code>, <code>w</code> sees three words (<code>file</code>, <code>-</code>, <code>name.txt</code> approximately), whereas <code>W</code> sees one WORD. Use lowercase for precision within punctuation-heavy text; use uppercase for coarser, faster jumps.
+</div>
+
+<div class="demo-box">
+  <h4>Example — word movement on a line</h4>
+  <div class="demo-text">The quick brown fox jumps over the lazy dog</div>
+  <p style="font-size:0.9rem; color:#7a8aaa; margin:0.3em 0 0.6em 0;">Starting with cursor on "T" in "The":</p>
+  <table style="font-size:0.88rem;">
+    <tr><th>Command</th><th>Cursor lands on</th></tr>
+    <tr><td><code>w</code></td><td>q (start of "quick")</td></tr>
+    <tr><td><code>3w</code></td><td>f (start of "fox")</td></tr>
+    <tr><td><code>e</code></td><td>e (end of "The")</td></tr>
+    <tr><td><code>2e</code></td><td>k (end of "quick"… wait, end of "brown")</td></tr>
+    <tr><td><code>b</code></td><td>T (back to start of "The")</td></tr>
+    <tr><td><code>4w</code></td><td>j (start of "jumps")</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Line Movement</h2>
+
+<p>Moving within a line precisely is something you do constantly. These commands get you to the right position instantly:</p>
+
+<table>
+  <tr><th>Key</th><th>Movement</th></tr>
+  <tr><td><code>0</code></td><td>Jump to the <strong>very beginning</strong> of the line (column 1)</td></tr>
+  <tr><td><code>^</code></td><td>Jump to the <strong>first non-whitespace</strong> character of the line</td></tr>
+  <tr><td><code>$</code></td><td>Jump to the <strong>end</strong> of the line</td></tr>
+  <tr><td><code>g_</code></td><td>Jump to the <strong>last non-whitespace</strong> character of the line</td></tr>
+  <tr><td><code>f{char}</code></td><td>Find — jump <strong>forward</strong> to the next occurrence of <em>char</em> on the line</td></tr>
+  <tr><td><code>F{char}</code></td><td>Find — jump <strong>backward</strong> to the previous occurrence of <em>char</em> on the line</td></tr>
+  <tr><td><code>t{char}</code></td><td>Till — jump forward to just <strong>before</strong> <em>char</em> on the line</td></tr>
+  <tr><td><code>T{char}</code></td><td>Till — jump backward to just <strong>after</strong> <em>char</em> on the line</td></tr>
+  <tr><td><code>;</code></td><td>Repeat the last <code>f</code>, <code>F</code>, <code>t</code>, or <code>T</code> in the same direction</td></tr>
+  <tr><td><code>,</code></td><td>Repeat the last <code>f</code>, <code>F</code>, <code>t</code>, or <code>T</code> in the opposite direction</td></tr>
+</table>
+
+<div class="demo-box">
+  <h4>Example — f and t in action</h4>
+  <div class="demo-text">background-color: rgba(255, 128, 0, 0.5);</div>
+  <p style="font-size:0.9rem; color:#7a8aaa; margin:0.3em 0 0.6em 0;">Starting with cursor at the beginning of the line:</p>
+  <ul style="font-size:0.9rem;">
+    <li><code>f(</code> — jumps to the <code>(</code> before <code>255</code></li>
+    <li><code>t,</code> — jumps to just before the first <code>,</code> (cursor sits on <code>5</code>)</li>
+    <li><code>;</code> — repeats: jumps to just before the next <code>,</code></li>
+    <li><code>f;</code> — jumps to the <code>;</code> at the end of the line</li>
+  </ul>
+  <p style="font-size:0.9rem; color:#7a8aaa;">This is much faster than pressing <code>l</code> repeatedly or using the arrow keys to navigate within a long line.</p>
+</div>
+
+<div class="tip">
+  <strong>The difference between <code>0</code> and <code>^</code>:</strong> <code>0</code> always goes to column 1, even if the line is indented. <code>^</code> goes to the first actual character, skipping any leading whitespace. In code, you almost always want <code>^</code> — it puts you at the start of the statement, not at the indentation.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Sentence and Paragraph Movement</h2>
+
+<p>When working with prose or structured documents, jumping sentence-by-sentence or paragraph-by-paragraph is faster than any word-level navigation.</p>
+
+<table>
+  <tr><th>Key</th><th>Movement</th></tr>
+  <tr><td><code>)</code></td><td>Forward to the beginning of the next sentence</td></tr>
+  <tr><td><code>(</code></td><td>Backward to the beginning of the current (or previous) sentence</td></tr>
+  <tr><td><code>}</code></td><td>Forward to the beginning of the next paragraph (next blank line)</td></tr>
+  <tr><td><code>{</code></td><td>Backward to the beginning of the previous paragraph</td></tr>
+</table>
+
+<div class="note">
+  <strong>What counts as a sentence?</strong> Vim defines a sentence as ending with <code>.</code>, <code>!</code>, or <code>?</code> followed by either end-of-line or at least two spaces. A paragraph is defined as a block of non-empty lines — it ends and begins at a blank line. In code, <code>}</code> and <code>{</code> are most useful for jumping between functions or blocks separated by blank lines.
+</div>
+
+<p>As with all movement commands, counts work here too:</p>
+
+<pre><span class="vr">3</span><span class="cmd">}</span>     <span class="cm"># jump 3 paragraphs forward</span>
+<span class="vr">2</span><span class="cmd">{</span>     <span class="cm"># jump 2 paragraphs backward</span>
+<span class="vr">5</span><span class="cmd">)</span>     <span class="cm"># jump 5 sentences forward</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>File-Level Navigation</h2>
+
+<p>For large files you need to jump across long distances — to the top, the bottom, a specific line, or a screenful at a time.</p>
+
+<h3>Top and bottom</h3>
+
+<table>
+  <tr><th>Key</th><th>Movement</th></tr>
+  <tr><td><code>gg</code></td><td>Jump to the <strong>first line</strong> of the file</td></tr>
+  <tr><td><code>G</code></td><td>Jump to the <strong>last line</strong> of the file</td></tr>
+  <tr><td><code>{n}G</code></td><td>Jump to <strong>line n</strong> (e.g. <code>42G</code> jumps to line 42)</td></tr>
+  <tr><td><code>:{n}</code></td><td>Jump to <strong>line n</strong> via the command line (e.g. <code>:302</code>)</td></tr>
+  <tr><td><code>{n}%</code></td><td>Jump to <strong>n%</strong> through the file (e.g. <code>50%</code> jumps to the midpoint)</td></tr>
+</table>
+
+<div class="note">
+  <strong><code>{n}G</code> vs <code>:{n}</code>:</strong> Both jump to line <em>n</em>. <code>{n}G</code> is faster to type in Normal mode (just the number then <code>G</code>). <code>:{n}</code> is useful when you know the number from an error message — you can type it quickly after pressing <code>:</code>. Both are worth knowing.
+</div>
+
+<h3>Page scrolling</h3>
+
+<table>
+  <tr><th>Key</th><th>Movement</th></tr>
+  <tr><td><code>Ctrl+F</code></td><td>Scroll <strong>forward</strong> one full page (keeps a couple of lines for context)</td></tr>
+  <tr><td><code>Ctrl+B</code></td><td>Scroll <strong>backward</strong> one full page</td></tr>
+  <tr><td><code>Ctrl+D</code></td><td>Scroll <strong>down</strong> half a page</td></tr>
+  <tr><td><code>Ctrl+U</code></td><td>Scroll <strong>up</strong> half a page</td></tr>
+  <tr><td><code>Ctrl+E</code></td><td>Scroll the screen down one line <em>without moving the cursor</em></td></tr>
+  <tr><td><code>Ctrl+Y</code></td><td>Scroll the screen up one line <em>without moving the cursor</em></td></tr>
+</table>
+
+<h3>Cursor positioning on screen</h3>
+
+<p>These three commands reposition the <em>view</em> around your cursor, not the cursor itself — useful for reading context around your current position:</p>
+
+<table>
+  <tr><th>Key</th><th>Action</th></tr>
+  <tr><td><code>zz</code></td><td>Scroll so the current line is in the <strong>centre</strong> of the screen</td></tr>
+  <tr><td><code>zt</code></td><td>Scroll so the current line is at the <strong>top</strong> of the screen</td></tr>
+  <tr><td><code>zb</code></td><td>Scroll so the current line is at the <strong>bottom</strong> of the screen</td></tr>
+</table>
+
+<div class="tip">
+  <strong><code>zz</code> is one of the most underrated commands in Vim.</strong> When you have just jumped to a line and want to read the surrounding context, <code>zz</code> centres it on screen instantly. It is also useful while reading — if the line you care about has drifted to the top or bottom of the screen, <code>zz</code> brings it back to eye level.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Searching</h2>
+
+<p>Search is arguably the fastest navigation tool in Vim for reaching a specific location. Instead of scrolling to where you think the text is, you tell Vim exactly what you are looking for and it takes you there instantly.</p>
+
+<h3>Forward and backward search</h3>
+
+<pre><span class="kw">/</span><span class="st">pattern</span>    <span class="cm"># search forward for pattern — press Enter to jump</span>
+<span class="kw">?</span><span class="st">pattern</span>    <span class="cm"># search backward for pattern — press Enter to jump</span></pre>
+
+<p>After pressing Enter, the cursor jumps to the first match. The matched text is highlighted across the entire file (if <code>:set hlsearch</code> is enabled). To navigate between matches:</p>
+
+<table>
+  <tr><th>Key</th><th>Action</th></tr>
+  <tr><td><code>n</code></td><td>Jump to the <strong>next</strong> match (in the direction of the original search)</td></tr>
+  <tr><td><code>N</code></td><td>Jump to the <strong>previous</strong> match (opposite direction)</td></tr>
+</table>
+
+<p>The search wraps around — when you reach the end of the file Vim loops back to the beginning (you will see a message: <code>search hit BOTTOM, continuing at TOP</code>).</p>
+
+<div class="tip">
+  <strong>Clearing search highlights:</strong> After a search, the highlighted matches stay on screen until you search for something else. To clear the highlights without searching, run <code>:nohlsearch</code> (or its abbreviation <code>:noh</code>). Many users map this to a key in their config — for example <code>:nnoremap &lt;Esc&gt;&lt;Esc&gt; :nohlsearch&lt;CR&gt;</code>.
+</div>
+
+<h3>Searching for the word under the cursor</h3>
+
+<p>Often the word you want to search for is already under your cursor. Rather than typing it out, use:</p>
+
+<table>
+  <tr><th>Key</th><th>Action</th></tr>
+  <tr><td><code>*</code></td><td>Search <strong>forward</strong> for the exact word under the cursor (whole-word match)</td></tr>
+  <tr><td><code>#</code></td><td>Search <strong>backward</strong> for the exact word under the cursor</td></tr>
+  <tr><td><code>g*</code></td><td>Search forward for the word under the cursor (partial match — finds it inside longer words too)</td></tr>
+  <tr><td><code>g#</code></td><td>Search backward (partial match)</td></tr>
+</table>
+
+<p><code>*</code> is particularly useful when reading code — place your cursor on a variable name and press <code>*</code> to jump through all its usages in the file.</p>
+
+<h3>Regular expressions in search</h3>
+
+<p>Vim's search supports regular expressions, making it enormously powerful for finding patterns rather than literal strings:</p>
+
+<pre><span class="kw">/</span><span class="rx">ch.mb</span>         <span class="cm"># . matches any single character: finds "chamber", "chimb", "chombs"...</span>
+<span class="kw">/</span><span class="rx">^function</span>     <span class="cm"># ^ = start of line: finds lines beginning with "function"</span>
+<span class="kw">/</span><span class="rx">error$</span>        <span class="cm"># $ = end of line: finds lines ending with "error"</span>
+<span class="kw">/</span><span class="rx">\d\+</span>          <span class="cm"># \d = digit, \+ = one or more: finds any number</span>
+<span class="kw">/</span><span class="rx">colou\?r</span>      <span class="cm"># \? = zero or one: finds both "color" and "colour"</span>
+<span class="kw">/</span><span class="rx">\&lt;word\&gt;</span>      <span class="cm"># \&lt; and \&gt; = word boundaries: whole-word match (like * does automatically)</span></pre>
+
+<div class="note">
+  <strong>Case sensitivity:</strong> By default, Vim's search is case-sensitive. You can change this with <code>:set ignorecase</code>. A smarter option is <code>:set smartcase</code> — when enabled, searches are case-insensitive unless your pattern contains an uppercase letter, in which case they become case-sensitive. This is the behaviour most users prefer.
+</div>
+
+<h3>Search settings worth knowing</h3>
+
+<pre><span class="kw">:</span><span class="cmd">set hlsearch</span>      <span class="cm"># highlight all matches in the file</span>
+<span class="kw">:</span><span class="cmd">set incsearch</span>     <span class="cm"># move cursor as you type the pattern (incremental search)</span>
+<span class="kw">:</span><span class="cmd">set ignorecase</span>    <span class="cm"># case-insensitive search</span>
+<span class="kw">:</span><span class="cmd">set smartcase</span>     <span class="cm"># case-sensitive only when pattern has uppercase</span>
+<span class="kw">:</span><span class="cmd">noh</span>               <span class="cm"># clear current search highlights</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Putting It All Together — Practical Examples</h2>
+
+<p>Navigation commands become powerful when combined. Here are the worked examples from the course, showing how you think through a multi-step navigation problem.</p>
+
+<h3>Navigate to the 4th word of the 2nd-to-last sentence of the 3rd paragraph</h3>
+
+<pre><span class="vr">3</span><span class="cmd">}</span>     <span class="cm"># jump 3 paragraphs forward (land at the start of paragraph 3)</span>
+<span class="vr">2</span><span class="cmd">{</span>     <span class="cm"># oops — went too far? Step back 2 paragraphs</span>
+       <span class="cm"># (adjust the count based on where you land)</span>
+<span class="cmd">(</span>     <span class="cm"># move back one sentence to the 2nd-to-last</span>
+<span class="vr">3</span><span class="cmd">w</span>     <span class="cm"># move forward 3 words — now on the 4th word</span></pre>
+
+<p>The key insight is that you do not need to be perfect on the first jump. Vim navigation is iterative — overshoot, correct, refine.</p>
+
+<h3>Find the word immediately before "England"</h3>
+
+<pre><span class="kw">/</span><span class="st">England</span>    <span class="cm"># jump to "England"</span>
+<span class="cmd">b</span>           <span class="cm"># move back one word — the word before "England"</span></pre>
+
+<h3>Find the last word on line 302</h3>
+
+<pre><span class="kw">:</span><span class="cmd">302</span>    <span class="cm"># jump to line 302</span>
+<span class="cmd">$</span>       <span class="cm"># jump to the end of the line — cursor is now on the last character</span>
+<span class="cmd">b</span>       <span class="cm"># (optional) back to the start of that last word</span></pre>
+
+<h3>Find the word after the 2nd occurrence of the first word on line 14</h3>
+
+<pre><span class="kw">:</span><span class="cmd">14</span>    <span class="cm"># jump to line 14</span>
+<span class="cmd">^</span>      <span class="cm"># go to the first non-whitespace character (start of first word)</span>
+<span class="cmd">*</span>      <span class="cm"># search forward for this word (1st occurrence — which might be itself)</span>
+<span class="cmd">n</span>      <span class="cm"># next occurrence (2nd)</span>
+<span class="cmd">w</span>      <span class="cm"># move one word forward — now on the word after the 2nd occurrence</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Commands Introduced in This Chapter</h2>
+
+<div class="cmd-ref">
+  <h4>Chapter 3 — Command Reference</h4>
+
+  <div class="cmd-section">Character movement</div>
+  <div class="cmd-row"><span class="cmd-key">h / j / k / l</span><span class="cmd-desc">Left / down / up / right (prefix with count: <code>5j</code>)</span></div>
+
+  <div class="cmd-section">Word movement</div>
+  <div class="cmd-row"><span class="cmd-key">w</span><span class="cmd-desc">Forward to start of next word</span></div>
+  <div class="cmd-row"><span class="cmd-key">W</span><span class="cmd-desc">Forward to start of next WORD (whitespace-delimited)</span></div>
+  <div class="cmd-row"><span class="cmd-key">e</span><span class="cmd-desc">Forward to end of current/next word</span></div>
+  <div class="cmd-row"><span class="cmd-key">E</span><span class="cmd-desc">Forward to end of current/next WORD</span></div>
+  <div class="cmd-row"><span class="cmd-key">b</span><span class="cmd-desc">Backward to start of current/previous word</span></div>
+  <div class="cmd-row"><span class="cmd-key">B</span><span class="cmd-desc">Backward to start of current/previous WORD</span></div>
+  <div class="cmd-row"><span class="cmd-key">ge</span><span class="cmd-desc">Backward to end of previous word</span></div>
+
+  <div class="cmd-section">Line movement</div>
+  <div class="cmd-row"><span class="cmd-key">0</span><span class="cmd-desc">Start of line (column 1)</span></div>
+  <div class="cmd-row"><span class="cmd-key">^</span><span class="cmd-desc">First non-whitespace character of line</span></div>
+  <div class="cmd-row"><span class="cmd-key">$</span><span class="cmd-desc">End of line</span></div>
+  <div class="cmd-row"><span class="cmd-key">g_</span><span class="cmd-desc">Last non-whitespace character of line</span></div>
+  <div class="cmd-row"><span class="cmd-key">f{char}</span><span class="cmd-desc">Jump forward to next occurrence of char on this line</span></div>
+  <div class="cmd-row"><span class="cmd-key">F{char}</span><span class="cmd-desc">Jump backward to previous occurrence of char on this line</span></div>
+  <div class="cmd-row"><span class="cmd-key">t{char}</span><span class="cmd-desc">Jump forward to just before char on this line</span></div>
+  <div class="cmd-row"><span class="cmd-key">T{char}</span><span class="cmd-desc">Jump backward to just after char on this line</span></div>
+  <div class="cmd-row"><span class="cmd-key">;</span><span class="cmd-desc">Repeat last f/F/t/T in the same direction</span></div>
+  <div class="cmd-row"><span class="cmd-key">,</span><span class="cmd-desc">Repeat last f/F/t/T in the opposite direction</span></div>
+
+  <div class="cmd-section">Sentence &amp; paragraph movement</div>
+  <div class="cmd-row"><span class="cmd-key">)</span><span class="cmd-desc">Forward to start of next sentence</span></div>
+  <div class="cmd-row"><span class="cmd-key">(</span><span class="cmd-desc">Backward to start of current/previous sentence</span></div>
+  <div class="cmd-row"><span class="cmd-key">}</span><span class="cmd-desc">Forward to next paragraph (blank line)</span></div>
+  <div class="cmd-row"><span class="cmd-key">{</span><span class="cmd-desc">Backward to previous paragraph</span></div>
+
+  <div class="cmd-section">File-level navigation</div>
+  <div class="cmd-row"><span class="cmd-key">gg</span><span class="cmd-desc">Jump to first line of file</span></div>
+  <div class="cmd-row"><span class="cmd-key">G</span><span class="cmd-desc">Jump to last line of file</span></div>
+  <div class="cmd-row"><span class="cmd-key">{n}G</span><span class="cmd-desc">Jump to line n (e.g. <code>42G</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:{n}</span><span class="cmd-desc">Jump to line n via command line (e.g. <code>:302</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">{n}%</span><span class="cmd-desc">Jump to n% through the file</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+F</span><span class="cmd-desc">Scroll one full page forward</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+B</span><span class="cmd-desc">Scroll one full page backward</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+D</span><span class="cmd-desc">Scroll half a page down</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+U</span><span class="cmd-desc">Scroll half a page up</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+E</span><span class="cmd-desc">Scroll screen down one line (cursor stays)</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+Y</span><span class="cmd-desc">Scroll screen up one line (cursor stays)</span></div>
+  <div class="cmd-row"><span class="cmd-key">zz</span><span class="cmd-desc">Centre current line on screen</span></div>
+  <div class="cmd-row"><span class="cmd-key">zt</span><span class="cmd-desc">Scroll current line to top of screen</span></div>
+  <div class="cmd-row"><span class="cmd-key">zb</span><span class="cmd-desc">Scroll current line to bottom of screen</span></div>
+
+  <div class="cmd-section">Search</div>
+  <div class="cmd-row"><span class="cmd-key">/{pattern}</span><span class="cmd-desc">Search forward for pattern (Enter to jump)</span></div>
+  <div class="cmd-row"><span class="cmd-key">?{pattern}</span><span class="cmd-desc">Search backward for pattern</span></div>
+  <div class="cmd-row"><span class="cmd-key">n</span><span class="cmd-desc">Next match (same direction as search)</span></div>
+  <div class="cmd-row"><span class="cmd-key">N</span><span class="cmd-desc">Previous match (opposite direction)</span></div>
+  <div class="cmd-row"><span class="cmd-key">*</span><span class="cmd-desc">Search forward for exact word under cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">#</span><span class="cmd-desc">Search backward for exact word under cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">g*</span><span class="cmd-desc">Search forward for word under cursor (partial match)</span></div>
+  <div class="cmd-row"><span class="cmd-key">g#</span><span class="cmd-desc">Search backward (partial match)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:noh</span><span class="cmd-desc">Clear search highlights</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set hlsearch</span><span class="cmd-desc">Highlight all search matches</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set incsearch</span><span class="cmd-desc">Move cursor as you type the search pattern</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set ignorecase</span><span class="cmd-desc">Case-insensitive search</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set smartcase</span><span class="cmd-desc">Case-sensitive only when pattern contains uppercase</span></div>
+</div>
+
+</div>

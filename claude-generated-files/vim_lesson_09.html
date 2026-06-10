@@ -1,0 +1,364 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson a { color: #4f8ef7; text-decoration: none; border-bottom: 1px solid #2a4a7a; transition: color 0.15s, border-color 0.15s; }
+  .lx-lesson a:hover { color: #79b8ff; border-bottom-color: #4f8ef7; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+
+  /* Link card grid */
+  .lx-lesson .link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1em;
+    margin: 1em 0;
+  }
+  .lx-lesson .link-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3e;
+    border-radius: 8px;
+    padding: 1em 1.1em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+    transition: border-color 0.15s;
+  }
+  .lx-lesson .link-card:hover { border-color: #4f8ef7; }
+  .lx-lesson .link-card .lc-title { font-size: 1rem; font-weight: bold; }
+  .lx-lesson .link-card .lc-title a { border-bottom: none; }
+  .lx-lesson .link-card .lc-desc { font-size: 0.87rem; color: #9aabcc; line-height: 1.5; }
+  .lx-lesson .link-card .lc-tag {
+    font-family: 'Consolas', monospace; font-size: 0.75rem;
+    color: #4f8ef7; background: #1a2a4a; border: 1px solid #2a4a7a;
+    border-radius: 3px; padding: 0.1em 0.4em; align-self: flex-start; margin-top: auto;
+  }
+
+  /* Sheet download cards */
+  .lx-lesson .sheet-card {
+    background: #12141e;
+    border: 1px solid #2a2d3e;
+    border-left: 4px solid #b392f0;
+    border-radius: 0 8px 8px 0;
+    padding: 0.8em 1.1em;
+    margin: 0.6em 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 1em;
+  }
+  .lx-lesson .sheet-card .sc-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; margin-top: 0.1em; }
+  .lx-lesson .sheet-card .sc-body { flex: 1; }
+  .lx-lesson .sheet-card .sc-title { font-weight: bold; margin-bottom: 0.2em; }
+  .lx-lesson .sheet-card .sc-title a { border-bottom: none; }
+  .lx-lesson .sheet-card .sc-desc { font-size: 0.87rem; color: #9aabcc; }
+
+  /* Plugin showcase */
+  .lx-lesson .plugin-table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson .plugin-table th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson .plugin-table td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson .plugin-table tr:nth-child(even) td { background: #16192a; }
+
+  /* Course chapter index */
+  .lx-lesson .chapter-list { list-style: none; padding: 0; margin: 0.5em 0 1em 0; }
+  .lx-lesson .chapter-list li {
+    display: flex; gap: 0.8em; align-items: baseline;
+    padding: 0.4em 0; border-bottom: 1px solid #1e2130;
+  }
+  .lx-lesson .chapter-list li:last-child { border-bottom: none; }
+  .lx-lesson .chapter-list .ch-num { color: #4f8ef7; font-family: 'Consolas', monospace; font-size: 0.85rem; min-width: 5em; }
+  .lx-lesson .chapter-list .ch-title { color: #c9d8ff; }
+  .lx-lesson .chapter-list .ch-desc { color: #7a8aaa; font-size: 0.87rem; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Appendix A — Going Further</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>What You Have Covered</h2>
+
+<p>This course has taken you from opening a file for the very first time all the way through marks, registers, diff mode, configuration, and shell integration. That is a solid foundation — you now have the mental model that most long-term Vim users rely on every day.</p>
+
+<ul class="chapter-list">
+  <li><span class="ch-num">Chapter 1</span><span class="ch-title">Introduction</span><span class="ch-desc">— modal editing, installation, first steps</span></li>
+  <li><span class="ch-num">Chapter 2</span><span class="ch-title">Basics</span><span class="ch-desc">— the five modes, file operations, quit variants</span></li>
+  <li><span class="ch-num">Chapter 3</span><span class="ch-title">Moving Around</span><span class="ch-desc">— HJKL, word and line motions, search</span></li>
+  <li><span class="ch-num">Chapter 4</span><span class="ch-title">Changing Text</span><span class="ch-desc">— operators, yank/put, registers, substitution</span></li>
+  <li><span class="ch-num">Chapter 5</span><span class="ch-title">Marks</span><span class="ch-desc">— local and global marks, the jump list</span></li>
+  <li><span class="ch-num">Chapter 6</span><span class="ch-title">Buffers, Windows and Tabs</span><span class="ch-desc">— splits, vimdiff, reading files</span></li>
+  <li><span class="ch-num">Chapter 7</span><span class="ch-title">Configuration</span><span class="ch-desc">— .vimrc, mappings, abbreviations, custom commands</span></li>
+  <li><span class="ch-num">Chapter 8</span><span class="ch-title">Day to Day Vim</span><span class="ch-desc">— startup flags, diff mode, archive editing, shell filters</span></li>
+</ul>
+
+<div class="tip">
+  <strong>The most important thing to do next:</strong> keep using it. The hardest part of Vim is not learning the commands — it is building the muscle memory. Commit to using Vim for real work for two weeks without switching back to a comfort-zone editor, and most of it will become automatic.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Built-in Resources You Already Have</h2>
+
+<h3>:help — the manual that ships with Vim</h3>
+
+<p>Vim's built-in help is one of the best pieces of documentation packaged with any open-source tool. It is comprehensive, searchable, and always matches the exact version you are running.</p>
+
+<pre>:help              <span style="color:#5a6a8a; font-style:italic;"># open the help index</span>
+:help {topic}      <span style="color:#5a6a8a; font-style:italic;"># search for a specific topic</span>
+:help user-manual  <span style="color:#5a6a8a; font-style:italic;"># the full narrative user manual (excellent reading)</span>
+:help quickref     <span style="color:#5a6a8a; font-style:italic;"># a compact quick-reference of all commands</span>
+:help tips         <span style="color:#5a6a8a; font-style:italic;"># collection of Vim tips from the developers</span></pre>
+
+<p>Inside help: <code>Ctrl+]</code> follows any hyperlink (shown in <code>|pipes|</code>), <code>Ctrl+O</code> goes back. Close with <code>:q</code>.</p>
+
+<h3>vimtutor — the interactive tutorial</h3>
+
+<p>If you have not run <code>vimtutor</code> yet, do it now. It is a 30-minute hands-on walkthrough that ships with every Vim installation. Unlike reading docs, it teaches you by having you actually edit a file.</p>
+
+<pre>vimtutor           <span style="color:#5a6a8a; font-style:italic;"># run from your terminal — it opens a practice file</span></pre>
+
+<p>The tutorial covers the basics thoroughly and is worth revisiting periodically — you will notice things you missed the first time.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Official Documentation Online</h2>
+
+<div class="link-grid">
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://www.vim.org/" target="_blank" rel="noopener">vim.org</a></div>
+    <div class="lc-desc">The official Vim website. Downloads, news, scripts, and links to the documentation. The starting point for anything official.</div>
+    <div class="lc-tag">official</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://vimdoc.sourceforge.net/htmldoc/usr_toc.html" target="_blank" rel="noopener">Vim User Manual</a></div>
+    <div class="lc-desc">The complete Vim user manual in HTML — the same content as <code>:help user-manual</code> but browsable in a web browser. Excellent reference.</div>
+    <div class="lc-tag">official docs</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://vimhelp.org/" target="_blank" rel="noopener">vimhelp.org</a></div>
+    <div class="lc-desc">A clean, searchable HTML rendering of the full Vim help system. Faster to search than the built-in <code>:help</code> when you just want to look something up quickly.</div>
+    <div class="lc-tag">official docs</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://neovim.io/doc/user/" target="_blank" rel="noopener">Neovim Documentation</a></div>
+    <div class="lc-desc">The Neovim project's online documentation. Most of it is identical to Vim's — a well-formatted alternative reference if you are considering the switch to Neovim.</div>
+    <div class="lc-tag">neovim</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://vim.fandom.com/wiki/Vim_Tips_Wiki" target="_blank" rel="noopener">Vim Tips Wiki</a></div>
+    <div class="lc-desc">A community wiki with thousands of practical tips, tricks, and how-tos. If you have ever wondered "can Vim do X?", the answer is almost certainly here.</div>
+    <div class="lc-tag">community wiki</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://www.reddit.com/r/vim/" target="_blank" rel="noopener">r/vim</a></div>
+    <div class="lc-desc">The Vim subreddit. A friendly and active community — good for questions, discovering plugins, and seeing what other people's setups look like.</div>
+    <div class="lc-tag">community</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Cheat Sheets and Quick References</h2>
+
+<p>A good cheat sheet on your desk or a second monitor is genuinely useful during the first few months. Here are the best ones available — all free, most printable.</p>
+
+<div class="sheet-card">
+  <div class="sc-icon">🗂️</div>
+  <div class="sc-body">
+    <div class="sc-title"><a href="https://vim.rtorr.com/" target="_blank" rel="noopener">Vim Cheat Sheet — rtorr.com</a></div>
+    <div class="sc-desc">Widely considered the definitive Vim cheat sheet. Clean layout, covers all modes, motion commands, operators, and more. Available in multiple languages. Print-friendly. This is the one to bookmark.</div>
+  </div>
+</div>
+
+<div class="sheet-card">
+  <div class="sc-icon">🗂️</div>
+  <div class="sc-body">
+    <div class="sc-title"><a href="https://devhints.io/vim" target="_blank" rel="noopener">Vim Cheat Sheet — devhints.io</a></div>
+    <div class="sc-desc">A well-organised, colour-coded reference card from the devhints collection. Slightly more condensed than rtorr — good for printing on a single page.</div>
+  </div>
+</div>
+
+<div class="sheet-card">
+  <div class="sc-icon">🗂️</div>
+  <div class="sc-body">
+    <div class="sc-title"><a href="https://vimsheet.com/" target="_blank" rel="noopener">VimSheet.com</a></div>
+    <div class="sc-desc">A focused, no-frills one-page reference. Particularly good for beginners — it prioritises the commands you will actually use rather than listing every single option.</div>
+  </div>
+</div>
+
+<div class="sheet-card">
+  <div class="sc-icon">🗂️</div>
+  <div class="sc-body">
+    <div class="sc-title"><a href="https://michaelgoerz.net/refcards/vimqrc.pdf" target="_blank" rel="noopener">Vim Quick Reference Card (PDF)</a></div>
+    <div class="sc-desc">A compact two-column PDF designed specifically for printing. Covers motion, editing, search, and Ex commands on a single sheet of paper. By Michael Goerz.</div>
+  </div>
+</div>
+
+<div class="sheet-card">
+  <div class="sc-icon">🗂️</div>
+  <div class="sc-body">
+    <div class="sc-title"><a href="https://www.fprintf.net/vimCheatSheet.html" target="_blank" rel="noopener">Vim Visual Cheat Sheet — fprintf.net</a></div>
+    <div class="sc-desc">A keyboard-diagram style reference showing key positions visually. Very useful for understanding the spatial logic of Vim's layout — why the commands are where they are.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Learning Resources</h2>
+
+<div class="link-grid">
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://www.linkedin.com/learning/learning-vim/" target="_blank" rel="noopener">Learning Vim — LinkedIn Learning</a></div>
+    <div class="lc-desc">The original course by Miki Tebeka that these notes are based on. If you want video walkthroughs of everything covered here, this is where to go.</div>
+    <div class="lc-tag">video course</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://www.openvim.com/" target="_blank" rel="noopener">OpenVim</a></div>
+    <div class="lc-desc">An interactive Vim tutorial that runs in the browser — no installation needed. Good for a quick refresher or for introducing a friend to Vim without asking them to install anything.</div>
+    <div class="lc-tag">interactive</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://vim-adventures.com/" target="_blank" rel="noopener">Vim Adventures</a></div>
+    <div class="lc-desc">A browser-based game where you navigate a dungeon using Vim keys. Excellent for building hjkl and motion muscle memory. (Fair warning for left-handers: it was designed for the right-handed keyboard layout!)</div>
+    <div class="lc-tag">game / practice</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://www.vimgolf.com/" target="_blank" rel="noopener">VimGolf</a></div>
+    <div class="lc-desc">The challenge: transform one piece of text into another in the fewest possible keystrokes. Each puzzle reveals clever solutions from other players. A great way to discover commands you never knew existed.</div>
+    <div class="lc-tag">game / practice</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://vim.begin-site.org/" target="_blank" rel="noopener">The Vim Beginners Site</a></div>
+    <div class="lc-desc">A curated portal with links to books (most free), tutorials, documentation, and even Vim humour. A good landing page when you want to explore further without knowing exactly what you are looking for.</div>
+    <div class="lc-tag">portal</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://thoughtbot.com/upcase/vim" target="_blank" rel="noopener">Upcase Vim — thoughtbot</a></div>
+    <div class="lc-desc">A well-regarded intermediate Vim course from the thoughtbot team. Covers text objects, macros, and navigating large codebases. Free to access.</div>
+    <div class="lc-tag">video course</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Free Books and Long Reads</h2>
+
+<div class="link-grid">
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://www.moolenaar.net/habits.html" target="_blank" rel="noopener">Seven Habits of Effective Text Editing</a></div>
+    <div class="lc-desc">An essay by Bram Moolenaar, Vim's creator. Not a tutorial — more of a philosophy of efficient editing that explains <em>why</em> Vim is designed the way it is. Foundational reading.</div>
+    <div class="lc-tag">essay / free</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://learnvimscriptthehardway.stevelosh.com/" target="_blank" rel="noopener">Learn Vimscript the Hard Way</a></div>
+    <div class="lc-desc">A free online book by Steve Losh covering Vimscript — the language used to write Vim plugins and advanced configuration. The next step after you are comfortable with <code>.vimrc</code>.</div>
+    <div class="lc-tag">book / free</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://pragprog.com/titles/dnvim2/practical-vim-second-edition/" target="_blank" rel="noopener">Practical Vim — Drew Neil</a></div>
+    <div class="lc-desc">The most-recommended Vim book for intermediate users. Organised as 120 self-contained tips rather than a linear tutorial. You do not read it front to back — you dip in and learn something new each time.</div>
+    <div class="lc-tag">book / paid</div>
+  </div>
+
+  <div class="link-card">
+    <div class="lc-title"><a href="https://vimcasts.org/" target="_blank" rel="noopener">Vimcasts</a></div>
+    <div class="lc-desc">A long-running series of short screencasts on Vim topics by Drew Neil (same author as Practical Vim). Over 70 free episodes covering everything from macros to plugins to workflow tips.</div>
+    <div class="lc-tag">screencasts / free</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Going Beyond Vim: Plugins</h2>
+
+<p>Stock Vim is already very capable, but the plugin ecosystem takes it much further. Once you are comfortable with the basics, a small set of well-chosen plugins can close the gap between Vim and a full IDE — while keeping the speed and keyboard-driven workflow that makes Vim worth using in the first place.</p>
+
+<h3>Plugin managers</h3>
+
+<p>Install a plugin manager first. It handles downloading, updating, and removing plugins through your <code>.vimrc</code>.</p>
+
+<table class="plugin-table">
+  <tr><th>Manager</th><th>Best for</th><th>Link</th></tr>
+  <tr><td><strong>vim-plug</strong></td><td>Most users — simple, fast, minimal config</td><td><a href="https://github.com/junegunn/vim-plug" target="_blank" rel="noopener">github.com/junegunn/vim-plug</a></td></tr>
+  <tr><td><strong>Vundle</strong></td><td>Classic option, well documented</td><td><a href="https://github.com/VundleVim/Vundle.vim" target="_blank" rel="noopener">github.com/VundleVim/Vundle.vim</a></td></tr>
+  <tr><td><strong>lazy.nvim</strong></td><td>Neovim users — modern, fast-loading</td><td><a href="https://github.com/folke/lazy.nvim" target="_blank" rel="noopener">github.com/folke/lazy.nvim</a></td></tr>
+</table>
+
+<h3>Plugins worth knowing about</h3>
+
+<table class="plugin-table">
+  <tr><th>Plugin</th><th>What it does</th></tr>
+  <tr><td><a href="https://github.com/preservim/nerdtree" target="_blank" rel="noopener">NERDTree</a></td><td>File explorer sidebar — browse and open files with a tree view</td></tr>
+  <tr><td><a href="https://github.com/junegunn/fzf.vim" target="_blank" rel="noopener">fzf.vim</a></td><td>Fuzzy file finder — open any file by typing part of its name</td></tr>
+  <tr><td><a href="https://github.com/tpope/vim-fugitive" target="_blank" rel="noopener">vim-fugitive</a></td><td>Git integration — run git commands, browse diffs, blame, all inside Vim</td></tr>
+  <tr><td><a href="https://github.com/vim-airline/vim-airline" target="_blank" rel="noopener">vim-airline</a></td><td>Enhanced status line showing mode, git branch, file info</td></tr>
+  <tr><td><a href="https://github.com/dense-analysis/ale" target="_blank" rel="noopener">ALE</a></td><td>Asynchronous linting — real-time syntax warnings as you type</td></tr>
+  <tr><td><a href="https://github.com/neoclide/coc.nvim" target="_blank" rel="noopener">coc.nvim</a></td><td>Language Server Protocol (LSP) — autocomplete, type hints, go-to-definition</td></tr>
+  <tr><td><a href="https://github.com/tpope/vim-surround" target="_blank" rel="noopener">vim-surround</a></td><td>Add, change, or remove surrounding quotes/brackets/tags with a few keys</td></tr>
+  <tr><td><a href="https://github.com/tpope/vim-commentary" target="_blank" rel="noopener">vim-commentary</a></td><td>Toggle comments on any line or selection with <code>gcc</code></td></tr>
+  <tr><td><a href="https://github.com/airblade/vim-gitgutter" target="_blank" rel="noopener">vim-gitgutter</a></td><td>Shows git diff markers (+/−/~) in the sign column as you edit</td></tr>
+  <tr><td><a href="https://github.com/morhetz/gruvbox" target="_blank" rel="noopener">gruvbox</a></td><td>One of the most popular colour schemes — warm, retro, easy on the eyes</td></tr>
+</table>
+
+<div class="note">
+  <strong>Start small with plugins.</strong> The temptation is to install twenty plugins on day one and turn Vim into a mini-IDE. The better path is to learn stock Vim thoroughly first (which you have now done), then add one or two plugins that solve a specific friction point. You will understand what each plugin is doing and why — and your config will stay fast and maintainable.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Should You Switch to Neovim?</h2>
+
+<p><a href="https://neovim.io/" target="_blank" rel="noopener">Neovim</a> is a fork of Vim started in 2014 with the goal of modernising the codebase. It is fully compatible with Vim — everything in this course works identically in Neovim — but it adds:</p>
+
+<ul>
+  <li>Built-in LSP (Language Server Protocol) support — autocomplete and diagnostics without plugins</li>
+  <li>Lua as a first-class configuration language (alongside Vimscript)</li>
+  <li>A more active plugin ecosystem with modern tooling</li>
+  <li>Better async performance for linting, completion, and search</li>
+  <li>Terminal emulator built in</li>
+</ul>
+
+<p>If you are just starting out, do not worry about this. Learn Vim first — every skill transfers. If after a few months you find yourself wanting a richer plugin ecosystem or are doing heavy programming work, Neovim is a natural upgrade path. The <a href="https://neovim.io/" target="_blank" rel="noopener">official Neovim site</a> has installation instructions and a migration guide.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>A Note on Humour</h2>
+
+<p>No Vim appendix is complete without acknowledging the memes. Vim has a rich tradition of jokes — mostly about how to quit it (<code>:q!</code>, as you now know), the learning curve, and the eternal Vim vs. Emacs debate. If you want to explore the lighter side:</p>
+
+<ul>
+  <li><a href="https://vim.begin-site.org/" target="_blank" rel="noopener">The Vim Beginners Site</a> has a Vim Humour section worth a browse</li>
+  <li>Search "how do I exit Vim" on Stack Overflow — the question has over 4,000 upvotes and the answers have become something of a rite of passage</li>
+  <li><a href="https://www.vimgolf.com/" target="_blank" rel="noopener">VimGolf</a> is genuinely entertaining even when you cannot solve the puzzles — reading other people's solutions teaches you something new every time</li>
+</ul>
+
+<div class="tip">
+  <strong>The best way to get better at Vim</strong> is to stop switching back to another editor when things get difficult. Every time you reach for the mouse, ask: <em>is there a Vim way to do this?</em> Usually there is — and once you find it, you will not forget it.
+</div>
+
+</div>
