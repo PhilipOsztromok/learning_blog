@@ -1,0 +1,1134 @@
+<!-- ============================================================
+     BASH INTERMEDIATE: Topic 4 — Subshells and Execution Environments
+     Subject: Bash / Linux Shell Scripting (Intermediate)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+  .sh  { color: #e8a87d; }
+  .vr  { color: #ffd580; }
+  .op  { color: #e8a87d; }
+  .er  { color: #e05c5c; }
+  .fn  { color: #7ab8ff; }
+  .rx  { color: #ff9eb5; }
+
+  /* ── Platform blocks ─────────────────────────────── */
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 12px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; color: #7ab8ff; opacity: 0.8; }
+  .platform-block.both { border-color: #2a3a2a; }
+  .platform-block.both .pb-header { background: #1a2a1a; color: #7ecfa0; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .new-box {
+    background: #1a1e2a;
+    border-left: 3px solid #c9a8ff;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    font-size: 0.85em;
+    color: #a0a4b8;
+  }
+  .new-box strong { color: #c9a8ff; }
+  .diagram {
+    background: #0e1018;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #a0a4b8;
+    white-space: pre;
+    line-height: 1.6;
+    margin: 8px 0 14px;
+    overflow-x: auto;
+  }
+  .diagram .dh { color: #4f8ef7; font-weight: bold; }
+  .diagram .dv { color: #7ecfa0; }
+  .diagram .da { color: #e8a87d; }
+  .diagram .dc { color: #6a9153; font-style: italic; }
+
+  /* ── Compare grid ────────────────────────────────── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-card { background: #12141e; border: 1px solid #2a2d3a; border-radius: 6px; overflow: hidden; }
+  .compare-card .cc-hdr {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    padding: 6px 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .compare-card.a .cc-hdr { background: #2a1e0a; color: #e8a87d; }
+  .compare-card.b .cc-hdr { background: #1a2a1a; color: #7ecfa0; }
+  .compare-card .cc-body { padding: 10px 12px; }
+  .compare-card .cc-body .code-block { margin: 0; font-size: 0.82em; }
+
+  /* ── Reference table ─────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+  .ref-table .yes { color: #7ecfa0; font-weight: bold; }
+  .ref-table .no  { color: #e05c5c; font-weight: bold; }
+
+  /* ── Exercise blocks ─────────────────────────────── */
+  .exercise-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-block .ex-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+  .exercise-block .ex-task {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .exercise-block .ex-hint {
+    font-size: 0.85em;
+    color: #a0a4b8;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-solution-toggle {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    color: #7ecfa0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .exercise-block .ex-solution-toggle:hover { background: #1e2235; }
+  .exercise-block .ex-solution { display: none; margin-top: 12px; }
+  .exercise-block .ex-solution.visible { display: block; }
+  .exercise-block .sol-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+</style>
+
+<script>
+function toggleSolution(btn) {
+  var sol = btn.nextElementSibling;
+  if (sol.classList.contains('visible')) {
+    sol.classList.remove('visible');
+    btn.textContent = '▶ Show Sample Solution';
+  } else {
+    sol.classList.add('visible');
+    btn.textContent = '▼ Hide Solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>🌀 Intermediate Topic 4 — Subshells and Execution Environments</h2>
+  <p class="section-intro">One of the most common sources of baffling bugs in bash scripts is the variable that "disappears" — a counter that never increments, a flag that's always unset after a loop, an array that's empty when it should have elements. The culprit, almost every time, is an unexpected subshell. Understanding exactly <em>when</em> bash creates a subshell, what it copies into it, what it doesn't, and how information can (and can't) flow back to the parent is the key to writing scripts that behave as intended. This chapter maps the entire execution environment model.</p>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. THE EXECUTION ENVIRONMENT MODEL
+  ═══════════════════════════════════════════ -->
+  <h2>1 — The Execution Environment</h2>
+
+  <p>Every running bash shell has an <em>execution environment</em>: the complete set of state that determines what commands do. When bash creates a subshell it uses <code>fork()</code> — the OS creates an exact copy of the current process. The subshell starts with an identical environment but then diverges: any changes it makes are local to its copy and never flow back to the parent.</p>
+
+  <div class="diagram"><span class="dh">The execution environment — what each shell instance holds:</span>
+
+  Variables      — shell variables (only exported ones pass to child processes)
+  Functions      — defined with fn() { } or function fn { }
+  Aliases        — defined with alias
+  Options        — set -e, set -u, set -x, shopt -s extglob, etc.
+  Traps          — registered with trap (NOT inherited by subshells)
+  Working dir    — current directory (cd in a subshell stays local)
+  Umask          — file creation mask
+  Open FDs       — file descriptors (inherited, but exec in subshell stays local)
+  $0, $1…        — positional parameters
+  $$             — PID (subshell keeps the parent's PID — use $BASHPID for own PID)
+
+<span class="dh">What a subshell gets (fork copy):</span>   <span class="dv">Everything above, at the moment of fork</span>
+<span class="dh">What flows back to the parent:</span>      <span class="da">Nothing — ever. Only the exit code.</span>
+<span class="dh">Exception — exporting via stdout:</span>   <span class="dv">capture output with $() and re-assign in parent</span></div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Proving the isolation — variables don't propagate back</div>
+    <div class="pb-body">
+<code class="code-block"><span class="vr">x</span>=<span class="nu">10</span>
+
+<span class="cm"># Subshell created by ( )</span>
+<span class="st">(</span>
+    <span class="vr">x</span>=<span class="nu">99</span>
+    <span class="cmd">echo</span> <span class="st">"inside subshell: x=$x"</span>   <span class="out">→ inside subshell: x=99</span>
+<span class="st">)</span>
+<span class="cmd">echo</span> <span class="st">"after subshell:  x=$x"</span>     <span class="out">→ after subshell:  x=10   ← unchanged</span>
+
+<span class="cm"># Same for cd — directory changes don't escape a subshell</span>
+<span class="cmd">echo</span> <span class="st">"before: $(pwd)"</span>
+<span class="st">(</span>
+    <span class="cmd">cd</span> <span class="pth">/tmp</span>
+    <span class="cmd">echo</span> <span class="st">"inside: $(pwd)"</span>          <span class="out">→ /tmp</span>
+<span class="st">)</span>
+<span class="cmd">echo</span> <span class="st">"after:  $(pwd)"</span>              <span class="out">→ /original/dir  ← unchanged</span>
+
+<span class="cm"># $$ vs $BASHPID</span>
+<span class="cmd">echo</span> <span class="st">"parent PID via \$\$:      $$"</span>
+<span class="cmd">echo</span> <span class="st">"parent PID via \$BASHPID: $BASHPID"</span>
+<span class="st">(</span>
+    <span class="cm"># $$ still shows the PARENT pid (historical bash quirk)</span>
+    <span class="cm"># $BASHPID shows the actual subshell PID</span>
+    <span class="cmd">echo</span> <span class="st">"subshell \$\$:      $$"</span>      <span class="out">→ same as parent (quirk!)</span>
+    <span class="cmd">echo</span> <span class="st">"subshell \$BASHPID: $BASHPID"</span> <span class="out">→ different PID (correct)</span>
+<span class="st">)</span>
+
+<span class="cm"># $BASH_SUBSHELL — depth counter (0 = top-level, increments with nesting)</span>
+<span class="cmd">echo</span> <span class="st">"depth: $BASH_SUBSHELL"</span>       <span class="out">→ 0</span>
+<span class="st">(</span>
+    <span class="cmd">echo</span> <span class="st">"depth: $BASH_SUBSHELL"</span>   <span class="out">→ 1</span>
+    <span class="st">(</span>
+        <span class="cmd">echo</span> <span class="st">"depth: $BASH_SUBSHELL"</span> <span class="out">→ 2</span>
+    <span class="st">)</span>
+<span class="st">)</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. WHAT CREATES A SUBSHELL?
+  ═══════════════════════════════════════════ -->
+  <h2>2 — What Creates a Subshell?</h2>
+
+  <p>Many constructs create subshells silently. Knowing them all is essential to predicting where your variables will and won't be visible.</p>
+
+  <table class="ref-table">
+    <thead><tr><th>Construct</th><th>Subshell?</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>( commands )</code></td><td><span class="yes">Yes</span></td><td>Explicit subshell group — always a fork</td></tr>
+      <tr><td><code>{ commands; }</code></td><td><span class="no">No</span></td><td>Brace group — runs in the <em>current</em> shell</td></tr>
+      <tr><td><code>$(commands)</code></td><td><span class="yes">Yes</span></td><td>Command substitution — output captured, variables lost</td></tr>
+      <tr><td><code>cmd1 | cmd2</code></td><td><span class="yes">Yes</span></td><td>Both sides of a pipe run in subshells (by default)</td></tr>
+      <tr><td><code>cmd &amp;</code></td><td><span class="yes">Yes</span></td><td>Background job — fork + runs in background</td></tr>
+      <tr><td><code>&lt;(cmd)</code></td><td><span class="yes">Yes</span></td><td>Process substitution — cmd runs in a subshell</td></tr>
+      <tr><td><code>&gt;(cmd)</code></td><td><span class="yes">Yes</span></td><td>Output process substitution</td></tr>
+      <tr><td><code>bash script.sh</code></td><td><span class="yes">Yes</span></td><td>New process entirely (child process, not just subshell)</td></tr>
+      <tr><td><code>source script.sh</code> / <code>. script.sh</code></td><td><span class="no">No</span></td><td>Runs in the current shell — variables persist</td></tr>
+      <tr><td><code>exec cmd</code></td><td><span class="no">No</span></td><td>Replaces the current shell — no fork</td></tr>
+      <tr><td><code>if cmd; then</code> / <code>while cmd</code></td><td><span class="no">No</span></td><td>The compound command itself runs in current shell</td></tr>
+      <tr><td><code>cmd1 &amp;&amp; cmd2</code> / <code>cmd1 || cmd2</code></td><td><span class="no">No</span></td><td>Both sides run in current shell</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn-box"><strong>The pipeline subshell rule:</strong> In bash (unlike ksh/zsh), <em>every</em> command in a pipeline — including the last one — runs in a subshell. This means a <code>while read</code> loop at the end of a pipe cannot modify variables in the parent script. This is the single most common "my variable is always zero" bug.</div>
+
+  <h3>The last-pipe option — <code>shopt -s lastpipe</code></h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 lastpipe — run the last pipeline command in the current shell</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── The classic bug ────────────────────────────────────────────</span>
+<span class="vr">count</span>=<span class="nu">0</span>
+<span class="cmd">cat</span> <span class="pth">data.txt</span> | <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="st">(( count++ ))</span>
+<span class="kw">done</span>
+<span class="cmd">echo</span> <span class="st">"count: $count"</span>   <span class="out">→ 0   (always zero — loop ran in subshell)</span>
+
+<span class="cm"># ── Fix 1: process substitution (Topic 2 pattern) ─────────────</span>
+<span class="vr">count</span>=<span class="nu">0</span>
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="st">(( count++ ))</span>
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">cat</span> <span class="pth">data.txt</span><span class="op">)</span>
+<span class="cmd">echo</span> <span class="st">"count: $count"</span>   <span class="out">→ correct count (loop in current shell)</span>
+
+<span class="cm"># ── Fix 2: shopt -s lastpipe (bash 4.2+, non-interactive only) ─</span>
+<span class="kw">shopt</span> <span class="fl">-s</span> lastpipe
+<span class="vr">count</span>=<span class="nu">0</span>
+<span class="cmd">cat</span> <span class="pth">data.txt</span> | <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="st">(( count++ ))</span>
+<span class="kw">done</span>
+<span class="cmd">echo</span> <span class="st">"count: $count"</span>   <span class="out">→ correct (lastpipe runs last cmd in current shell)</span>
+<span class="cm"># Note: lastpipe only works when job control is disabled (set +m),</span>
+<span class="cm"># which is the default in non-interactive scripts</span>
+
+<span class="cm"># ── Fix 3: redirect a file directly (no pipe, no subshell) ─────</span>
+<span class="vr">count</span>=<span class="nu">0</span>
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="st">(( count++ ))</span>
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="pth">data.txt</span>
+<span class="cmd">echo</span> <span class="st">"count: $count"</span>   <span class="out">→ correct (no subprocess at all)</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. ( ) vs { } — THE CRITICAL DISTINCTION
+  ═══════════════════════════════════════════ -->
+  <h2>3 — <code>( )</code> vs <code>{ }</code> — Subshell vs Brace Group</h2>
+
+  <p>These two constructs look similar and do similar things — but one creates a subprocess, the other doesn't. Knowing which to reach for is one of the most impactful micro-decisions in bash scripting.</p>
+
+  <div class="compare-grid">
+    <div class="compare-card a">
+      <div class="cc-hdr">( ) — Subshell group — new process</div>
+      <div class="cc-body">
+<code class="code-block"><span class="cm"># Creates a child process via fork()</span>
+<span class="cm"># Variables, cd, set options — all isolated</span>
+<span class="cm"># Traps are NOT inherited</span>
+<span class="cm"># More expensive (fork + exec overhead)</span>
+<span class="cm"># No semicolon needed before closing )</span>
+
+<span class="st">(</span>
+    <span class="cmd">cd</span> <span class="pth">/tmp</span>         <span class="cm"># stays in subshell</span>
+    <span class="kw">set</span> <span class="fl">-e</span>          <span class="cm"># only affects subshell</span>
+    <span class="vr">x</span>=<span class="nu">99</span>            <span class="cm"># invisible to parent</span>
+    <span class="cmd">risky_cmd</span>       <span class="cm"># if it fails, only subshell exits</span>
+<span class="st">)</span></code>
+      </div>
+    </div>
+    <div class="compare-card b">
+      <div class="cc-hdr">{ } — Brace group — same process</div>
+      <div class="cc-body">
+<code class="code-block"><span class="cm"># No fork — runs in the current shell</span>
+<span class="cm"># Variables and cd persist to parent</span>
+<span class="cm"># Traps ARE shared</span>
+<span class="cm"># Fast (no subprocess overhead)</span>
+<span class="cm"># REQUIRES semicolon before closing }</span>
+
+<span class="st">{</span>
+    <span class="cmd">cd</span> <span class="pth">/tmp</span>         <span class="cm"># changes current shell's dir</span>
+    <span class="kw">set</span> <span class="fl">-e</span>          <span class="cm"># affects the whole script</span>
+    <span class="vr">x</span>=<span class="nu">99</span>            <span class="cm"># visible after the block</span>
+    <span class="cmd">risky_cmd</span>       <span class="cm"># failure propagates out</span>
+<span class="st">}</span></code>
+      </div>
+    </div>
+  </div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 When to use each deliberately</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Use ( ) when you WANT isolation ──────────────────────────</span>
+
+<span class="cm"># Safe cd: change directory, do work, return automatically</span>
+<span class="st">(</span> <span class="cmd">cd</span> <span class="pth">/path/to/project</span> && <span class="cmd">make</span> <span class="st">)</span>
+<span class="cm"># No risk of stranding the parent in /path/to/project</span>
+
+<span class="cm"># Try a risky operation without affecting the script's set -e</span>
+<span class="kw">if</span> <span class="st">(</span> <span class="cmd">ssh</span> <span class="fl">-o</span> ConnectTimeout=<span class="nu">3</span> <span class="st">"$host"</span> <span class="st">'exit 0'</span> <span class="st">)</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"$host is reachable"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Modify options or traps without affecting the outer script</span>
+<span class="st">(</span>
+    <span class="kw">set</span> <span class="fl">+e</span>         <span class="cm"># temporarily disable exit-on-error</span>
+    <span class="cmd">some_flaky_cmd</span>
+    <span class="vr">rc</span>=<span class="st">$?</span>
+    <span class="cm"># set -e is restored automatically when subshell exits</span>
+<span class="st">)</span>
+<span class="cm"># Back to set -e here</span>
+
+<span class="cm"># ── Use { } when you want grouping WITHOUT isolation ──────────</span>
+
+<span class="cm"># Group redirections over multiple commands without a subshell</span>
+<span class="st">{</span>
+    <span class="cmd">date</span>
+    <span class="cmd">uptime</span>
+    <span class="cmd">df</span> <span class="fl">-h</span>
+<span class="st">}</span> <span class="op">&gt;</span> <span class="pth">system_report.txt</span>
+
+<span class="cm"># Short-circuit with || and still affect parent state</span>
+<span class="st">{</span> <span class="cmd">echo</span> <span class="er">"Error: missing argument"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; <span class="st">}</span>
+
+<span class="cm"># Group a multi-line pipeline that needs to set a variable</span>
+<span class="st">{</span>
+    <span class="cmd">echo</span> <span class="st">"start"</span>
+    <span class="cmd">process_data</span>
+    <span class="cmd">echo</span> <span class="st">"end"</span>
+<span class="st">}</span> | <span class="cmd">tee</span> <span class="pth">output.log</span>
+<span class="cm"># Note: brace group itself is still subshelled when it's in a pipeline!</span></code>
+      <div class="pb-note">Even a <code>{ }</code> brace group runs in a subshell if it appears inside a pipeline (e.g. <code>{ ...; } | cmd</code>). The pipeline is what creates the subshell, not the braces. Braces only prevent an <em>extra</em> fork that <code>( )</code> would add.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. ENVIRONMENT INHERITANCE
+  ═══════════════════════════════════════════ -->
+  <h2>4 — Environment Variables and Inheritance</h2>
+
+  <p>There are two kinds of variables in bash: <em>shell variables</em> (local to the current shell) and <em>environment variables</em> (inherited by child processes via the process's <code>environ</code>). The distinction matters whenever you launch an external command, a script, or a subshell.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 export, env, and inheritance rules</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Shell variable — NOT inherited by child processes</span>
+<span class="vr">local_var</span>=<span class="st">"hello"</span>
+<span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'echo "$local_var"'</span>      <span class="out">→ (empty — child doesn't see it)</span>
+
+<span class="cm"># Exported variable — IS inherited</span>
+<span class="kw">export</span> <span class="vr">ENV_VAR</span>=<span class="st">"world"</span>
+<span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'echo "$ENV_VAR"'</span>         <span class="out">→ world</span>
+
+<span class="cm"># export makes an existing variable part of the environment</span>
+<span class="vr">my_var</span>=<span class="st">"value"</span>
+<span class="kw">export</span> <span class="vr">my_var</span>                   <span class="cm"># promote to environment</span>
+
+<span class="cm"># Inline export for one command only — does not persist</span>
+<span class="vr">API_KEY</span>=<span class="st">"secret"</span> <span class="cmd">curl</span> https://api.example.com
+<span class="cm"># API_KEY is only in curl's environment, not the shell</span>
+
+<span class="cm"># Functions are NOT inherited by child processes unless exported</span>
+<span class="fn">greet</span>() { <span class="cmd">echo</span> <span class="st">"Hello, $1"</span>; }
+<span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'greet "world"'</span>           <span class="out">→ greet: command not found</span>
+
+<span class="kw">export</span> <span class="fl">-f</span> <span class="fn">greet</span>                 <span class="cm"># export the function</span>
+<span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'greet "world"'</span>           <span class="out">→ Hello, world</span>
+
+<span class="cm"># unexport — remove from environment (keep as shell variable)</span>
+<span class="kw">export</span> <span class="fl">-n</span> <span class="vr">my_var</span>               <span class="cm"># demote from environment</span>
+
+<span class="cm"># env — run command with a clean or modified environment</span>
+<span class="cmd">env</span> <span class="fl">-i</span> <span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'echo "$HOME"'</span>   <span class="out">→ (empty — -i clears all env vars)</span>
+<span class="cmd">env</span> <span class="fl">-i</span> <span class="vr">HOME</span>=<span class="pth">/tmp</span> <span class="vr">PATH</span>=<span class="pth">/bin</span> <span class="cmd">bash</span> <span class="cm"># start with minimal env</span>
+
+<span class="cm"># Inspect the environment</span>
+<span class="cmd">printenv</span>                        <span class="cm"># list all exported variables</span>
+<span class="cmd">printenv</span> <span class="vr">PATH</span>                   <span class="cm"># print a specific variable</span>
+<span class="cmd">declare</span> <span class="fl">-x</span>                      <span class="cm"># same as printenv but in declare format</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. SOURCE VS EXECUTE
+  ═══════════════════════════════════════════ -->
+  <h2>5 — <code>source</code> vs Execute: Loading vs Running</h2>
+
+  <p>When you run a script with <code>bash script.sh</code> or <code>./script.sh</code>, bash forks a new process. When you <em>source</em> a script with <code>source script.sh</code> or <code>. script.sh</code>, the commands run directly in the current shell — no fork. This distinction determines whether the script's variables, functions, and directory changes affect the calling environment.</p>
+
+  <div class="compare-grid">
+    <div class="compare-card a">
+      <div class="cc-hdr">bash script.sh — new process</div>
+      <div class="cc-body">
+<code class="code-block"><span class="cm"># Completely separate process</span>
+<span class="cm"># Inherits exported variables only</span>
+<span class="cm"># Its functions/vars stay inside it</span>
+<span class="cm"># Its cd doesn't move the parent</span>
+<span class="cm"># Parent gets exit code only</span>
+
+<span class="cm"># script.sh:</span>
+<span class="vr">MY_FUNC</span>=<span class="st">"defined"</span>
+<span class="cmd">cd</span> <span class="pth">/tmp</span>
+
+<span class="cm"># After running it:</span>
+<span class="cmd">echo</span> <span class="st">"$MY_FUNC"</span>  <span class="out">→ (empty)</span>
+<span class="cmd">pwd</span>             <span class="out">→ original dir</span></code>
+      </div>
+    </div>
+    <div class="compare-card b">
+      <div class="cc-hdr">source script.sh — current shell</div>
+      <div class="cc-body">
+<code class="code-block"><span class="cm"># No fork — runs in THIS shell</span>
+<span class="cm"># All variables become available</span>
+<span class="cm"># Functions are defined here</span>
+<span class="cm"># cd actually changes your dir</span>
+<span class="cm"># exit in sourced file exits YOU</span>
+
+<span class="cm"># After sourcing it:</span>
+<span class="cmd">echo</span> <span class="st">"$MY_FUNC"</span>  <span class="out">→ defined</span>
+<span class="cmd">pwd</span>             <span class="out">→ /tmp</span></code>
+      </div>
+    </div>
+  </div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Practical sourcing patterns</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Library files — source to load functions ──────────────────</span>
+<span class="cm"># lib/logging.sh defines log(), die(), warn() etc.</span>
+<span class="kw">source</span> <span class="st">"$(dirname "$0")/lib/logging.sh"</span>
+<span class="cm"># or with dot syntax (POSIX-compatible alias):</span>
+<span class="st">. "$(dirname "$0")/lib/logging.sh"</span>
+
+<span class="cm"># ── Config files — source to set variables ────────────────────</span>
+<span class="cm"># config.env contains:  DB_HOST=prod.db.example.com</span>
+[[ <span class="fl">-f</span> <span class="pth">config.env</span> ]] && <span class="kw">source</span> <span class="pth">config.env</span>
+
+<span class="cm"># ── Guard against sourcing vs executing ───────────────────────</span>
+<span class="cm"># Detect if the script is being sourced or executed directly</span>
+<span class="kw">if</span> [[ <span class="st">"${BASH_SOURCE[0]}"</span> == <span class="st">"$0"</span> ]]; <span class="kw">then</span>
+    <span class="cm"># Running as a standalone script</span>
+    <span class="fn">main</span> <span class="st">"$@"</span>
+<span class="kw">else</span>
+    <span class="cm"># Being sourced as a library — only define functions, don't run</span>
+    <span class="kw">true</span>
+<span class="kw">fi</span>
+<span class="cm"># This is the standard "library with optional main" pattern</span>
+
+<span class="cm"># ── BASH_SOURCE array — stack of sourced files ────────────────</span>
+<span class="cm"># ${BASH_SOURCE[0]} = current file (or "" if interactive)</span>
+<span class="cm"># ${BASH_SOURCE[1]} = the file that sourced us</span>
+<span class="cm"># ${BASH_SOURCE[-1]} = the original script</span>
+
+<span class="fn">where_am_i</span>() {
+    <span class="cmd">echo</span> <span class="st">"Called from: ${BASH_SOURCE[1]}:${BASH_LINENO[0]}"</span>
+    <span class="cmd">echo</span> <span class="st">"Defined in:  ${BASH_SOURCE[0]}"</span>
+}
+
+<span class="cm"># Robust path to current script (works whether sourced or executed)</span>
+<span class="vr">SCRIPT_DIR</span>=<span class="st">$(</span><span class="cmd">cd</span> <span class="st">"$(dirname "${BASH_SOURCE[0]}")"</span> && <span class="cmd">pwd</span><span class="st">)</span></code>
+      <div class="pb-note">Never use <code>exit</code> in a file intended to be sourced — it will exit the calling shell. Use <code>return</code> instead; it exits the sourced context only, just like returning from a function. This is a common gotcha in library scripts.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. EXEC — REPLACING THE SHELL
+  ═══════════════════════════════════════════ -->
+  <h2>6 — <code>exec</code>: Replacing the Current Process</h2>
+
+  <p><code>exec</code> with a command replaces the running shell with the specified program — no fork, no parent left behind. It's used to hand off control to a final command (saving a process slot), to wrap scripts around another program, and — when used without a command — to set persistent redirections (covered in Topic 2).</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 exec patterns for process replacement</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Hand off to the real program ──────────────────────────────</span>
+<span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># wrapper.sh — set up environment then become the real program</span>
+<span class="kw">export</span> <span class="vr">APP_CONFIG</span>=<span class="pth">/etc/myapp/config.yaml</span>
+<span class="kw">export</span> <span class="vr">LOG_LEVEL</span>=<span class="st">"INFO"</span>
+<span class="kw">ulimit</span> <span class="fl">-n</span> <span class="nu">65536</span>        <span class="cm"># raise file descriptor limit</span>
+
+<span class="kw">exec</span> <span class="pth">/opt/myapp/bin/myapp</span> <span class="st">"$@"</span>
+<span class="cm"># This shell is GONE — myapp IS the process now</span>
+<span class="cm"># The PID stays the same; myapp gets it</span>
+<span class="cm"># Nothing after exec ever runs</span>
+
+<span class="cm"># ── Use exec to save a process slot in pid-1 containers ───────</span>
+<span class="cm"># In Docker, PID 1 receives signals. If your entrypoint is a shell</span>
+<span class="cm"># and it calls exec, the app becomes PID 1 and gets signals directly</span>
+<span class="sh">#!/bin/sh</span>
+<span class="cm"># docker-entrypoint.sh</span>
+<span class="cmd">setup_config</span>
+<span class="kw">exec</span> <span class="st">"$@"</span>   <span class="cm"># exec whatever was passed as the docker CMD</span>
+
+<span class="cm"># ── exec in a subshell — exits the subshell, not the parent ───</span>
+<span class="st">(</span>
+    <span class="kw">exec</span> <span class="cmd">cat</span> <span class="pth">/etc/hostname</span>
+    <span class="cm"># exec replaces the subshell process with cat</span>
+    <span class="cm"># parent shell is unaffected</span>
+<span class="st">)</span>
+<span class="cmd">echo</span> <span class="st">"parent still running"</span>
+
+<span class="cm"># ── exec for privilege separation ─────────────────────────────</span>
+<span class="cm"># Drop privileges before exec'ing the app</span>
+<span class="kw">if</span> [[ <span class="st">$EUID</span> <span class="fl">-eq</span> <span class="nu">0</span> ]]; <span class="kw">then</span>
+    <span class="kw">exec</span> <span class="cmd">su</span> <span class="fl">-s</span> <span class="pth">/bin/bash</span> <span class="fl">-c</span> <span class="st">"exec \"$0\" \"$@\""</span> <span class="st">appuser</span>
+<span class="kw">fi</span>
+<span class="cm"># Script re-runs itself as appuser; this branch only fires as root</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. RETURNING DATA FROM SUBSHELLS
+  ═══════════════════════════════════════════ -->
+  <h2>7 — Returning Data from Subshells</h2>
+
+  <p>Since variables can't propagate from a subshell to its parent, you need an explicit channel. There are four patterns, each with different trade-offs.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 The four patterns for getting data out of a subshell</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Pattern 1: stdout capture with $() ────────────────────────</span>
+<span class="cm"># Clean, composable, but creates a subshell and only returns a string</span>
+<span class="fn">get_hostname</span>() {
+    <span class="cmd">hostname</span> <span class="fl">-f</span>
+}
+<span class="vr">host</span>=<span class="st">$(</span><span class="fn">get_hostname</span><span class="st">)</span>
+
+<span class="cm"># Limitation: trailing newlines are stripped by $()</span>
+<span class="vr">with_newlines</span>=<span class="st">$'line1\nline2\n'</span>
+<span class="vr">captured</span>=<span class="st">"$(echo "$with_newlines")"</span>  <span class="cm"># trailing \n stripped!</span>
+<span class="cm"># Workaround: add a sentinel, strip it after</span>
+<span class="vr">captured</span>=<span class="st">"$(echo "$with_newlines"; echo x)"</span>
+<span class="vr">captured</span>=<span class="st">"${captured%x}"</span>              <span class="cm"># remove sentinel</span>
+
+<span class="cm"># ── Pattern 2: exit code only ──────────────────────────────────</span>
+<span class="cm"># When you only need a pass/fail result — most efficient</span>
+<span class="kw">if</span> <span class="st">(</span> <span class="cmd">grep</span> <span class="fl">-q</span> <span class="st">'error'</span> <span class="pth">logfile.txt</span> <span class="st">)</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Errors found"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Pattern 3: temp file ────────────────────────────────────────</span>
+<span class="cm"># For large or structured data; allows multiple outputs</span>
+<span class="vr">tmpf</span>=<span class="st">$(</span><span class="cmd">mktemp</span><span class="st">)</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$tmpf"'</span> EXIT
+
+<span class="st">(</span>
+    <span class="vr">result1</span>=<span class="st">"computed"</span>
+    <span class="vr">result2</span>=<span class="st">"also computed"</span>
+    <span class="cmd">declare</span> <span class="fl">-p</span> <span class="vr">result1</span> <span class="vr">result2</span>    <span class="cm"># write declarations to the file</span>
+<span class="st">)</span> <span class="op">&gt;</span> <span class="st">"$tmpf"</span>
+<span class="kw">source</span> <span class="st">"$tmpf"</span>                      <span class="cm"># reload the declarations in parent</span>
+<span class="cmd">echo</span> <span class="st">"$result1  $result2"</span>          <span class="out">→ computed  also computed</span>
+
+<span class="cm"># ── Pattern 4: namerefs (preferred for functions) ──────────────</span>
+<span class="cm"># From Topic 1 — pass a variable name, write via nameref</span>
+<span class="cm"># No subshell created — works inside functions in the same shell</span>
+<span class="fn">compute</span>() {
+    <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_out</span>=<span class="st">"$1"</span>
+    <span class="vr">_out</span>=<span class="st">"the result"</span>
+}
+<span class="fn">compute</span> <span class="vr">my_var</span>
+<span class="cmd">echo</span> <span class="st">"$my_var"</span>                     <span class="out">→ the result</span>
+<span class="cm"># Note: functions called as $() STILL run in a subshell</span>
+<span class="cm"># val=$(compute result)  ← nameref useless here, $() makes a subshell</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       8. SUBSHELL BEST PRACTICES
+  ═══════════════════════════════════════════ -->
+  <h2>8 — Performance, Gotchas, and Best Practices</h2>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Avoiding unnecessary subshells — the performance angle</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Every $() creates a fork. In a tight loop, this adds up.</span>
+<span class="cm"># Benchmark on a modern Linux box: ~1–2ms per fork</span>
+
+<span class="cm"># ── SLOW: $() in a loop ───────────────────────────────────────</span>
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> {<span class="nu">1</span>..<span class="nu">100</span>}; <span class="kw">do</span>
+    <span class="vr">ts</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s'</span><span class="st">)</span>          <span class="cm"># fork + exec date, 100 times</span>
+    <span class="cmd">echo</span> <span class="st">"$i: $ts"</span>
+<span class="kw">done</span>
+
+<span class="cm"># ── FAST: use printf %(%s)T (bash built-in, no fork) ──────────</span>
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> {<span class="nu">1</span>..<span class="nu">100</span>}; <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">ts</span> <span class="st">'%(%s)T'</span> <span class="fl">-1</span>   <span class="cm"># bash built-in timestamp, no fork</span>
+    <span class="cmd">echo</span> <span class="st">"$i: $ts"</span>
+<span class="kw">done</span>
+
+<span class="cm"># ── Replace common $() patterns with built-ins ────────────────</span>
+
+<span class="cm"># dirname / basename — use parameter expansion instead</span>
+<span class="vr">path</span>=<span class="pth">/usr/local/bin/myprog</span>
+<span class="vr">dir</span>=<span class="st">"$(dirname "$path")"</span>         <span class="cm"># fork</span>
+<span class="vr">dir</span>=<span class="st">"${path%/*}"</span>                  <span class="cm"># no fork — much faster</span>
+<span class="vr">base</span>=<span class="st">"$(basename "$path")"</span>       <span class="cm"># fork</span>
+<span class="vr">base</span>=<span class="st">"${path##*/}"</span>                <span class="cm"># no fork</span>
+
+<span class="cm"># tr for case conversion — use ${var^^} / ${var,,} instead</span>
+<span class="vr">upper</span>=<span class="st">"$(echo "$str" | tr '[:lower:]' '[:upper:]')"</span>  <span class="cm"># 2 forks</span>
+<span class="vr">upper</span>=<span class="st">"${str^^}"</span>                  <span class="cm"># no fork</span>
+
+<span class="cm"># wc -c for string length — use ${#var}</span>
+<span class="vr">len</span>=<span class="st">"$(echo -n "$str" | wc -c)"</span>  <span class="cm"># 2 forks</span>
+<span class="vr">len</span>=<span class="st">"${#str}"</span>                     <span class="cm"># no fork</span>
+
+<span class="cm"># printf -v — assign to variable without a subshell</span>
+<span class="vr">result</span>=<span class="st">"$(printf '%05d' $n)"</span>     <span class="cm"># fork for $() even though printf is builtin</span>
+<span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">result</span> <span class="st">'%05d'</span> <span class="st">"$n"</span>     <span class="cm"># no fork — assigns directly</span></code>
+    </div>
+  </div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Common gotchas checklist</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Gotcha 1: exit in a subshell only exits the subshell ───────</span>
+<span class="kw">function</span> <span class="fn">check</span>() {
+    <span class="st">(</span>
+        [[ <span class="fl">-f</span> <span class="st">"$1"</span> ]] || <span class="kw">exit</span> <span class="nu">1</span>    <span class="cm"># exits the () subshell, not the function</span>
+        <span class="cmd">echo</span> <span class="st">"file exists"</span>
+    <span class="st">)</span>
+}
+<span class="fn">check</span> <span class="pth">/nonexistent</span>
+<span class="cmd">echo</span> <span class="st">"still running"</span>            <span class="out">→ still running  (script continues!)</span>
+<span class="cm"># Fix: check the subshell's exit code with $?</span>
+
+<span class="cm"># ── Gotcha 2: set -e doesn't propagate into $() ─────────────</span>
+<span class="kw">set</span> <span class="fl">-e</span>
+<span class="vr">result</span>=<span class="st">$(</span><span class="cmd">false</span>; <span class="cmd">echo</span> <span class="st">"still ran"</span><span class="st">)</span>
+<span class="cm"># 'false' fails but set -e doesn't kill the script here</span>
+<span class="cm"># The $() subshell exits non-zero, and THAT propagates up</span>
+<span class="cm"># So the assignment fails and set -e fires — but the echo ran first</span>
+
+<span class="cm"># ── Gotcha 3: traps reset in subshells ──────────────────────────</span>
+<span class="kw">trap</span> <span class="st">'echo "parent cleanup"'</span> EXIT
+<span class="st">(</span>
+    <span class="kw">trap</span> <span class="fl">-p</span> EXIT    <span class="cm"># shows empty — EXIT trap is NOT inherited by subshells</span>
+<span class="st">)</span>
+
+<span class="cm"># ── Gotcha 4: read after a pipe ───────────────────────────────</span>
+<span class="cm"># (the classic bug — covered in section 2)</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">lines</span>
+<span class="cmd">cat</span> <span class="pth">file.txt</span> | <span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">lines</span>
+<span class="cmd">echo</span> <span class="st">"${#lines[@]}"</span>  <span class="out">→ 0  (mapfile ran in a subshell)</span>
+
+<span class="cm"># Fix:</span>
+<span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">lines</span> <span class="op">&lt;</span> <span class="pth">file.txt</span>       <span class="cm"># no pipe, no subshell</span>
+<span class="cm"># or:</span>
+<span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">lines</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">generate_lines</span><span class="op">)</span>  <span class="cm"># process substitution</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       9. QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>9 — Quick Reference</h2>
+
+  <h3>Construct comparison</h3>
+  <table class="ref-table">
+    <thead><tr><th>Construct</th><th>Subshell?</th><th>Variables persist?</th><th>cd persists?</th><th>Traps inherited?</th></tr></thead>
+    <tbody>
+      <tr><td><code>( cmds )</code></td><td><span class="yes">Yes</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td></tr>
+      <tr><td><code>{ cmds; }</code></td><td><span class="no">No</span></td><td><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td></tr>
+      <tr><td><code>$(cmds)</code></td><td><span class="yes">Yes</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td></tr>
+      <tr><td><code>cmd1 | cmd2</code></td><td><span class="yes">Both sides</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td></tr>
+      <tr><td><code>cmd &amp;</code></td><td><span class="yes">Yes</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td></tr>
+      <tr><td><code>&lt;(cmd)</code></td><td><span class="yes">Yes</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td></tr>
+      <tr><td><code>source f</code> / <code>. f</code></td><td><span class="no">No</span></td><td><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td></tr>
+      <tr><td><code>bash f</code></td><td><span class="yes">New process</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">No</span></td></tr>
+      <tr><td><code>exec cmd</code></td><td><span class="no">Replaces shell</span></td><td class="note">n/a</td><td class="note">n/a</td><td class="note">n/a</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Key special variables for execution context</h3>
+  <table class="ref-table">
+    <thead><tr><th>Variable</th><th>Content</th></tr></thead>
+    <tbody>
+      <tr><td><code>$$</code></td><td>PID of the original shell (same value in subshells — a quirk)</td></tr>
+      <tr><td><code>$BASHPID</code></td><td>PID of the current shell/subshell (correct value)</td></tr>
+      <tr><td><code>$BASH_SUBSHELL</code></td><td>Subshell nesting depth (0 = top level)</td></tr>
+      <tr><td><code>${BASH_SOURCE[0]}</code></td><td>Path of the current file (or empty if interactive)</td></tr>
+      <tr><td><code>${BASH_SOURCE[-1]}</code></td><td>Path of the outermost script</td></tr>
+      <tr><td><code>${FUNCNAME[0]}</code></td><td>Name of the current function (or "main")</td></tr>
+      <tr><td><code>${BASH_LINENO[0]}</code></td><td>Line number where the current function was called from</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXERCISES
+  ═══════════════════════════════════════════ -->
+  <h2>✏️ Exercises</h2>
+  <p class="section-intro">Each exercise is designed to expose a real-world consequence of subshell behaviour — the kinds of bugs that quietly ship to production. Trace through each one mentally before running it, then verify your predictions.</p>
+
+  <!-- Exercise 1 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 1</div>
+    <div class="ex-task">The following script has a silent bug: the <code>total</code> variable is always 0 at the end. Identify exactly why, then rewrite it in three different correct ways — using process substitution, using <code>shopt -s lastpipe</code>, and using direct file redirection. All three versions must produce the correct sum.</div>
+    <div class="ex-hint">
+      <code class="code-block" style="font-style:normal"><span class="vr">total</span>=<span class="nu">0</span>
+<span class="cmd">seq</span> <span class="nu">1</span> <span class="nu">10</span> | <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">n</span>; <span class="kw">do</span>
+    (( total += n ))
+<span class="kw">done</span>
+<span class="cmd">echo</span> <span class="st">"Total: $total"</span>   <span class="out">→ Total: 0  (should be 55)</span></code>
+    </div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="cm"># The bug: the pipe creates a subshell for the while loop.</span>
+<span class="cm"># $total is incremented inside the subshell's copy, never the parent's.</span>
+<span class="cm"># When the subshell exits, its copy of $total vanishes.</span>
+
+<span class="cm"># ── Fix 1: process substitution — while loop runs in current shell</span>
+<span class="vr">total</span>=<span class="nu">0</span>
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">n</span>; <span class="kw">do</span>
+    (( total += n ))
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">seq</span> <span class="nu">1</span> <span class="nu">10</span><span class="op">)</span>
+<span class="cmd">echo</span> <span class="st">"Total: $total"</span>   <span class="out">→ Total: 55</span>
+
+<span class="cm"># ── Fix 2: shopt -s lastpipe — last cmd in pipe runs in current shell</span>
+<span class="kw">shopt</span> <span class="fl">-s</span> lastpipe
+<span class="vr">total</span>=<span class="nu">0</span>
+<span class="cmd">seq</span> <span class="nu">1</span> <span class="nu">10</span> | <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">n</span>; <span class="kw">do</span>
+    (( total += n ))
+<span class="kw">done</span>
+<span class="cmd">echo</span> <span class="st">"Total: $total"</span>   <span class="out">→ Total: 55</span>
+<span class="kw">shopt</span> <span class="fl">-u</span> lastpipe      <span class="cm"># restore default if needed</span>
+
+<span class="cm"># ── Fix 3: direct file redirection — no subprocess at all</span>
+<span class="vr">total</span>=<span class="nu">0</span>
+<span class="vr">tmpf</span>=<span class="st">$(</span><span class="cmd">mktemp</span><span class="st">)</span>
+<span class="cmd">seq</span> <span class="nu">1</span> <span class="nu">10</span> <span class="op">&gt;</span> <span class="st">"$tmpf"</span>
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">n</span>; <span class="kw">do</span>
+    (( total += n ))
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="st">"$tmpf"</span>
+<span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$tmpf"</span>
+<span class="cmd">echo</span> <span class="st">"Total: $total"</span>   <span class="out">→ Total: 55</span>
+
+<span class="cm"># Bonus: the cleanest one-liner (awk, no bash variable involved at all)</span>
+<span class="cmd">seq</span> <span class="nu">1</span> <span class="nu">10</span> | <span class="cmd">awk</span> <span class="st">'{s+=$1} END{print "Total:", s}'</span>  <span class="out">→ Total: 55</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 2 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 2</div>
+    <div class="ex-task">Write a script called <code>safe_cd.sh</code> that implements a <code>with_dir()</code> function which: changes to a specified directory, runs a command, then automatically returns to the original directory — even if the command fails. The function should work correctly whether it's a single command or a pipeline. Demonstrate it with three calls: a successful command, a failing command (verify the original directory is restored), and a command that uses the changed directory for a glob pattern.</div>
+    <div class="ex-hint">Hint: the simplest implementation wraps the work in a subshell <code>( cd "$dir" && "$@" )</code>. The <code>cd</code> is local to the subshell. For pipelines, use <code>bash -c "..."</code> or a function with <code>eval</code>. Think about how to handle a command that needs to be a pipeline.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># safe_cd.sh</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="fn">with_dir</span>() {
+    <span class="cm"># Usage: with_dir DIRECTORY COMMAND [ARGS...]</span>
+    <span class="kw">local</span> <span class="vr">dir</span>=<span class="st">"${1:?with_dir: directory required}"</span>
+    <span class="kw">shift</span>
+    [[ <span class="fl">-d</span> <span class="st">"$dir"</span> ]] || { <span class="cmd">echo</span> <span class="er">"with_dir: '$dir' is not a directory"</span> <span class="op">>&amp;2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+    <span class="cm"># Subshell: cd is local, command runs, shell exits, parent is unaffected</span>
+    <span class="st">(</span>
+        <span class="cmd">cd</span> <span class="st">"$dir"</span> || <span class="kw">return</span> <span class="nu">1</span>
+        <span class="st">"$@"</span>
+    <span class="st">)</span>
+}
+
+<span class="fn">with_dir_eval</span>() {
+    <span class="cm"># Variant that accepts a pipeline string (uses bash -c)</span>
+    <span class="kw">local</span> <span class="vr">dir</span>=<span class="st">"${1:?with_dir_eval: directory required}"</span>
+    <span class="kw">local</span> <span class="vr">cmd</span>=<span class="st">"$2"</span>
+    [[ <span class="fl">-d</span> <span class="st">"$dir"</span> ]] || { <span class="cmd">echo</span> <span class="er">"with_dir_eval: '$dir' is not a directory"</span> <span class="op">>&amp;2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+    <span class="st">(</span> <span class="cmd">cd</span> <span class="st">"$dir"</span> && <span class="cmd">eval</span> <span class="st">"$cmd"</span> <span class="st">)</span>
+}
+
+<span class="cm"># ── Demonstration ─────────────────────────────────────────────</span>
+<span class="cmd">echo</span> <span class="st">"Starting directory: $(pwd)"</span>
+
+<span class="cm"># 1. Successful command</span>
+<span class="cmd">echo</span> <span class="st">"\n--- Test 1: successful command ---"</span>
+<span class="fn">with_dir</span> <span class="pth">/etc</span> <span class="cmd">ls</span> <span class="fl">-1</span> hosts passwd
+<span class="cmd">echo</span> <span class="st">"After: $(pwd)"</span>      <span class="out">→ original dir (unchanged)</span>
+
+<span class="cm"># 2. Failing command — directory must still be restored</span>
+<span class="cmd">echo</span> <span class="st">"\n--- Test 2: failing command ---"</span>
+<span class="fn">with_dir</span> <span class="pth">/tmp</span> <span class="cmd">ls</span> <span class="pth">/this/does/not/exist</span> || <span class="cmd">echo</span> <span class="st">"(command failed, as expected)"</span>
+<span class="cmd">echo</span> <span class="st">"After: $(pwd)"</span>      <span class="out">→ original dir (still unchanged)</span>
+
+<span class="cm"># 3. Command using a glob in the changed directory</span>
+<span class="cmd">echo</span> <span class="st">"\n--- Test 3: glob in changed directory ---"</span>
+<span class="fn">with_dir</span> <span class="pth">/etc</span> <span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'echo *.conf | tr " " "\n" | head -5'</span>
+<span class="cmd">echo</span> <span class="st">"After: $(pwd)"</span>      <span class="out">→ original dir</span>
+
+<span class="cm"># 4. Pipeline variant</span>
+<span class="cmd">echo</span> <span class="st">"\n--- Test 4: pipeline ---"</span>
+<span class="fn">with_dir_eval</span> <span class="pth">/var/log</span> <span class="st">'ls -lt | head -3'</span>
+<span class="cmd">echo</span> <span class="st">"After: $(pwd)"</span>      <span class="out">→ original dir</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 3 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 3</div>
+    <div class="ex-task">Write a library file called <code>lib_utils.sh</code> that: (1) can be both sourced and executed, (2) defines three utility functions: <code>trim()</code>, <code>is_number()</code>, and <code>repeat()</code>, (3) when executed directly (not sourced), runs a self-test that exercises each function and reports pass/fail, and (4) uses <code>${BASH_SOURCE[0]}</code> to detect which mode it's in. When sourced, it should define the functions silently. When executed, it should print a test report.</div>
+    <div class="ex-hint">Hint: the pattern is <code>if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then run_tests; fi</code>. For <code>trim()</code>, use parameter expansion from Topic 1. For <code>is_number()</code>, use a regex with <code>[[ =~ ]]</code>. For <code>repeat()</code>, use a loop or printf. Write the test function to call each and compare actual to expected output.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># lib_utils.sh — utility library (sourceable and self-testing)</span>
+
+<span class="cm"># ── Library functions ─────────────────────────────────────────</span>
+
+<span class="fn">trim</span>() {
+    <span class="cm"># Trim leading and trailing whitespace from a string</span>
+    <span class="cm"># Usage: trim STRING  or  result=$(trim STRING)</span>
+    <span class="kw">local</span> <span class="vr">str</span>=<span class="st">"$1"</span>
+    <span class="cm"># Strip leading whitespace</span>
+    <span class="vr">str</span>=<span class="st">"${str#"${str%%[! $'\t']*}"}"</span>
+    <span class="cm"># Strip trailing whitespace</span>
+    <span class="vr">str</span>=<span class="st">"${str%"${str##*[! $'\t']}"}"</span>
+    <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$str"</span>
+}
+
+<span class="fn">is_number</span>() {
+    <span class="cm"># Return 0 (true) if the argument is an integer or float</span>
+    <span class="cm"># Usage: is_number VALUE</span>
+    [[ <span class="st">"$1"</span> =~ <span class="rx">^-?[0-9]+(\.[0-9]+)?$</span> ]]
+}
+
+<span class="fn">repeat</span>() {
+    <span class="cm"># Repeat a string N times</span>
+    <span class="cm"># Usage: repeat STRING COUNT</span>
+    <span class="kw">local</span> <span class="vr">str</span>=<span class="st">"$1"</span> <span class="vr">n</span>=<span class="st">"${2:?repeat: count required}"</span>
+    <span class="kw">local</span> <span class="vr">i</span>
+    <span class="kw">for</span> (( <span class="vr">i</span>=<span class="nu">0</span>; i < n; i++ )); <span class="kw">do</span>
+        <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$str"</span>
+    <span class="kw">done</span>
+    <span class="cmd">printf</span> <span class="st">'\n'</span>
+}
+
+<span class="cm"># ── Self-test (only runs when executed directly) ──────────────</span>
+<span class="fn">_run_tests</span>() {
+    <span class="kw">local</span> <span class="vr">pass</span>=<span class="nu">0</span> <span class="vr">fail</span>=<span class="nu">0</span>
+
+    <span class="fn">_assert_eq</span>() {
+        <span class="kw">local</span> <span class="vr">desc</span>=<span class="st">"$1"</span> <span class="vr">got</span>=<span class="st">"$2"</span> <span class="vr">want</span>=<span class="st">"$3"</span>
+        <span class="kw">if</span> [[ <span class="st">"$got"</span> == <span class="st">"$want"</span> ]]; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="st">'\033[32m  PASS\033[0m %s\n'</span> <span class="st">"$desc"</span>; (( pass++ ))
+        <span class="kw">else</span>
+            <span class="cmd">printf</span> <span class="st">'\033[31m  FAIL\033[0m %s\n       got:  [%s]\n       want: [%s]\n'</span> \
+                <span class="st">"$desc"</span> <span class="st">"$got"</span> <span class="st">"$want"</span>; (( fail++ ))
+        <span class="kw">fi</span>
+    }
+    <span class="fn">_assert_true</span>() {
+        <span class="kw">local</span> <span class="vr">desc</span>=<span class="st">"$1"</span>; <span class="kw">shift</span>
+        <span class="kw">if</span> <span class="st">"$@"</span>; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="st">'\033[32m  PASS\033[0m %s\n'</span> <span class="st">"$desc"</span>; (( pass++ ))
+        <span class="kw">else</span>
+            <span class="cmd">printf</span> <span class="st">'\033[31m  FAIL\033[0m %s (returned false)\n'</span> <span class="st">"$desc"</span>; (( fail++ ))
+        <span class="kw">fi</span>
+    }
+
+    <span class="cmd">printf</span> <span class="st">'\033[1mlib_utils.sh — self test\033[0m\n'</span>
+    <span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">40</span>}; <span class="cmd">echo</span>
+
+    <span class="cm"># trim()</span>
+    <span class="fn">_assert_eq</span>  <span class="st">"trim: leading spaces"</span>        <span class="st">"$(trim '   hello')"</span>          <span class="st">"hello"</span>
+    <span class="fn">_assert_eq</span>  <span class="st">"trim: trailing spaces"</span>       <span class="st">"$(trim 'hello   ')"</span>          <span class="st">"hello"</span>
+    <span class="fn">_assert_eq</span>  <span class="st">"trim: both sides"</span>           <span class="st">"$(trim '  hello world  ')"</span>   <span class="st">"hello world"</span>
+    <span class="fn">_assert_eq</span>  <span class="st">"trim: already trimmed"</span>      <span class="st">"$(trim 'no spaces')"</span>         <span class="st">"no spaces"</span>
+    <span class="fn">_assert_eq</span>  <span class="st">"trim: empty string"</span>         <span class="st">"$(trim '')"</span>                  <span class="st">""</span>
+
+    <span class="cm"># is_number()</span>
+    <span class="fn">_assert_true</span> <span class="st">"is_number: integer"</span>         <span class="fn">is_number</span> <span class="nu">42</span>
+    <span class="fn">_assert_true</span> <span class="st">"is_number: negative"</span>        <span class="fn">is_number</span> <span class="fl">-7</span>
+    <span class="fn">_assert_true</span> <span class="st">"is_number: float"</span>           <span class="fn">is_number</span> <span class="nu">3.14</span>
+    <span class="fn">_assert_true</span> <span class="st">"is_number: rejects word"</span>    ! <span class="fn">is_number</span> <span class="st">"abc"</span>
+    <span class="fn">_assert_true</span> <span class="st">"is_number: rejects mixed"</span>   ! <span class="fn">is_number</span> <span class="st">"12abc"</span>
+
+    <span class="cm"># repeat()</span>
+    <span class="fn">_assert_eq</span>  <span class="st">"repeat: 3 times"</span>            <span class="st">"$(repeat 'ab' 3)"</span>            <span class="st">"ababab"</span>
+    <span class="fn">_assert_eq</span>  <span class="st">"repeat: 0 times"</span>            <span class="st">"$(repeat 'x' 0)"</span>             <span class="st">""</span>
+    <span class="fn">_assert_eq</span>  <span class="st">"repeat: 1 time"</span>             <span class="st">"$(repeat '-' 1)"</span>             <span class="st">"-"</span>
+
+    <span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">40</span>}; <span class="cmd">echo</span>
+    <span class="cmd">printf</span> <span class="st">'%d passed  %d failed\n'</span> <span class="st">"$pass"</span> <span class="st">"$fail"</span>
+    (( fail == <span class="nu">0</span> ))
+}
+
+<span class="cm"># ── Entry point detection ──────────────────────────────────────</span>
+<span class="kw">if</span> [[ <span class="st">"${BASH_SOURCE[0]}"</span> == <span class="st">"$0"</span> ]]; <span class="kw">then</span>
+    <span class="cm"># Executed directly: run self-test</span>
+    <span class="fn">_run_tests</span>
+<span class="kw">fi</span>
+<span class="cm"># When sourced: functions are silently defined, no tests run</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 4 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 4</div>
+    <div class="ex-task">Write a script called <code>env_sandbox.sh</code> that runs a command in a controlled environment: it accepts a list of <code>KEY=VALUE</code> overrides as arguments followed by a <code>--</code> separator and then the command. It should run the command with: (a) the parent's environment as a base, (b) only specified overrides applied, and (c) a set of variables always removed (configurable via <code>SANDBOX_STRIP</code>, defaulting to <code>AWS_SECRET_ACCESS_KEY:GITHUB_TOKEN:DATABASE_URL</code>). Print the final environment and exit code. Use a subshell for isolation.</div>
+    <div class="ex-hint">Hint: parse arguments until you hit <code>--</code>, collecting <code>KEY=VALUE</code> pairs into an array. Use <code>env -u KEY</code> to unset specific variables. The command to run is everything after <code>--</code>. Use <code>env KEY=VAL ... CMD</code> to set overrides and unset sensitive vars in one call.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># env_sandbox.sh  [KEY=VAL ...]  --  COMMAND [ARGS...]</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">SANDBOX_STRIP</span>=<span class="st">${SANDBOX_STRIP:-"AWS_SECRET_ACCESS_KEY:GITHUB_TOKEN:DATABASE_URL"}</span>
+
+<span class="cm"># Parse: collect overrides until --, then the command</span>
+<span class="vr">overrides</span>=()
+<span class="vr">cmd</span>=()
+<span class="vr">found_sep</span>=<span class="nu">0</span>
+
+<span class="kw">for</span> <span class="vr">arg</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+    <span class="kw">if</span> (( found_sep )); <span class="kw">then</span>
+        <span class="vr">cmd</span>+=( <span class="st">"$arg"</span> )
+    <span class="kw">elif</span> [[ <span class="st">"$arg"</span> == <span class="st">"--"</span> ]]; <span class="kw">then</span>
+        <span class="vr">found_sep</span>=<span class="nu">1</span>
+    <span class="kw">elif</span> [[ <span class="st">"$arg"</span> == *<span class="st">"="</span>* ]]; <span class="kw">then</span>
+        <span class="vr">overrides</span>+=( <span class="st">"$arg"</span> )
+    <span class="kw">else</span>
+        <span class="cmd">echo</span> <span class="er">"Usage: env_sandbox.sh [KEY=VAL ...] -- COMMAND [ARGS]"</span> <span class="op">>&amp;2</span>
+        <span class="kw">exit</span> <span class="nu">1</span>
+    <span class="kw">fi</span>
+<span class="kw">done</span>
+
+(( ${#cmd[@]} > <span class="nu">0</span> )) || { <span class="cmd">echo</span> <span class="er">"No command specified after --"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="cm"># Build env -u flags for stripped variables</span>
+<span class="vr">unset_flags</span>=()
+<span class="kw">IFS</span>=<span class="st">':'</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-a</span> <span class="vr">strip_vars</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$SANDBOX_STRIP"</span>
+<span class="kw">for</span> <span class="vr">v</span> <span class="kw">in</span> <span class="st">"${strip_vars[@]}"</span>; <span class="kw">do</span>
+    <span class="vr">unset_flags</span>+=( <span class="fl">-u</span> <span class="st">"$v"</span> )
+<span class="kw">done</span>
+
+<span class="cm"># Print sandbox summary</span>
+<span class="cmd">printf</span> <span class="st">'\033[36m[sandbox]\033[0m Command:   %s\n'</span>  <span class="st">"${cmd[*]}"</span>
+<span class="cmd">printf</span> <span class="st">'\033[36m[sandbox]\033[0m Overrides: %s\n'</span>  <span class="st">"${overrides[*]:-none}"</span>
+<span class="cmd">printf</span> <span class="st">'\033[36m[sandbox]\033[0m Stripped:  %s\n'</span>  <span class="st">"$SANDBOX_STRIP"</span>
+<span class="cmd">echo</span>
+
+<span class="cm"># Run in a subshell — isolation is belt-and-suspenders here</span>
+<span class="st">(</span>
+    <span class="cmd">env</span> <span class="st">"${unset_flags[@]}"</span> <span class="st">"${overrides[@]}"</span> <span class="st">"${cmd[@]}"</span>
+<span class="st">)</span>
+<span class="vr">rc</span>=<span class="st">$?</span>
+
+<span class="cmd">printf</span> <span class="st">'\n\033[36m[sandbox]\033[0m Exit code: %d\n'</span> <span class="st">"$rc"</span>
+<span class="kw">exit</span> <span class="st">"$rc"</span>
+
+<span class="cm"># Example usage:</span>
+<span class="cm"># DATABASE_URL=postgres://prod ./env_sandbox.sh  DATABASE_URL=postgres://test  --  env | grep DB</span>
+<span class="cm"># GITHUB_TOKEN=secret ./env_sandbox.sh  --  env | grep GITHUB   ← GITHUB_TOKEN is stripped</span></code>
+    </div>
+  </div>
+
+</div><!-- /lx-lesson -->

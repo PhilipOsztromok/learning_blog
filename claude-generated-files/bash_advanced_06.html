@@ -1,0 +1,718 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #f97583; }
+  .st  { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw  { color: #f97583; }
+  .nu  { color: #ffab70; }
+  .sh  { color: #85e89d; }
+  .vr  { color: #ffab70; }
+  .op  { color: #e1e4e8; }
+  .er  { color: #f97583; font-weight: bold; }
+  .fn  { color: #b392f0; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 6 — Performance and Profiling</h1>
+<p>Bash is not Python. It is not Go. But it is also not as slow as most people
+assume — <em>when written well</em>. The performance gaps that matter are almost
+always attributable to a small number of identifiable patterns: unnecessary
+forking, reading files line by line through subshells, and ignoring built-ins
+that do the same job faster. This chapter gives you the tools to measure first
+and the knowledge to fix the right things.</p>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>1 — Measuring: <code>time</code>, <code>TIMEFORMAT</code>, and <code>date +%s%N</code></h2>
+
+<h3>The <code>time</code> built-in</h3>
+<pre><span class="cm"># time wraps any simple command or { compound command; }</span>
+<span class="kw">time</span> <span class="cmd">find</span> <span class="pth">/usr</span> <span class="fl">-name</span> <span class="st">'*.so'</span> <span class="op">>/dev/null</span>
+<span class="cm"># real    0m0.412s
+# user    0m0.089s
+# sys     0m0.323s</span>
+
+<span class="cm"># TIMEFORMAT controls the output format (only affects the bash built-in time,
+# not /usr/bin/time)</span>
+<span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'%R seconds real'</span>
+<span class="kw">time</span> { <span class="cmd">sleep</span> <span class="nu">0</span>.<span class="nu">3</span>; }    <span class="cm"># 0.300 seconds real</span>
+
+<span class="cm"># Capture the output — time writes to stderr</span>
+<span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'%R'</span>
+<span class="vr">elapsed</span><span class="op">=</span>$( { <span class="kw">time</span> my_function; } <span class="nu">2</span><span class="op">>&1</span> <span class="op">>/dev/null</span> )
+<span class="cm"># Note: >/dev/null discards stdout of my_function; 2>&1 captures stderr (time output)</span>
+
+<span class="cm"># TIMEFORMAT tokens:
+#   %R  elapsed real time (seconds, 3 decimal places)
+#   %U  user CPU time
+#   %S  system CPU time
+#   %P  CPU percentage  (%U + %S) / %R * 100</span></pre>
+
+<h3>High-resolution timestamps in a loop</h3>
+<pre><span class="cm"># date +%s%N gives nanoseconds since epoch (GNU date only)</span>
+<span class="vr">t0</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="fl">+%s%N</span>)
+<span class="cm"># ... work ...</span>
+<span class="vr">t1</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="fl">+%s%N</span>)
+<span class="cmd">printf</span> <span class="st">'%.3f ms\n'</span> "$(( (<span class="vr">t1</span> <span class="op">-</span> <span class="vr">t0</span>) <span class="op">/</span> <span class="nu">1000000</span> ))"
+
+<span class="cm"># Portable microsecond timer via EPOCHREALTIME (bash 5.0+)
+# No fork — just a variable read</span>
+<span class="vr">t0</span><span class="op">=</span><span class="st">"$EPOCHREALTIME"</span>
+<span class="cm"># ... work ...</span>
+<span class="vr">t1</span><span class="op">=</span><span class="st">"$EPOCHREALTIME"</span>
+<span class="cm"># EPOCHREALTIME is a float like 1718000000.123456
+# Use awk or bc for the subtraction (bash can't do float arithmetic)</span>
+<span class="cmd">awk</span> <span class="st">"BEGIN { printf \"%.6f s\n\", <span class="vr">$t1</span> - <span class="vr">$t0</span> }"</span>
+
+<span class="cm"># Micro-benchmark helper — runs CMD N times and reports average</span>
+<span class="fn">bench</span>() {
+  <span class="kw">local</span> <span class="vr">n</span><span class="op">=</span><span class="st">"${1}"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'%R'</span>
+  <span class="kw">local</span> <span class="vr">total</span>
+  <span class="vr">total</span><span class="op">=</span>$( { <span class="kw">time</span> { <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="vr">n</span>; <span class="vr">i</span>++ )); <span class="kw">do</span> <span class="st">"$@"</span> <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>; <span class="kw">done</span>; }; } <span class="nu">2</span><span class="op">>&1</span> )
+  <span class="cmd">awk</span> <span class="st">"BEGIN { printf \"%d runs: %.3fs total, %.4fs avg\n\", <span class="vr">$n</span>, <span class="vr">$total</span>, <span class="vr">$total</span>/<span class="vr">$n</span> }"</span>
+}
+
+<span class="fn">bench</span> <span class="nu">100</span> <span class="cmd">date</span> <span class="fl">+%s</span>       <span class="cm"># 100 runs: 0.312s total, 0.0031s avg</span>
+<span class="fn">bench</span> <span class="nu">100</span> <span class="cmd">printf</span> <span class="st">'%(%s)T'</span> <span class="fl">-1</span>  <span class="cm"># 100 runs: 0.001s total, 0.0000s avg</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>2 — The Cost of Forks</h2>
+
+<p>Every <span class="inline-code">$(…)</span> command substitution and every
+<span class="inline-code">|</span> pipeline forks a subshell. On a modern system each fork
+costs roughly 0.5–3 ms. That sounds tiny, but a loop running 1 000 iterations with
+one subshell each costs 0.5–3 seconds doing nothing but forking.</p>
+
+<table>
+  <tr><th>Operation</th><th>Typical cost</th><th>Notes</th></tr>
+  <tr><td>Fork + exec (<code>$(date)</code>)</td><td>1–3 ms</td><td>Creates child process, execs binary</td></tr>
+  <tr><td>Subshell only (<code>$(printf…)</code>)</td><td>0.3–1 ms</td><td>Fork without exec — printf is a built-in</td></tr>
+  <tr><td><code>$((…))</code> arithmetic</td><td>&lt;1 µs</td><td>No fork — evaluated in-process</td></tr>
+  <tr><td><code>${var//pat/rep}</code> substitution</td><td>&lt;1 µs</td><td>No fork — built-in pattern engine</td></tr>
+  <tr><td><code>read -r</code> from file</td><td>~5 µs/line</td><td>Syscall per character by default; use <code>mapfile</code></td></tr>
+  <tr><td><code>mapfile -t arr &lt; file</code></td><td>~0.5 µs/line</td><td>Reads in larger chunks</td></tr>
+  <tr><td>Pipe (<code>cmd | cmd</code>)</td><td>0.2–1 ms setup</td><td>Two forks for the pipeline itself</td></tr>
+</table>
+
+<pre><span class="cm"># Concrete comparison: 1000 timestamps</span>
+
+<span class="cm"># Slow: fork+exec per iteration</span>
+<span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'%R'</span>
+<span class="kw">time</span> {
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nu">1000</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="vr">ts</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="fl">+%s</span>)      <span class="cm"># fork + exec /usr/bin/date</span>
+  <span class="kw">done</span>
+}
+<span class="cm"># ~2.8s</span>
+
+<span class="cm"># Fast: built-in printf format (bash 4.2+)</span>
+<span class="kw">time</span> {
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nu">1000</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">ts</span> <span class="st">'%(%s)T'</span> <span class="fl">-1</span>   <span class="cm"># no fork at all</span>
+  <span class="kw">done</span>
+}
+<span class="cm"># ~0.004s — 700× faster</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>3 — Replacing External Commands with Built-ins</h2>
+
+<p>A systematic audit of your hot path often reveals external commands that Bash
+can replace with zero forks.</p>
+
+<table>
+  <tr><th>External command</th><th>Bash built-in replacement</th><th>Notes</th></tr>
+  <tr><td><code>echo "text"</code></td><td><code>printf '%s\n' "text"</code></td><td>Both are built-ins; prefer printf for portability</td></tr>
+  <tr><td><code>$(date +%s)</code></td><td><code>printf -v v '%(%s)T' -1</code></td><td>Bash 4.2+; <code>$EPOCHSECONDS</code> in 5.0+</td></tr>
+  <tr><td><code>$(date +%Y-%m-%d)</code></td><td><code>printf -v v '%(%Y-%m-%d)T' -1</code></td><td>strftime format via printf</td></tr>
+  <tr><td><code>$(basename "$f")</code></td><td><code>${f##*/}</code></td><td>Parameter expansion</td></tr>
+  <tr><td><code>$(dirname "$f")</code></td><td><code>${f%/*}</code></td><td>Caveat: returns <code>$f</code> if no slash</td></tr>
+  <tr><td><code>$(echo "$s" | tr a-z A-Z)</code></td><td><code>${s^^}</code></td><td>Bash 4.0+ case conversion</td></tr>
+  <tr><td><code>$(echo "$s" | tr A-Z a-z)</code></td><td><code>${s,,}</code></td><td>Bash 4.0+</td></tr>
+  <tr><td><code>$(expr "$n" + 1)</code></td><td><code>$(( n + 1 ))</code> or <code>(( n++ ))</code></td><td>No fork for arithmetic</td></tr>
+  <tr><td><code>n=$(wc -l &lt; file)</code></td><td><code>mapfile -t a &lt; file; n=${#a[@]}</code></td><td>No fork; trades memory for speed</td></tr>
+  <tr><td><code>$(cat file)</code></td><td><code>$(&lt; file)</code></td><td>Bash opens the file directly — no cat fork</td></tr>
+  <tr><td><code>grep -c '' file</code></td><td>see <code>mapfile</code> above</td><td>Or use awk in one pass</td></tr>
+  <tr><td><code>$(pwd)</code></td><td><code>$PWD</code></td><td>Always in sync with current directory</td></tr>
+  <tr><td><code>$(whoami)</code></td><td><code>$USER</code> or <code>${USER:-$(id -un)}</code></td><td>$USER set by PAM/login</td></tr>
+  <tr><td><code>$(hostname)</code></td><td><code>$HOSTNAME</code></td><td>Bash sets this at startup</td></tr>
+  <tr><td><code>$(printf '%s' "$v" | wc -c)</code></td><td><code>${#v}</code></td><td>Character count (not bytes for multibyte)</td></tr>
+</table>
+
+<pre><span class="cm"># Pattern expansion as sed/grep replacement</span>
+
+<span class="cm"># Remove leading whitespace</span>
+<span class="vr">s</span><span class="op">=</span><span class="st">"   hello"</span>
+<span class="vr">s</span><span class="op">=</span><span class="st">"${s#"${s%%[! ]*}"}"</span>   <span class="cm"># trim leading spaces — no fork</span>
+
+<span class="cm"># Check if string contains a substring — no grep</span>
+<span class="kw">if</span> [[ <span class="st">"<span class="vr">$haystack</span>"</span> <span class="op">==</span> <span class="rx">*"$needle"*</span> ]]; <span class="kw">then</span> <span class="cmd">echo</span> <span class="st">"found"</span>; <span class="kw">fi</span>
+
+<span class="cm"># Check if string starts with prefix</span>
+[[ <span class="st">"<span class="vr">$s</span>"</span> <span class="op">==</span> <span class="rx">error:*</span> ]]
+
+<span class="cm"># Replace first occurrence — no sed</span>
+<span class="vr">s</span><span class="op">=</span><span class="st">"${s/foo/bar}"</span>
+
+<span class="cm"># Replace all occurrences</span>
+<span class="vr">s</span><span class="op">=</span><span class="st">"${s//foo/bar}"</span>
+
+<span class="cm"># Strip ANSI escape codes (a common sed job) — pure bash regex</span>
+<span class="vr">clean</span><span class="op">=</span><span class="st">"$line"</span>
+<span class="kw">while</span> [[ <span class="st">"<span class="vr">$clean</span>"</span> <span class="op">=~</span> <span class="rx">$'\e'\[[0-9;]*m</span> ]]; <span class="kw">do</span>
+  <span class="vr">clean</span><span class="op">=</span><span class="st">"${clean//"${BASH_REMATCH[0]}"}"</span>
+<span class="kw">done</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>4 — Reading Files Efficiently</h2>
+
+<pre><span class="cm"># Slowest: subshell per line</span>
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  <span class="vr">processed</span><span class="op">+=</span>( $(<span class="cmd">transform</span> <span class="st">"<span class="vr">$line</span>"</span>) )   <span class="cm"># fork per line!</span>
+<span class="kw">done</span> <span class="op"><</span> input.txt
+
+<span class="cm"># Faster: read entire file into array with mapfile, then loop in bash</span>
+<span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">lines</span> <span class="op"><</span> input.txt
+<span class="kw">for</span> <span class="vr">line</span> <span class="kw">in</span> <span class="st">"${lines[@]}"</span>; <span class="kw">do</span>
+  <span class="cm"># pure-bash transformation here</span>
+  <span class="vr">processed</span><span class="op">+=</span>( <span class="st">"${line^^}"</span> )
+<span class="kw">done</span>
+
+<span class="cm"># Fastest for text processing: delegate the whole job to a single awk/sed pass
+# One fork, no per-line overhead, purpose-built for text</span>
+<span class="cmd">awk</span> <span class="st">'{ print toupper($0) }'</span> input.txt <span class="op">></span> output.txt
+
+<span class="cm"># Reading a small file into a variable — $(&lt; file) vs $(cat file)</span>
+<span class="vr">content</span><span class="op">=</span>$(<span class="op"><</span> <span class="pth">config.txt</span>)    <span class="cm"># Bash opens fd directly — no cat fork</span>
+<span class="vr">content</span><span class="op">=</span>$(<span class="cmd">cat</span> <span class="pth">config.txt</span>)  <span class="cm"># fork + exec cat — avoidable</span>
+
+<span class="cm"># mapfile with a callback (-C -c): process every N lines without building the
+# entire array in memory first</span>
+<span class="fn">process_chunk</span>() {
+  <span class="cm"># $1 = index of first new element, $2 = value</span>
+  <span class="cmd">printf</span> <span class="st">'Processing index %d: %s\n'</span> <span class="st">"$1"</span> <span class="st">"$2"</span>
+}
+<span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="fl">-C</span> process_chunk <span class="fl">-c</span> <span class="nu">1</span> <span class="vr">arr</span> <span class="op"><</span> big_file.txt</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>5 — PS4 Profiling: Line-Level Tracing</h2>
+
+<p>Setting <span class="inline-code">PS4</span> to include timestamps and enabling
+<span class="inline-code">set -x</span> turns every executed line into a timed trace.
+This is crude but requires no external tools and works on any Bash version.</p>
+
+<pre><span class="cm"># Minimal: show line numbers</span>
+<span class="vr">PS4</span><span class="op">=</span><span class="st">'+${BASH_SOURCE}:${LINENO}: '</span>
+<span class="kw">set</span> <span class="fl">-x</span>
+<span class="cm"># ... script body ...</span>
+<span class="kw">set</span> <span class="fl">+x</span>
+
+<span class="cm"># Timed: prefix each line with microseconds elapsed since start</span>
+<span class="cm"># Requires bash 5.0+ for EPOCHREALTIME</span>
+<span class="vr">_PROF_START</span><span class="op">=</span><span class="st">"$EPOCHREALTIME"</span>
+<span class="vr">PS4</span><span class="op">=</span><span class="st">'+ $(awk "BEGIN{printf \"%8.4f\",'"$EPOCHREALTIME"'-'"$_PROF_START"'}")s ${BASH_SOURCE##*/}:${LINENO}: '</span>
+
+<span class="cm"># Caution: the awk in PS4 forks on every traced line — only enable for short
+# sections or you'll skew the results significantly.</span>
+
+<span class="cm"># Better approach: redirect xtrace to a dedicated FD, analyse after</span>
+<span class="kw">exec</span> <span class="nu">19</span><span class="op">></span><span class="pth">/tmp/trace_$$</span>
+<span class="vr">BASH_XTRACEFD</span><span class="op">=</span><span class="nu">19</span>
+<span class="vr">PS4</span><span class="op">=</span><span class="st">'+ $EPOCHREALTIME ${BASH_SOURCE##*/}:${LINENO}: '</span>
+<span class="kw">set</span> <span class="fl">-x</span>
+
+<span class="cm"># ... script body ...</span>
+
+<span class="kw">set</span> <span class="fl">+x</span>
+<span class="kw">exec</span> <span class="nu">19</span><span class="op">>&-</span>
+
+<span class="cm"># Analyse the trace: find lines that took the most time
+# Each line of the trace looks like: + 1718034567.123456 script.sh:42: command</span>
+<span class="cmd">awk</span> <span class="st">'
+  /^\+/ {
+    split($2, a, ".")
+    ts = a[1] "." a[2]
+    if (prev_ts != "") {
+      elapsed = ts - prev_ts
+      printf "%8.4fs  %s\n", elapsed, prev_line
+    }
+    prev_ts = ts
+    prev_line = substr($0, index($0,$3))
+  }
+'</span> <span class="pth">/tmp/trace_$$</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-rn</span> <span class="op">|</span> <span class="cmd">head</span> <span class="fl">-20</span></pre>
+
+<div class="note">
+<strong><code>BASH_XTRACEFD</code></strong> (Bash 4.1+) redirects <code>set -x</code>
+output to a specific file descriptor instead of stderr. This lets you capture trace
+data without polluting the script's error stream, making it safe to enable in
+production for a single slow function.
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>6 — Function-Level Profiling with <code>DEBUG</code> Trap</h2>
+
+<pre><span class="cm"># The DEBUG trap fires before every simple command.
+# Combine with BASH_SOURCE / FUNCNAME / LINENO for call-graph data.</span>
+
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">_PROF_ENTER</span>   <span class="cm"># function → entry timestamp</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">_PROF_TOTAL</span>   <span class="cm"># function → cumulative ms</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">_PROF_CALLS</span>   <span class="cm"># function → call count</span>
+
+<span class="fn">_prof_debug</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"${FUNCNAME[1]:-main}"</span>
+  <span class="kw">local</span> <span class="vr">now</span><span class="op">=</span><span class="st">"$EPOCHREALTIME"</span>
+  <span class="cm"># Record entry on first call in this function frame</span>
+  [[ <span class="fl">-z</span> <span class="st">"${_PROF_ENTER[$fn]:-}"</span> ]] <span class="op">&&</span> <span class="vr">_PROF_ENTER</span>[<span class="st">"<span class="vr">$fn</span>"</span>]<span class="op">=</span><span class="st">"<span class="vr">$now</span>"</span>
+}
+
+<span class="fn">_prof_return</span>() {
+  <span class="kw">local</span> <span class="vr">fn</span><span class="op">=</span><span class="st">"${FUNCNAME[1]:-main}"</span>
+  <span class="kw">local</span> <span class="vr">now</span><span class="op">=</span><span class="st">"$EPOCHREALTIME"</span>
+  <span class="kw">local</span> <span class="vr">entry</span><span class="op">=</span><span class="st">"${_PROF_ENTER[$fn]:-}"</span>
+  [[ <span class="fl">-z</span> <span class="st">"<span class="vr">$entry</span>"</span> ]] <span class="op">&&</span> <span class="kw">return</span>
+  <span class="kw">local</span> <span class="vr">ms</span>
+  <span class="vr">ms</span><span class="op">=</span>$(<span class="cmd">awk</span> <span class="st">"BEGIN{printf \"%d\", (<span class="vr">$now</span>-<span class="vr">$entry</span>)*1000}"</span>)
+  (( <span class="vr">_PROF_TOTAL</span>[<span class="st">"<span class="vr">$fn</span>"</span>]<span class="op">+=</span><span class="vr">ms</span> )) <span class="op">||</span> <span class="kw">true</span>
+  (( <span class="vr">_PROF_CALLS</span>[<span class="st">"<span class="vr">$fn</span>"</span>]<span class="op">++</span>   )) <span class="op">||</span> <span class="kw">true</span>
+  <span class="kw">unset</span> <span class="st">'_PROF_ENTER[$fn]'</span>
+}
+
+<span class="fn">prof_start</span>() {
+  <span class="kw">trap</span> <span class="st">'_prof_debug'</span> DEBUG
+  <span class="kw">trap</span> <span class="st">'_prof_return'</span> RETURN
+}
+
+<span class="fn">prof_report</span>() {
+  <span class="cmd">printf</span> <span class="st">'\n%-30s %8s %8s %10s\n'</span> <span class="st">"Function"</span> <span class="st">"Calls"</span> <span class="st">"Total ms"</span> <span class="st">"Avg ms"</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$(printf '%.0s-' {1..60})"</span>
+  <span class="kw">for</span> <span class="vr">fn</span> <span class="kw">in</span> <span class="st">"${!_PROF_TOTAL[@]}"</span>; <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">'%-30s %8d %8d %10.2f\n'</span> \
+      <span class="st">"<span class="vr">$fn</span>"</span> \
+      <span class="st">"${_PROF_CALLS[$fn]}"</span> \
+      <span class="st">"${_PROF_TOTAL[$fn]}"</span> \
+      "$(( <span class="vr">_PROF_TOTAL</span>[<span class="st">"<span class="vr">$fn</span>"</span>] <span class="op">*</span> <span class="nu">100</span> <span class="op">/</span> <span class="vr">_PROF_CALLS</span>[<span class="st">"<span class="vr">$fn</span>"</span>] ))e-2"
+  <span class="kw">done</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-k3</span> <span class="fl">-rn</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>7 — Hot-Path Anti-Patterns and Fixes</h2>
+
+<h3>Anti-pattern 1: Forking inside a loop</h3>
+<pre><span class="cm"># Bad: one fork per iteration</span>
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="st">"${files[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">ext</span><span class="op">=</span>$(<span class="cmd">echo</span> <span class="st">"<span class="vr">$f</span>"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/.*\.//'</span>)   <span class="cm"># fork + exec echo + fork + exec sed</span>
+  <span class="vr">base</span><span class="op">=</span>$(<span class="cmd">basename</span> <span class="st">"<span class="vr">$f</span>"</span>)                  <span class="cm"># fork + exec basename</span>
+<span class="kw">done</span>
+
+<span class="cm"># Good: parameter expansion — zero forks</span>
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="st">"${files[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">ext</span><span class="op">=</span><span class="st">"${f##*.}"</span>
+  <span class="vr">base</span><span class="op">=</span><span class="st">"${f##*/}"</span>
+<span class="kw">done</span></pre>
+
+<h3>Anti-pattern 2: Useless use of cat</h3>
+<pre><span class="cm"># Bad: cat is just a conduit</span>
+<span class="cmd">cat</span> <span class="pth">file.txt</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">"pattern"</span>
+<span class="cmd">cat</span> <span class="pth">file.txt</span> <span class="op">|</span> <span class="cmd">wc</span> <span class="fl">-l</span>
+
+<span class="cm"># Good: redirect directly</span>
+<span class="cmd">grep</span> <span class="st">"pattern"</span> <span class="pth">file.txt</span>
+<span class="cmd">wc</span> <span class="fl">-l</span> <span class="op"><</span> <span class="pth">file.txt</span></pre>
+
+<h3>Anti-pattern 3: Redundant subshells in conditionals</h3>
+<pre><span class="cm"># Bad: grep returns an exit code — no need to capture output</span>
+<span class="kw">if</span> [[ $(<span class="cmd">grep</span> <span class="fl">-c</span> <span class="st">"pattern"</span> <span class="pth">file</span>) <span class="op">-gt</span> <span class="nu">0</span> ]]; <span class="kw">then</span> <span class="cmd">echo</span> found; <span class="kw">fi</span>
+
+<span class="cm"># Good: test the exit code directly</span>
+<span class="kw">if</span> <span class="cmd">grep</span> <span class="fl">-q</span> <span class="st">"pattern"</span> <span class="pth">file</span>; <span class="kw">then</span> <span class="cmd">echo</span> found; <span class="kw">fi</span>
+
+<span class="cm"># Bad: wc in arithmetic</span>
+<span class="kw">if</span> (( $(<span class="cmd">wc</span> <span class="fl">-l</span> <span class="op"><</span> <span class="pth">file</span>) <span class="op">></span> <span class="nu">100</span> )); <span class="kw">then</span> <span class="cmd">echo</span> big; <span class="kw">fi</span>
+
+<span class="cm"># Good: mapfile + array length if you need the data anyway,
+# or awk for a single-pass threshold check (no array allocation)</span>
+<span class="cmd">awk</span> <span class="st">'END { exit (NR > 100 ? 0 : 1) }'</span> <span class="pth">file</span> <span class="op">&&</span> <span class="cmd">echo</span> big</pre>
+
+<h3>Anti-pattern 4: Concatenating strings with <code>$(...)</code></h3>
+<pre><span class="cm"># Bad: three forks to build a path string</span>
+<span class="vr">logfile</span><span class="op">=</span><span class="st">"$(dirname "<span class="vr">$script</span>")/logs/$(basename "<span class="vr">$script</span>" .sh)_$(date +%Y%m%d).log"</span>
+
+<span class="cm"># Good: parameter expansion + built-in printf strftime</span>
+<span class="vr">dir</span><span class="op">=</span><span class="st">"${script%/*}"</span>
+<span class="vr">name</span><span class="op">=</span><span class="st">"${script##*/}"</span>; <span class="vr">name</span><span class="op">=</span><span class="st">"${name%.sh}"</span>
+<span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">stamp</span> <span class="st">'%(%Y%m%d)T'</span> <span class="fl">-1</span>
+<span class="vr">logfile</span><span class="op">=</span><span class="st">"${dir}/logs/${name}_${stamp}.log"</span></pre>
+
+<h3>Anti-pattern 5: Piping to while read</h3>
+<pre><span class="cm"># Bad: the while loop runs in a subshell — variables set inside are lost</span>
+<span class="cmd">grep</span> <span class="st">"ERROR"</span> <span class="pth">app.log</span> <span class="op">|</span> <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  (( <span class="vr">errors</span>++ ))   <span class="cm"># invisible to parent</span>
+<span class="kw">done</span>
+<span class="cmd">echo</span> <span class="st">"errors: <span class="vr">$errors</span>"</span>   <span class="cm"># always 0</span>
+
+<span class="cm"># Good: redirect with process substitution — loop runs in current shell</span>
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  (( <span class="vr">errors</span>++ )) <span class="op">||</span> <span class="kw">true</span>
+<span class="kw">done</span> <span class="op"><</span> <span class="op"><</span>(<span class="cmd">grep</span> <span class="st">"ERROR"</span> <span class="pth">app.log</span>)
+<span class="cmd">echo</span> <span class="st">"errors: <span class="vr">$errors</span>"</span>   <span class="cm"># correct</span>
+
+<span class="cm"># Even better: let awk count in one pass — no while loop at all</span>
+<span class="vr">errors</span><span class="op">=</span>$(<span class="cmd">grep</span> <span class="fl">-c</span> <span class="st">"ERROR"</span> <span class="pth">app.log</span>)</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>8 — When to Stop Using Bash</h2>
+
+<p>Recognising the boundary where Bash becomes the wrong tool is as important as
+knowing how to optimise it. These signals suggest it is time to reach for Python,
+Go, or another language:</p>
+
+<table>
+  <tr><th>Signal</th><th>Reason to switch</th></tr>
+  <tr><td>Processing more than ~100k lines of text per run</td><td>awk/Python will be 10–100× faster with less code</td></tr>
+  <tr><td>Nested data structures (JSON, YAML, XML)</td><td>Bash has no native JSON parser; <code>jq</code> is a fork per call</td></tr>
+  <tr><td>More than ~500 lines of logic</td><td>No type system, no unit-testable modules, hard to maintain</td></tr>
+  <tr><td>Floating-point arithmetic throughout</td><td>Bash has no floats; every float operation needs awk or bc</td></tr>
+  <tr><td>HTTP client / API integration</td><td>Python requests or Go net/http are far more ergonomic</td></tr>
+  <tr><td>Stateful concurrency (shared queues, worker pools)</td><td>No threads; file-based synchronisation is brittle at scale</td></tr>
+  <tr><td>Security-sensitive string parsing</td><td>Too easy to introduce injection; use a real parser</td></tr>
+</table>
+
+<div class="note">
+<strong>The hybrid pattern:</strong> the sweet spot is often a thin Bash wrapper
+that orchestrates the environment (PATH, config files, working directory) and
+hands off the heavy lifting to a Python or Go binary. The shell excels at
+<em>wiring</em>; compiled languages excel at <em>computing</em>.
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Fork audit</h4>
+  <p>The following function has at least six unnecessary forks. Identify each one
+  and rewrite the function to eliminate all of them using only Bash built-ins.
+  Then benchmark both versions with <code>bench 200 original_func</code> and
+  <code>bench 200 fast_func</code> and report the speedup ratio.</p>
+<pre><span class="fn">original_func</span>() {
+  <span class="kw">local</span> <span class="vr">filepath</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">dir</span><span class="op">=</span>$(<span class="cmd">dirname</span> <span class="st">"<span class="vr">$filepath</span>"</span>)
+  <span class="kw">local</span> <span class="vr">base</span><span class="op">=</span>$(<span class="cmd">basename</span> <span class="st">"<span class="vr">$filepath</span>"</span>)
+  <span class="kw">local</span> <span class="vr">ext</span><span class="op">=</span>$(<span class="cmd">echo</span> <span class="st">"<span class="vr">$base</span>"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/.*\.//'</span>)
+  <span class="kw">local</span> <span class="vr">stem</span><span class="op">=</span>$(<span class="cmd">basename</span> <span class="st">"<span class="vr">$base</span>"</span> <span class="st">".<span class="vr">$ext</span>"</span>)
+  <span class="kw">local</span> <span class="vr">upper</span><span class="op">=</span>$(<span class="cmd">echo</span> <span class="st">"<span class="vr">$stem</span>"</span> <span class="op">|</span> <span class="cmd">tr</span> <span class="st">'a-z'</span> <span class="st">'A-Z'</span>)
+  <span class="kw">local</span> <span class="vr">ts</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="st">'+%Y%m%d_%H%M%S'</span>)
+  <span class="cmd">echo</span> <span class="st">"${dir}/${upper}_${ts}.${ext}"</span>
+}</pre>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="cm"># Forks in original_func:
+# 1. $(dirname)   → ${filepath%/*}
+# 2. $(basename)  → ${filepath##*/}
+# 3. $(echo | sed) to get ext → ${base##*.}
+# 4. $(basename base .ext) to get stem → ${base%.*}
+# 5. $(echo | tr) to uppercase → ${stem^^}
+# 6. $(date) → printf -v ts '%(%Y%m%d_%H%M%S)T' -1</span>
+
+<span class="fn">fast_func</span>() {
+  <span class="kw">local</span> <span class="vr">filepath</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">dir</span><span class="op">=</span><span class="st">"${filepath%/*}"</span>
+  <span class="kw">local</span> <span class="vr">base</span><span class="op">=</span><span class="st">"${filepath##*/}"</span>
+  <span class="kw">local</span> <span class="vr">ext</span><span class="op">=</span><span class="st">"${base##*.}"</span>
+  <span class="kw">local</span> <span class="vr">stem</span><span class="op">=</span><span class="st">"${base%.*}"</span>
+  <span class="kw">local</span> <span class="vr">upper</span><span class="op">=</span><span class="st">"${stem^^}"</span>
+  <span class="kw">local</span> <span class="vr">ts</span>; <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">ts</span> <span class="st">'%(%Y%m%d_%H%M%S)T'</span> <span class="fl">-1</span>
+  <span class="cmd">printf</span> <span class="st">'%s/%s_%s.%s\n'</span> <span class="st">"<span class="vr">$dir</span>"</span> <span class="st">"<span class="vr">$upper</span>"</span> <span class="st">"<span class="vr">$ts</span>"</span> <span class="st">"<span class="vr">$ext</span>"</span>
+}
+
+<span class="cm"># Benchmark helper from section 1</span>
+<span class="fn">bench</span>() {
+  <span class="kw">local</span> <span class="vr">n</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'%R'</span>
+  <span class="kw">local</span> <span class="vr">total</span>
+  <span class="vr">total</span><span class="op">=</span>$( { <span class="kw">time</span> { <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="vr">n</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="st">"$@"</span> <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>
+  <span class="kw">done</span>; }; } <span class="nu">2</span><span class="op">>&1</span> )
+  <span class="cmd">awk</span> <span class="st">"BEGIN { printf \"%-20s %d runs: %.3fs (%.4f avg)\n\", \"$1\", <span class="vr">$n</span>, <span class="vr">$total</span>, <span class="vr">$total</span>/<span class="vr">$n</span> }"</span>
+}
+
+<span class="fn">bench</span> <span class="nu">200</span> original_func <span class="st">"/var/log/app/server.log"</span>
+<span class="fn">bench</span> <span class="nu">200</span> fast_func     <span class="st">"/var/log/app/server.log"</span>
+<span class="cm"># Typical output:
+# original_func        200 runs: 2.461s (0.0123 avg)
+# fast_func            200 runs: 0.003s (0.0000 avg)  ~800× faster</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — PS4 trace analyser</h4>
+  <p>Write a script <code>profile_me.sh</code> that:</p>
+  <ol>
+    <li>Opens FD 19 to <code>/tmp/trace_$$.log</code></li>
+    <li>Sets <code>BASH_XTRACEFD=19</code> and a timestamped <code>PS4</code></li>
+    <li>Enables <code>set -x</code> then runs a deliberately slow function
+    (at least 5 different operations including a <code>date</code> call,
+    a <code>grep</code>, and a <code>wc</code>)</li>
+    <li>Disables tracing and closes FD 19</li>
+    <li>Parses the trace log with awk to produce a table of the top 10 slowest
+    lines (line content + elapsed time in ms since previous traced line)</li>
+  </ol>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">TRACE_LOG</span><span class="op">=</span><span class="st">"/tmp/trace_$$.log"</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$TRACE_LOG"'</span> EXIT
+
+<span class="cm"># ---- Slow function under test ----</span>
+<span class="fn">slow_work</span>() {
+  <span class="kw">local</span> <span class="vr">ts</span>
+  <span class="vr">ts</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="st">'+%Y-%m-%d %H:%M:%S'</span>)                   <span class="cm"># fork 1</span>
+  <span class="kw">local</span> <span class="vr">count</span>
+  <span class="vr">count</span><span class="op">=</span>$(<span class="cmd">grep</span> <span class="fl">-c</span> <span class="st">'root'</span> <span class="pth">/etc/passwd</span>)                <span class="cm"># fork 2</span>
+  <span class="kw">local</span> <span class="vr">lines</span>
+  <span class="vr">lines</span><span class="op">=</span>$(<span class="cmd">wc</span> <span class="fl">-l</span> <span class="op"><</span> <span class="pth">/etc/passwd</span>)                        <span class="cm"># fork 3</span>
+  <span class="kw">local</span> <span class="vr">upper</span>
+  <span class="vr">upper</span><span class="op">=</span>$(<span class="cmd">echo</span> <span class="st">"$ts"</span> <span class="op">|</span> <span class="cmd">tr</span> <span class="st">'a-z'</span> <span class="st">'A-Z'</span>)                 <span class="cm"># fork 4+5</span>
+  <span class="kw">local</span> <span class="vr">host</span>
+  <span class="vr">host</span><span class="op">=</span>$(<span class="cmd">hostname</span>)                                       <span class="cm"># fork 6</span>
+  <span class="cmd">printf</span> <span class="st">'%s | root lines: %d/%d | host: %s\n'</span> \
+    <span class="st">"<span class="vr">$upper</span>"</span> <span class="st">"<span class="vr">$count</span>"</span> <span class="st">"<span class="vr">$lines</span>"</span> <span class="st">"<span class="vr">$host</span>"</span>
+}
+
+<span class="cm"># ---- Enable tracing to FD 19 ----</span>
+<span class="kw">exec</span> <span class="nu">19</span><span class="op">></span><span class="st">"<span class="vr">$TRACE_LOG</span>"</span>
+<span class="vr">BASH_XTRACEFD</span><span class="op">=</span><span class="nu">19</span>
+<span class="vr">PS4</span><span class="op">=</span><span class="st">'+ $EPOCHREALTIME ${BASH_SOURCE##*/}:${LINENO}: '</span>
+<span class="kw">set</span> <span class="fl">-x</span>
+
+<span class="fn">slow_work</span>
+
+<span class="kw">set</span> <span class="fl">+x</span>
+<span class="kw">exec</span> <span class="nu">19</span><span class="op">>&-</span>
+<span class="kw">unset</span> <span class="vr">BASH_XTRACEFD</span>
+
+<span class="cm"># ---- Analyse trace log ----</span>
+<span class="cmd">printf</span> <span class="st">'\nTop 10 slowest lines:\n'</span>
+<span class="cmd">awk</span> <span class="st">'
+/^\+/ {
+  # Fields: + TIMESTAMP SOURCE:LINE: rest...
+  ts   = $2
+  rest = ""
+  for (i = 3; i <= NF; i++) rest = rest (i==3 ? "" : " ") $i
+
+  if (prev_ts != "") {
+    elapsed_ms = (ts - prev_ts) * 1000
+    printf "%8.2f ms  %s\n", elapsed_ms, prev_rest
+  }
+  prev_ts   = ts
+  prev_rest = rest
+}
+'</span> <span class="st">"<span class="vr">$TRACE_LOG</span>"</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-rn</span> <span class="op">|</span> <span class="cmd">head</span> <span class="fl">-10</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — File-reading speed comparison</h4>
+  <p>Write a script that reads a moderately large file (generate one with
+  <code>seq 1 50000 > /tmp/test.txt</code>) using four methods and times each:</p>
+  <ol>
+    <li><code>while IFS= read -r line; do ... done &lt; file</code> — count lines with a bash counter</li>
+    <li><code>mapfile -t arr &lt; file</code> — then <code>${#arr[@]}</code></li>
+    <li><code>wc -l &lt; file</code></li>
+    <li><code>awk 'END{print NR}' file</code></li>
+  </ol>
+  <p>Print a formatted comparison table showing elapsed time and lines-per-second for
+  each method. All four must produce the same count.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">FILE</span><span class="op">=</span><span class="pth">/tmp/bench_read_$$.txt</span>
+<span class="cmd">seq</span> <span class="nu">1</span> <span class="nu">50000</span> <span class="op">></span> <span class="st">"<span class="vr">$FILE</span>"</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$FILE"'</span> EXIT
+
+<span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'%R'</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">labels</span> <span class="vr">times</span> <span class="vr">counts</span>
+
+<span class="cm"># Method 1: while read</span>
+<span class="vr">c1</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">t1</span><span class="op">=</span>$( { <span class="kw">time</span> {
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">_</span>; <span class="kw">do</span> (( <span class="vr">c1</span>++ )) <span class="op">||</span> <span class="kw">true</span>; <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$FILE</span>"</span>
+}; } <span class="nu">2</span><span class="op">>&1</span> )
+
+<span class="cm"># Method 2: mapfile</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">arr</span>
+<span class="vr">t2</span><span class="op">=</span>$( { <span class="kw">time</span> { <span class="cmd">mapfile</span> <span class="fl">-t</span> arr <span class="op"><</span> <span class="st">"<span class="vr">$FILE</span>"</span>; }; } <span class="nu">2</span><span class="op">>&1</span> )
+<span class="vr">c2</span><span class="op">=</span><span class="st">"${#arr[@]}"</span>
+<span class="kw">unset</span> arr
+
+<span class="cm"># Method 3: wc -l</span>
+<span class="vr">t3</span><span class="op">=</span>$( { <span class="kw">time</span> { <span class="vr">c3</span><span class="op">=</span>$(<span class="cmd">wc</span> <span class="fl">-l</span> <span class="op"><</span> <span class="st">"<span class="vr">$FILE</span>"</span>); }; } <span class="nu">2</span><span class="op">>&1</span> )
+
+<span class="cm"># Method 4: awk</span>
+<span class="vr">t4</span><span class="op">=</span>$( { <span class="kw">time</span> { <span class="vr">c4</span><span class="op">=</span>$(<span class="cmd">awk</span> <span class="st">'END{print NR}'</span> <span class="st">"<span class="vr">$FILE</span>"</span>); }; } <span class="nu">2</span><span class="op">>&1</span> )
+
+<span class="cm"># Verify all agree</span>
+<span class="kw">for</span> <span class="vr">c</span> <span class="kw">in</span> <span class="st">"<span class="vr">$c1</span>"</span> <span class="st">"<span class="vr">$c2</span>"</span> <span class="st">"<span class="vr">$c3</span>"</span> <span class="st">"<span class="vr">$c4</span>"</span>; <span class="kw">do</span>
+  [[ <span class="st">"<span class="vr">$c</span>"</span> <span class="op">==</span> <span class="st">"<span class="vr">$c1</span>"</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"Count mismatch!"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="kw">done</span>
+
+<span class="cm"># Print table</span>
+<span class="cmd">printf</span> <span class="st">'\n%-25s %10s %8s %15s\n'</span> <span class="st">"Method"</span> <span class="st">"Lines"</span> <span class="st">"Time(s)"</span> <span class="st">"Lines/sec"</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$(printf '%.0s-' {1..62})"</span>
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span><span class="st">'|'</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">label</span> <span class="vr">t</span> <span class="vr">c</span>; <span class="kw">do</span>
+  <span class="cmd">awk</span> <span class="st">"BEGIN {
+    t = <span class="vr">$t</span>; c = <span class="vr">$c</span>
+    lps = (t > 0) ? int(c/t) : 999999
+    printf \"%-25s %10d %8.4f %15d\n\", \"<span class="vr">$label</span>\", c, t, lps
+  }"</span>
+<span class="kw">done</span> <span class="op"><<<</span> $<span class="st">"while read|<span class="vr">$t1</span>|<span class="vr">$c1</span>
+mapfile|<span class="vr">$t2</span>|<span class="vr">$c2</span>
+wc -l|<span class="vr">$t3</span>|<span class="vr">$c3</span>
+awk NR|<span class="vr">$t4</span>|<span class="vr">$c4</span>"</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Hot-path rewrite</h4>
+  <p>The script below processes a log file and is painfully slow on large inputs.
+  Identify every performance problem, then rewrite it as a single
+  <code>awk</code> program that produces identical output.
+  Verify correctness on a 10,000-line synthetic log, then benchmark both versions.</p>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># slow_stats.sh — count ERROR/WARN/INFO lines and show top 3 error messages</span>
+<span class="vr">errors</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">warns</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">infos</span><span class="op">=</span><span class="nu">0</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">msg_count</span>
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  <span class="vr">level</span><span class="op">=</span>$(<span class="cmd">echo</span> <span class="st">"<span class="vr">$line</span>"</span> <span class="op">|</span> <span class="cmd">cut</span> <span class="fl">-d</span><span class="st">' '</span> <span class="fl">-f2</span>)
+  <span class="vr">msg</span><span class="op">=</span>$(<span class="cmd">echo</span> <span class="st">"<span class="vr">$line</span>"</span> <span class="op">|</span> <span class="cmd">cut</span> <span class="fl">-d</span><span class="st">' '</span> <span class="fl">-f3<span class="op">-</span></span>)
+  <span class="kw">case</span> <span class="st">"<span class="vr">$level</span>"</span> <span class="kw">in</span>
+    ERROR) (( <span class="vr">errors</span>++ )); (( <span class="vr">msg_count</span>[<span class="st">"<span class="vr">$msg</span>"</span>]++ )) <span class="op">||</span> <span class="kw">true</span> ;;
+    WARN)  (( <span class="vr">warns</span>++  )) ;;
+    INFO)  (( <span class="vr">infos</span>++  )) ;;
+  <span class="kw">esac</span>
+<span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$1</span>"</span>
+<span class="cmd">printf</span> <span class="st">'ERROR: %d  WARN: %d  INFO: %d\n'</span> <span class="st">"<span class="vr">$errors</span>"</span> <span class="st">"<span class="vr">$warns</span>"</span> <span class="st">"<span class="vr">$infos</span>"</span>
+<span class="cmd">printf</span> <span class="st">'Top 3 error messages:\n'</span>
+<span class="kw">for</span> <span class="vr">msg</span> <span class="kw">in</span> <span class="st">"${!msg_count[@]}"</span>; <span class="kw">do</span>
+  <span class="cmd">printf</span> <span class="st">'%d %s\n'</span> <span class="st">"${msg_count[<span class="vr">$msg</span>]}"</span> <span class="st">"<span class="vr">$msg</span>"</span>
+<span class="kw">done</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-rn</span> <span class="op">|</span> <span class="cmd">head</span> <span class="fl">-3</span></pre>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="cm"># Problems in slow_stats.sh:
+# 1. while IFS= read loop — slow for large files (syscall per character)
+# 2. Two $(echo | cut) forks per line — 2N forks total
+# 3. The while|pipe anti-pattern: if it were cmd | while, vars would be lost
+#    (here it's a redirect, so that's not the issue — but the forks are)
+# Solution: one awk pass does everything — zero extra forks</span>
+
+<span class="cm"># fast_stats.awk (inline here as a bash here-doc)</span>
+<span class="fn">fast_stats</span>() {
+  <span class="cmd">awk</span> <span class="st">'
+  {
+    level = $2
+    msg   = substr($0, index($0, $3))
+    if      (level == "ERROR") { errors++; msg_count[msg]++ }
+    else if (level == "WARN")  { warns++  }
+    else if (level == "INFO")  { infos++  }
+  }
+  END {
+    printf "ERROR: %d  WARN: %d  INFO: %d\n", errors, warns, infos
+    print "Top 3 error messages:"
+    # Sort msg_count by value descending — build array of "count msg" lines
+    n = 0
+    for (m in msg_count) lines[n++] = sprintf("%06d %s", msg_count[m], m)
+    # Simple insertion sort on lines[]
+    for (i = 1; i < n; i++) {
+      key = lines[i]; j = i - 1
+      while (j >= 0 && lines[j] < key) { lines[j+1] = lines[j]; j-- }
+      lines[j+1] = key
+    }
+    for (i = n-1; i >= n-3 && i >= 0; i--) {
+      cnt = lines[i]+0; sub(/^[0-9]+ /, "", lines[i])
+      printf "%d %s\n", cnt, lines[i]
+    }
+  }
+  '</span> <span class="st">"$1"</span>
+}
+
+<span class="cm"># Generate a synthetic 10k-line log for testing</span>
+<span class="fn">gen_log</span>() {
+  <span class="kw">local</span> <span class="vr">levels</span><span class="op">=</span>( ERROR WARN INFO INFO INFO )
+  <span class="kw">local</span> <span class="vr">msgs</span><span class="op">=</span>( <span class="st">"disk full"</span> <span class="st">"timeout"</span> <span class="st">"connection refused"</span> <span class="st">"auth failed"</span> <span class="st">"ok"</span> )
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nu">10000</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">'2024-01-01 %s %s\n'</span> \
+      <span class="st">"${levels[RANDOM%5]}"</span> <span class="st">"${msgs[RANDOM%5]}"</span>
+  <span class="kw">done</span>
+}
+
+<span class="vr">LOGFILE</span><span class="op">=</span><span class="pth">/tmp/test_log_$$.txt</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$LOGFILE"'</span> EXIT
+<span class="fn">gen_log</span> <span class="op">></span> <span class="st">"<span class="vr">$LOGFILE</span>"</span>
+
+<span class="cm"># Verify identical output</span>
+<span class="kw">diff</span> <span class="op"><</span>(<span class="cmd">bash</span> slow_stats.sh <span class="st">"<span class="vr">$LOGFILE</span>"</span>) <span class="op"><</span>(<span class="fn">fast_stats</span> <span class="st">"<span class="vr">$LOGFILE</span>"</span>) \
+  <span class="op">&&</span> <span class="cmd">echo</span> <span class="out">"Outputs match"</span> <span class="op">||</span> <span class="cmd">echo</span> <span class="er">"MISMATCH"</span>
+
+<span class="cm"># Benchmark</span>
+<span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'%R'</span>
+<span class="cmd">printf</span> <span class="st">'slow_stats: '</span>; <span class="kw">time</span> { <span class="cmd">bash</span> slow_stats.sh <span class="st">"<span class="vr">$LOGFILE</span>"</span> <span class="op">>/dev/null</span>; }
+<span class="cmd">printf</span> <span class="st">'fast_stats: '</span>; <span class="kw">time</span> { <span class="fn">fast_stats</span> <span class="st">"<span class="vr">$LOGFILE</span>"</span> <span class="op">>/dev/null</span>; }</pre>
+  </div>
+</div>
+
+</div>

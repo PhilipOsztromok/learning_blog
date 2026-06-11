@@ -1,0 +1,536 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 220px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  .fn  { color: #b392f0; }
+  /* group anatomy diagram */
+  .group-anatomy {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.95rem; line-height: 2.4;
+  }
+  .group-anatomy .ga-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4em; display: block; }
+  .ga-paren  { color: #f97583; font-size: 1.15rem; }
+  .ga-inner  { color: #ffa657; }
+  .ga-quant  { color: #d2a8ff; font-size: 1.1rem; }
+  .ga-lit    { color: #85e89d; }
+  .ga-alt    { color: #f97583; }
+  .ga-ann    { color: #5a6a8a; font-size: 0.82rem; font-style: italic; margin-left: 0.8em; }
+  /* capture groups visualiser */
+  .capture-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2;
+  }
+  .capture-vis .cv-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em; display: block; }
+  .cv-g1 { background: #1a2e1a; color: #85e89d; border-radius: 2px; padding: 0 0.1em; }
+  .cv-g2 { background: #1a1a2e; color: #79b8ff; border-radius: 2px; padding: 0 0.1em; }
+  .cv-g3 { background: #2e1a1a; color: #ffab70; border-radius: 2px; padding: 0 0.1em; }
+  .cv-lit { color: #c9d8ff; }
+  /* backreference flow */
+  .backref-flow {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2;
+  }
+  .backref-flow .bf-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em; display: block; }
+  .bf-pat  { color: #ffa657; }
+  .bf-rep  { color: #85e89d; }
+  .bf-ref  { color: #d2a8ff; font-weight: bold; }
+  .bf-ann  { color: #5a6a8a; font-size: 0.82rem; font-style: italic; margin-left: 0.5em; }
+  /* alternation demo */
+  .alt-demo {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 1em; margin: 0.5em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 1.9;
+  }
+  .alt-demo .ad-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.2em; display: block; }
+  .ad-yes { color: #85e89d; }
+  .ad-no  { color: #f97583; }
+  /* BRE/ERE columns */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.bre { color: #f0a040; }
+  .lx-lesson td.no  { color: #f97583; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 6 — Grouping, Alternation, and Backreferences</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Grouping with Parentheses</h2>
+
+<p>A <strong>group</strong> is a portion of a regex wrapped in parentheses <code>(...)</code>. Groups serve two purposes: they allow a quantifier to apply to more than one character at a time, and they <em>capture</em> the text matched by the group so it can be reused later.</p>
+
+<div class="group-anatomy">
+  <span class="ga-hdr">What parentheses do — three roles</span>
+  <div>
+    <span class="ga-paren">(</span><span class="ga-inner">ab</span><span class="ga-paren">)</span><span class="ga-quant">+</span>
+    <span class="ga-ann">→ quantify: "ab" one or more times as a unit</span>
+  </div>
+  <div>
+    <span class="ga-paren">(</span><span class="ga-inner">cat</span><span class="ga-alt">|</span><span class="ga-inner">dog</span><span class="ga-paren">)</span>
+    <span class="ga-ann">→ alternate: match "cat" OR "dog"</span>
+  </div>
+  <div>
+    <span class="ga-paren">(</span><span class="ga-inner">[0-9]+</span><span class="ga-paren">)</span><span class="ga-lit">-</span><span class="ga-paren">(</span><span class="ga-inner">[0-9]+</span><span class="ga-paren">)</span>
+    <span class="ga-ann">→ capture: store matched text in \1 and \2</span>
+  </div>
+</div>
+
+<h3>Groups as a unit for quantifiers</h3>
+<p>Without a group, a quantifier applies only to the immediately preceding character or class. With a group, it applies to everything inside the parentheses.</p>
+
+<pre><span class="cm"># Without grouping: + applies only to 'p'</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"hap\nhapp\nhappp\nhappy"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'hap+'</span>
+<span class="out">hap</span>
+<span class="out">happ</span>
+<span class="out">happp</span>
+<span class="out">happy</span>   <span class="cm"># all match — + only requires one or more 'p'</span>
+
+<span class="cm"># With grouping: + applies to the whole "ha" unit</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"ha\nhaha\nhahaha\nhello"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'(ha)+'</span>
+<span class="out">ha</span>
+<span class="out">haha</span>
+<span class="out">hahaha</span>
+<span class="cm"># "hello" has no match — does not contain "ha"</span>
+
+<span class="cm"># Repeated two-character pattern</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'([0-9]{1,3}\.){3}[0-9]{1,3}'</span> <span class="pth">file.txt</span>   <span class="cm"># IPv4: three "NNN." groups then NNN</span>
+
+<span class="cm"># Optional suffix as a group</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'colou(r|rs|red|ring)'</span> <span class="pth">text.txt</span>
+<span class="cm"># cleaner: "colour" optionally followed by a suffix group</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'colour(s|ed|ing)?'</span> <span class="pth">text.txt</span></pre>
+
+<h3>BRE requires backslashes around parentheses</h3>
+<pre><span class="cm"># ERE: ( ) are grouping metacharacters</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'(foo)+'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># BRE: ( ) are LITERALS — you need \( \) for grouping</span>
+<span class="cmd">grep</span> <span class="st">'\(foo\)\+'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># BRE: a bare ( ) matches the literal characters ( and )</span>
+<span class="cmd">grep</span> <span class="st">'(foo)'</span> <span class="pth">file.txt</span>   <span class="cm"># matches the string "(foo)" literally!</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Alternation with |</h2>
+
+<p>The pipe character <code>|</code> means <strong>OR</strong> — the pattern matches if either the left side or the right side matches. It has the lowest precedence of all regex operators: everything to the left of <code>|</code> is one alternative, everything to the right is another. Use groups to limit the scope of alternation.</p>
+
+<pre><span class="cm"># Match "cat" or "dog"</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'cat|dog'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match "ERROR" or "FATAL" or "CRITICAL" log levels</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'ERROR|FATAL|CRITICAL'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Alternation without grouping: ^ applies only to left alternative</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^cat|dog'</span> <span class="pth">file.txt</span>
+<span class="cm"># Matches: lines STARTING with "cat"  OR  lines containing "dog" anywhere</span>
+<span class="cm"># NOT: lines starting with "cat" or "dog"</span>
+
+<span class="cm"># Fix: use a group to limit the alternation scope</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^(cat|dog)'</span> <span class="pth">file.txt</span>
+<span class="cm"># NOW: lines starting with "cat" OR starting with "dog"</span></pre>
+
+<div class="alt-demo">
+  <span class="ad-hdr">^cat|dog vs ^(cat|dog) — scope matters</span>
+  <span class="ad-yes">cat sat here     → ^cat|dog  ✓  (starts with cat)</span>
+  <span class="ad-yes">the dog barked   → ^cat|dog  ✓  (contains dog)</span>
+  <span class="ad-yes">cat sat here     → ^(cat|dog) ✓  (starts with cat)</span>
+  <span class="ad-no">the dog barked   → ^(cat|dog) ✗  (starts with "the", not cat or dog)</span>
+  <span class="ad-yes">dog sat here     → ^(cat|dog) ✓  (starts with dog)</span>
+</div>
+
+<pre><span class="cm"># Alternation inside a larger pattern</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2}'</span> <span class="pth">dates.txt</span>
+
+<span class="cm"># Match http or https or ftp URLs</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'(https?|ftp)://[^[:space:]]+'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match common image extensions</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\.(jpg|jpeg|png|gif|webp|svg)$'</span> <span class="pth">filelist.txt</span>
+
+<span class="cm"># BRE alternation uses \| (GNU extension — not POSIX)</span>
+<span class="cmd">grep</span> <span class="st">'cat\|dog'</span> <span class="pth">file.txt</span>
+<span class="cm"># On strictly POSIX systems without GNU grep, alternation requires -E</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Capturing Groups and Backreferences</h2>
+
+<p>Every group enclosed in <code>(...)</code> — or <code>\(...\)</code> in BRE — is a <strong>capturing group</strong>. The regex engine stores the text matched by each group and makes it available as a numbered backreference: <code>\1</code> for the first group, <code>\2</code> for the second, and so on up to <code>\9</code>.</p>
+
+<div class="capture-vis">
+  <span class="cv-hdr">Pattern: ([0-9]{4})-([0-9]{2})-([0-9]{2}) on "2026-06-11"</span>
+  <span>Group <span class="cv-g1">\1</span> captures: <span class="cv-g1">2026</span>  ← matched by ([0-9]{4})</span>
+  <span>Group <span class="cv-g2">\2</span> captures: <span class="cv-g2">06</span>    ← matched by ([0-9]{2})</span>
+  <span>Group <span class="cv-g3">\3</span> captures: <span class="cv-g3">11</span>    ← matched by ([0-9]{2})</span>
+  <span>&nbsp;</span>
+  <span>Replacement <span class="cv-g3">\3</span>/<span class="cv-g2">\2</span>/<span class="cv-g1">\1</span>  → <span class="cv-g3">11</span>/<span class="cv-g2">06</span>/<span class="cv-g1">2026</span></span>
+</div>
+
+<h3>Backreferences in sed replacements</h3>
+<pre><span class="cm"># Reformat ISO date YYYY-MM-DD → DD/MM/YYYY</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([0-9]{4})-([0-9]{2})-([0-9]{2})/\3\/\2\/\1/'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"2026-06-11"</span>
+<span class="out">11/06/2026</span>
+
+<span class="cm"># Swap first and last name (comma-separated)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([^,]+), ([^,]+)/\2 \1/'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"Smith, John"</span>
+<span class="out">John Smith</span>
+
+<span class="cm"># Wrap every number in brackets</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([0-9]+)/[\1]/g'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"port 8080 timeout 30"</span>
+<span class="out">port [8080] timeout [30]</span>
+
+<span class="cm"># Extract just the filename from a full path</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s|.*/([^/]+)$|\1|'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"/home/user/documents/report.pdf"</span>
+<span class="out">report.pdf</span>
+
+<span class="cm"># Surround a key=value pair: key → "key"</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^([^=]+)=/"\1"=/'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"username=alice"</span>
+<span class="out">"username"=alice</span>
+
+<span class="cm"># BRE version of the date reformat (backslashes on groups)</span>
+<span class="cmd">sed</span> <span class="st">'s/\([0-9]\{4\}\)-\([0-9]\{2\}\)-\([0-9]\{2\}\)/\3\/\2\/\1/'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"2026-06-11"</span>
+<span class="out">11/06/2026</span></pre>
+
+<div class="backref-flow">
+  <span class="bf-hdr">How backreferences flow from pattern to replacement</span>
+  <span>Pattern:     s/<span class="bf-pat">([A-Z]+)</span>_<span class="bf-pat">([0-9]+)</span>/<span class="bf-rep">\2</span>_<span class="bf-rep">\1</span>/</span>
+  <span>Input:       <span class="bf-pat">CODE</span>_<span class="bf-pat">42</span></span>
+  <span>  Group 1 <span class="bf-ref">\1</span> captured: <span class="bf-pat">CODE</span></span>
+  <span>  Group 2 <span class="bf-ref">\2</span> captured: <span class="bf-pat">42</span></span>
+  <span>Output:      <span class="bf-rep">42</span>_<span class="bf-rep">CODE</span></span>
+</div>
+
+<h3>Backreferences in patterns — matching repeated text</h3>
+<p>Backreferences can also appear inside the <em>pattern itself</em> (not just the replacement). This forces the engine to match the same text a second time.</p>
+
+<pre><span class="cm"># Match a line where the same word appears twice consecutively</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"the the cat\nthe cat\nhello hello world"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\b(\w+) \1\b'</span>
+<span class="out">the the cat</span>
+<span class="out">hello hello world</span>
+
+<span class="cm"># Find duplicate words and remove them</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\b(\w+) \1\b/\1/g'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"the the quick brown fox fox"</span>
+<span class="out">the quick brown fox</span>
+
+<span class="cm"># Match a repeated character (e.g. doubled letters)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'([a-z])\1'</span> <span class="pth">words.txt</span>   <span class="cm"># words with a doubled letter: "book", "free"</span>
+
+<span class="cm"># Match a string that starts and ends with the same character</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^(.).*\1$'</span> <span class="pth">words.txt</span>   <span class="cm"># e.g. "radar", "level", "noon"</span>
+
+<span class="cm"># Match an HTML tag and its matching closing tag (simplified)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'&lt;([a-z]+)&gt;.*&lt;/\1&gt;'</span> <span class="pth">index.html</span>   <span class="cm"># &lt;b&gt;...&lt;/b&gt;, &lt;em&gt;...&lt;/em&gt;</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Backreferences in Bash [[ =~ ]] with BASH_REMATCH</h2>
+
+<p>When you use <code>[[ =~ ]]</code> in Bash, the shell populates the <code>BASH_REMATCH</code> array with the captured groups. <code>BASH_REMATCH[0]</code> holds the entire match; <code>BASH_REMATCH[1]</code> holds group 1; <code>BASH_REMATCH[2]</code> holds group 2; and so on.</p>
+
+<pre><span class="cm"># Extract year, month, day from a date string</span>
+<span class="vr">date_str</span><span class="op">=</span><span class="st">"2026-06-11"</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="st">"$date_str"</span> <span class="op">=~</span> <span class="rx">^([0-9]{4})-([0-9]{2})-([0-9]{2})$</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Full match : ${BASH_REMATCH[0]}"</span>
+    <span class="cmd">echo</span> <span class="st">"Year       : ${BASH_REMATCH[1]}"</span>
+    <span class="cmd">echo</span> <span class="st">"Month      : ${BASH_REMATCH[2]}"</span>
+    <span class="cmd">echo</span> <span class="st">"Day        : ${BASH_REMATCH[3]}"</span>
+<span class="kw">fi</span>
+<span class="out">Full match : 2026-06-11</span>
+<span class="out">Year       : 2026</span>
+<span class="out">Month      : 06</span>
+<span class="out">Day        : 11</span>
+
+<span class="cm"># Parse a key=value pair</span>
+<span class="vr">line</span><span class="op">=</span><span class="st">"max_connections=100"</span>
+<span class="op">[[</span> <span class="st">"$line"</span> <span class="op">=~</span> <span class="rx">^([^=]+)=(.+)$</span> <span class="op">]]</span> <span class="op">&&</span> {
+    <span class="cmd">echo</span> <span class="st">"Key:   ${BASH_REMATCH[1]}"</span>
+    <span class="cmd">echo</span> <span class="st">"Value: ${BASH_REMATCH[2]}"</span>
+}
+<span class="out">Key:   max_connections</span>
+<span class="out">Value: 100</span>
+
+<span class="cm"># Extract protocol and host from a URL</span>
+<span class="vr">url</span><span class="op">=</span><span class="st">"https://api.example.com/v2/users"</span>
+<span class="op">[[</span> <span class="st">"$url"</span> <span class="op">=~</span> <span class="rx">^(https?)://([^/]+)(/.*)$</span> <span class="op">]]</span> <span class="op">&&</span> {
+    <span class="cmd">echo</span> <span class="st">"Protocol : ${BASH_REMATCH[1]}"</span>
+    <span class="cmd">echo</span> <span class="st">"Host     : ${BASH_REMATCH[2]}"</span>
+    <span class="cmd">echo</span> <span class="st">"Path     : ${BASH_REMATCH[3]}"</span>
+}
+<span class="out">Protocol : https</span>
+<span class="out">Host     : api.example.com</span>
+<span class="out">Path     : /v2/users</span></pre>
+
+<div class="note">
+  <strong>BASH_REMATCH quoting rule.</strong> The regex pattern in <code>[[ =~ ]]</code> must <em>not</em> be quoted — quoting it forces a literal string comparison instead of regex matching. Store the pattern in a variable if it contains characters that the shell might misinterpret: <code>pat='^[0-9]+'</code> then <code>[[ "$str" =~ $pat ]]</code>.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Nested and Numbered Groups</h2>
+
+<p>Groups are numbered left to right by the position of their opening parenthesis. Nested groups count from the outermost in.</p>
+
+<pre><span class="cm"># Groups numbered by opening parenthesis, left to right</span>
+<span class="cm"># Pattern: ((a)(b)) — three groups</span>
+<span class="cm">#           ^  ^  ^</span>
+<span class="cm">#           1  2  3</span>
+<span class="vr">str</span><span class="op">=</span><span class="st">"ab"</span>
+<span class="op">[[</span> <span class="st">"$str"</span> <span class="op">=~</span> <span class="rx">((a)(b))</span> <span class="op">]]</span>
+<span class="cmd">echo</span> <span class="st">"${BASH_REMATCH[0]}"</span>  <span class="cm"># ab  — full match</span>
+<span class="cmd">echo</span> <span class="st">"${BASH_REMATCH[1]}"</span>  <span class="cm"># ab  — group 1: outer (ab)</span>
+<span class="cmd">echo</span> <span class="st">"${BASH_REMATCH[2]}"</span>  <span class="cm"># a   — group 2: inner (a)</span>
+<span class="cmd">echo</span> <span class="st">"${BASH_REMATCH[3]}"</span>  <span class="cm"># b   — group 3: inner (b)</span>
+
+<span class="cm"># Practical nested groups: match a version like "v1.2.3"</span>
+<span class="vr">ver</span><span class="op">=</span><span class="st">"v1.2.3"</span>
+<span class="op">[[</span> <span class="st">"$ver"</span> <span class="op">=~</span> <span class="rx">^v([0-9]+)(\.([0-9]+))?(\.([0-9]+))?$</span> <span class="op">]]</span>
+<span class="cm"># Group 1: major (1)   Group 3: minor (2)   Group 5: patch (3)</span>
+<span class="cmd">echo</span> <span class="st">"major=${BASH_REMATCH[1]} minor=${BASH_REMATCH[3]} patch=${BASH_REMATCH[5]}"</span>
+<span class="out">major=1 minor=2 patch=3</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Non-Capturing Groups (?:...)</h2>
+
+<p>Sometimes you need a group for alternation or quantification but don't want it to capture — perhaps because you are already using <code>\1</code>–<code>\9</code> for other groups and don't want to waste a slot. Non-capturing groups use <code>(?:...)</code> syntax. They work in <strong>ERE and PCRE</strong> but are <strong>not available in BRE</strong>.</p>
+
+<pre><span class="cm"># Capturing group wastes \1 on the protocol — we only care about the host</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s|(https?://)([^/]+)|\2|'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"https://example.com/path"</span>
+<span class="out">example.com/path</span>   <span class="cm"># \2 is the host</span>
+
+<span class="cm"># Non-capturing group: (?:https?://) groups but doesn't capture</span>
+<span class="cm"># so the host becomes \1 instead of \2</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s|(?:https?://)([^/]+)|\1|'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"https://example.com/path"</span>
+<span class="out">example.com/path</span>   <span class="cm"># \1 is now the host — cleaner numbering</span>
+
+<span class="cm"># Non-capturing group for alternation without wasting a capture slot</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'(?:cat|dog) food'</span> <span class="pth">file.txt</span>   <span class="cm"># group needed for alternation, not capture</span>
+
+<span class="cm"># In [[ =~ ]] — non-capturing groups work fine</span>
+<span class="op">[[</span> <span class="st">"$url"</span> <span class="op">=~</span> <span class="rx">^(?:https?|ftp)://(.+)$</span> <span class="op">]]</span>
+<span class="cmd">echo</span> <span class="st">"rest of URL: ${BASH_REMATCH[1]}"</span>   <span class="cm"># \1 is the path, not the protocol</span></pre>
+
+<div class="warn">
+  <strong>Non-capturing groups are NOT supported in BRE.</strong> In default <code>grep</code> or <code>sed</code> (without <code>-E</code>), writing <code>(?:...)</code> will either error or match the literal characters <code>(?:</code>. Always use <code>-E</code> when using non-capturing groups.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The & Replacement Special</h2>
+
+<p>In sed replacements, <code>&amp;</code> (ampersand) refers to the entire matched string — the full match, not just a captured group. It is a shorthand for "whatever was matched".</p>
+
+<pre><span class="cm"># Wrap the entire match in brackets</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/[0-9]+/[&amp;]/g'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"order 42 total 199"</span>
+<span class="out">order [42] total [199]</span>
+
+<span class="cm"># Quote every word</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/[[:alpha:]]+/"&amp;"/g'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"hello world"</span>
+<span class="out">"hello" "world"</span>
+
+<span class="cm"># Prepend a label to every matched IP address</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/IP:&amp;/g'</span> <span class="pth">log.txt</span>
+
+<span class="cm"># & is equivalent to \0 (the whole match) in some tools</span>
+<span class="cm"># In sed: & means the whole match; \1 means group 1</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([0-9]+)/num=\1 raw=&amp;/'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"value 42"</span>
+<span class="out">value num=42 raw=42</span>   <span class="cm"># \1 and & are the same here (only one group)</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>BRE vs ERE — Grouping and Alternation Summary</h2>
+
+<table>
+  <tr>
+    <th>Feature</th>
+    <th>ERE (grep -E, sed -E, awk)</th>
+    <th>BRE (grep, sed default)</th>
+    <th>PCRE (grep -P)</th>
+  </tr>
+  <tr>
+    <td>Capturing group</td>
+    <td class="yes"><code>(...)</code></td>
+    <td class="bre"><code>\(...\)</code></td>
+    <td class="yes"><code>(...)</code></td>
+  </tr>
+  <tr>
+    <td>Non-capturing group</td>
+    <td class="yes"><code>(?:...)</code></td>
+    <td class="no">Not supported</td>
+    <td class="yes"><code>(?:...)</code></td>
+  </tr>
+  <tr>
+    <td>Alternation</td>
+    <td class="yes"><code>|</code></td>
+    <td class="bre"><code>\|</code> (GNU only)</td>
+    <td class="yes"><code>|</code></td>
+  </tr>
+  <tr>
+    <td>Backreference in pattern</td>
+    <td class="yes"><code>\1</code>–<code>\9</code></td>
+    <td class="yes"><code>\1</code>–<code>\9</code></td>
+    <td class="yes"><code>\1</code>–<code>\9</code></td>
+  </tr>
+  <tr>
+    <td>Backreference in replacement</td>
+    <td class="yes"><code>\1</code>–<code>\9</code></td>
+    <td class="yes"><code>\1</code>–<code>\9</code></td>
+    <td class="yes"><code>\1</code>–<code>\9</code> or <code>$1</code></td>
+  </tr>
+  <tr>
+    <td>Named groups</td>
+    <td class="no">Not supported</td>
+    <td class="no">Not supported</td>
+    <td class="yes"><code>(?P&lt;name&gt;...)</code></td>
+  </tr>
+  <tr>
+    <td>Whole-match reference</td>
+    <td class="yes"><code>&amp;</code> in sed replacement</td>
+    <td class="yes"><code>&amp;</code> in sed replacement</td>
+    <td class="yes"><code>&amp;</code> / <code>\0</code></td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Real-World Recipes</h2>
+
+<h3>Log and data extraction</h3>
+<pre><span class="cm"># Extract the HTTP status code from an Apache log line</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/.*" ([0-9]{3}) .*/\1/'</span> <span class="pth">access.log</span>
+
+<span class="cm"># Extract timestamp and log level from structured log</span>
+<span class="cm"># Input: [2026-06-11 14:32:05] ERROR Something went wrong</span>
+<span class="op">[[</span> <span class="st">"$line"</span> <span class="op">=~</span> <span class="rx">^\[([0-9-]+ [0-9:]+)\] ([A-Z]+) (.+)$</span> <span class="op">]]</span> <span class="op">&&</span> {
+    <span class="cmd">echo</span> <span class="st">"time=${BASH_REMATCH[1]} level=${BASH_REMATCH[2]}"</span>
+    <span class="cmd">echo</span> <span class="st">"msg=${BASH_REMATCH[3]}"</span>
+}</span>
+
+<span class="cm"># Reformat CSV date column: MM/DD/YYYY → YYYY-MM-DD</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s|([0-9]{2})/([0-9]{2})/([0-9]{4})|\3-\1-\2|g'</span> <span class="pth">report.csv</span></pre>
+
+<h3>Code manipulation</h3>
+<pre><span class="cm"># Rename a function: getUser → fetchUser (whole word, all files)</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="fl">-E</span> <span class="st">'s/\bgetUser\b/fetchUser/g'</span> <span class="pth">src/*.js</span>
+
+<span class="cm"># Convert snake_case identifiers to camelCase</span>
+<span class="cm"># Approach: loop sed until no more underscores-with-next-letter remain</span>
+<span class="cmd">echo</span> <span class="st">"get_user_name"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/_([a-z])/\u\1/g'</span>
+<span class="out">getUserName</span>   <span class="cm"># \u uppercases the next char (GNU sed extension)</span>
+
+<span class="cm"># Add quotes around all unquoted values in key=value format</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^([^=]+)=([^"].*)$/\1="\2"/'</span> <span class="pth">config.env</span></pre>
+
+<h3>Parsing shell script output into variables</h3>
+<pre><span class="fn">parse_df_line</span>() {
+    <span class="cm"># Parse: /dev/sda1   50G   20G   30G  40%  /home</span>
+    <span class="kw">local</span> <span class="vr">line</span><span class="op">=</span><span class="st">"$1"</span>
+    <span class="kw">if</span> <span class="op">[[</span> <span class="st">"$line"</span> <span class="op">=~</span> <span class="rx">^([^[:space:]]+)[[:space:]]+[^[:space:]]+[[:space:]]+[^[:space:]]+[[:space:]]+[^[:space:]]+[[:space:]]+([0-9]+)%[[:space:]]+(.+)$</span> <span class="op">]]</span>; <span class="kw">then</span>
+        <span class="cmd">echo</span> <span class="st">"device=${BASH_REMATCH[1]}"</span>
+        <span class="cmd">echo</span> <span class="st">"use%=${BASH_REMATCH[2]}"</span>
+        <span class="cmd">echo</span> <span class="st">"mount=${BASH_REMATCH[3]}"</span>
+    <span class="kw">fi</span>
+}
+<span class="cm"># Alert if any filesystem is over 90% used</span>
+<span class="cmd">df</span> <span class="fl">-h</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'([0-9]+)%'</span> <span class="op">|</span> <span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="op">[[</span> <span class="st">"$line"</span> <span class="op">=~</span> <span class="rx">([0-9]+)%</span> <span class="op">]]</span> <span class="op">&&</span> <span class="op">[[</span> <span class="st">"${BASH_REMATCH[1]}"</span> <span class="fl">-gt</span> <span class="nu">90</span> <span class="op">]]</span> <span class="op">&&</span>
+        <span class="cmd">echo</span> <span class="st">"WARNING: $line"</span>
+<span class="kw">done</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 6</h2>
+
+<div class="cmd-ref">
+  <h4>Grouping</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">(abc)</span>
+    <span class="cmd-desc">Capturing group — ERE, PCRE; quantify and capture</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\(abc\)</span>
+    <span class="cmd-desc">Capturing group — BRE (backslashes required)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">(?:abc)</span>
+    <span class="cmd-desc">Non-capturing group — ERE/PCRE only; no capture slot used</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">(a|b)+</span>
+    <span class="cmd-desc">Quantify a group — one or more of "a" or "b"</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Alternation</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">cat|dog</span>
+    <span class="cmd-desc">Match "cat" OR "dog" — ERE/PCRE</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">^(cat|dog)</span>
+    <span class="cmd-desc">Line starts with "cat" or "dog" — group limits scope of |</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">cat\|dog</span>
+    <span class="cmd-desc">BRE alternation — GNU extension only</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Backreferences</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">\1  \2  … \9</span>
+    <span class="cmd-desc">Refer to captured group 1–9 (in pattern or sed replacement)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">&amp;</span>
+    <span class="cmd-desc">Entire match (in sed replacement)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">BASH_REMATCH[0]</span>
+    <span class="cmd-desc">Full match from [[ =~ ]] test</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">BASH_REMATCH[n]</span>
+    <span class="cmd-desc">Group n from [[ =~ ]] test (n = 1, 2, 3 …)</span>
+  </div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 7 dives into <code>grep</code> and <code>egrep</code> in depth — practical flags (<code>-o</code>, <code>-n</code>, <code>-l</code>, <code>-c</code>, <code>-r</code>, <code>-v</code>), combining flags for real-world log analysis, the difference between <code>-E</code>, <code>-F</code>, and <code>-P</code>, and building multi-pattern pipelines for efficient text filtering.
+</div>
+
+</div>

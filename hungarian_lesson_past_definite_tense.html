@@ -1,0 +1,646 @@
+<style>
+  .hu-lesson {
+    font-family: 'Georgia', serif;
+    max-width: 900px;
+    margin: 0 auto;
+    color: #e2e4ec;
+    line-height: 1.7;
+  }
+  .hu-lesson h1 {
+    font-size: 2rem;
+    color: #4f8ef7;
+    margin-bottom: 0.2em;
+  }
+  .hu-lesson h2 {
+    font-size: 1.35rem;
+    color: #ffffff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 0.35em;
+    margin-top: 2em;
+  }
+  .hu-lesson .section-intro {
+    color: #7a7f96;
+    font-style: italic;
+    margin-bottom: 1.2em;
+    font-size: 0.97rem;
+  }
+
+  /* ── Dialog grid ── */
+  .dialog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1em;
+    margin-bottom: 1.5em;
+  }
+  @media (max-width: 640px) { .dialog-grid { grid-template-columns: 1fr; } }
+  .dialog-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 8px;
+    padding: 1em 1.2em;
+    transition: border-color 0.2s;
+  }
+  .dialog-card:hover { border-color: #4f8ef7; }
+  .dialog-card h3 {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.85rem;
+    color: #4f8ef7;
+    margin: 0 0 0.7em 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .dialog-line { margin: 0.45em 0; }
+  .speaker {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: bold;
+    color: #7c5cbf;
+    margin-right: 0.4em;
+    font-size: 0.88rem;
+  }
+  .hu { color: #e2e4ec; }
+  .en {
+    display: block;
+    color: #7a7f96;
+    font-size: 0.9em;
+    margin-left: 2.8em;
+    font-style: italic;
+  }
+  .pronunciation {
+    display: block;
+    color: #7a7f96;
+    font-size: 0.83em;
+    margin-left: 2.8em;
+    font-style: italic;
+    margin-top: 0.15em;
+  }
+  .form-note {
+    display: inline-block;
+    background: #1e2235;
+    color: #4f8ef7;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.75rem;
+    border-radius: 3px;
+    padding: 0.05em 0.45em;
+    margin-left: 0.4em;
+    vertical-align: middle;
+  }
+
+  /* ── Vocabulary table ── */
+  .vocab-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0 1.5em 0;
+    font-size: 0.95rem;
+  }
+  .vocab-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    text-transform: uppercase;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    padding: 0.55em 0.8em;
+    border: 1px solid #2a2d3a;
+    text-align: left;
+  }
+  .vocab-table td {
+    padding: 0.45em 0.8em;
+    border: 1px solid #2a2d3a;
+    vertical-align: top;
+  }
+  .vocab-table tr:nth-child(even) td { background: #1a1d27; }
+  .vocab-table tr:hover td { background: #1e2235; }
+  .vocab-table .num { color: #7a7f96; font-size: 0.85rem; }
+  .vocab-table .hu-word { color: #e2e4ec; font-weight: bold; }
+  .vocab-table .en-word { color: #b0b4c8; }
+  .vocab-table .notes { color: #7a7f96; font-size: 0.88rem; font-style: italic; }
+  .tag-verb {
+    display: inline-block;
+    background: #3b2a60;
+    color: #b89cf5;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.73rem;
+    border-radius: 3px;
+    padding: 0.1em 0.5em;
+  }
+  .tag-noun {
+    display: inline-block;
+    background: #1a2e50;
+    color: #7ab3f5;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.73rem;
+    border-radius: 3px;
+    padding: 0.1em 0.5em;
+  }
+  .tag-adj {
+    display: inline-block;
+    background: #1a3a28;
+    color: #70c98a;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.73rem;
+    border-radius: 3px;
+    padding: 0.1em 0.5em;
+  }
+
+  /* ── Conjugation table ── */
+  .conj-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1em;
+    margin: 1em 0 1.5em 0;
+  }
+  @media (max-width: 640px) { .conj-grid { grid-template-columns: 1fr; } }
+  .conj-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 8px;
+    padding: 1em 1.2em;
+  }
+  .conj-card h4 {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.85rem;
+    color: #4f8ef7;
+    margin: 0 0 0.7em 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .conj-table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  .conj-table td { padding: 0.3em 0.5em; border-bottom: 1px solid #2a2d3a; }
+  .conj-table tr:last-child td { border-bottom: none; }
+  .conj-table .pronoun { color: #7a7f96; font-style: italic; width: 35%; }
+  .conj-table .form { color: #e2e4ec; font-weight: bold; }
+  .conj-table .suffix { color: #7c5cbf; }
+  .conj-table .en-gloss { color: #7a7f96; font-size: 0.85em; }
+
+  /* ── Tip box ── */
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 1em 1.3em;
+    margin: 1.5em 0;
+  }
+  .tip-box strong { color: #4f8ef7; }
+  .tip-box p { margin: 0.5em 0; }
+  .tip-box .tip-title {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #7c5cbf;
+    margin-bottom: 0.4em;
+  }
+
+  /* ── Pattern highlight box ── */
+  .pattern-box {
+    background: #1e2235;
+    border: 1px solid #4f8ef7;
+    border-radius: 6px;
+    padding: 0.9em 1.2em;
+    margin: 1em 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.93rem;
+  }
+  .pattern-box .label {
+    color: #4f8ef7;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4em;
+    display: block;
+  }
+  .highlight { color: #7c5cbf; font-weight: bold; }
+</style>
+
+<div class="hu-lesson">
+
+  <h1>A határozott múlt idő</h1>
+  <p class="section-intro">The past definite conjugation — used when the verb has a specific, definite object. You already know Hungarian splits its verb conjugations into two systems; this lesson focuses on the past tense of the <em>definite</em> side — the one you use when you're talking about <em>the</em> something.</p>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <h2>A ragozás — The Conjugation Pattern</h2>
+  <p class="section-intro">The definite past is formed by adding the past suffix <strong>-t-</strong> to the verb stem, then the definite personal endings. The pattern below uses <em>lát</em> (to see) and <em>kér</em> (to ask for / request) to show back-vowel and front-vowel harmony side by side.</p>
+
+  <div class="conj-grid">
+    <div class="conj-card">
+      <h4>lát — to see (back vowel)</h4>
+      <table class="conj-table">
+        <tr>
+          <td class="pronoun">én</td>
+          <td class="form">lát<span class="suffix">tam</span></td>
+          <td class="en-gloss">I saw (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">te</td>
+          <td class="form">lát<span class="suffix">tad</span></td>
+          <td class="en-gloss">you saw (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">ő / Ön / maga</td>
+          <td class="form">lát<span class="suffix">ta</span></td>
+          <td class="en-gloss">he/she saw (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">mi</td>
+          <td class="form">lát<span class="suffix">tuk</span></td>
+          <td class="en-gloss">we saw (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">ti</td>
+          <td class="form">lát<span class="suffix">tátok</span></td>
+          <td class="en-gloss">you (pl.) saw (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">ők / Önök</td>
+          <td class="form">lát<span class="suffix">ták</span></td>
+          <td class="en-gloss">they saw (it)</td>
+        </tr>
+      </table>
+    </div>
+    <div class="conj-card">
+      <h4>kér — to request (front vowel)</h4>
+      <table class="conj-table">
+        <tr>
+          <td class="pronoun">én</td>
+          <td class="form">kér<span class="suffix">tem</span></td>
+          <td class="en-gloss">I asked for (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">te</td>
+          <td class="form">kér<span class="suffix">ted</span></td>
+          <td class="en-gloss">you asked for (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">ő / Ön / maga</td>
+          <td class="form">kér<span class="suffix">te</span></td>
+          <td class="en-gloss">he/she asked for (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">mi</td>
+          <td class="form">kér<span class="suffix">tük</span></td>
+          <td class="en-gloss">we asked for (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">ti</td>
+          <td class="form">kér<span class="suffix">tétek</span></td>
+          <td class="en-gloss">you (pl.) asked for (it)</td>
+        </tr>
+        <tr>
+          <td class="pronoun">ők / Önök</td>
+          <td class="form">kér<span class="suffix">ték</span></td>
+          <td class="en-gloss">they asked for (it)</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="pattern-box">
+    <span class="label">The key pattern</span>
+    Stem + <span class="highlight">-t-</span> (past marker) + definite ending: <strong>-am / -em · -ad / -ed · -a / -e · -uk / -ük · -átok / -étek · -ák / -ék</strong><br>
+    <span style="color:#7a7f96; font-size:0.9em; margin-top:0.4em; display:block;">
+      Note: when a verb stem ends in <em>-t</em> or <em>-tt</em>, the past <em>-t-</em> doubles (e.g. <em>lát</em> → <em>lát<strong>t</strong>am</em>). Stems ending in other consonants often use <em>-ott-/-ett-/-ött-</em> as the past marker instead — watch for this in the vocabulary below.
+    </span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <h2>Párbeszédek — Dialogs</h2>
+  <p class="section-intro">Six conversations using the past definite tense in everyday situations. The purple labels show who's speaking — A (first speaker) and B (second speaker). Forms marked <span class="form-note">definite past</span> are the ones to study.</p>
+
+  <div class="dialog-grid">
+
+    <div class="dialog-card">
+      <h3>1 — Vacsoránál / At dinner</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Megkóstoltad az ételt? <span class="form-note">definite past</span></span>
+        <span class="en">Did you try the food?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Igen, megkóstoltam. Nagyon finom volt!</span>
+        <span class="en">Yes, I tried it. It was very tasty!</span>
+        <span class="pronunciation">finom = FEE-nom · volt = VOLT (was)</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Megittad a levest is?</span>
+        <span class="en">Did you also drink the soup?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Sajnos nem ittam meg, már tele voltam.</span>
+        <span class="en">Unfortunately I didn't, I was already full.</span>
+        <span class="pronunciation">sajnos = SHOY-nosh · tele = TEH-leh</span>
+      </div>
+    </div>
+
+    <div class="dialog-card">
+      <h3>2 — A moziban / At the cinema</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Láttad a filmet? <span class="form-note">definite past</span></span>
+        <span class="en">Did you see the film?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Láttam, tegnap néztem meg.</span>
+        <span class="en">I saw it — I watched it yesterday.</span>
+        <span class="pronunciation">tegnap = TEG-nop (yesterday)</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Szeretted?</span>
+        <span class="en">Did you like it?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Nagyon szerettem! A végét különösen.</span>
+        <span class="en">I loved it! Especially the ending.</span>
+        <span class="pronunciation">különösen = KÜ-lö-nö-shen (especially)</span>
+      </div>
+    </div>
+
+    <div class="dialog-card">
+      <h3>3 — Bevásárlás után / After shopping</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Megvetted a kenyeret? <span class="form-note">definite past</span></span>
+        <span class="en">Did you buy the bread?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Sajnos nem vettem meg. Elfelejtettem.</span>
+        <span class="en">Unfortunately I didn't buy it. I forgot.</span>
+        <span class="pronunciation">elfelejtettem = el-FEH-lay-tet-tem (I forgot)</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Rendben. Megvetted legalább a tejet?</span>
+        <span class="en">OK. Did you at least buy the milk?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Azt megvettem!</span>
+        <span class="en">That I did buy!</span>
+        <span class="pronunciation">azt = OT (that/it — accusative)</span>
+      </div>
+    </div>
+
+    <div class="dialog-card">
+      <h3>4 — Üzleti találkozó / Business meeting</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Elolvasta a jelentést? <span class="form-note">definite past — polite Ön form</span></span>
+        <span class="en">Did you read the report? <em>(polite)</em></span>
+        <span class="pronunciation">Use <em>elolvasta</em> with Ön/maga — same form as ő (he/she)</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Igen, elolvastam tegnap este.</span>
+        <span class="en">Yes, I read it yesterday evening.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Megértette a harmadik fejezetet?</span>
+        <span class="en">Did you understand the third chapter?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Nem egészen, de megpróbáltam.</span>
+        <span class="en">Not entirely, but I tried.</span>
+        <span class="pronunciation">nem egészen = nem EH-geh-sehn (not entirely)</span>
+      </div>
+    </div>
+
+    <div class="dialog-card">
+      <h3>5 — Családi látogatás / Family visit</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Megnézted a régi fotókat? <span class="form-note">definite past</span></span>
+        <span class="en">Did you look at the old photos?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Meg. Mindenkit felismertem rajtuk!</span>
+        <span class="en">I did. I recognised everyone in them!</span>
+        <span class="pronunciation">felismertem = I recognised it/them · rajtuk = on them</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Megtaláltad nagyapád képét?</span>
+        <span class="en">Did you find your grandfather's photo?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Igen, megtaláltam! Nagyon hasonlít rám.</span>
+        <span class="en">Yes, I found it! He looks very much like me.</span>
+        <span class="pronunciation">hasonlít = HOH-shon-leet (resembles)</span>
+      </div>
+    </div>
+
+    <div class="dialog-card">
+      <h3>6 — Telefonon / On the phone</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Megkaptad az üzenetet? <span class="form-note">definite past</span></span>
+        <span class="en">Did you receive the message?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Megkaptam, de még nem olvastam el.</span>
+        <span class="en">I received it, but I haven't read it yet.</span>
+        <span class="pronunciation">még nem = MEG nem (not yet)</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Rendben. Elküldtem a csatolmányt is.</span>
+        <span class="en">OK. I also sent the attachment.</span>
+        <span class="pronunciation">csatolmány = CHOT-ol-maan (attachment) — cs = ch</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Köszönöm, megnézem majd.</span>
+        <span class="en">Thank you, I'll take a look later.</span>
+        <span class="pronunciation">Switching to present/future here — "I'll look at it"</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <h2>Szókincs — Vocabulary</h2>
+  <p class="section-intro">Twenty words from the dialogs and the topic area. Verbs are shown in their infinitive form with the 3rd-person singular past definite in parentheses — this is the most useful form to learn first.</p>
+
+  <table class="vocab-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Magyar</th>
+        <th>English</th>
+        <th>Type</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="num">1</td>
+        <td class="hu-word">lát (látta)</td>
+        <td class="en-word">to see</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Back vowel. Stem ends in -t → doubles: lát+t → látta</td>
+      </tr>
+      <tr>
+        <td class="num">2</td>
+        <td class="hu-word">kér (kérte)</td>
+        <td class="en-word">to ask for / request</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Front vowel (é). kér+te → kérte</td>
+      </tr>
+      <tr>
+        <td class="num">3</td>
+        <td class="hu-word">vesz / megvesz (megvette)</td>
+        <td class="en-word">to buy</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Irregular stem: vesz → vet- in past. meg- prefix = completed action</td>
+      </tr>
+      <tr>
+        <td class="num">4</td>
+        <td class="hu-word">olvas / elolvas (elolvasta)</td>
+        <td class="en-word">to read</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Back vowel. el- prefix = to read through/finish reading</td>
+      </tr>
+      <tr>
+        <td class="num">5</td>
+        <td class="hu-word">iszik / megiszik (megita)</td>
+        <td class="en-word">to drink</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Irregular: iszik → itta (3rd person). én: ittam, te: ittad</td>
+      </tr>
+      <tr>
+        <td class="num">6</td>
+        <td class="hu-word">küld / elküld (elküldte)</td>
+        <td class="en-word">to send</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Front vowel (ü). el- = away, off. Stem ends in -ld → past: küldte</td>
+      </tr>
+      <tr>
+        <td class="num">7</td>
+        <td class="hu-word">kap / megkap (megkapta)</td>
+        <td class="en-word">to receive / get</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Back vowel. meg- = completive. kap → kapta</td>
+      </tr>
+      <tr>
+        <td class="num">8</td>
+        <td class="hu-word">kóstol / megkóstol (megkóstolta)</td>
+        <td class="en-word">to taste / try (food)</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Back vowel. Long stem — past: kóstolta</td>
+      </tr>
+      <tr>
+        <td class="num">9</td>
+        <td class="hu-word">talál / megtalál (megtalálta)</td>
+        <td class="en-word">to find</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Back vowel. talál → találta. Double á in stem stays</td>
+      </tr>
+      <tr>
+        <td class="num">10</td>
+        <td class="hu-word">ért / megért (megértette)</td>
+        <td class="en-word">to understand</td>
+        <td><span class="tag-verb">verb</span></td>
+        <td class="notes">Front vowel (é). Stem ends in -t → doubles + insert -e-: értette</td>
+      </tr>
+      <tr>
+        <td class="num">11</td>
+        <td class="hu-word">az étel</td>
+        <td class="en-word">the food / dish</td>
+        <td><span class="tag-noun">noun</span></td>
+        <td class="notes">az (not a) because starts with vowel. Plural: ételek</td>
+      </tr>
+      <tr>
+        <td class="num">12</td>
+        <td class="hu-word">a film</td>
+        <td class="en-word">the film / movie</td>
+        <td><span class="tag-noun">noun</span></td>
+        <td class="notes">Same as English — easy one! Accusative: a filmet</td>
+      </tr>
+      <tr>
+        <td class="num">13</td>
+        <td class="hu-word">a kenyér</td>
+        <td class="en-word">the bread</td>
+        <td><span class="tag-noun">noun</span></td>
+        <td class="notes">Front vowel. Accusative: a kenyeret (vowel shortens: é→e)</td>
+      </tr>
+      <tr>
+        <td class="num">14</td>
+        <td class="hu-word">a tej</td>
+        <td class="en-word">the milk</td>
+        <td><span class="tag-noun">noun</span></td>
+        <td class="notes">Front vowel. Accusative: a tejet</td>
+      </tr>
+      <tr>
+        <td class="num">15</td>
+        <td class="hu-word">a jelentés</td>
+        <td class="en-word">the report</td>
+        <td><span class="tag-noun">noun</span></td>
+        <td class="notes">Front vowel. Accusative: a jelentést</td>
+      </tr>
+      <tr>
+        <td class="num">16</td>
+        <td class="hu-word">az üzenet</td>
+        <td class="en-word">the message</td>
+        <td><span class="tag-noun">noun</span></td>
+        <td class="notes">az (starts with vowel). Accusative: az üzenetet</td>
+      </tr>
+      <tr>
+        <td class="num">17</td>
+        <td class="hu-word">a fotó</td>
+        <td class="en-word">the photo</td>
+        <td><span class="tag-noun">noun</span></td>
+        <td class="notes">Back vowel. Accusative: a fotót. Plural: fotók</td>
+      </tr>
+      <tr>
+        <td class="num">18</td>
+        <td class="hu-word">finom</td>
+        <td class="en-word">tasty / delicious</td>
+        <td><span class="tag-adj">adjective</span></td>
+        <td class="notes">One of the most useful words in Hungary. Use it freely!</td>
+      </tr>
+      <tr>
+        <td class="num">19</td>
+        <td class="hu-word">régi</td>
+        <td class="en-word">old / ancient</td>
+        <td><span class="tag-adj">adjective</span></td>
+        <td class="notes">Front vowel. régi fotó = old photo. Doesn't change with nouns</td>
+      </tr>
+      <tr>
+        <td class="num">20</td>
+        <td class="hu-word">sajnos</td>
+        <td class="en-word">unfortunately</td>
+        <td><span class="tag-adj">adverb</span></td>
+        <td class="notes">Extremely common. Goes at the start of a sentence. SAY-nosh</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <h2>Nyelvtani tipp — Grammar Tip</h2>
+
+  <div class="tip-box">
+    <div class="tip-title">💡 The definite vs. indefinite split — and why it matters in the past</div>
+    <p>Hungarian has <strong>two complete sets of past tense conjugations</strong> — one definite, one indefinite. You choose based on whether the object is definite (a specific, known thing) or indefinite (an unspecified thing). In the past tense this becomes natural very quickly:</p>
+    <p><strong>Láttam egy filmet.</strong> — I saw <em>a</em> film. (indefinite — any film, unspecified)<br>
+    <strong>Láttam a filmet.</strong> — I saw <em>the</em> film. (definite — a specific film you both know about)</p>
+    <p>The magic rule: <strong>if the sentence has <em>a/az</em> (the) before the object, use the definite conjugation.</strong> If it has <em>egy</em> (a/an) or no article at all, use the indefinite. In the past tense, the definite forms are the ones ending in <em>-tam/-tem, -tad/-ted, -ta/-te, -tuk/-tük, -tátok/-étek, -ták/-ték</em>.</p>
+    <p>The good news: <strong>Hungarians will understand you even if you mix them up</strong>, and when you get it right — especially outside Budapest with your family — they will be genuinely delighted. It is one of those features that marks a learner as someone who truly studied the language.</p>
+  </div>
+
+  <div class="tip-box">
+    <div class="tip-title">🎯 The <em>meg-</em> prefix — your best friend in the past tense</div>
+    <p>You'll notice that many past tense sentences use <strong>meg-</strong> as a prefix (megvetted, megkaptam, megnézted). This verbal prefix signals that the action is <em>completed</em> — it's roughly equivalent to the English "up" in "eat up" or "drink up". In the past tense, <strong>meg-</strong> almost always signals a definite, completed action, so it naturally pairs with the definite conjugation.</p>
+    <p>In questions and negatives, <strong>meg-</strong> separates from the verb: <em>Megvetted?</em> → <em>Nem vettem meg.</em> (Did you buy it? → I didn't buy it.) This word-order shift is one of the trickiest — but also most satisfying — things to master in Hungarian.</p>
+  </div>
+
+</div>

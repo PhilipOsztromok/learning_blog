@@ -1,0 +1,461 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-section { color: #7a8aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0.9em 0 0.3em 0; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; }
+  .lx-lesson .cmd-key { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 190px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  .lx-lesson .mode-badge {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    padding: 0.15em 0.55em; border-radius: 3px; margin-right: 0.3em; vertical-align: middle;
+  }
+  .lx-lesson .mode-normal  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }
+  .lx-lesson .mode-insert  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }
+  .lx-lesson .mode-command { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }
+  .lx-lesson .concept-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1em; margin: 1em 0;
+  }
+  @media (max-width: 640px) { .lx-lesson .concept-grid { grid-template-columns: 1fr; } }
+  .lx-lesson .concept-card {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.1em; text-align: center;
+  }
+  .lx-lesson .concept-card h4 { margin: 0 0 0.4em 0; font-size: 1rem; font-family: 'Consolas', monospace; }
+  .lx-lesson .concept-card.buf h4 { color: #79b8ff; }
+  .lx-lesson .concept-card.win h4 { color: #85e89d; }
+  .lx-lesson .concept-card.tab h4 { color: #d2a8ff; }
+  .lx-lesson .concept-card p { font-size: 0.88rem; color: #9aa0b8; margin: 0.2em 0; }
+  .lx-lesson .split-diagram {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem;
+  }
+  .lx-lesson .split-diagram .win-box {
+    border: 1px solid #4f8ef7; padding: 0.4em 0.7em; color: #c9d8ff; margin: 2px 0;
+  }
+  .lx-lesson .split-diagram .win-label { color: #4f8ef7; font-size: 0.8rem; }
+  .lx-lesson .split-diagram .win-divider { color: #4f8ef7; text-align: center; margin: 2px 0; }
+  .lx-lesson .split-diagram .win-side {
+    display: flex; gap: 4px;
+  }
+  .lx-lesson .split-diagram .win-half {
+    flex: 1; border: 1px solid #4f8ef7; padding: 0.4em 0.7em; color: #c9d8ff;
+  }
+  .lx-lesson .demo-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0;
+  }
+  .lx-lesson .demo-box h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.95rem; }
+  .lx-lesson .workflow-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0;
+  }
+  .lx-lesson .workflow-box h4 { color: #4f8ef7; margin: 0 0 0.7em 0; font-size: 0.95rem; }
+  .lx-lesson .workflow-step { display: flex; gap: 1em; align-items: baseline; padding: 0.4em 0; border-bottom: 1px solid #2a2d3e; }
+  .lx-lesson .workflow-step:last-child { border-bottom: none; }
+  .lx-lesson .step-num { color: #4f8ef7; font-family: 'Consolas', monospace; font-weight: bold; min-width: 1.5em; }
+  .lx-lesson .step-cmd { color: #ffab70; font-family: 'Consolas', monospace; min-width: 150px; }
+  .lx-lesson .step-desc { color: #c9d8ff; font-size: 0.92rem; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #b392f0; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 6 — Buffers, Windows, and Tabs</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Three Concepts — One Mental Model</h2>
+
+<p>Vim organises its workspace around three distinct but related concepts. Conflating them causes confusion; keeping them clear makes everything else click into place.</p>
+
+<div class="concept-grid">
+  <div class="concept-card buf">
+    <h4>Buffer</h4>
+    <p>An in-memory copy of a file (or unnamed content). Editing happens here. Nothing is written to disk until you explicitly save.</p>
+    <p><em>Think of it as: the document.</em></p>
+  </div>
+  <div class="concept-card win">
+    <h4>Window</h4>
+    <p>A viewport into a buffer. You can have many windows open simultaneously, and multiple windows can display the same buffer — changes in one are immediately visible in all.</p>
+    <p><em>Think of it as: the pane on screen.</em></p>
+  </div>
+  <div class="concept-card tab">
+    <h4>Tab page</h4>
+    <p>A collection of windows. Each tab has its own window layout. Tabs are not like browser tabs (one file each) — they are more like desktop workspaces.</p>
+    <p><em>Think of it as: a layout preset.</em></p>
+  </div>
+</div>
+
+<p>The key insight: <strong>closing a window does not delete a buffer</strong>. If you split a window to view two files and then close one of the windows, both files are still in memory — only the view has been removed. You can return to any buffer in the list at any time.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Buffers</h2>
+
+<h3>Opening files into buffers</h3>
+
+<p>Every file you open in Vim becomes a buffer. Whether you open them from the command line or from within Vim, they all live in the buffer list.</p>
+
+<pre><span class="cm"># From the shell — open multiple files at once:</span>
+<span class="cmd">vim</span> <span class="pth">file1.py</span> <span class="pth">file2.py</span> <span class="pth">file3.py</span>    <span class="cm"># all three become buffers</span>
+
+<span class="cm"># From within Vim — add a new buffer:</span>
+<span class="kw">:</span><span class="cmd">e</span> <span class="pth">newfile.txt</span>                     <span class="cm"># opens file in current window</span>
+<span class="kw">:</span><span class="cmd">e .</span>                              <span class="cm"># open the directory browser</span></pre>
+
+<h3>Listing buffers</h3>
+
+<pre><span class="kw">:</span><span class="cmd">ls</span>        <span class="cm"># list all open buffers (also :buffers or :files)</span></pre>
+
+<p>The output shows each buffer's number, status flags, name, and current line:</p>
+
+<pre><span class="out">  1 %a   "app.py"               line 42
+  2  h   "config.yaml"          line 1
+  3  h   "tests/test_app.py"    line 18
+  4 #a   "utils.py"             line 7</span></pre>
+
+<p>Reading the status flags:</p>
+
+<table>
+  <tr><th>Flag</th><th>Meaning</th></tr>
+  <tr><td><code>%</code></td><td>Current buffer (the one displayed in the active window)</td></tr>
+  <tr><td><code>#</code></td><td>Alternate buffer — the one you were in before switching. <code>Ctrl+^</code> toggles between current and alternate.</td></tr>
+  <tr><td><code>a</code></td><td>Active — loaded and visible in a window</td></tr>
+  <tr><td><code>h</code></td><td>Hidden — loaded in memory but not currently displayed</td></tr>
+  <tr><td><code>+</code></td><td>Modified — has unsaved changes</td></tr>
+  <tr><td><code>-</code></td><td>Not modifiable (read-only)</td></tr>
+  <tr><td><code>=</code></td><td>Read-only</td></tr>
+</table>
+
+<h3>Switching between buffers</h3>
+
+<pre><span class="kw">:</span><span class="cmd">bn</span>            <span class="cm"># next buffer in the list (:bnext)</span>
+<span class="kw">:</span><span class="cmd">bp</span>            <span class="cm"># previous buffer (:bprevious)</span>
+<span class="kw">:</span><span class="cmd">b</span> <span class="vr">3</span>           <span class="cm"># switch to buffer number 3</span>
+<span class="kw">:</span><span class="cmd">b</span> <span class="st">config</span>      <span class="cm"># switch to buffer whose name contains "config" (partial match)</span>
+<span class="kw">:</span><span class="cmd">bf</span>            <span class="cm"># first buffer in the list</span>
+<span class="kw">:</span><span class="cmd">bl</span>            <span class="cm"># last buffer in the list</span>
+<span class="cmd">Ctrl+^</span>        <span class="cm"># toggle between current and alternate (#) buffer — fastest switch</span></pre>
+
+<div class="tip">
+  <strong>Tab completion on buffer names:</strong> When typing <code>:b </code> you can press <code>Tab</code> to cycle through buffer names. Start typing a few characters of the filename first to narrow the list: <code>:b con&lt;Tab&gt;</code> might complete to <code>:b config.yaml</code>.
+</div>
+
+<h3>Deleting and unloading buffers</h3>
+
+<pre><span class="kw">:</span><span class="cmd">bd</span>            <span class="cm"># delete (unload) the current buffer</span>
+<span class="kw">:</span><span class="cmd">bd</span> <span class="vr">3</span>          <span class="cm"># delete buffer number 3</span>
+<span class="kw">:</span><span class="cmd">bd!</span>           <span class="cm"># force-delete even if buffer has unsaved changes</span>
+<span class="kw">:</span><span class="cmd">bw</span>            <span class="cm"># wipe buffer — removes it from the list entirely (vs just unloading)</span>
+<span class="kw">%</span><span class="cmd">bd</span>            <span class="cm"># delete ALL buffers (useful for a clean slate)</span></pre>
+
+<div class="note">
+  <strong><code>:bd</code> vs <code>:bw</code>:</strong> <code>:bd</code> (delete) unloads the buffer from memory but keeps it in the buffer list marked as unloaded — you can reload it. <code>:bw</code> (wipe) removes it from the list completely, including any marks, the jump list entry, and its history. For most purposes, <code>:bd</code> is sufficient.
+</div>
+
+<h3>Reloading a file from disk</h3>
+
+<pre><span class="kw">:</span><span class="cmd">e!</span>            <span class="cm"># reload current file, discarding all unsaved changes</span>
+<span class="kw">:</span><span class="cmd">e</span>             <span class="cm"># reload if file changed on disk (fails if unsaved changes)</span></pre>
+
+<h3>The directory browser</h3>
+
+<p>Opening a directory with <code>:e .</code> launches Vim's built-in file browser (<strong>netrw</strong>). You can navigate the filesystem and open files without leaving Vim:</p>
+
+<pre><span class="kw">:</span><span class="cmd">e</span> <span class="pth">.</span>            <span class="cm"># open current directory in netrw</span>
+<span class="kw">:</span><span class="cmd">e</span> <span class="pth">~/projects</span>  <span class="cm"># open a specific directory</span></pre>
+
+<p>Inside netrw: press <code>Enter</code> to open a file or descend into a directory, <code>-</code> to go up a level, <code>D</code> to delete, <code>R</code> to rename, and <code>%</code> to create a new file.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Windows — Splitting the Screen</h2>
+
+<p>Windows let you view multiple buffers (or multiple positions in the same buffer) simultaneously on screen. This is one of Vim's most productive features for comparing files, referencing documentation while you code, or working on related sections of a large file.</p>
+
+<h3>Creating splits</h3>
+
+<pre><span class="kw">:</span><span class="cmd">split</span>         <span class="cm"># horizontal split — opens another window to the SAME buffer</span>
+<span class="kw">:</span><span class="cmd">split</span> <span class="pth">file.py</span> <span class="cm"># horizontal split — opens a DIFFERENT file in the new window</span>
+<span class="kw">:</span><span class="cmd">vsplit</span>        <span class="cm"># vertical split (side by side) of same buffer</span>
+<span class="kw">:</span><span class="cmd">vsplit</span> <span class="pth">file.py</span><span class="cm"># vertical split opening a different file</span>
+<span class="cmd">Ctrl+W s</span>      <span class="cm"># shortcut for :split</span>
+<span class="cmd">Ctrl+W v</span>      <span class="cm"># shortcut for :vsplit</span>
+<span class="cmd">Ctrl+W n</span>      <span class="cm"># new empty horizontal split</span></pre>
+
+<div class="split-diagram">
+  <div class="win-label">After :split</div>
+  <div class="win-box">Window 1 — app.py (active)</div>
+  <div class="win-divider">────────────────────</div>
+  <div class="win-box">Window 2 — app.py (same buffer)</div>
+  <br>
+  <div class="win-label">After :vsplit config.yaml</div>
+  <div class="win-side">
+    <div class="win-half">Window 1 — app.py</div>
+    <div class="win-half">Window 2 — config.yaml</div>
+  </div>
+</div>
+
+<h3>Navigating between windows</h3>
+
+<p>All window navigation uses the <code>Ctrl+W</code> prefix followed by a direction or action key:</p>
+
+<table>
+  <tr><th>Command</th><th>Action</th></tr>
+  <tr><td><code>Ctrl+W w</code></td><td>Cycle to the next window (clockwise)</td></tr>
+  <tr><td><code>Ctrl+W W</code></td><td>Cycle to the previous window (counter-clockwise)</td></tr>
+  <tr><td><code>Ctrl+W h</code></td><td>Move to the window to the left</td></tr>
+  <tr><td><code>Ctrl+W j</code></td><td>Move to the window below</td></tr>
+  <tr><td><code>Ctrl+W k</code></td><td>Move to the window above</td></tr>
+  <tr><td><code>Ctrl+W l</code></td><td>Move to the window to the right</td></tr>
+  <tr><td><code>Ctrl+W t</code></td><td>Move to the top-left window</td></tr>
+  <tr><td><code>Ctrl+W b</code></td><td>Move to the bottom-right window</td></tr>
+</table>
+
+<div class="note">
+  <strong>HJKL for window navigation:</strong> <code>Ctrl+W h/j/k/l</code> mirrors the HJKL movement from Chapter 3 — left, down, up, right. Once this mapping clicks it becomes completely natural.
+</div>
+
+<h3>Resizing windows</h3>
+
+<pre><span class="cmd">Ctrl+W =</span>      <span class="cm"># make all windows equal size</span>
+<span class="cmd">Ctrl+W _</span>      <span class="cm"># maximise current window height</span>
+<span class="cmd">Ctrl+W |</span>      <span class="cm"># maximise current window width</span>
+<span class="cmd">Ctrl+W +</span>      <span class="cm"># increase current window height by 1 line</span>
+<span class="cmd">Ctrl+W -</span>      <span class="cm"># decrease current window height by 1 line</span>
+<span class="cmd">Ctrl+W &gt;</span>      <span class="cm"># increase current window width by 1 column</span>
+<span class="cmd">Ctrl+W &lt;</span>      <span class="cm"># decrease current window width by 1 column</span>
+<span class="vr">10</span><span class="cmd">Ctrl+W +</span>   <span class="cm"># increase height by 10 lines (count prefix works)</span>
+
+<span class="cm"># Or set an exact size:</span>
+<span class="kw">:</span><span class="cmd">resize</span> <span class="vr">30</span>    <span class="cm"># set current window height to 30 lines</span>
+<span class="kw">:</span><span class="cmd">vertical resize</span> <span class="vr">80</span>  <span class="cm"># set width to 80 columns</span></pre>
+
+<h3>Closing and rearranging windows</h3>
+
+<pre><span class="cmd">Ctrl+W c</span>      <span class="cm"># close current window (buffer remains in list)</span>
+<span class="cmd">Ctrl+W o</span>      <span class="cm"># close all OTHER windows — only keep current one (":only")</span>
+<span class="kw">:</span><span class="cmd">q</span>             <span class="cm"># quit current window (if only one window, quits Vim)</span>
+<span class="kw">:</span><span class="cmd">only</span>          <span class="cm"># same as Ctrl+W o</span>
+
+<span class="cm"># Moving windows:</span>
+<span class="cmd">Ctrl+W r</span>      <span class="cm"># rotate windows downward/rightward</span>
+<span class="cmd">Ctrl+W R</span>      <span class="cm"># rotate upward/leftward</span>
+<span class="cmd">Ctrl+W x</span>      <span class="cm"># exchange current window with the next one</span>
+<span class="cmd">Ctrl+W H</span>      <span class="cm"># move current window to far left (makes it a full-height vertical split)</span>
+<span class="cmd">Ctrl+W J</span>      <span class="cm"># move current window to bottom (full-width horizontal split)</span>
+<span class="cmd">Ctrl+W K</span>      <span class="cm"># move current window to top</span>
+<span class="cmd">Ctrl+W L</span>      <span class="cm"># move current window to far right</span></pre>
+
+<h3>Opening a new buffer in a split</h3>
+
+<pre><span class="kw">:</span><span class="cmd">sp</span> <span class="pth">other.py</span>   <span class="cm"># open other.py in a horizontal split</span>
+<span class="kw">:</span><span class="cmd">vsp</span> <span class="pth">other.py</span>  <span class="cm"># open in a vertical split</span>
+<span class="kw">:</span><span class="cmd">sb</span> <span class="vr">3</span>          <span class="cm"># open buffer 3 in a horizontal split</span>
+<span class="kw">:</span><span class="cmd">vert sb</span> <span class="vr">3</span>     <span class="cm"># open buffer 3 in a vertical split</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Tab Pages</h2>
+
+<p>Tab pages are a layer above windows. Each tab holds its own set of windows and their layout. They are useful for organising completely separate workspaces — for example, one tab for source files and another for documentation — rather than for switching between individual files (that is what buffers and <code>Ctrl+^</code> are for).</p>
+
+<pre><span class="kw">:</span><span class="cmd">tabnew</span>         <span class="cm"># open a new empty tab</span>
+<span class="kw">:</span><span class="cmd">tabnew</span> <span class="pth">file.py</span><span class="cm"># open file in a new tab</span>
+<span class="kw">:</span><span class="cmd">tabclose</span>       <span class="cm"># close the current tab</span>
+<span class="kw">:</span><span class="cmd">tabnext</span>        <span class="cm"># go to next tab (also gt in Normal mode)</span>
+<span class="kw">:</span><span class="cmd">tabprevious</span>    <span class="cm"># go to previous tab (also gT in Normal mode)</span>
+<span class="cmd">gt</span>              <span class="cm"># next tab</span>
+<span class="cmd">gT</span>              <span class="cm"># previous tab</span>
+<span class="vr">2</span><span class="cmd">gt</span>             <span class="cm"># jump to tab 2</span>
+<span class="kw">:</span><span class="cmd">tabs</span>           <span class="cm"># list all tabs and their windows</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Reading External File Content</h2>
+
+<p>The <code>:r</code> (read) command inserts the contents of another file directly into the current buffer at the cursor position. This is useful for inserting licence headers, boilerplate code, templates, or any file content you want to pull in without leaving Vim.</p>
+
+<pre><span class="kw">:</span><span class="cmd">r</span> <span class="pth">licence.txt</span>  <span class="cm"># insert contents of licence.txt BELOW the current line</span>
+<span class="kw">:</span><span class="cmd">0r</span> <span class="pth">header.py</span>   <span class="cm"># insert at the very top of the file (line 0 = before line 1)</span>
+<span class="kw">:-</span><span class="cmd">1r</span> <span class="pth">file.txt</span>   <span class="cm"># insert one line ABOVE the cursor</span>
+<span class="kw">:$r</span> <span class="pth">footer.txt</span>  <span class="cm"># insert at the very end of the file</span>
+<span class="kw">:</span><span class="vr">42</span><span class="cmd">r</span> <span class="pth">snippet.py</span> <span class="cm"># insert after line 42 specifically</span></pre>
+
+<p>Tab completion works with <code>:r</code> just as with <code>:e</code> — start typing the path and press <code>Tab</code> to complete it.</p>
+
+<h3>Reading command output into the buffer</h3>
+
+<p>A powerful variant: <code>:r!</code> executes a shell command and inserts its output into the buffer:</p>
+
+<pre><span class="kw">:</span><span class="cmd">r!</span> <span class="st">date</span>             <span class="cm"># insert today's date at the cursor position</span>
+<span class="kw">:</span><span class="cmd">r!</span> <span class="st">ls *.py</span>          <span class="cm"># insert a list of Python files</span>
+<span class="kw">:</span><span class="cmd">r!</span> <span class="st">cat README.md</span>    <span class="cm"># insert contents of README (same as :r but via shell)</span>
+<span class="kw">:</span><span class="cmd">r!</span> <span class="st">python3 -c "import sys; print(sys.version)"</span>   <span class="cm"># insert Python version string</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Workflow — Comparing Two Files</h2>
+
+<p>A common real-world use case: comparing two versions of a file or checking how a config value is used in two different scripts.</p>
+
+<div class="workflow-box">
+  <h4>Workflow — side-by-side file comparison</h4>
+  <div class="workflow-step">
+    <span class="step-num">1</span>
+    <span class="step-cmd">vim app_v1.py</span>
+    <span class="step-desc">Open the first file from the shell.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">2</span>
+    <span class="step-cmd">:vsplit app_v2.py</span>
+    <span class="step-desc">Open the second file in a vertical split — both are now visible side by side.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">3</span>
+    <span class="step-cmd">Ctrl+W =</span>
+    <span class="step-desc">Equalise the window widths so both get the same space.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">4</span>
+    <span class="step-cmd">Ctrl+W h / l</span>
+    <span class="step-desc">Move between the two windows using HJKL navigation.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">5</span>
+    <span class="step-cmd">:set scrollbind</span>
+    <span class="step-desc">Run in <em>both</em> windows (switch with Ctrl+W l, run again). Now scrolling one window scrolls both simultaneously — perfect for comparison.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">6</span>
+    <span class="step-cmd">Ctrl+W o</span>
+    <span class="step-desc">When done comparing, close all other windows and return to a single view.</span>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>Vim's built-in diff mode:</strong> For a proper diff view with changes highlighted, open Vim in diff mode from the shell: <code>vimdiff file1.py file2.py</code>. This automatically splits the screen, enables <code>scrollbind</code>, and colour-highlights the differences between the two files. Navigate between differences with <code>]c</code> (next change) and <code>[c</code> (previous change).
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Workflow — Adding a Licence Header</h2>
+
+<div class="workflow-box">
+  <h4>Workflow — inserting a licence header with :r</h4>
+  <div class="workflow-step">
+    <span class="step-num">1</span>
+    <span class="step-cmd">vim script.py</span>
+    <span class="step-desc">Open the Python file that needs the header.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">2</span>
+    <span class="step-cmd">:0r licence.txt</span>
+    <span class="step-desc">Insert the licence file content at the very top (line 0 = before line 1). Tab complete the filename.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">3</span>
+    <span class="step-cmd">gg</span>
+    <span class="step-desc">Jump to the top to verify the header was inserted correctly.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">4</span>
+    <span class="step-cmd">:w</span>
+    <span class="step-desc">Save the file.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Commands Introduced in This Chapter</h2>
+
+<div class="cmd-ref">
+  <h4>Chapter 6 — Command Reference</h4>
+
+  <div class="cmd-section">Buffer operations</div>
+  <div class="cmd-row"><span class="cmd-key">:ls</span><span class="cmd-desc">List all open buffers (also <code>:buffers</code>, <code>:files</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:bn / :bp</span><span class="cmd-desc">Next / previous buffer</span></div>
+  <div class="cmd-row"><span class="cmd-key">:bf / :bl</span><span class="cmd-desc">First / last buffer in the list</span></div>
+  <div class="cmd-row"><span class="cmd-key">:b {n}</span><span class="cmd-desc">Switch to buffer number n</span></div>
+  <div class="cmd-row"><span class="cmd-key">:b {name}</span><span class="cmd-desc">Switch to buffer matching name (partial, Tab-complete)</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+^</span><span class="cmd-desc">Toggle between current and alternate (#) buffer</span></div>
+  <div class="cmd-row"><span class="cmd-key">:bd</span><span class="cmd-desc">Delete (unload) current buffer</span></div>
+  <div class="cmd-row"><span class="cmd-key">:bd!</span><span class="cmd-desc">Force-delete buffer with unsaved changes</span></div>
+  <div class="cmd-row"><span class="cmd-key">:bw</span><span class="cmd-desc">Wipe buffer (remove from list entirely)</span></div>
+  <div class="cmd-row"><span class="cmd-key">%bd</span><span class="cmd-desc">Delete all buffers</span></div>
+  <div class="cmd-row"><span class="cmd-key">:e!</span><span class="cmd-desc">Reload current file from disk, discard changes</span></div>
+  <div class="cmd-row"><span class="cmd-key">:e .</span><span class="cmd-desc">Open directory browser (netrw)</span></div>
+
+  <div class="cmd-section">Window splits</div>
+  <div class="cmd-row"><span class="cmd-key">:split / :sp</span><span class="cmd-desc">Horizontal split (same or new buffer)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:vsplit / :vsp</span><span class="cmd-desc">Vertical split (side by side)</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W s</span><span class="cmd-desc">Horizontal split (shortcut)</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W v</span><span class="cmd-desc">Vertical split (shortcut)</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W n</span><span class="cmd-desc">New empty horizontal split</span></div>
+  <div class="cmd-row"><span class="cmd-key">:sb {n}</span><span class="cmd-desc">Open buffer n in a horizontal split</span></div>
+  <div class="cmd-row"><span class="cmd-key">:vert sb {n}</span><span class="cmd-desc">Open buffer n in a vertical split</span></div>
+
+  <div class="cmd-section">Window navigation</div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W w / W</span><span class="cmd-desc">Cycle to next / previous window</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W h/j/k/l</span><span class="cmd-desc">Move to window left / down / up / right</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W t / b</span><span class="cmd-desc">Move to top-left / bottom-right window</span></div>
+
+  <div class="cmd-section">Window resizing</div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W =</span><span class="cmd-desc">Equalise all window sizes</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W _ / |</span><span class="cmd-desc">Maximise current window height / width</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W +/−</span><span class="cmd-desc">Increase / decrease window height</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W &gt;/&lt;</span><span class="cmd-desc">Increase / decrease window width</span></div>
+  <div class="cmd-row"><span class="cmd-key">:resize {n}</span><span class="cmd-desc">Set window height to n lines</span></div>
+  <div class="cmd-row"><span class="cmd-key">:vertical resize {n}</span><span class="cmd-desc">Set window width to n columns</span></div>
+
+  <div class="cmd-section">Window closing &amp; rearranging</div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W c</span><span class="cmd-desc">Close current window</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W o / :only</span><span class="cmd-desc">Close all other windows, keep only current</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W r / R</span><span class="cmd-desc">Rotate windows down/right or up/left</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W x</span><span class="cmd-desc">Exchange current window with next</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W H/J/K/L</span><span class="cmd-desc">Move window to far left/bottom/top/right</span></div>
+
+  <div class="cmd-section">Tab pages</div>
+  <div class="cmd-row"><span class="cmd-key">:tabnew / :tabnew {file}</span><span class="cmd-desc">Open a new tab (empty or with file)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:tabclose</span><span class="cmd-desc">Close current tab</span></div>
+  <div class="cmd-row"><span class="cmd-key">gt / gT</span><span class="cmd-desc">Go to next / previous tab</span></div>
+  <div class="cmd-row"><span class="cmd-key">{n}gt</span><span class="cmd-desc">Go to tab number n</span></div>
+  <div class="cmd-row"><span class="cmd-key">:tabs</span><span class="cmd-desc">List all tabs and their windows</span></div>
+
+  <div class="cmd-section">Reading files</div>
+  <div class="cmd-row"><span class="cmd-key">:r {file}</span><span class="cmd-desc">Insert file contents below current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">:0r {file}</span><span class="cmd-desc">Insert at very top of file</span></div>
+  <div class="cmd-row"><span class="cmd-key">:-1r {file}</span><span class="cmd-desc">Insert one line above cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">:{n}r {file}</span><span class="cmd-desc">Insert after line n</span></div>
+  <div class="cmd-row"><span class="cmd-key">:r! {cmd}</span><span class="cmd-desc">Insert output of shell command into buffer</span></div>
+
+  <div class="cmd-section">Diff mode</div>
+  <div class="cmd-row"><span class="cmd-key">vimdiff f1 f2</span><span class="cmd-desc">Open two files in diff mode (from shell)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set scrollbind</span><span class="cmd-desc">Link scrolling of multiple windows together</span></div>
+  <div class="cmd-row"><span class="cmd-key">]c / [c</span><span class="cmd-desc">Jump to next / previous change in diff mode</span></div>
+</div>
+
+</div>

@@ -1,0 +1,473 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 260px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  .fn  { color: #b392f0; }
+  /* program model diagram */
+  .prog-model {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.9rem;
+  }
+  .pm-row { display: flex; align-items: center; gap: 0.6em; margin: 0.4em 0; }
+  .pm-kw   { color: #f97583; min-width: 60px; }
+  .pm-brace { color: #5a6a8a; }
+  .pm-action { color: #85e89d; }
+  .pm-sep   { color: #5a6a8a; font-size: 0.8rem; }
+  .pm-pat   { color: #ffa657; }
+  .pm-ann   { color: #5a6a8a; font-size: 0.8rem; font-style: italic; margin-left: 0.5em; }
+  /* field diagram */
+  .field-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.9rem; line-height: 2.2;
+  }
+  .fv-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.3em; }
+  .fv-line  { color: #c9d8ff; }
+  .fv-f0 { color: #c9d8ff; }
+  .fv-f1 { color: #ffab70; }
+  .fv-f2 { color: #85e89d; }
+  .fv-f3 { color: #d2a8ff; }
+  .fv-f4 { color: #79b8ff; }
+  .fv-sep { color: #5a6a8a; }
+  /* match function diagram */
+  .match-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2;
+  }
+  .mv-hdr  { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.3em; }
+  .mv-fn   { color: #b392f0; }
+  .mv-rx   { color: #ffa657; }
+  .mv-pos  { color: #85e89d; }
+  .mv-len  { color: #ffab70; }
+  .mv-0    { color: #f97583; }
+  /* operator cards */
+  .op-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7em; margin: 1em 0; }
+  .op-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 0.95em;
+  }
+  .op-card .oc-op   { font-family: 'Consolas', monospace; font-size: 1rem; color: #f97583; display: block; margin-bottom: 0.15em; }
+  .op-card .oc-name { color: #c9d8ff; font-size: 0.83rem; font-weight: bold; display: block; margin-bottom: 0.2em; }
+  .op-card .oc-desc { color: #7a8aaa; font-size: 0.8rem; line-height: 1.4; }
+  /* portability */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.gnu { color: #ffab70; }
+  .lx-lesson td.no  { color: #f97583; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 9 — Regex in awk</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The awk Program Model</h2>
+
+<p><code>awk</code> is a complete data-processing language built around a simple loop: for every line of input, test each <em>pattern</em> — if it matches, run its <em>action</em>. Regex is the most common pattern type, and awk provides richer regex integration than either grep or sed because it can combine pattern matching with arithmetic, string functions, and formatted output.</p>
+
+<div class="prog-model">
+  <div class="pm-row"><span class="pm-kw">BEGIN</span><span class="pm-brace">{</span> <span class="pm-action">setup before any input is read</span> <span class="pm-brace">}</span></div>
+  <div class="pm-row"><span style="min-width:60px; color:#ffa657;">/regex/</span><span class="pm-brace">{</span> <span class="pm-action">action for matching lines</span> <span class="pm-brace">}</span> <span class="pm-ann">— regex pattern</span></div>
+  <div class="pm-row"><span style="min-width:60px; color:#ffa657;">expr</span><span class="pm-brace">{</span> <span class="pm-action">action when expression is true</span> <span class="pm-brace">}</span> <span class="pm-ann">— expression pattern</span></div>
+  <div class="pm-row"><span style="min-width:60px; color:#ffa657;">pat,pat</span><span class="pm-brace">{</span> <span class="pm-action">action for a range of lines</span> <span class="pm-brace">}</span> <span class="pm-ann">— range pattern</span></div>
+  <div class="pm-row"><span class="pm-kw">END</span><span class="pm-brace">{</span> <span class="pm-action">cleanup / summary after all input</span> <span class="pm-brace">}</span></div>
+</div>
+
+<pre><span class="cm"># Minimal example: print lines containing "error"</span>
+<span class="cmd">awk</span> <span class="st">'/error/'</span> <span class="pth">app.log</span>            <span class="cm"># pattern only — default action is print</span>
+<span class="cmd">awk</span> <span class="st">'/error/ { print }'</span> <span class="pth">app.log</span>  <span class="cm"># explicit print — identical result</span>
+
+<span class="cm"># Multiple rules — each is tested independently against every line</span>
+<span class="cmd">awk</span> <span class="st">'/ERROR/ { errors++ }
+     /WARN/  { warns++ }
+     END     { print "Errors:", errors, "  Warnings:", warns }'</span> <span class="pth">app.log</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Fields and $0</h2>
+
+<p>awk automatically splits each input line into fields separated by the field separator <code>FS</code> (default: any whitespace). Regex is most powerful in awk when combined with field access.</p>
+
+<div class="field-vis">
+  <span class="fv-hdr">Input line: "2026-06-11 14:32:00 ERROR database connection failed"</span>
+  <span><span class="fv-f0">$0</span> <span class="fv-sep">=</span> <span class="fv-f0">"2026-06-11 14:32:00 ERROR database connection failed"</span>  <span style="color:#5a6a8a; font-size:0.8rem;">(entire line)</span></span>
+  <span><span class="fv-f1">$1</span> <span class="fv-sep">=</span> <span class="fv-f1">"2026-06-11"</span></span>
+  <span><span class="fv-f2">$2</span> <span class="fv-sep">=</span> <span class="fv-f2">"14:32:00"</span></span>
+  <span><span class="fv-f3">$3</span> <span class="fv-sep">=</span> <span class="fv-f3">"ERROR"</span></span>
+  <span><span class="fv-f4">$4 … $NF</span> <span class="fv-sep">=</span> <span class="fv-f4">"database connection failed"</span>  <span style="color:#5a6a8a; font-size:0.8rem;">(NF = number of fields = 6)</span></span>
+</div>
+
+<pre><span class="cm"># Print only the timestamp and message from error lines</span>
+<span class="cmd">awk</span> <span class="st">'/ERROR/ { print $1, $2, $4, $5, $6 }'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Custom field separator: parse colon-delimited /etc/passwd</span>
+<span class="cmd">awk</span> <span class="fl">-F:</span> <span class="st">'/\/bin\/bash$/ { print $1 }'</span> <span class="pth">/etc/passwd</span>  <span class="cm"># users with bash shell</span>
+
+<span class="cm"># FS can itself be a regex (gawk/mawk/nawk)</span>
+<span class="cmd">awk</span> <span class="fl">-F'[,;|]'</span> <span class="st">'{ print $2 }'</span> <span class="pth">data.txt</span>   <span class="cm"># split on comma, semicolon, or pipe</span>
+
+<span class="cm"># Set FS inside BEGIN (equivalent to -F)</span>
+<span class="cmd">awk</span> <span class="st">'BEGIN { FS = ":" } /root/ { print $1, $6 }'</span> <span class="pth">/etc/passwd</span>
+
+<span class="cm"># NF: last field regardless of how many fields a line has</span>
+<span class="cmd">awk</span> <span class="st">'{ print $NF }'</span> <span class="pth">file.txt</span>          <span class="cm"># last field of every line</span>
+<span class="cmd">awk</span> <span class="st">'{ print $(NF-1) }'</span> <span class="pth">file.txt</span>      <span class="cm"># second-to-last field</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Regex Operators in awk</h2>
+
+<div class="op-grid">
+  <div class="op-card">
+    <span class="oc-op">/regex/</span>
+    <span class="oc-name">Match $0</span>
+    <span class="oc-desc">Pattern rule: true when the whole line matches the regex.</span>
+  </div>
+  <div class="op-card">
+    <span class="oc-op">$N ~ /regex/</span>
+    <span class="oc-name">Field match</span>
+    <span class="oc-desc">True when field N matches the regex. Most useful awk regex feature.</span>
+  </div>
+  <div class="op-card">
+    <span class="oc-op">$N !~ /regex/</span>
+    <span class="oc-name">Field no-match</span>
+    <span class="oc-desc">True when field N does NOT match. Invert the test.</span>
+  </div>
+  <div class="op-card">
+    <span class="oc-op">~ in conditions</span>
+    <span class="oc-name">Dynamic regex</span>
+    <span class="oc-desc">Used inside <code>if</code>, <code>while</code>, ternary expressions — not just as a top-level pattern.</span>
+  </div>
+  <div class="op-card">
+    <span class="oc-op">/re1/,/re2/</span>
+    <span class="oc-name">Range pattern</span>
+    <span class="oc-desc">Activates at a line matching re1, stays active until a line matches re2.</span>
+  </div>
+  <div class="op-card">
+    <span class="oc-op">!/regex/</span>
+    <span class="oc-name">Negated pattern</span>
+    <span class="oc-desc">True when $0 does NOT match. Equivalent to <code>grep -v</code>.</span>
+  </div>
+</div>
+
+<pre><span class="cm"># ~ operator: test a specific field</span>
+<span class="cmd">awk</span> <span class="fl">-F,</span> <span class="st">'$3 ~ /^[0-9]+$/ { print $1, $3 }'</span> <span class="pth">data.csv</span>   <span class="cm"># field 3 is all digits</span>
+<span class="cmd">awk</span> <span class="fl">-F:</span> <span class="st">'$3 ~ /^[0-9]+$/ &amp;&amp; $3+0 &gt;= 1000 { print $1 }'</span> <span class="pth">/etc/passwd</span>  <span class="cm"># UID >= 1000</span>
+
+<span class="cm"># !~ operator: exclude a field pattern</span>
+<span class="cmd">awk</span> <span class="fl">-F,</span> <span class="st">'$2 !~ /^[A-Z]/ { print "Bad name:", $2 }'</span> <span class="pth">names.csv</span>
+
+<span class="cm"># Negated line pattern</span>
+<span class="cmd">awk</span> <span class="st">'!/^#/ &amp;&amp; !/^$/'</span> <span class="pth">config.txt</span>   <span class="cm"># skip comment and blank lines</span>
+
+<span class="cm"># Range pattern: print lines between markers (inclusive)</span>
+<span class="cmd">awk</span> <span class="st">'/^START/,/^END/'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Range pattern with action</span>
+<span class="cmd">awk</span> <span class="st">'/^\[database\]/,/^\[/ { print }'</span> <span class="pth">config.ini</span>  <span class="cm"># print [database] section</span>
+
+<span class="cm"># Dynamic regex: variable used as regex with ~</span>
+<span class="vr">PATTERN</span><span class="op">=</span><span class="st">"ERROR"</span>
+<span class="cmd">awk</span> <span class="fl">-v</span> <span class="vr">pat</span><span class="op">=</span><span class="st">"$PATTERN"</span> <span class="st">'$0 ~ pat { print }'</span> <span class="pth">app.log</span>
+
+<span class="cm"># ~ inside an if statement</span>
+<span class="cmd">awk</span> <span class="st">'{
+    if ($1 ~ /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)
+        print "date:", $1
+    else
+        print "not a date:", $1
+}'</span> <span class="pth">file.txt</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The match() Function</h2>
+
+<p><code>match(string, regex)</code> searches for the regex anywhere in <em>string</em>, sets two special variables, and returns the position of the match (or 0 if no match).</p>
+
+<div class="match-vis">
+  <span class="mv-hdr">match("order #12345 placed", /[0-9]+/)</span>
+  <span>returns  <span class="mv-pos">8</span>           <span style="color:#5a6a8a; font-size:0.8rem;">(start position of match, 1-indexed)</span></span>
+  <span><span class="mv-fn">RSTART</span>  = <span class="mv-pos">8</span>           <span style="color:#5a6a8a; font-size:0.8rem;">(same as return value)</span></span>
+  <span><span class="mv-fn">RLENGTH</span> = <span class="mv-len">5</span>           <span style="color:#5a6a8a; font-size:0.8rem;">(length of matched text = "12345")</span></span>
+  <span>no match → returns <span class="mv-0">0</span>, RSTART = <span class="mv-0">0</span>, RLENGTH = <span class="mv-0">-1</span></span>
+</div>
+
+<pre><span class="cm"># match() + substr() to extract the matched text</span>
+<span class="cmd">echo</span> <span class="st">"order #12345 placed"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{
+    if (match($0, /[0-9]+/))
+        print "Order number:", substr($0, RSTART, RLENGTH)
+}'</span>
+<span class="out">Order number: 12345</span>
+
+<span class="cm"># Extract version number from a string</span>
+<span class="cmd">echo</span> <span class="st">"nginx/1.24.0"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ match($0, /[0-9]+\.[0-9.]+/); print substr($0, RSTART, RLENGTH) }'</span>
+<span class="out">1.24.0</span>
+
+<span class="cm"># Use match() return value as a boolean</span>
+<span class="cmd">awk</span> <span class="st">'match($0, /ERROR: (.+)/) { print RSTART, RLENGTH }'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Loop to extract all matches (one per call — advance string manually)</span>
+<span class="cmd">echo</span> <span class="st">"foo123 bar456 baz789"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{
+    s = $0
+    while (match(s, /[0-9]+/)) {
+        print substr(s, RSTART, RLENGTH)
+        s = substr(s, RSTART + RLENGTH)
+    }
+}'</span>
+<span class="out">123</span>
+<span class="out">456</span>
+<span class="out">789</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>match() with Capture Arrays (gawk)</h2>
+
+<p>In <code>gawk</code>, <code>match()</code> accepts a third argument — an array that is populated with capture groups, giving awk true regex capture support.</p>
+
+<pre><span class="cm"># match(string, regex, array) — gawk only</span>
+<span class="cm"># array[0] = full match, array[1] = group 1, array[2] = group 2, ...</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11"</span> <span class="op">|</span> <span class="cmd">gawk</span> <span class="st">'{
+    if (match($0, /([0-9]{4})-([0-9]{2})-([0-9]{2})/, a))
+        printf "year=%s month=%s day=%s\n", a[1], a[2], a[3]
+}'</span>
+<span class="out">year=2026 month=06 day=11</span>
+
+<span class="cm"># Parse a log line into components</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11 14:32:00 ERROR database connection failed"</span> <span class="op">|</span> \
+<span class="cmd">gawk</span> <span class="st">'{
+    if (match($0, /^([0-9-]+) ([0-9:]+) ([A-Z]+) (.+)/, a))
+        printf "date=%s time=%s level=%s msg=%s\n", a[1], a[2], a[3], a[4]
+}'</span>
+<span class="out">date=2026-06-11 time=14:32:00 level=ERROR msg=database connection failed</span>
+
+<span class="cm"># Extract URL components</span>
+<span class="cmd">echo</span> <span class="st">"https://api.example.com:8080/v2/users"</span> <span class="op">|</span> \
+<span class="cmd">gawk</span> <span class="st">'{
+    match($0, /^(https?):\/\/([^:/]+)(:([0-9]+))?(\/.*)?$/, a)
+    print "scheme:", a[1]
+    print "host:  ", a[2]
+    print "port:  ", (a[4] ? a[4] : "default")
+    print "path:  ", a[5]
+}'</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>sub() and gsub()</h2>
+
+<p><code>sub(regex, replacement, target)</code> replaces the first match; <code>gsub(regex, replacement, target)</code> replaces all matches. If <code>target</code> is omitted, <code>$0</code> is used. Both return the number of replacements made.</p>
+
+<pre><span class="cm"># sub(): replace first match in $0</span>
+<span class="cmd">echo</span> <span class="st">"aaa bbb aaa"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ sub(/aaa/, "xxx"); print }'</span>
+<span class="out">xxx bbb aaa</span>
+
+<span class="cm"># gsub(): replace all matches in $0</span>
+<span class="cmd">echo</span> <span class="st">"aaa bbb aaa"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ gsub(/aaa/, "xxx"); print }'</span>
+<span class="out">xxx bbb xxx</span>
+
+<span class="cm"># target a specific field</span>
+<span class="cmd">echo</span> <span class="st">"foo ERROR bar ERROR"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'-F " " { gsub(/ERROR/, "FAULT", $2); print }'</span>
+<span class="out">foo FAULT bar ERROR</span>   <span class="cm"># only field 2 was targeted</span>
+
+<span class="cm"># & in replacement = entire match (same as sed)</span>
+<span class="cmd">echo</span> <span class="st">"hello world"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ gsub(/[a-z]+/, "[&]"); print }'</span>
+<span class="out">[hello] [world]</span>
+
+<span class="cm"># Escape & and \ in awk replacement strings</span>
+<span class="cmd">echo</span> <span class="st">"foo"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ gsub(/foo/, "a\\&b"); print }'</span>   <span class="cm"># → a&b  (literal &)</span>
+<span class="cmd">echo</span> <span class="st">"foo"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ gsub(/foo/, "a\\\\b"); print }'</span>  <span class="cm"># → a\b  (literal \)</span>
+
+<span class="cm"># Use gsub return value: count replacements</span>
+<span class="cmd">awk</span> <span class="st">'{
+    n = gsub(/ERROR/, "FAULT")
+    if (n > 0) print NR": replaced", n, "occurrence(s)"
+}'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Strip HTML tags from a line</span>
+<span class="cmd">echo</span> <span class="st">"&lt;b&gt;Hello&lt;/b&gt; &lt;i&gt;World&lt;/i&gt;"</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'{ gsub(/&lt;[^&gt;]*&gt;/, ""); print }'</span>
+<span class="out">Hello World</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>gensub() — Capture Groups in Replacement (gawk)</h2>
+
+<p><code>gensub(regex, replacement, how, target)</code> is a gawk extension that supports <code>\1</code>–<code>\9</code> back-references in the replacement string. Unlike <code>sub()</code>/<code>gsub()</code>, it returns the modified string rather than modifying in-place.</p>
+
+<pre><span class="cm"># gensub() syntax: gensub(regex, replacement, how [, target])</span>
+<span class="cm"># how = "g" for global, "1" for first, "2" for second, etc.</span>
+
+<span class="cm"># Reformat date YYYY-MM-DD to DD/MM/YYYY using capture groups</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11"</span> <span class="op">|</span> <span class="cmd">gawk</span> <span class="st">'{
+    print gensub(/([0-9]{4})-([0-9]{2})-([0-9]{2})/, "\\3/\\2/\\1", "g")
+}'</span>
+<span class="out">11/06/2026</span>
+
+<span class="cm"># Swap first and last name</span>
+<span class="cmd">echo</span> <span class="st">"Smith, John"</span> <span class="op">|</span> <span class="cmd">gawk</span> <span class="st">'{ print gensub(/([A-Za-z]+), ([A-Za-z]+)/, "\\2 \\1", 1) }'</span>
+<span class="out">John Smith</span>
+
+<span class="cm"># gensub does not modify $0 — assign the result</span>
+<span class="cmd">awk</span> <span class="st">'{
+    new = gensub(/([0-9]+)/, "(\\1)", "g")  # wrap all numbers
+    print new
+}'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Replace only the second occurrence (how = "2")</span>
+<span class="cmd">echo</span> <span class="st">"cat and cat and cat"</span> <span class="op">|</span> <span class="cmd">gawk</span> <span class="st">'{ print gensub(/cat/, "dog", 2) }'</span>
+<span class="out">cat and dog and cat</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical awk Recipes</h2>
+
+<h3>Log file analysis</h3>
+<pre><span class="cm"># Count events by log level with formatted output</span>
+<span class="cmd">awk</span> <span class="st">'{
+    if ($3 ~ /^(ERROR|WARN|INFO|DEBUG)$/) counts[$3]++
+}
+END {
+    for (level in counts)
+        printf "%-8s %d\n", level, counts[level]
+}'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Extract slow queries: lines where duration field exceeds a threshold</span>
+<span class="cmd">awk</span> <span class="fl">-F,</span> <span class="st">'$4 ~ /ms$/ { dur = $4+0; if (dur > 500) print $2, dur"ms" }'</span> <span class="pth">queries.csv</span>
+
+<span class="cm"># Summarise HTTP status codes from access log</span>
+<span class="cmd">awk</span> <span class="st">'{ match($0, /" [0-9]{3} /); code = substr($0, RSTART+2, 3); codes[code]++ }
+END { for (c in codes) print c, codes[c] }'</span> <span class="pth">access.log</span></pre>
+
+<h3>CSV and structured data</h3>
+<pre><span class="cm"># Print rows where email field looks valid</span>
+<span class="cmd">awk</span> <span class="fl">-F,</span> <span class="st">'$3 ~ /^[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}$/ { print $1, $3 }'</span> <span class="pth">users.csv</span>
+
+<span class="cm"># Extract key=value pairs from config lines</span>
+<span class="cmd">awk</span> <span class="st">'/^[[:alpha:]]/ {
+    match($0, /([^=]+)=(.*)/, a)
+    printf "key=[%s] val=[%s]\n", a[1], a[2]
+}'</span> <span class="pth">config.txt</span>
+
+<span class="cm"># Reformat: turn "Last, First" CSV into "First Last" TSV</span>
+<span class="cmd">awk</span> <span class="fl">-F,</span> <span class="st">'NR>1 {                              # skip header
+    name = gensub(/([^,]+), ([^,]+)/, "\\2 \\1", 1, $1)
+    print name "\t" $2 "\t" $3
+}'</span> <span class="pth">people.csv</span></pre>
+
+<h3>Validation and reporting</h3>
+<pre><span class="cm"># Validate that every line of a file is a valid IPv4 address</span>
+<span class="cmd">awk</span> <span class="st">'{
+    if ($0 !~ /^([0-9]{1,3}\.){3}[0-9]{1,3}$/)
+        print NR": not a valid IP:", $0
+}'</span> <span class="pth">ip_list.txt</span>
+
+<span class="cm"># Report lines where a field value is outside a numeric range</span>
+<span class="cmd">awk</span> <span class="fl">-F,</span> <span class="st">'$2 ~ /^[0-9]+$/ &amp;&amp; ($2+0 < 1 || $2+0 > 100) {
+    print "Out of range on line", NR":", $2
+}'</span> <span class="pth">scores.csv</span>
+
+<span class="cm"># Find duplicate values in field 1</span>
+<span class="cmd">awk</span> <span class="fl">-F,</span> <span class="st">'{ seen[$1]++ }
+END { for (k in seen) if (seen[k] > 1) print "Duplicate:", k, "("seen[k]" times)" }'</span> <span class="pth">data.csv</span></pre>
+
+<h3>Text transformation</h3>
+<pre><span class="cm"># Wrap long lines at word boundary (simple fold at 72 chars)</span>
+<span class="cmd">awk</span> <span class="st">'{ while (length($0) > 72) {
+    print substr($0, 1, 72)
+    $0 = substr($0, 73)
+} print }'</span> <span class="pth">longlines.txt</span>
+
+<span class="cm"># Number every non-blank line</span>
+<span class="cmd">awk</span> <span class="st">'/[^[:space:]]/ { printf "%4d  %s\n", ++n, $0; next } { print }'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Convert Markdown-style headers to uppercase plain text</span>
+<span class="cmd">awk</span> <span class="st">'/^#/ { gsub(/^#+[[:space:]]*/, ""); print toupper($0); next } { print }'</span> <span class="pth">README.md</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>awk Regex Flavour and Portability</h2>
+
+<table>
+  <tr><th>Feature</th><th>POSIX awk</th><th>gawk</th><th>mawk</th></tr>
+  <tr><td>ERE syntax (<code>+</code> <code>?</code> <code>|</code>)</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>POSIX classes (<code>[:alpha:]</code>)</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td><code>\b</code> word boundary</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td><code>\w</code> shorthand</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td><code>match(s,r,array)</code> — capture array</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td><code>gensub(r,rep,how)</code></td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td><code>-F</code> regex separator</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Interval expressions (<code>{n,m}</code>)</td><td class="gnu">Varies</td><td class="yes">Yes (default since 4.0)</td><td class="no">No</td></tr>
+  <tr><td><code>patsplit()</code> function</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+</table>
+
+<div class="warn">
+  <strong>awk uses ERE, not BRE.</strong> Unlike default grep or sed, all three awk flavours use ERE. You do not need <code>\+</code> or <code>\(</code> — use <code>+</code> and <code>(</code> directly. Forgetting this is a common source of "why doesn't my pattern work?" frustration.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 9</h2>
+
+<div class="cmd-ref">
+  <h4>Regex Operators</h4>
+  <div class="cmd-row"><span class="cmd-key">/regex/ { action }</span><span class="cmd-desc">Run action on lines where $0 matches</span></div>
+  <div class="cmd-row"><span class="cmd-key">!/regex/ { action }</span><span class="cmd-desc">Run action on lines where $0 does NOT match</span></div>
+  <div class="cmd-row"><span class="cmd-key">$N ~ /regex/</span><span class="cmd-desc">Field N matches regex</span></div>
+  <div class="cmd-row"><span class="cmd-key">$N !~ /regex/</span><span class="cmd-desc">Field N does not match regex</span></div>
+  <div class="cmd-row"><span class="cmd-key">/re1/,/re2/ { action }</span><span class="cmd-desc">Range pattern: re1 activates, re2 deactivates</span></div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Regex Functions</h4>
+  <div class="cmd-row"><span class="cmd-key">match(s, /r/)</span><span class="cmd-desc">Find r in s; sets RSTART, RLENGTH; returns position or 0</span></div>
+  <div class="cmd-row"><span class="cmd-key">match(s, /r/, arr)</span><span class="cmd-desc">As above; also fills arr[0..N] with captures (gawk only)</span></div>
+  <div class="cmd-row"><span class="cmd-key">sub(/r/, rep)</span><span class="cmd-desc">Replace first match in $0 in-place</span></div>
+  <div class="cmd-row"><span class="cmd-key">gsub(/r/, rep)</span><span class="cmd-desc">Replace all matches in $0 in-place; returns count</span></div>
+  <div class="cmd-row"><span class="cmd-key">sub(/r/, rep, field)</span><span class="cmd-desc">Replace first match in a specific field</span></div>
+  <div class="cmd-row"><span class="cmd-key">gensub(/r/, rep, how)</span><span class="cmd-desc">Return new string; supports \1–\9 in rep (gawk)</span></div>
+  <div class="cmd-row"><span class="cmd-key">split(s, arr, /r/)</span><span class="cmd-desc">Split string s on regex r into array arr</span></div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Useful Variables</h4>
+  <div class="cmd-row"><span class="cmd-key">$0</span><span class="cmd-desc">Entire current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">$N</span><span class="cmd-desc">Field N (1-indexed)</span></div>
+  <div class="cmd-row"><span class="cmd-key">$NF</span><span class="cmd-desc">Last field</span></div>
+  <div class="cmd-row"><span class="cmd-key">NF</span><span class="cmd-desc">Number of fields on current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">NR</span><span class="cmd-desc">Current line number (total across all files)</span></div>
+  <div class="cmd-row"><span class="cmd-key">FS</span><span class="cmd-desc">Field separator (set in BEGIN or with -F)</span></div>
+  <div class="cmd-row"><span class="cmd-key">RSTART / RLENGTH</span><span class="cmd-desc">Set by match(): position and length of match</span></div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 10 covers regex in Bash itself — the <code>[[ =~ ]]</code> operator, <code>BASH_REMATCH</code>, common validation patterns (email, IP, date, URL), building a personal regex library of reusable validation functions, and performance considerations for shell-native pattern matching vs calling external tools.
+</div>
+
+</div>

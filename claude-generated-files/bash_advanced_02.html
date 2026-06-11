@@ -1,0 +1,734 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 2 — POSIX Compliance and Portability</h1>
+<p>Every feature in the preceding chapters relies on Bash being the interpreter.
+The moment your script lands on Alpine Linux (which ships BusyBox ash), a minimal Docker
+image, a FreeBSD jail, or a macOS CI runner, Bash extensions silently fail or behave
+differently. This chapter maps the boundary between portable shell and Bash-specific syntax,
+shows you how to audit your scripts, and teaches you to write sh-compatible code when
+portability genuinely matters.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — The Shebang Line Is a Contract</h2>
+
+<p>The shebang declares the interpreter and sets expectations for every line that follows.</p>
+
+<pre><span class="sh">#!/bin/bash</span>       <span class="cm"># explicit bash — use all features freely, but requires bash at /bin/bash</span>
+<span class="sh">#!/usr/bin/env bash</span>  <span class="cm"># portable bash — finds bash on PATH; preferred for distributed scripts</span>
+<span class="sh">#!/bin/sh</span>         <span class="cm"># POSIX sh — must avoid ALL bash extensions</span>
+<span class="sh">#!/usr/bin/env sh</span>   <span class="cm"># portable POSIX sh — on some systems sh IS bash (in POSIX mode)</span></pre>
+
+<div class="warn">
+<strong><code>/bin/sh</code> is not Bash.</strong> On Debian/Ubuntu, <code>/bin/sh</code> is
+<strong>dash</strong> — a fast, minimal POSIX-only shell. On macOS (since Catalina),
+<code>/bin/sh</code> is a locked-down build of Bash 3.2 in POSIX mode. On Alpine Linux and
+BusyBox systems it is <strong>ash</strong>. Writing <code>#!/bin/bash</code> and accidentally
+running it with <code>sh myscript.sh</code> ignores the shebang entirely — the shell is whatever
+<code>sh</code> resolves to.
+</div>
+
+<h3>Bash's POSIX mode</h3>
+<pre><span class="cm"># Invoke bash in strict POSIX mode to test portability</span>
+<span class="cmd">bash</span> <span class="fl">--posix</span> myscript.sh
+
+<span class="cm"># Or set from within a script (rarely useful in production)</span>
+<span class="kw">set</span> <span class="fl">-o</span> posix</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — The Master Compatibility Table</h2>
+
+<p>These are the features you reach for automatically in Bash that simply do not exist
+in POSIX <span class="inline-code">sh</span>.</p>
+
+<table>
+  <tr><th>Feature</th><th>Bash syntax</th><th>POSIX / portable alternative</th></tr>
+  <tr>
+    <td>Arrays</td>
+    <td><code>arr=(a b c)</code>, <code>${arr[@]}</code></td>
+    <td>Positional params <code>set --</code>, or delimited strings</td>
+  </tr>
+  <tr>
+    <td>Associative arrays</td>
+    <td><code>declare -A map</code></td>
+    <td>No equivalent — use awk, or encode as <code>key=value</code> lines</td>
+  </tr>
+  <tr>
+    <td>Double-bracket test</td>
+    <td><code>[[ expr ]]</code></td>
+    <td><code>[ expr ]</code> (quote everything) or <code>case</code></td>
+  </tr>
+  <tr>
+    <td>Arithmetic compound cmd</td>
+    <td><code>(( expr ))</code></td>
+    <td><code>[ $((expr)) -ne 0 ]</code> or <code>expr</code></td>
+  </tr>
+  <tr>
+    <td>Process substitution</td>
+    <td><code>&lt;(cmd)</code>, <code>&gt;(cmd)</code></td>
+    <td>Named pipe (mkfifo) or temp file</td>
+  </tr>
+  <tr>
+    <td>Brace expansion</td>
+    <td><code>{a,b,c}</code>, <code>{1..5}</code></td>
+    <td>Explicit list or loop</td>
+  </tr>
+  <tr>
+    <td>Here-string</td>
+    <td><code>&lt;&lt;&lt; "string"</code></td>
+    <td><code>printf '%s' "string" |</code> or <code>echo … |</code></td>
+  </tr>
+  <tr>
+    <td><code>local</code> keyword</td>
+    <td><code>local var=val</code></td>
+    <td>POSIX optional but widely supported; use carefully</td>
+  </tr>
+  <tr>
+    <td>String case conversion</td>
+    <td><code>${var^^}</code>, <code>${var,,}</code></td>
+    <td><code>printf '%s' "$var" | tr '[:lower:]' '[:upper:]'</code></td>
+  </tr>
+  <tr>
+    <td>Regex matching</td>
+    <td><code>[[ $x =~ regex ]]</code></td>
+    <td><code>printf '%s' "$x" | grep -Eq 'regex'</code> or <code>expr</code></td>
+  </tr>
+  <tr>
+    <td><code>mapfile</code> / <code>readarray</code></td>
+    <td><code>mapfile -t arr &lt; file</code></td>
+    <td><code>while IFS= read -r line; do …</code></td>
+  </tr>
+  <tr>
+    <td>Coprocesses</td>
+    <td><code>coproc NAME { … }</code></td>
+    <td>Named pipes (mkfifo)</td>
+  </tr>
+  <tr>
+    <td><code>declare</code> / <code>typeset</code></td>
+    <td><code>declare -i</code>, <code>declare -r</code></td>
+    <td><code>readonly</code> for constants; no integer type</td>
+  </tr>
+  <tr>
+    <td>Extended globs</td>
+    <td><code>!(*.log)</code>, <code>+(foo)</code></td>
+    <td>Multiple explicit patterns or <code>case</code></td>
+  </tr>
+  <tr>
+    <td><code>$'...'</code> quoting</td>
+    <td><code>$'\n'</code>, <code>$'\t'</code></td>
+    <td><code>printf '\n'</code> or <code>$(printf '\t')</code></td>
+  </tr>
+  <tr>
+    <td>Source with arguments</td>
+    <td><code>source file arg1</code></td>
+    <td><code>. file</code> (no arguments in strict POSIX)</td>
+  </tr>
+  <tr>
+    <td><code>pipefail</code></td>
+    <td><code>set -o pipefail</code></td>
+    <td>Not available — capture each pipe stage manually</td>
+  </tr>
+  <tr>
+    <td>Namerefs</td>
+    <td><code>local -n ref=var</code></td>
+    <td>No equivalent — use eval (carefully) or global names</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — ShellCheck: Automated Portability Auditing</h2>
+
+<p><span class="inline-code">shellcheck</span> is the single most valuable tool for portability
+work. It understands both the shebang and a <span class="inline-code">--shell</span> override,
+and distinguishes between bugs, style issues, and portability problems.</p>
+
+<pre><span class="cm"># Audit a script for POSIX compatibility</span>
+<span class="cmd">shellcheck</span> <span class="fl">--shell</span><span class="op">=</span>sh myscript.sh
+
+<span class="cm"># Check for issues at a specific POSIX standard level</span>
+<span class="cmd">shellcheck</span> <span class="fl">--shell</span><span class="op">=</span>sh <span class="fl">--severity</span><span class="op">=</span>warning myscript.sh
+
+<span class="cm"># In CI — exit non-zero on any warning or error</span>
+<span class="cmd">shellcheck</span> <span class="fl">-x</span> <span class="fl">--shell</span><span class="op">=</span>sh myscript.sh
+
+<span class="cm"># Check multiple files at once</span>
+<span class="cmd">find</span> . <span class="fl">-name</span> <span class="st">'*.sh'</span> <span class="fl">-print0</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="fl">-0</span> shellcheck
+
+<span class="cm"># Inline directive to suppress a specific warning</span>
+<span class="cm"># shellcheck disable=SC2039</span>
+<span class="kw">local</span> <span class="vr">x</span><span class="op">=</span><span class="st">'value'</span>   <span class="cm"># SC2039: 'local' not defined in POSIX sh</span></pre>
+
+<h3>Key SC codes for portability</h3>
+<table>
+  <tr><th>Code</th><th>Issue</th></tr>
+  <tr><td><code>SC2039</code></td><td>Feature not supported in <code>--posix</code> mode (<code>local</code>, <code>[[</code>, arrays, etc.)</td></tr>
+  <tr><td><code>SC3000–SC3999</code></td><td>Not POSIX (the SC3xxx series was added specifically for sh portability)</td></tr>
+  <tr><td><code>SC2006</code></td><td>Backtick command substitution — use <code>$(…)</code></td></tr>
+  <tr><td><code>SC2196</code></td><td><code>egrep</code> deprecated — use <code>grep -E</code></td></tr>
+  <tr><td><code>SC2154</code></td><td>Variable referenced but not assigned</td></tr>
+  <tr><td><code>SC2086</code></td><td>Double-quote to prevent word splitting / globbing</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — Writing POSIX-Compatible Code</h2>
+
+<p>The discipline is: reach for the portable form first, and use Bash extensions only when
+there is a genuine reason. Here are the most common translation patterns.</p>
+
+<h3>Replacing <code>[[ ]]</code> with <code>[ ]</code> and <code>case</code></h3>
+<pre><span class="cm">## Bash ────────────────────────────────────────</span>
+[[ <span class="vr">$str</span> <span class="op">==</span> foo<span class="op">*</span> ]]              <span class="cm"># pattern match</span>
+[[ <span class="vr">$str</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]]         <span class="cm"># regex match</span>
+[[ <span class="fl">-n</span> <span class="vr">$x</span> <span class="op">&&</span> <span class="fl">-f</span> <span class="vr">$file</span> ]]        <span class="cm"># compound test</span>
+
+<span class="cm">## POSIX ────────────────────────────────────────</span>
+<span class="kw">case</span> <span class="st">"<span class="vr">$str</span>"</span> <span class="kw">in</span> foo<span class="op">*</span>) <span class="cmd">echo</span> match ;; <span class="kw">esac</span>   <span class="cm"># pattern via case</span>
+
+<span class="kw">case</span> <span class="st">"<span class="vr">$str</span>"</span> <span class="kw">in</span>                                 <span class="cm"># digit-only check</span>
+  <span class="op">*</span>[!0-9]<span class="op">*</span><span class="op">|</span><span class="st">''</span>) <span class="cmd">echo</span> <span class="st">"not integer"</span> ;;
+  <span class="op">*</span>) <span class="cm"># is integer</span>
+<span class="kw">esac</span>
+
+[ <span class="fl">-n</span> <span class="st">"<span class="vr">$x</span>"</span> ] <span class="op">&&</span> [ <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span> ]                <span class="cm"># separate [ ] calls</span></pre>
+
+<h3>Replacing arrays with positional parameters</h3>
+<pre><span class="cm">## Bash ────────────────────────────────────────</span>
+<span class="vr">items</span><span class="op">=</span>( one two three )
+<span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"${items[@]}"</span>; <span class="kw">do</span> <span class="cmd">echo</span> <span class="st">"<span class="vr">$item</span>"</span>; <span class="kw">done</span>
+
+<span class="cm">## POSIX ────────────────────────────────────────</span>
+<span class="kw">set</span> <span class="fl">--</span> one two three
+<span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span> <span class="cmd">echo</span> <span class="st">"<span class="vr">$item</span>"</span>; <span class="kw">done</span>
+
+<span class="cm"># When you need to preserve $@ for the original arguments,
+# use a wrapper function — each function has its own $@</span>
+<span class="fn">process_list</span>() {
+  <span class="kw">set</span> <span class="fl">--</span> one two three   <span class="cm"># local to this function's positional params</span>
+  <span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span> <span class="cmd">echo</span> <span class="st">"<span class="vr">$item</span>"</span>; <span class="kw">done</span>
+}</pre>
+
+<h3>Replacing here-strings</h3>
+<pre><span class="cm">## Bash</span>
+<span class="cmd">grep</span> <span class="st">'pattern'</span> <span class="op"><<<</span><span class="st">"<span class="vr">$variable</span>"</span>
+
+<span class="cm">## POSIX</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$variable</span>"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'pattern'</span>
+<span class="cm"># or, if the variable might lack a trailing newline:</span>
+<span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$variable</span>"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'pattern'</span></pre>
+
+<h3>Replacing <code>$'...'</code> quoting</h3>
+<pre><span class="cm">## Bash</span>
+<span class="vr">NL</span><span class="op">=</span>$<span class="st">'\n'</span>
+<span class="vr">TAB</span><span class="op">=</span>$<span class="st">'\t'</span>
+
+<span class="cm">## POSIX</span>
+<span class="vr">NL</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'\n'</span>)           <span class="cm"># but trailing newline stripped! use sentinel:</span>
+<span class="vr">NL</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'\nx'</span>); <span class="vr">NL</span><span class="op">=</span><span class="st">"${NL%x}"</span>
+<span class="vr">TAB</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'\t'</span>)</pre>
+
+<h3>Replacing <code>pipefail</code></h3>
+<pre><span class="cm">## Bash</span>
+<span class="kw">set</span> <span class="fl">-o</span> pipefail
+<span class="vr">result</span><span class="op">=</span>$(<span class="cmd">generate</span> <span class="op">|</span> <span class="cmd">transform</span> <span class="op">|</span> <span class="cmd">finalise</span>)
+
+<span class="cm">## POSIX — capture intermediate exit codes manually</span>
+<span class="vr">tmp</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)
+<span class="cmd">generate</span> <span class="op">></span> <span class="st">"<span class="vr">$tmp</span>"</span>; <span class="vr">rc1</span><span class="op">=</span><span class="vr">$?</span>
+<span class="vr">result</span><span class="op">=</span>$(<span class="cmd">transform</span> <span class="op"><</span> <span class="st">"<span class="vr">$tmp</span>"</span> <span class="op">|</span> <span class="cmd">finalise</span>); <span class="vr">rc2</span><span class="op">=</span><span class="vr">$?</span>
+<span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$tmp</span>"</span>
+[ <span class="vr">$rc1</span> <span class="fl">-eq</span> <span class="nu">0</span> ] <span class="op">&&</span> [ <span class="vr">$rc2</span> <span class="fl">-eq</span> <span class="nu">0</span> ] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"pipeline failed"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }</pre>
+
+<h3>Portable function-local variables</h3>
+<pre><span class="cm"># 'local' is not in POSIX but is universally supported in practice
+# (dash, ash, ksh, zsh all support it). The shellcheck SC2039 warning
+# is technically correct but pragmatically safe to suppress for most targets.
+# If targeting strict POSIX: use unique global names with a function prefix.</span>
+
+<span class="fn">_mylib_process</span>() {
+  <span class="cm"># POSIX-strict: prefix all vars to avoid collisions instead of local</span>
+  <span class="vr">_mylib_process_input</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="vr">_mylib_process_result</span><span class="op">=</span><span class="st">''</span>
+  <span class="cm"># … work …</span>
+}</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — Platform-Specific Traps</h2>
+
+<h3>macOS / BSD differences</h3>
+<p>macOS ships BSD userland tools alongside its own <span class="inline-code">/bin/sh</span>
+(Bash 3.2 in POSIX mode). The GNU tools and BSD tools share many flags but differ in
+critical ways.</p>
+
+<pre><span class="cm">## sed -i behaves differently</span>
+<span class="cm"># GNU sed (Linux):</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'s/foo/bar/'</span> file.txt         <span class="cm"># in-place, no backup</span>
+
+<span class="cm"># BSD sed (macOS):</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">''</span> <span class="st">'s/foo/bar/'</span> file.txt       <span class="cm"># requires empty-string extension argument</span>
+
+<span class="cm"># Portable workaround:</span>
+<span class="cmd">sed</span> <span class="st">'s/foo/bar/'</span> file.txt <span class="op">></span> file.txt.tmp <span class="op">&&</span> <span class="cmd">mv</span> file.txt.tmp file.txt
+
+<span class="cm">## stat differs</span>
+<span class="cm"># GNU stat (Linux):</span>
+<span class="cmd">stat</span> <span class="fl">--format</span><span class="op">=</span><span class="st">'%s'</span> file.txt
+
+<span class="cm"># BSD stat (macOS):</span>
+<span class="cmd">stat</span> <span class="fl">-f</span> <span class="st">'%z'</span> file.txt
+
+<span class="cm"># Portable — use wc -c or ls:</span>
+<span class="vr">size</span><span class="op">=</span>$(<span class="cmd">wc</span> <span class="fl">-c</span> <span class="op"><</span> file.txt)
+
+<span class="cm">## date -d is GNU-only</span>
+<span class="cm"># GNU:</span>
+<span class="cmd">date</span> <span class="fl">-d</span> <span class="st">'2 days ago'</span> <span class="st">'+%Y-%m-%d'</span>
+
+<span class="cm"># BSD/macOS:</span>
+<span class="cmd">date</span> <span class="fl">-v-2d</span> <span class="st">'+%Y-%m-%d'</span>
+
+<span class="cm"># Portable — use Python or perl if available:</span>
+<span class="cmd">python3</span> <span class="fl">-c</span> <span class="st">"from datetime import date,timedelta; print(date.today()-timedelta(2))"</span>
+
+<span class="cm">## grep -P (PCRE) is GNU-only</span>
+<span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'\d+'</span> file     <span class="cm"># Linux only</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]+'</span> file   <span class="cm"># portable ERE — works everywhere</span>
+
+<span class="cm">## echo -e / echo -n are not portable</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"line1\nline2"</span>   <span class="cm"># implementation-defined: some echo ignore -e</span>
+<span class="cmd">printf</span> <span class="st">'line1\nline2\n'</span>  <span class="cm"># always correct</span></pre>
+
+<h3>BusyBox / Alpine Linux</h3>
+<pre><span class="cm"># BusyBox ash: limited parameter expansion, no arrays, no [[, no (())</span>
+<span class="cm"># Also missing from common BusyBox builds:</span>
+<span class="cm">#   - read -a (array read)</span>
+<span class="cm">#   - printf %q</span>
+<span class="cm">#   - jobs -l</span>
+<span class="cm">#   - kill -l with signal names</span>
+
+<span class="cm"># Test in BusyBox ash without leaving your machine:</span>
+<span class="cmd">docker</span> run <span class="fl">--rm</span> <span class="fl">-v</span> <span class="st">"<span class="vr">$PWD</span>:/work"</span> alpine ash /work/myscript.sh
+
+<span class="cm"># Or interactively:</span>
+<span class="cmd">docker</span> run <span class="fl">--rm</span> <span class="fl">-it</span> <span class="fl">-v</span> <span class="st">"<span class="vr">$PWD</span>:/work"</span> alpine sh</pre>
+
+<h3>Detecting the platform at runtime</h3>
+<pre><span class="fn">is_macos</span>()  { [ <span class="st">"$(uname)"</span> <span class="op">=</span> <span class="st">'Darwin'</span> ]; }
+<span class="fn">is_linux</span>()  { [ <span class="st">"$(uname)"</span> <span class="op">=</span> <span class="st">'Linux'</span>  ]; }
+<span class="fn">is_busybox</span>() {
+  <span class="cmd">busybox</span> <span class="fl">--help</span> <span class="op">></span>/dev/null <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>
+}
+
+<span class="cm"># Portable sed in-place using a wrapper</span>
+<span class="fn">sed_inplace</span>() {
+  <span class="kw">local</span> <span class="vr">expr</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">file</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">if</span> <span class="fn">is_macos</span>; <span class="kw">then</span>
+    <span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">''</span> <span class="st">"<span class="vr">$expr</span>"</span> <span class="st">"<span class="vr">$file</span>"</span>
+  <span class="kw">else</span>
+    <span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">"<span class="vr">$expr</span>"</span> <span class="st">"<span class="vr">$file</span>"</span>
+  <span class="kw">fi</span>
+}
+
+<span class="cm"># Detect gnu vs bsd coreutils once, export for the rest of the script</span>
+<span class="kw">if</span> <span class="cmd">date</span> <span class="fl">--version</span> <span class="op">></span>/dev/null <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>; <span class="kw">then</span>
+  <span class="vr">GNU_DATE</span><span class="op">=</span><span class="nu">1</span>    <span class="cm"># GNU date supports --version</span>
+<span class="kw">else</span>
+  <span class="vr">GNU_DATE</span><span class="op">=</span><span class="nu">0</span>    <span class="cm"># BSD/macOS date does not</span>
+<span class="kw">fi</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — The Decision Framework: When to Use What</h2>
+
+<p>Portability has a cost — portable code is usually more verbose and sometimes slower.
+Make the decision deliberately:</p>
+
+<table>
+  <tr><th>Situation</th><th>Recommended shebang</th><th>Rationale</th></tr>
+  <tr>
+    <td>Personal tooling, development machine</td>
+    <td><code>#!/usr/bin/env bash</code></td>
+    <td>Use Bash freely; clarity over portability</td>
+  </tr>
+  <tr>
+    <td>Distributed tool, unknown target systems</td>
+    <td><code>#!/usr/bin/env bash</code> + check Bash version</td>
+    <td>Require Bash explicitly; document the requirement</td>
+  </tr>
+  <tr>
+    <td>Docker base-image entrypoint, Alpine image</td>
+    <td><code>#!/bin/sh</code></td>
+    <td>ash is the only shell; no Bash available</td>
+  </tr>
+  <tr>
+    <td>System init script, /etc/profile.d/</td>
+    <td><code>#!/bin/sh</code></td>
+    <td>Must work before Bash may be installed</td>
+  </tr>
+  <tr>
+    <td>CI/CD pipeline shared across Linux + macOS</td>
+    <td><code>#!/usr/bin/env bash</code></td>
+    <td>Bash 5 on macOS via Homebrew; document the dep</td>
+  </tr>
+  <tr>
+    <td>Library meant to be sourced by others</td>
+    <td>No shebang; document minimum shell version</td>
+    <td>Caller controls the interpreter</td>
+  </tr>
+</table>
+
+<h3>Checking the Bash version at startup</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Require bash 4.2+ for associative arrays and [[ -v ]]</span>
+<span class="kw">if</span> (( <span class="vr">BASH_VERSINFO</span>[<span class="nu">0</span>] <span class="op"><</span> <span class="nu">4</span> <span class="op">||</span>
+      ( <span class="vr">BASH_VERSINFO</span>[<span class="nu">0</span>] <span class="op">==</span> <span class="nu">4</span> <span class="op">&&</span> <span class="vr">BASH_VERSINFO</span>[<span class="nu">1</span>] <span class="op"><</span> <span class="nu">2</span> ) )); <span class="kw">then</span>
+  <span class="cmd">printf</span> <span class="st">'%s requires bash >= 4.2 (have %s)\n'</span> \
+    <span class="st">"$(basename "$0")"</span> <span class="st">"<span class="vr">$BASH_VERSION</span>"</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span>
+
+<span class="cm"># macOS ships Bash 3.2 — this guard catches it cleanly</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7 — A Portable Script Template</h2>
+
+<p>This template deliberately avoids every Bash extension. It works correctly
+under dash, ash, ksh88, and any POSIX-conformant shell.</p>
+
+<pre><span class="sh">#!/bin/sh</span>
+<span class="cm"># =============================================================================</span>
+<span class="cm"># portable_tool.sh — POSIX sh only, no Bash extensions</span>
+<span class="cm"># Tested: dash 0.5, ash (BusyBox 1.36), ksh93</span>
+<span class="cm"># =============================================================================</span>
+<span class="kw">set</span> <span class="fl">-eu</span>    <span class="cm"># -e and -u are POSIX; -o pipefail is NOT</span>
+
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"${0##*/}"</span>   <span class="cm"># basename without a fork</span>
+
+<span class="fn">die</span>() { <span class="cmd">printf</span> <span class="st">'%s: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="fn">usage</span>() {
+  <span class="cmd">printf</span> <span class="st">'Usage: %s [OPTIONS] FILE\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span>
+  <span class="cmd">printf</span> <span class="st">'  -v  verbose\n  -h  help\n'</span>
+}
+
+<span class="vr">VERBOSE</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="kw">while</span> [ <span class="vr">$#</span> <span class="fl">-gt</span> <span class="nu">0</span> ]; <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    <span class="fl">-v</span>) <span class="vr">VERBOSE</span><span class="op">=</span><span class="nu">1</span> ;;
+    <span class="fl">-h</span>) usage; <span class="kw">exit</span> <span class="nu">0</span> ;;
+    <span class="fl">--</span>) <span class="kw">shift</span>; <span class="kw">break</span> ;;
+    <span class="fl">-</span><span class="op">*</span>) <span class="fn">die</span> <span class="st">"unknown option: $1"</span> ;;
+    <span class="op">*</span>)  <span class="kw">break</span> ;;
+  <span class="kw">esac</span>
+  <span class="kw">shift</span>
+<span class="kw">done</span>
+
+[ <span class="vr">$#</span> <span class="fl">-eq</span> <span class="nu">0</span> ] <span class="op">&&</span> { usage <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+[ <span class="fl">-f</span> <span class="st">"$1"</span> ] <span class="op">||</span> <span class="fn">die</span> <span class="st">"file not found: $1"</span>
+
+<span class="cm"># Main logic — using only POSIX features</span>
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  [ <span class="st">"<span class="vr">$VERBOSE</span>"</span> <span class="op">=</span> <span class="st">"1"</span> ] <span class="op">&&</span> <span class="cmd">printf</span> <span class="st">'DEBUG: %s\n'</span> <span class="st">"<span class="vr">$line</span>"</span> <span class="op">>&2</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$line</span>"</span>
+<span class="kw">done</span> <span class="op"><</span> <span class="st">"$1"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>8 — Portability Anti-Patterns to Avoid</h2>
+
+<pre><span class="cm">## Anti-pattern 1: assuming /usr/bin/env exists
+# On stripped-down embedded systems, env may not be at /usr/bin/env</span>
+<span class="sh">#!/usr/bin/env bash</span>   <span class="cm"># fine for general use</span>
+<span class="sh">#!/bin/bash</span>           <span class="cm"># more portable on Linux where bash is always at /bin/bash</span>
+
+<span class="cm">## Anti-pattern 2: parsing ls output</span>
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> $(<span class="cmd">ls</span> <span class="pth">*.txt</span>); <span class="kw">do</span> <span class="cm"># WRONG — breaks on spaces, special chars</span>
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="op">*</span>.txt; <span class="kw">do</span>          <span class="cm"># RIGHT — glob directly</span>
+
+<span class="cm">## Anti-pattern 3: using echo for arbitrary data</span>
+<span class="cmd">echo</span> <span class="st">"<span class="vr">$variable</span>"</span>    <span class="cm"># risky if variable starts with - or contains \n</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$variable</span>"</span>  <span class="cm"># always correct</span>
+
+<span class="cm">## Anti-pattern 4: [ $var == value ] (double equals in [)</span>
+[ <span class="st">"<span class="vr">$var</span>"</span> <span class="op">==</span> <span class="st">"value"</span> ]   <span class="cm"># == is not POSIX in [ ] — works in bash/dash but not all</span>
+[ <span class="st">"<span class="vr">$var</span>"</span> <span class="op">=</span> <span class="st">"value"</span> ]    <span class="cm"># = is POSIX — always use this in [ ]</span>
+
+<span class="cm">## Anti-pattern 5: unportable test flags</span>
+[ <span class="fl">-a</span> file1 <span class="fl">-a</span> file2 ]   <span class="cm"># -a as compound operator is not reliable</span>
+[ <span class="fl">-e</span> file ]              <span class="cm"># -e not in original POSIX (but in SUSv3+ and all modern sh)</span>
+[ <span class="fl">-f</span> file ]              <span class="cm"># -f is always safe</span>
+
+<span class="cm">## Anti-pattern 6: backtick nesting</span>
+<span class="vr">result</span><span class="op">=</span>`<span class="cmd">echo</span> \`<span class="cmd">date</span>\``    <span class="cm"># hard to read; escaping is fragile</span>
+<span class="vr">result</span><span class="op">=</span>$(<span class="cmd">echo</span> $(<span class="cmd">date</span>))   <span class="cm"># $(()) nests cleanly — use this always</span>
+
+<span class="cm">## Anti-pattern 7: word splitting on unquoted $@</span>
+<span class="fn">bad</span>()  { <span class="cmd">echo</span> <span class="vr">$@</span>;  }    <span class="cm"># loses quoting from caller</span>
+<span class="fn">good</span>() { <span class="cmd">echo</span> <span class="st">"$@"</span>; }    <span class="cm"># preserves individual arguments</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — ShellCheck audit and fix</h4>
+  <p>The script below is written with Bash idioms but has the shebang
+  <code>#!/bin/sh</code>. Run it through <code>shellcheck --shell=sh</code> and fix
+  every portability issue. The fixed script must produce identical output under
+  both <code>bash</code> and <code>dash</code>.</p>
+  <pre><code>#!/bin/sh
+items=(alpha beta gamma)
+for item in "${items[@]}"; do
+  if [[ $item == g* ]]; then
+    echo "Found: $item"
+  fi
+done
+result=$(echo "Total: ${#items[@]}")</code></pre>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/bin/sh</span>
+<span class="cm"># Fixed: no arrays, no [[, using case for pattern match, using set -- for list</span>
+
+<span class="kw">set</span> <span class="fl">--</span> alpha beta gamma
+<span class="vr">_count</span><span class="op">=</span><span class="vr">$#</span>     <span class="cm"># capture count before any further set --</span>
+
+<span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$item</span>"</span> <span class="kw">in</span>
+    g<span class="op">*</span>) <span class="cmd">printf</span> <span class="st">'Found: %s\n'</span> <span class="st">"<span class="vr">$item</span>"</span> ;;
+  <span class="kw">esac</span>
+<span class="kw">done</span>
+
+<span class="vr">result</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'Total: %d'</span> <span class="st">"<span class="vr">$_count</span>"</span>)
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$result</span>"</span>
+
+<span class="cm"># Changes made:
+# 1. arrays → set -- / "$@"
+# 2. ${#items[@]} → captured $# before the loop
+# 3. [[ $item == g* ]] → case statement
+# 4. echo "..." → printf '%s\n' "..." (echo not portable with $result)</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Portable platform detection library</h4>
+  <p>Write a POSIX-compatible library <code>lib/platform.sh</code> (no Bash extensions)
+  that detects and exports the following variables when sourced:</p>
+  <ul>
+    <li><code>PLATFORM</code> — one of: <code>linux</code>, <code>macos</code>, <code>freebsd</code>, <code>unknown</code></li>
+    <li><code>SED_INPLACE</code> — the correct arguments to achieve in-place sed editing on this platform (e.g. <code>-i</code> or <code>-i ''</code>)</li>
+    <li><code>STAT_SIZE</code> — a function <code>stat_size FILE</code> that prints a file's byte count portably</li>
+    <li><code>HAS_GNU_DATE</code> — <code>1</code> if GNU date is available, <code>0</code> otherwise</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/bin/sh</span>
+<span class="cm"># lib/platform.sh — POSIX sh only</span>
+[ <span class="fl">-n</span> <span class="st">"${_LIB_PLATFORM_LOADED:-}"</span> ] <span class="op">&&</span> <span class="kw">return</span> <span class="nu">0</span>
+<span class="vr">_LIB_PLATFORM_LOADED</span><span class="op">=</span><span class="nu">1</span>
+
+<span class="vr">PLATFORM</span><span class="op">=</span><span class="st">'unknown'</span>
+<span class="kw">case</span> $(<span class="cmd">uname</span> <span class="fl">-s</span>) <span class="kw">in</span>
+  Linux)   <span class="vr">PLATFORM</span><span class="op">=</span><span class="st">'linux'</span>   ;;
+  Darwin)  <span class="vr">PLATFORM</span><span class="op">=</span><span class="st">'macos'</span>   ;;
+  FreeBSD) <span class="vr">PLATFORM</span><span class="op">=</span><span class="st">'freebsd'</span> ;;
+<span class="kw">esac</span>
+
+<span class="cm"># sed -i flag</span>
+<span class="kw">case</span> <span class="st">"<span class="vr">$PLATFORM</span>"</span> <span class="kw">in</span>
+  macos<span class="op">|</span>freebsd) <span class="vr">SED_INPLACE</span><span class="op">=</span><span class="st">"-i ''"</span> ;;
+  <span class="op">*</span>)             <span class="vr">SED_INPLACE</span><span class="op">=</span><span class="st">'-i'</span>    ;;
+<span class="kw">esac</span>
+
+<span class="cm"># Portable file size function</span>
+<span class="fn">stat_size</span>() {
+  <span class="vr">_f</span><span class="op">=</span><span class="st">"${1:?stat_size: FILE required}"</span>
+  <span class="kw">case</span> <span class="st">"<span class="vr">$PLATFORM</span>"</span> <span class="kw">in</span>
+    linux)
+      <span class="cmd">stat</span> <span class="fl">--format</span><span class="op">=</span><span class="st">'%s'</span> <span class="st">"<span class="vr">$_f</span>"</span> ;;
+    macos<span class="op">|</span>freebsd)
+      <span class="cmd">stat</span> <span class="fl">-f</span> <span class="st">'%z'</span> <span class="st">"<span class="vr">$_f</span>"</span> ;;
+    <span class="op">*</span>)
+      <span class="cm"># Universal fallback: wc -c handles any POSIX system</span>
+      <span class="cmd">wc</span> <span class="fl">-c</span> <span class="op"><</span> <span class="st">"<span class="vr">$_f</span>"</span> | <span class="cmd">tr</span> <span class="fl">-d</span> <span class="st">' '</span> ;;
+  <span class="kw">esac</span>
+}
+
+<span class="cm"># GNU date detection</span>
+<span class="vr">HAS_GNU_DATE</span><span class="op">=</span><span class="nu">0</span>
+<span class="cmd">date</span> <span class="fl">--version</span> <span class="op">></span>/dev/null <span class="nu">2</span><span class="op">&</span><span class="nu">1</span> <span class="op">&&</span> <span class="vr">HAS_GNU_DATE</span><span class="op">=</span><span class="nu">1</span>
+
+<span class="kw">export</span> <span class="vr">PLATFORM</span> <span class="vr">SED_INPLACE</span> <span class="vr">HAS_GNU_DATE</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Portable <code>pipefail</code> wrapper</h4>
+  <p>Write a POSIX sh function <code>pipe_all CMD1 CMD2 CMD3</code> that:</p>
+  <ul>
+    <li>Executes <code>CMD1 | CMD2 | CMD3</code></li>
+    <li>Returns exit code 0 only if <em>all three</em> commands succeeded</li>
+    <li>Prints which stage(s) failed to stderr</li>
+    <li>Works in dash and ash — no <code>pipefail</code>, no arrays, no <code>[[</code></li>
+  </ul>
+  <p><em>Hint:</em> named pipes (mkfifo) let you interpose between stages and capture each exit code.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="fn">pipe_all</span>() {
+  <span class="cm"># Usage: pipe_all CMD1 CMD2 CMD3
+  # Runs CMD1 | CMD2 | CMD3, fails if any stage fails.
+  # Uses temp files to capture exit codes since POSIX sh has no pipefail.</span>
+
+  [ <span class="vr">$#</span> <span class="fl">-eq</span> <span class="nu">3</span> ] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'pipe_all: exactly 3 commands required\n'</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="vr">_cmd1</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">_cmd2</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">_cmd3</span><span class="op">=</span><span class="st">"$3"</span>
+
+  <span class="cm"># Temp files for inter-stage data and exit codes</span>
+  <span class="vr">_t1</span><span class="op">=</span>$(<span class="cmd">mktemp</span>); <span class="vr">_t2</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)
+  <span class="vr">_rc1</span><span class="op">=</span>$(<span class="cmd">mktemp</span>); <span class="vr">_rc2</span><span class="op">=</span>$(<span class="cmd">mktemp</span>); <span class="vr">_rc3</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)
+
+  <span class="cm"># Cleanup on any exit</span>
+  <span class="kw">trap</span> <span class="st">'rm -f "$_t1" "$_t2" "$_rc1" "$_rc2" "$_rc3"'</span> EXIT INT TERM
+
+  <span class="cm"># Stage 1</span>
+  <span class="vr">$_cmd1</span> <span class="op">></span> <span class="st">"<span class="vr">$_t1</span>"</span>; <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="vr">$?</span> <span class="op">></span> <span class="st">"<span class="vr">$_rc1</span>"</span>
+  <span class="cm"># Stage 2</span>
+  <span class="vr">$_cmd2</span> <span class="op"><</span> <span class="st">"<span class="vr">$_t1</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$_t2</span>"</span>; <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="vr">$?</span> <span class="op">></span> <span class="st">"<span class="vr">$_rc2</span>"</span>
+  <span class="cm"># Stage 3</span>
+  <span class="vr">$_cmd3</span> <span class="op"><</span> <span class="st">"<span class="vr">$_t2</span>"</span>; <span class="cmd">printf</span> <span class="st">'%d'</span> <span class="vr">$?</span> <span class="op">></span> <span class="st">"<span class="vr">$_rc3</span>"</span>
+
+  <span class="vr">_r1</span><span class="op">=</span>$(<span class="cmd">cat</span> <span class="st">"<span class="vr">$_rc1</span>"</span>) <span class="vr">_r2</span><span class="op">=</span>$(<span class="cmd">cat</span> <span class="st">"<span class="vr">$_rc2</span>"</span>) <span class="vr">_r3</span><span class="op">=</span>$(<span class="cmd">cat</span> <span class="st">"<span class="vr">$_rc3</span>"</span>)
+  <span class="vr">_ok</span><span class="op">=</span><span class="nu">0</span>
+
+  [ <span class="st">"<span class="vr">$_r1</span>"</span> <span class="op">=</span> <span class="st">"0"</span> ] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'pipe_all: stage 1 failed (exit %s)\n'</span> <span class="st">"<span class="vr">$_r1</span>"</span> <span class="op">>&2</span>; <span class="vr">_ok</span><span class="op">=</span><span class="nu">1</span>; }
+  [ <span class="st">"<span class="vr">$_r2</span>"</span> <span class="op">=</span> <span class="st">"0"</span> ] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'pipe_all: stage 2 failed (exit %s)\n'</span> <span class="st">"<span class="vr">$_r2</span>"</span> <span class="op">>&2</span>; <span class="vr">_ok</span><span class="op">=</span><span class="nu">1</span>; }
+  [ <span class="st">"<span class="vr">$_r3</span>"</span> <span class="op">=</span> <span class="st">"0"</span> ] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'pipe_all: stage 3 failed (exit %s)\n'</span> <span class="st">"<span class="vr">$_r3</span>"</span> <span class="op">>&2</span>; <span class="vr">_ok</span><span class="op">=</span><span class="nu">1</span>; }
+
+  <span class="kw">return</span> <span class="st">"<span class="vr">$_ok</span>"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Cross-platform install script</h4>
+  <p>Write a POSIX sh install script <code>install.sh</code> for a fictional tool
+  <code>mytool</code> that:</p>
+  <ul>
+    <li>Works on Linux (GNU coreutils), macOS (BSD tools), and Alpine (BusyBox)</li>
+    <li>Detects whether the user is root; if not, installs to <code>~/.local/bin</code>
+    instead of <code>/usr/local/bin</code></li>
+    <li>Copies the binary, sets it executable, and verifies the install location is on PATH</li>
+    <li>Prints a clear warning (not an error) if the install dir is not on PATH</li>
+    <li>Uses only POSIX-portable shell constructs — no Bash extensions</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/bin/sh</span>
+<span class="kw">set</span> <span class="fl">-eu</span>
+
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"${0##*/}"</span>
+<span class="vr">BINARY</span><span class="op">=</span><span class="st">'./mytool'</span>    <span class="cm"># source binary in current directory</span>
+
+<span class="fn">die</span>()  { <span class="cmd">printf</span> <span class="st">'%s: error: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="fn">warn</span>() { <span class="cmd">printf</span> <span class="st">'%s: warning: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span> <span class="op">>&2</span>; }
+<span class="fn">info</span>() { <span class="cmd">printf</span> <span class="st">'%s: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"$*"</span>; }
+
+<span class="cm"># Source binary must exist</span>
+[ <span class="fl">-f</span> <span class="st">"<span class="vr">$BINARY</span>"</span> ] <span class="op">||</span> <span class="fn">die</span> <span class="st">"source binary not found: $BINARY"</span>
+
+<span class="cm"># Choose install directory</span>
+<span class="kw">if</span> [ <span class="st">"$(id -u)"</span> <span class="op">=</span> <span class="st">'0'</span> ]; <span class="kw">then</span>
+  <span class="vr">INSTALL_DIR</span><span class="op">=</span><span class="pth">/usr/local/bin</span>
+<span class="kw">else</span>
+  <span class="vr">INSTALL_DIR</span><span class="op">=</span><span class="st">"${HOME}/.local/bin"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Create install directory if absent</span>
+[ <span class="fl">-d</span> <span class="st">"<span class="vr">$INSTALL_DIR</span>"</span> ] <span class="op">||</span> <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$INSTALL_DIR</span>"</span> <span class="op">||</span>
+  <span class="fn">die</span> <span class="st">"cannot create directory: $INSTALL_DIR"</span>
+
+<span class="cm"># Copy and make executable</span>
+<span class="cmd">cp</span> <span class="st">"<span class="vr">$BINARY</span>"</span> <span class="st">"<span class="vr">$INSTALL_DIR</span>/mytool"</span> <span class="op">||</span> <span class="fn">die</span> <span class="st">"copy failed"</span>
+<span class="cmd">chmod</span> <span class="st">'755'</span> <span class="st">"<span class="vr">$INSTALL_DIR</span>/mytool"</span> <span class="op">||</span> <span class="fn">die</span> <span class="st">"chmod failed"</span>
+
+<span class="fn">info</span> <span class="st">"Installed mytool to <span class="vr">$INSTALL_DIR</span>/mytool"</span>
+
+<span class="cm"># Check if INSTALL_DIR is on PATH (POSIX: use case to search PATH components)</span>
+<span class="vr">_found</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">_oldIFS</span><span class="op">=</span><span class="st">"<span class="vr">$IFS</span>"</span>
+<span class="vr">IFS</span><span class="op">=</span><span class="st">':'</span>
+<span class="kw">for</span> <span class="vr">_dir</span> <span class="kw">in</span> <span class="vr">$PATH</span>; <span class="kw">do</span>
+  [ <span class="st">"<span class="vr">$_dir</span>"</span> <span class="op">=</span> <span class="st">"<span class="vr">$INSTALL_DIR</span>"</span> ] <span class="op">&&</span> { <span class="vr">_found</span><span class="op">=</span><span class="nu">1</span>; <span class="kw">break</span>; }
+<span class="kw">done</span>
+<span class="vr">IFS</span><span class="op">=</span><span class="st">"<span class="vr">$_oldIFS</span>"</span>
+
+<span class="kw">if</span> [ <span class="st">"<span class="vr">$_found</span>"</span> <span class="op">=</span> <span class="st">"0"</span> ]; <span class="kw">then</span>
+  <span class="fn">warn</span> <span class="st">"<span class="vr">$INSTALL_DIR</span> is not on your PATH"</span>
+  <span class="cmd">printf</span> <span class="st">'       Add this to your shell profile:\n'</span>
+  <span class="cmd">printf</span> <span class="st">'         export PATH="%s:$PATH"\n'</span> <span class="st">"<span class="vr">$INSTALL_DIR</span>"</span>
+<span class="kw">else</span>
+  <span class="fn">info</span> <span class="st">"mytool is ready: $(command -v mytool 2>/dev/null || printf '%s/mytool' "$INSTALL_DIR")"</span>
+<span class="kw">fi</span></pre>
+  </div>
+</div>
+
+</div>

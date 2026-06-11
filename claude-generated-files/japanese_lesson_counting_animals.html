@@ -1,0 +1,494 @@
+<!-- ============================================================
+     JAPANESE LESSON: Counting Animals — どうぶつをかぞえる
+     Level: Beginner-plus | Hiragana + Romaji + English
+     ============================================================ -->
+
+<style>
+  .jp-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .jp-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .jp-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* Counter reference grid */
+  .counter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .counter-grid { grid-template-columns: 1fr; } }
+
+  .counter-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .counter-card.highlight { border-color: #4f8ef7; }
+  .counter-card .c-title {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #4f8ef7;
+    margin-bottom: 6px;
+  }
+  .counter-card .c-jp   { font-size: 1.4em; color: #e2e4ec; }
+  .counter-card .c-romaji { font-size: 0.8em; color: #7a7f96; font-style: italic; }
+  .counter-card .c-en   { font-size: 0.82em; color: #a0a4b8; margin-top: 2px; }
+  .counter-card .c-ex   { font-size: 0.8em; color: #7a7f96; margin-top: 6px; border-top: 1px solid #2a2d3a; padding-top: 6px; }
+
+  /* Counting table (how to count 1–10) */
+  .count-table-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .count-table-grid { grid-template-columns: 1fr; } }
+
+  .count-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .count-block .cb-header {
+    background: #1e2235;
+    padding: 8px 12px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.82em;
+    font-weight: 600;
+    color: #4f8ef7;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .count-block table { width: 100%; border-collapse: collapse; }
+  .count-block td {
+    padding: 5px 10px;
+    font-size: 0.85em;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+  }
+  .count-block td:first-child { color: #7a7f96; width: 24px; }
+  .count-block td.irregular { color: #f08080; }
+  .count-block tr:last-child td { border-bottom: none; }
+
+  /* Dialogs */
+  .dialog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  @media (max-width: 600px) { .dialog-grid { grid-template-columns: 1fr; } }
+
+  .dialog-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .dialog-card:hover { border-color: #4f8ef7; }
+
+  .dialog-card h3 {
+    margin: 0 0 12px 0;
+    color: #4f8ef7;
+    font-size: 0.92em;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    border-bottom: 1px solid #2a2d3a;
+    padding-bottom: 6px;
+  }
+  .dialog-line { margin-bottom: 10px; }
+  .dialog-line .speaker {
+    font-weight: bold;
+    color: #7c5cbf;
+    min-width: 24px;
+    display: inline-block;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .dialog-line .jp {
+    font-size: 1.05em;
+    display: block;
+    margin-left: 28px;
+    color: #e2e4ec;
+  }
+  .dialog-line .romaji {
+    font-size: 0.82em;
+    color: #7a7f96;
+    display: block;
+    margin-left: 28px;
+    font-style: italic;
+  }
+  .dialog-line .en {
+    font-size: 0.82em;
+    color: #a0a4b8;
+    display: block;
+    margin-left: 28px;
+  }
+
+  /* Vocabulary table */
+  .vocab-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.9em;
+  }
+  .vocab-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.82em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .vocab-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+  }
+  .vocab-table tr:nth-child(even) td { background: #1a1d27; }
+  .vocab-table tr:hover td { background: #1e2235; }
+  .vocab-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+
+  .tag-verb {
+    background: #7c5cbf; color: #fff;
+    font-size: 0.7em; padding: 2px 7px;
+    border-radius: 10px; white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .tag-noun {
+    background: #2a5a8a; color: #a8d4ff;
+    font-size: 0.7em; padding: 2px 7px;
+    border-radius: 10px; white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .tag-counter {
+    background: #1e3a2a; color: #7ecfa0;
+    font-size: 0.7em; padding: 2px 7px;
+    border-radius: 10px; white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* Tip box */
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+</style>
+
+<div class="jp-lesson">
+
+  <h2>🐾 Counting Animals — どうぶつをかぞえる</h2>
+  <p class="section-intro">Japanese uses special counting words called <em>じょすうし（助数詞）— counters</em> depending on what you are counting. Animals have three main counters based on their size. This lesson covers all three, plus the tricky irregular readings for 〜ひき.</p>
+
+  <!-- Counter overview -->
+  <h2>📐 The Three Animal Counters</h2>
+  <div class="counter-grid">
+
+    <div class="counter-card highlight">
+      <div class="c-title">〜ひき（〜匹）— Most Common</div>
+      <div class="c-jp">〜ひき / びき / ぴき</div>
+      <div class="c-romaji">~hiki / biki / piki</div>
+      <div class="c-en">Small to medium animals — cats, dogs, fish, insects, rabbits (sometimes)</div>
+      <div class="c-ex">ねこが<strong>さんびき</strong>います。<br><em>There are three cats.</em></div>
+    </div>
+
+    <div class="counter-card">
+      <div class="c-title">〜とう（〜頭）</div>
+      <div class="c-jp">〜とう</div>
+      <div class="c-romaji">~tou</div>
+      <div class="c-en">Large animals — horses, cows, elephants, whales, bears</div>
+      <div class="c-ex">ぞうが<strong>にとう</strong>います。<br><em>There are two elephants.</em></div>
+    </div>
+
+    <div class="counter-card">
+      <div class="c-title">〜わ（〜羽）</div>
+      <div class="c-jp">〜わ / ば / ぱ</div>
+      <div class="c-romaji">~wa / ba / pa</div>
+      <div class="c-en">Birds and rabbits (rabbits are counted with 羽 in traditional Japanese!)</div>
+      <div class="c-ex">とりが<strong>ごわ</strong>います。<br><em>There are five birds.</em></div>
+    </div>
+
+  </div>
+
+  <!-- Counting 1–10 reference -->
+  <h2>🔢 Counting 1–10 with Each Counter</h2>
+  <p class="section-intro">Red = irregular reading — these must be memorised. 〜ひき has the most irregulars, so pay extra attention!</p>
+
+  <div class="count-table-grid">
+
+    <!-- ひき -->
+    <div class="count-block">
+      <div class="cb-header">〜ひき（匹）— small animals</div>
+      <table>
+        <tr><td>1</td><td class="irregular">いっぴき</td></tr>
+        <tr><td>2</td><td>にひき</td></tr>
+        <tr><td>3</td><td class="irregular">さんびき</td></tr>
+        <tr><td>4</td><td>よんひき</td></tr>
+        <tr><td>5</td><td>ごひき</td></tr>
+        <tr><td>6</td><td class="irregular">ろっぴき</td></tr>
+        <tr><td>7</td><td>ななひき</td></tr>
+        <tr><td>8</td><td class="irregular">はっぴき</td></tr>
+        <tr><td>9</td><td>きゅうひき</td></tr>
+        <tr><td>10</td><td class="irregular">じゅっぴき</td></tr>
+        <tr><td>?</td><td>なんびき？</td></tr>
+      </table>
+    </div>
+
+    <!-- とう -->
+    <div class="count-block">
+      <div class="cb-header">〜とう（頭）— large animals</div>
+      <table>
+        <tr><td>1</td><td class="irregular">いっとう</td></tr>
+        <tr><td>2</td><td>にとう</td></tr>
+        <tr><td>3</td><td>さんとう</td></tr>
+        <tr><td>4</td><td>よんとう</td></tr>
+        <tr><td>5</td><td>ごとう</td></tr>
+        <tr><td>6</td><td class="irregular">ろくとう</td></tr>
+        <tr><td>7</td><td>ななとう</td></tr>
+        <tr><td>8</td><td class="irregular">はっとう</td></tr>
+        <tr><td>9</td><td>きゅうとう</td></tr>
+        <tr><td>10</td><td class="irregular">じゅっとう</td></tr>
+        <tr><td>?</td><td>なんとう？</td></tr>
+      </table>
+    </div>
+
+    <!-- わ -->
+    <div class="count-block">
+      <div class="cb-header">〜わ（羽）— birds & rabbits</div>
+      <table>
+        <tr><td>1</td><td class="irregular">いちわ</td></tr>
+        <tr><td>2</td><td>にわ</td></tr>
+        <tr><td>3</td><td class="irregular">さんわ / さんば</td></tr>
+        <tr><td>4</td><td>よんわ</td></tr>
+        <tr><td>5</td><td>ごわ</td></tr>
+        <tr><td>6</td><td class="irregular">ろくわ</td></tr>
+        <tr><td>7</td><td>ななわ</td></tr>
+        <tr><td>8</td><td class="irregular">はちわ / はっぱ</td></tr>
+        <tr><td>9</td><td>きゅうわ</td></tr>
+        <tr><td>10</td><td class="irregular">じゅっぱ</td></tr>
+        <tr><td>?</td><td>なんわ？</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Dialogues -->
+  <h2>💬 Dialogues — かいわ</h2>
+  <p class="section-intro">Six short conversations using animal counters in natural, everyday situations.</p>
+
+  <div class="dialog-grid">
+
+    <!-- Dialog 1: Pet shop -->
+    <div class="dialog-card">
+      <h3>① At the Pet Shop — ペットショップで</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">すみません、ねこはなんびきいますか？</span>
+        <span class="romaji">Sumimasen, neko wa nanbiki imasu ka?</span>
+        <span class="en">Excuse me, how many cats are there?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">いま、さんびきいます。</span>
+        <span class="romaji">Ima, sanbiki imasu.</span>
+        <span class="en">There are three at the moment.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">かわいいですね！</span>
+        <span class="romaji">Kawaii desu ne!</span>
+        <span class="en">They're so cute!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 2: Zoo -->
+    <div class="dialog-card">
+      <h3>② At the Zoo — どうぶつえんで</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">あのぞうはなんとういますか？</span>
+        <span class="romaji">Ano zou wa nantou imasu ka?</span>
+        <span class="en">How many elephants are there over there?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">にとういます。おやとこどもです。</span>
+        <span class="romaji">Nitou imasu. Oya to kodomo desu.</span>
+        <span class="en">There are two. A parent and a child.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">おおきいですね！</span>
+        <span class="romaji">Ookii desu ne!</span>
+        <span class="en">They're huge!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 3: Fish tank -->
+    <div class="dialog-card">
+      <h3>③ Fish Tank — すいそう</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">すいそうにきんぎょがなんびきいますか？</span>
+        <span class="romaji">Suisou ni kingyo ga nanbiki imasu ka?</span>
+        <span class="en">How many goldfish are in the tank?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">ろっぴきいます。いろいろないろですよ。</span>
+        <span class="romaji">Roppiki imasu. Iroiro na iro desu yo.</span>
+        <span class="en">There are six. All different colours!</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">きれいですね！</span>
+        <span class="romaji">Kirei desu ne!</span>
+        <span class="en">How beautiful!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 4: Someone's pets -->
+    <div class="dialog-card">
+      <h3>④ Your Pets — あなたのペット</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">ペットをかっていますか？</span>
+        <span class="romaji">Petto wo katte imasu ka?</span>
+        <span class="en">Do you have any pets?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">はい。ねこをにひきとうさぎをいちわかっています。</span>
+        <span class="romaji">Hai. Neko wo nihiki to usagi wo ichiwa katte imasu.</span>
+        <span class="en">Yes. I keep two cats and one rabbit.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">いいですね！なまえはありますか？</span>
+        <span class="romaji">Ii desu ne! Namae wa arimasu ka?</span>
+        <span class="en">How lovely! Do they have names?</span>
+      </div>
+    </div>
+
+    <!-- Dialog 5: Birds in the park -->
+    <div class="dialog-card">
+      <h3>⑤ Birds in the Park — こうえんのとり</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">あのきにとりがなんわいますか？</span>
+        <span class="romaji">Ano ki ni tori ga nanwa imasu ka?</span>
+        <span class="en">How many birds are in that tree?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">かぞえてみます…ごわです！</span>
+        <span class="romaji">Kazoete mimasu… gowa desu!</span>
+        <span class="en">Let me count… five!</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">きれいなこえですね。</span>
+        <span class="romaji">Kirei na koe desu ne.</span>
+        <span class="en">They have such beautiful calls, don't they.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 6: Farm -->
+    <div class="dialog-card">
+      <h3>⑥ On the Farm — のうじょうで</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">こののうじょうにうしはなんとういますか？</span>
+        <span class="romaji">Kono noujou ni ushi wa nantou imasu ka?</span>
+        <span class="en">How many cows are on this farm?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">じゅっとういます。まいにちちちをとります。</span>
+        <span class="romaji">Juttou imasu. Mainichi chichi wo torimasu.</span>
+        <span class="en">There are ten. We take milk from them every day.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">おおいですね！</span>
+        <span class="romaji">Ooi desu ne!</span>
+        <span class="en">That's a lot!</span>
+      </div>
+    </div>
+
+  </div><!-- /dialog-grid -->
+
+  <!-- Vocabulary -->
+  <h2>📖 Vocabulary — ごい</h2>
+  <p class="section-intro">20 key words for this topic — animals, counters, and the verbs you need to talk about them.</p>
+
+  <table class="vocab-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Japanese</th>
+        <th>Romaji</th>
+        <th>English</th>
+        <th>Type</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>ねこ（猫）</td><td>neko</td><td>cat</td><td><span class="tag-noun">noun</span></td><td class="note">counted with 〜ひき</td></tr>
+      <tr><td>2</td><td>いぬ（犬）</td><td>inu</td><td>dog</td><td><span class="tag-noun">noun</span></td><td class="note">counted with 〜ひき</td></tr>
+      <tr><td>3</td><td>とり（鳥）</td><td>tori</td><td>bird</td><td><span class="tag-noun">noun</span></td><td class="note">counted with 〜わ</td></tr>
+      <tr><td>4</td><td>さかな（魚）</td><td>sakana</td><td>fish</td><td><span class="tag-noun">noun</span></td><td class="note">counted with 〜ひき</td></tr>
+      <tr><td>5</td><td>うさぎ（兎）</td><td>usagi</td><td>rabbit</td><td><span class="tag-noun">noun</span></td><td class="note">traditionally counted with 〜わ!</td></tr>
+      <tr><td>6</td><td>ぞう（象）</td><td>zou</td><td>elephant</td><td><span class="tag-noun">noun</span></td><td class="note">counted with 〜とう</td></tr>
+      <tr><td>7</td><td>うま（馬）</td><td>uma</td><td>horse</td><td><span class="tag-noun">noun</span></td><td class="note">counted with 〜とう</td></tr>
+      <tr><td>8</td><td>うし（牛）</td><td>ushi</td><td>cow</td><td><span class="tag-noun">noun</span></td><td class="note">counted with 〜とう</td></tr>
+      <tr><td>9</td><td>きんぎょ（金魚）</td><td>kingyo</td><td>goldfish</td><td><span class="tag-noun">noun</span></td><td class="note">きん=gold, ぎょ=fish</td></tr>
+      <tr><td>10</td><td>ペット</td><td>petto</td><td>pet</td><td><span class="tag-noun">noun</span></td><td class="note">from English "pet"</td></tr>
+      <tr><td>11</td><td>どうぶつえん（動物園）</td><td>doubutsuen</td><td>zoo</td><td><span class="tag-noun">noun</span></td><td class="note">どうぶつ=animal, えん=garden</td></tr>
+      <tr><td>12</td><td>すいそう（水槽）</td><td>suisou</td><td>fish tank / aquarium</td><td><span class="tag-noun">noun</span></td><td class="note">すい=water, そう=tank</td></tr>
+      <tr><td>13</td><td>のうじょう（農場）</td><td>noujou</td><td>farm</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>14</td><td>〜ひき（〜匹）</td><td>~hiki</td><td>counter for small animals</td><td><span class="tag-counter">counter</span></td><td class="note">1=いっぴき, 3=さんびき, 6=ろっぴき ⚠</td></tr>
+      <tr><td>15</td><td>〜とう（〜頭）</td><td>~tou</td><td>counter for large animals</td><td><span class="tag-counter">counter</span></td><td class="note">fairly regular — 1=いっとう only oddity</td></tr>
+      <tr><td>16</td><td>〜わ（〜羽）</td><td>~wa</td><td>counter for birds (and rabbits!)</td><td><span class="tag-counter">counter</span></td><td class="note">3=さんわ/さんば, 10=じゅっぱ ⚠</td></tr>
+      <tr><td>17</td><td>います</td><td>imasu</td><td>to be / to exist (living things)</td><td><span class="tag-verb">verb</span></td><td class="note">use います for people & animals; あります for objects</td></tr>
+      <tr><td>18</td><td>かいます（飼います）</td><td>kaimasu</td><td>to keep / raise (a pet)</td><td><span class="tag-verb">verb</span></td><td class="note">ペットをかっています = I have a pet</td></tr>
+      <tr><td>19</td><td>かぞえます（数えます）</td><td>kazoemasu</td><td>to count</td><td><span class="tag-verb">verb</span></td><td class="note">ichidan verb: かぞえる</td></tr>
+      <tr><td>20</td><td>みます（見ます）</td><td>mimasu</td><td>to look at / watch</td><td><span class="tag-verb">verb</span></td><td class="note">どうぶつをみます = I look at animals</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box">
+    <strong>⚠ います vs. あります — a vital distinction:</strong> When saying something exists or is somewhere, Japanese uses two different verbs. <em>います (imasu)</em> is used for living things — people, animals, insects. <em>あります (arimasu)</em> is used for inanimate objects and plants. So <em>ねこがさんびき<strong>います</strong></em> (there are three cats) but <em>ほんがさんさつ<strong>あります</strong></em> (there are three books). Getting this right sounds natural instantly. Bonus rabbit fact: うさぎ (rabbits) are traditionally counted with 〜わ (the bird counter) because in old Japan, rabbits were classified as birds to get around meat-eating restrictions during Buddhist periods — so <em>うさぎをにわかっています</em> is perfectly correct Japanese!
+  </div>
+
+</div><!-- /jp-lesson -->

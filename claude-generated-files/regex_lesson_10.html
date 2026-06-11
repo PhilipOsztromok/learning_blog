@@ -1,0 +1,510 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 240px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  .fn  { color: #b392f0; }
+  /* operator anatomy */
+  .anatomy {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 1.05rem; line-height: 2.8;
+  }
+  .an-kw   { color: #f97583; }
+  .an-var  { color: #ffab70; }
+  .an-op   { color: #c9d8ff; font-size: 1.15rem; }
+  .an-rx   { color: #ffa657; }
+  .an-lbl  { color: #5a6a8a; font-size: 0.78rem; font-style: italic; }
+  /* BASH_REMATCH visualiser */
+  .brm-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2;
+  }
+  .brm-hdr  { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.3em; }
+  .brm-idx  { color: #d2a8ff; min-width: 140px; display: inline-block; }
+  .brm-val  { color: #85e89d; }
+  .brm-ann  { color: #5a6a8a; font-size: 0.8rem; font-style: italic; margin-left: 0.6em; }
+  /* rule cards for quoting rules */
+  .rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7em; margin: 1em 0; }
+  .rule-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.75em 1em;
+  }
+  .rule-card .rc-title { color: #c9d8ff; font-weight: bold; font-size: 0.88rem; display: block; margin-bottom: 0.4em; }
+  .rule-card .rc-body  { color: #7a8aaa; font-size: 0.82rem; line-height: 1.5; }
+  .rule-card code { font-size: 0.85em; }
+  /* validation function cards */
+  .val-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7em; margin: 1em 0; }
+  .val-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 1em;
+  }
+  .val-card .vc-name { font-family: 'Consolas', monospace; color: #b392f0; font-size: 0.9rem; display: block; margin-bottom: 0.15em; }
+  .val-card .vc-desc { color: #c9d8ff; font-size: 0.82rem; display: block; margin-bottom: 0.3em; }
+  .val-card .vc-rx   { font-family: 'Consolas', monospace; color: #ffa657; font-size: 0.78rem; word-break: break-all; line-height: 1.5; }
+  /* perf comparison */
+  .perf-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.87rem; line-height: 2;
+  }
+  .pv-hdr  { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.3em; }
+  .pv-fast { color: #85e89d; }
+  .pv-slow { color: #f97583; }
+  .pv-ok   { color: #ffab70; }
+  .pv-lbl  { color: #5a6a8a; font-size: 0.8rem; font-style: italic; }
+  /* portability */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.no  { color: #f97583; }
+  .lx-lesson td.gnu { color: #ffab70; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 10 — Regex in Bash: [[ =~ ]] and BASH_REMATCH</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Native Regex in the Shell</h2>
+
+<p>Since Bash 3.2, the <code>[[ ]]</code> compound command supports a <code>=~</code> operator for testing a string against a regular expression — without spawning a subprocess. The result is stored in the special array <code>BASH_REMATCH</code>, giving you capture groups directly in shell variables. This is the right tool when you need to <em>validate</em> or <em>parse</em> a value inside a script without the overhead of calling <code>grep</code>, <code>sed</code>, or <code>awk</code>.</p>
+
+<div class="anatomy">
+  <div>
+    <span class="an-kw">[[ </span><span class="an-var">string</span> <span class="an-op">=~</span> <span class="an-rx">regex</span> <span class="an-kw">]]</span>
+  </div>
+  <div style="display:grid; grid-template-columns: 50px 50px 90px 200px; font-size:0.78rem; color:#5a6a8a; margin-top:-1em; gap:0;">
+    <span></span>
+    <span style="color:#ffab70;">string to test</span>
+    <span></span>
+    <span style="color:#ffa657;">ERE pattern — unquoted</span>
+  </div>
+</div>
+
+<ul>
+  <li>Returns <strong>exit code 0</strong> (true) if the string contains a match; non-zero otherwise</li>
+  <li>The regex is ERE — the same syntax as <code>grep -E</code> and <code>awk</code></li>
+  <li><strong>No subprocess</strong> — handled entirely by the shell; faster than any external tool for single-value tests</li>
+  <li>Populates <code>BASH_REMATCH</code> on a successful match</li>
+</ul>
+
+<pre><span class="cm"># Basic test: does the string contain a pattern?</span>
+<span class="vr">input</span><span class="op">=</span><span class="st">"hello world"</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$input</span> <span class="op">=~</span> <span class="rx">world</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"matched"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Anchored: entire string must be a number</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$input</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"is an integer"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Negated: ! in front of [[ ]]</span>
+<span class="kw">if</span> <span class="op">!</span> <span class="op">[[</span> <span class="vr">$input</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"not an integer"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ERE features work directly</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$input</span> <span class="op">=~</span> <span class="rx">^(foo|bar)$</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"is foo or bar"</span>
+<span class="kw">fi</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Quoting Rule — Critical</h2>
+
+<div class="rule-grid">
+  <div class="rule-card">
+    <span class="rc-title">Do NOT quote the regex</span>
+    <span class="rc-body">The regex must be <strong>unquoted</strong> (or stored in a variable). Quoting it with <code>'...'</code> or <code>"..."</code> turns it into a literal string comparison — no special characters are interpreted.</span>
+  </div>
+  <div class="rule-card">
+    <span class="rc-title">DO quote the string</span>
+    <span class="rc-body">The left-hand side (the value being tested) <strong>must be quoted</strong> if it can contain spaces or shell metacharacters: <code>[[ "$var" =~ regex ]]</code>. An unquoted variable with spaces will cause a syntax error.</span>
+  </div>
+  <div class="rule-card">
+    <span class="rc-title">Store complex regex in a variable</span>
+    <span class="rc-body">If your pattern contains spaces or shell-special characters, store it in a variable first and use the variable <strong>unquoted</strong> on the right-hand side: <code>re='foo bar'; [[ $x =~ $re ]]</code></span>
+  </div>
+  <div class="rule-card">
+    <span class="rc-title">The Bash 3.1 exception</span>
+    <span class="rc-body">Bash 3.1 <em>required</em> the regex to be quoted. Bash 3.2+ changed this. For maximum compatibility write patterns in a variable — it works in all versions.</span>
+  </div>
+</div>
+
+<pre><span class="cm"># WRONG: quoted regex becomes a literal string match</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$date</span> <span class="op">=~</span> <span class="st">"^[0-9]{4}-[0-9]{2}"</span> <span class="op">]]</span>; <span class="kw">then</span>   <span class="cm"># won't work as regex</span>
+
+<span class="cm"># CORRECT: unquoted regex</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$date</span> <span class="op">=~</span> <span class="rx">^[0-9]{4}-[0-9]{2}</span> <span class="op">]]</span>; <span class="kw">then</span>
+
+<span class="cm"># CORRECT: variable holds the regex — unquoted on RHS</span>
+<span class="vr">re</span><span class="op">=</span><span class="st">'^[0-9]{4}-[0-9]{2}'</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$date</span> <span class="op">=~</span> <span class="vr">$re</span> <span class="op">]]</span>; <span class="kw">then</span>
+
+<span class="cm"># CORRECT: quoted LHS protects value with spaces</span>
+<span class="vr">input</span><span class="op">=</span><span class="st">"hello world"</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="st">"$input"</span> <span class="op">=~</span> <span class="rx">^hello</span> <span class="op">]]</span>; <span class="kw">then</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>BASH_REMATCH — Reading Capture Groups</h2>
+
+<p>After a successful <code>=~</code> match, Bash populates the read-only array <code>BASH_REMATCH</code>:</p>
+
+<div class="brm-vis">
+  <span class="brm-hdr">Pattern: ^([0-9]{4})-([0-9]{2})-([0-9]{2})$   Input: "2026-06-11"</span>
+  <span><span class="brm-idx">BASH_REMATCH[0]</span> = <span class="brm-val">"2026-06-11"</span> <span class="brm-ann">entire match</span></span>
+  <span><span class="brm-idx">BASH_REMATCH[1]</span> = <span class="brm-val">"2026"</span>       <span class="brm-ann">capture group 1: year</span></span>
+  <span><span class="brm-idx">BASH_REMATCH[2]</span> = <span class="brm-val">"06"</span>         <span class="brm-ann">capture group 2: month</span></span>
+  <span><span class="brm-idx">BASH_REMATCH[3]</span> = <span class="brm-val">"11"</span>         <span class="brm-ann">capture group 3: day</span></span>
+</div>
+
+<pre><span class="cm"># Extract date components</span>
+<span class="vr">date</span><span class="op">=</span><span class="st">"2026-06-11"</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$date</span> <span class="op">=~</span> <span class="rx">^([0-9]{4})-([0-9]{2})-([0-9]{2})$</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="vr">year</span><span class="op">=</span><span class="st">"${BASH_REMATCH[1]}"</span>
+    <span class="vr">month</span><span class="op">=</span><span class="st">"${BASH_REMATCH[2]}"</span>
+    <span class="vr">day</span><span class="op">=</span><span class="st">"${BASH_REMATCH[3]}"</span>
+    <span class="cmd">echo</span> <span class="st">"Day: $day  Month: $month  Year: $year"</span>
+<span class="kw">fi</span>
+<span class="out">Day: 11  Month: 06  Year: 2026</span>
+
+<span class="cm"># Parse a "key=value" string</span>
+<span class="vr">line</span><span class="op">=</span><span class="st">"timeout=30"</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$line</span> <span class="op">=~</span> <span class="rx">^([a-z_]+)=(.+)$</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="vr">key</span><span class="op">=</span><span class="st">"${BASH_REMATCH[1]}"</span>
+    <span class="vr">val</span><span class="op">=</span><span class="st">"${BASH_REMATCH[2]}"</span>
+    <span class="cmd">echo</span> <span class="st">"$key → $val"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Parse a URL: scheme, host, path</span>
+<span class="vr">url</span><span class="op">=</span><span class="st">"https://api.example.com/v2/users"</span>
+<span class="vr">re</span><span class="op">=</span><span class="st">'^(https?)://([^/]+)(/.*)$'</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$url</span> <span class="op">=~</span> <span class="vr">$re</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"scheme: ${BASH_REMATCH[1]}"</span>
+    <span class="cmd">echo</span> <span class="st">"host:   ${BASH_REMATCH[2]}"</span>
+    <span class="cmd">echo</span> <span class="st">"path:   ${BASH_REMATCH[3]}"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># BASH_REMATCH is overwritten by every =~ test — save values immediately</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$line</span> <span class="op">=~</span> <span class="rx">^([0-9]+)</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="vr">number</span><span class="op">=</span><span class="st">"${BASH_REMATCH[1]}"</span>   <span class="cm"># save BEFORE the next [[ ]] test</span>
+<span class="kw">fi</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Validation Function Library</h2>
+
+<p>The most common use of <code>[[ =~ ]]</code> is input validation. Here are battle-tested patterns as reusable shell functions. Source this file in your scripts with <code>source validate.sh</code>.</p>
+
+<div class="val-grid">
+  <div class="val-card">
+    <span class="vc-name">is_integer</span>
+    <span class="vc-desc">Whole number, optional leading minus</span>
+    <span class="vc-rx">^-?[0-9]+$</span>
+  </div>
+  <div class="val-card">
+    <span class="vc-name">is_positive_int</span>
+    <span class="vc-desc">Positive integer, no sign, no zero-pad</span>
+    <span class="vc-rx">^[1-9][0-9]*$</span>
+  </div>
+  <div class="val-card">
+    <span class="vc-name">is_float</span>
+    <span class="vc-desc">Decimal number, optional sign and fraction</span>
+    <span class="vc-rx">^-?[0-9]+(\.[0-9]+)?$</span>
+  </div>
+  <div class="val-card">
+    <span class="vc-name">is_ipv4</span>
+    <span class="vc-desc">Four 1–3 digit octets separated by dots</span>
+    <span class="vc-rx">^([0-9]{1,3}\.){3}[0-9]{1,3}$</span>
+  </div>
+  <div class="val-card">
+    <span class="vc-name">is_email</span>
+    <span class="vc-desc">Practical email format (not RFC-complete)</span>
+    <span class="vc-rx">^[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}$</span>
+  </div>
+  <div class="val-card">
+    <span class="vc-name">is_iso_date</span>
+    <span class="vc-desc">ISO 8601 date YYYY-MM-DD</span>
+    <span class="vc-rx">^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$</span>
+  </div>
+  <div class="val-card">
+    <span class="vc-name">is_hostname</span>
+    <span class="vc-desc">RFC 1123 hostname label rules</span>
+    <span class="vc-rx">^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$</span>
+  </div>
+  <div class="val-card">
+    <span class="vc-name">is_semver</span>
+    <span class="vc-desc">Semantic version MAJOR.MINOR.PATCH</span>
+    <span class="vc-rx">^[0-9]+\.[0-9]+\.[0-9]+$</span>
+  </div>
+</div>
+
+<pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="cm"># validate.sh — reusable validation functions using [[ =~ ]]</span>
+
+<span class="fn">is_integer</span><span class="op">()</span> <span class="op">{</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^-?[0-9]+$</span> <span class="op">]]</span>
+<span class="op">}</span>
+
+<span class="fn">is_positive_int</span><span class="op">()</span> <span class="op">{</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^[1-9][0-9]*$</span> <span class="op">]]</span>
+<span class="op">}</span>
+
+<span class="fn">is_float</span><span class="op">()</span> <span class="op">{</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^-?[0-9]+(\.[0-9]+)?$</span> <span class="op">]]</span>
+<span class="op">}</span>
+
+<span class="fn">is_ipv4</span><span class="op">()</span> <span class="op">{</span>
+    <span class="kw">local</span> <span class="vr">re</span><span class="op">=</span><span class="st">'^([0-9]{1,3}\.){3}[0-9]{1,3}$'</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$re</span> <span class="op">]]</span> <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+    <span class="cm"># also verify each octet is 0-255</span>
+    <span class="kw">local</span> <span class="vr">IFS</span><span class="op">=</span><span class="st">'.'</span>
+    <span class="kw">local</span> <span class="vr">octet</span>
+    <span class="kw">for</span> <span class="vr">octet</span> <span class="kw">in</span> <span class="vr">$1</span>; <span class="kw">do</span>
+        <span class="op">((</span> <span class="vr">octet</span> <span class="op">&gt;=</span> <span class="nu">0</span> <span class="op">&amp;&amp;</span> <span class="vr">octet</span> <span class="op">&lt;=</span> <span class="nu">255</span> <span class="op">))</span> <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">done</span>
+<span class="op">}</span>
+
+<span class="fn">is_email</span><span class="op">()</span> <span class="op">{</span>
+    <span class="kw">local</span> <span class="vr">re</span><span class="op">=</span><span class="st">'^[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}$'</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$re</span> <span class="op">]]</span>
+<span class="op">}</span>
+
+<span class="fn">is_iso_date</span><span class="op">()</span> <span class="op">{</span>
+    <span class="kw">local</span> <span class="vr">re</span><span class="op">=</span><span class="st">'^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$'</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$re</span> <span class="op">]]</span>
+<span class="op">}</span>
+
+<span class="fn">is_semver</span><span class="op">()</span> <span class="op">{</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^[0-9]+\.[0-9]+\.[0-9]+$</span> <span class="op">]]</span>
+<span class="op">}</span>
+
+<span class="fn">is_hex_colour</span><span class="op">()</span> <span class="op">{</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$</span> <span class="op">]]</span>
+<span class="op">}</span>
+
+<span class="fn">is_slug</span><span class="op">()</span> <span class="op">{</span>   <span class="cm"># URL-safe slug: lowercase letters, digits, hyphens</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^[a-z0-9]+(-[a-z0-9]+)*$</span> <span class="op">]]</span>
+<span class="op">}</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Using the Validation Library</h2>
+
+<pre><span class="cm"># Source and use in a script</span>
+<span class="kw">source</span> <span class="pth">validate.sh</span>
+
+<span class="cm"># Validate script arguments</span>
+<span class="fn">validate_args</span><span class="op">()</span> <span class="op">{</span>
+    <span class="kw">local</span> <span class="vr">port</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">host</span><span class="op">=</span><span class="st">"$2"</span>
+    <span class="kw">if</span> <span class="op">!</span> <span class="fn">is_positive_int</span> <span class="st">"$port"</span> <span class="op">||</span> <span class="op">((</span><span class="vr">port</span> <span class="op">&gt;</span> <span class="nu">65535</span><span class="op">))</span>; <span class="kw">then</span>
+        <span class="cmd">echo</span> <span class="st">"Error: '$port' is not a valid port number"</span> <span class="op">&gt;&amp;2</span>
+        <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">fi</span>
+    <span class="kw">if</span> <span class="op">!</span> <span class="fn">is_ipv4</span> <span class="st">"$host"</span> <span class="op">&amp;&amp;</span> <span class="op">!</span> <span class="fn">is_hostname</span> <span class="st">"$host"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>; <span class="kw">then</span>
+        <span class="cmd">echo</span> <span class="st">"Error: '$host' is not a valid host"</span> <span class="op">&gt;&amp;2</span>
+        <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">fi</span>
+<span class="op">}</span>
+
+<span class="cm"># Validate user input in a loop</span>
+<span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span>
+    <span class="cmd">read</span> <span class="fl">-rp</span> <span class="st">"Enter an IPv4 address: "</span> <span class="vr">ip</span>
+    <span class="fn">is_ipv4</span> <span class="st">"$ip"</span> <span class="op">&amp;&amp;</span> <span class="kw">break</span>
+    <span class="cmd">echo</span> <span class="st">"Invalid IP address, try again"</span>
+<span class="kw">done</span>
+
+<span class="cm"># Use in a case-like dispatch via if/elif</span>
+<span class="fn">describe_input</span><span class="op">()</span> <span class="op">{</span>
+    <span class="kw">local</span> <span class="vr">val</span><span class="op">=</span><span class="st">"$1"</span>
+    <span class="kw">if</span>   <span class="fn">is_integer</span>  <span class="st">"$val"</span>; <span class="kw">then</span> <span class="cmd">echo</span> <span class="st">"integer"</span>
+    <span class="kw">elif</span> <span class="fn">is_float</span>    <span class="st">"$val"</span>; <span class="kw">then</span> <span class="cmd">echo</span> <span class="st">"float"</span>
+    <span class="kw">elif</span> <span class="fn">is_ipv4</span>     <span class="st">"$val"</span>; <span class="kw">then</span> <span class="cmd">echo</span> <span class="st">"IPv4 address"</span>
+    <span class="kw">elif</span> <span class="fn">is_email</span>    <span class="st">"$val"</span>; <span class="kw">then</span> <span class="cmd">echo</span> <span class="st">"email address"</span>
+    <span class="kw">elif</span> <span class="fn">is_iso_date</span> <span class="st">"$val"</span>; <span class="kw">then</span> <span class="cmd">echo</span> <span class="st">"ISO date"</span>
+    <span class="kw">else</span>                            <span class="cmd">echo</span> <span class="st">"unknown"</span>
+    <span class="kw">fi</span>
+<span class="op">}</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Parsing with BASH_REMATCH — Real Patterns</h2>
+
+<pre><span class="cm"># Parse a log line into variables</span>
+<span class="vr">line</span><span class="op">=</span><span class="st">"2026-06-11 14:32:00 ERROR database connection failed"</span>
+<span class="vr">re</span><span class="op">=</span><span class="st">'^([0-9-]+)[[:space:]]+([0-9:]+)[[:space:]]+([A-Z]+)[[:space:]]+(.+)$'</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$line</span> <span class="op">=~</span> <span class="vr">$re</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="vr">log_date</span><span class="op">=</span><span class="st">"${BASH_REMATCH[1]}"</span>
+    <span class="vr">log_time</span><span class="op">=</span><span class="st">"${BASH_REMATCH[2]}"</span>
+    <span class="vr">log_level</span><span class="op">=</span><span class="st">"${BASH_REMATCH[3]}"</span>
+    <span class="vr">log_msg</span><span class="op">=</span><span class="st">"${BASH_REMATCH[4]}"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Extract semantic version parts from a dependency line</span>
+<span class="vr">dep</span><span class="op">=</span><span class="st">"requests==2.31.0"</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$dep</span> <span class="op">=~</span> <span class="rx">^([a-z_-]+)==([0-9]+)\.([0-9]+)\.([0-9]+)$</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="vr">pkg</span><span class="op">=</span><span class="st">"${BASH_REMATCH[1]}"</span>
+    <span class="vr">major</span><span class="op">=</span><span class="st">"${BASH_REMATCH[2]}"</span>
+    <span class="vr">minor</span><span class="op">=</span><span class="st">"${BASH_REMATCH[3]}"</span>
+    <span class="vr">patch</span><span class="op">=</span><span class="st">"${BASH_REMATCH[4]}"</span>
+    <span class="cmd">echo</span> <span class="st">"$pkg v$major.$minor.$patch"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Check minimum version (compare captured integers)</span>
+<span class="kw">if</span> <span class="op">[[</span> <span class="vr">$dep</span> <span class="op">=~</span> <span class="rx">==([0-9]+)\.([0-9]+)</span> <span class="op">]]</span>; <span class="kw">then</span>
+    <span class="vr">maj</span><span class="op">=</span><span class="st">"${BASH_REMATCH[1]}"</span>
+    <span class="vr">min</span><span class="op">=</span><span class="st">"${BASH_REMATCH[2]}"</span>
+    <span class="kw">if</span> <span class="op">((</span> <span class="vr">maj</span> <span class="op">&gt;</span> <span class="nu">2</span> <span class="op">||</span> <span class="op">(</span> <span class="vr">maj</span> <span class="op">==</span> <span class="nu">2</span> <span class="op">&amp;&amp;</span> <span class="vr">min</span> <span class="op">&gt;=</span> <span class="nu">28</span> <span class="op">)</span> <span class="op">))</span>; <span class="kw">then</span>
+        <span class="cmd">echo</span> <span class="st">"version OK"</span>
+    <span class="kw">fi</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Process lines from a file — parse each one</span>
+<span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="kw">if</span> <span class="op">[[</span> <span class="vr">$line</span> <span class="op">=~</span> <span class="rx">^([a-z_]+)[[:space:]]*=[[:space:]]*(.+)$</span> <span class="op">]]</span>; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">"key=%-20s value=%s\n"</span> <span class="st">"${BASH_REMATCH[1]}"</span> <span class="st">"${BASH_REMATCH[2]}"</span>
+    <span class="kw">fi</span>
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="pth">config.ini</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Performance — When to Use [[ =~ ]] vs External Tools</h2>
+
+<div class="perf-vis">
+  <span class="pv-hdr">Choosing the right tool for regex work</span>
+  <span><span class="pv-fast">Fast — use [[ =~ ]]</span></span>
+  <span>  Validating a single variable or argument in a script</span>
+  <span>  Parsing one value into components (URL, version, date)</span>
+  <span>  Type-checking user input in a loop</span>
+  <span>  Conditional branching based on a variable's format</span>
+  <span> </span>
+  <span><span class="pv-ok">Use grep/awk/sed</span></span>
+  <span>  Searching or filtering lines across a file or stream</span>
+  <span>  Extracting all matches from many lines (-o pattern)</span>
+  <span>  Transforming text in bulk (substitution across thousands of lines)</span>
+  <span>  Counting matches, aggregating statistics from a file</span>
+  <span> </span>
+  <span><span class="pv-slow">Avoid [[ =~ ]] inside loops over file lines</span></span>
+  <span>  Reading a 50,000-line file with while read + [[ =~ ]] is slower</span>
+  <span>  than piping it through grep or awk — spawn the tool once</span>
+</div>
+
+<pre><span class="cm"># SLOW: shell loop with [[ =~ ]] on a large file</span>
+<span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="op">[[</span> <span class="vr">$line</span> <span class="op">=~</span> <span class="rx">ERROR</span> <span class="op">]]</span> <span class="op">&amp;&amp;</span> <span class="cmd">echo</span> <span class="st">"$line"</span>
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="pth">bigfile.log</span>
+
+<span class="cm"># FAST: let grep do all the line scanning in C</span>
+<span class="cmd">grep</span> <span class="st">'ERROR'</span> <span class="pth">bigfile.log</span>
+
+<span class="cm"># GOOD use of [[ =~ ]]: single-value validation, no file I/O</span>
+<span class="fn">deploy</span><span class="op">()</span> <span class="op">{</span>
+    <span class="kw">local</span> <span class="vr">version</span><span class="op">=</span><span class="st">"$1"</span>
+    <span class="kw">if</span> <span class="op">!</span> <span class="op">[[</span> <span class="vr">$version</span> <span class="op">=~</span> <span class="rx">^[0-9]+\.[0-9]+\.[0-9]+$</span> <span class="op">]]</span>; <span class="kw">then</span>
+        <span class="cmd">echo</span> <span class="st">"Error: version must be MAJOR.MINOR.PATCH"</span> <span class="op">&gt;&amp;2</span>
+        <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">fi</span>
+    <span class="cm"># ... deploy logic</span>
+<span class="op">}</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Common Traps and Fixes</h2>
+
+<table>
+  <tr><th>Trap</th><th>Example</th><th>Fix</th></tr>
+  <tr>
+    <td>Quoted regex becomes literal</td>
+    <td><code>[[ $x =~ "^[0-9]+" ]]</code></td>
+    <td>Remove quotes: <code>[[ $x =~ ^[0-9]+ ]]</code></td>
+  </tr>
+  <tr>
+    <td>Pattern with spaces causes error</td>
+    <td><code>[[ $x =~ foo bar ]]</code></td>
+    <td>Store in variable: <code>re="foo bar"; [[ $x =~ $re ]]</code></td>
+  </tr>
+  <tr>
+    <td>Unquoted LHS with spaces splits</td>
+    <td><code>[[ $var =~ pat ]]</code> where var="a b"</td>
+    <td>Always quote LHS: <code>[[ "$var" =~ pat ]]</code></td>
+  </tr>
+  <tr>
+    <td>BASH_REMATCH overwritten</td>
+    <td>Using BASH_REMATCH after another <code>[[ ]]</code></td>
+    <td>Assign to named variables immediately after the test</td>
+  </tr>
+  <tr>
+    <td>Partial match surprises</td>
+    <td><code>[[ "foobar" =~ foo ]]</code> is true</td>
+    <td>Anchor with <code>^</code> and <code>$</code> for full-string match</td>
+  </tr>
+  <tr>
+    <td>Using in <code>[ ]</code> instead of <code>[[ ]]</code></td>
+    <td><code>[ "$x" =~ pattern ]</code></td>
+    <td><code>=~</code> only works in <code>[[ ]]</code> — single brackets do not support it</td>
+  </tr>
+  <tr>
+    <td>ERE features missing in old Bash</td>
+    <td><code>{n,m}</code> intervals on Bash &lt; 3.2</td>
+    <td>Use Bash 3.2+ or rewrite without interval expressions</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 10</h2>
+
+<div class="cmd-ref">
+  <h4>Syntax</h4>
+  <div class="cmd-row"><span class="cmd-key">[[ "$var" =~ regex ]]</span><span class="cmd-desc">Test — true (exit 0) if var contains a match</span></div>
+  <div class="cmd-row"><span class="cmd-key">! [[ "$var" =~ regex ]]</span><span class="cmd-desc">Negated test — true if var does NOT match</span></div>
+  <div class="cmd-row"><span class="cmd-key">re='...'; [[ "$var" =~ $re ]]</span><span class="cmd-desc">Store complex pattern in a variable (portable)</span></div>
+  <div class="cmd-row"><span class="cmd-key">${BASH_REMATCH[0]}</span><span class="cmd-desc">Entire matched text</span></div>
+  <div class="cmd-row"><span class="cmd-key">${BASH_REMATCH[N]}</span><span class="cmd-desc">Capture group N (1-indexed)</span></div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Key Rules</h4>
+  <div class="cmd-row"><span class="cmd-key">Regex — never quoted</span><span class="cmd-desc">Quoting the RHS makes it a literal string comparison</span></div>
+  <div class="cmd-row"><span class="cmd-key">String — always quoted</span><span class="cmd-desc">Quote the LHS to protect spaces and metacharacters</span></div>
+  <div class="cmd-row"><span class="cmd-key">ERE syntax</span><span class="cmd-desc">Same flavour as grep -E and awk — not BRE</span></div>
+  <div class="cmd-row"><span class="cmd-key">Partial match by default</span><span class="cmd-desc">Use ^ and $ to anchor and force full-string matching</span></div>
+  <div class="cmd-row"><span class="cmd-key">Save BASH_REMATCH immediately</span><span class="cmd-desc">It is overwritten by every subsequent [[ ]] test</span></div>
+  <div class="cmd-row"><span class="cmd-key">No subshell cost</span><span class="cmd-desc">Faster than grep for validating a single value</span></div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 11 covers PCRE — Perl-Compatible Regular Expressions in depth. Lookahead and lookbehind assertions, lazy quantifiers, named capture groups, non-capturing groups, atomic groups, and how to use PCRE features via <code>grep -P</code> and <code>perl -ne</code> inside shell pipelines.
+</div>
+
+</div>

@@ -1,0 +1,634 @@
+<!-- ============================================================
+     PYTHON LESSON: Lists & Loops
+     Level: Beginner Python / Experienced Programmer
+     ============================================================ -->
+
+<style>
+  .py-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .py-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .py-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .py-lesson p { margin-bottom: 1rem; }
+  .py-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 16px;
+  }
+  .cm { color: #6a9153; font-style: italic; }
+  .kw { color: #c9a8ff; }
+  .st { color: #7ecfa0; }
+  .nu { color: #f08080; }
+  .fn { color: #7ab8ff; }
+  .cl { color: #ffd580; }
+  .dc { color: #4f8ef7; }
+  .op { color: #a0a4b8; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .java-box {
+    background: #1a1d27;
+    border-left: 3px solid #ffd580;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .java-box strong { color: #ffd580; }
+  .java-box .java-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .fastapi-box {
+    background: #1a1d27;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .fastapi-box strong { color: #7ecfa0; }
+  .fastapi-box .fastapi-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Concept cards ───────────────────────────────── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+
+  .concept-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: #4f8ef7; }
+  .concept-card .cc-type {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 4px;
+  }
+  .concept-card .cc-name {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 1.1em;
+    color: #ffd580;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .concept-card .cc-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 10px;
+  }
+  .concept-card .cc-example {
+    background: #12141e;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #e2e4ec;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  /* ── Example blocks ──────────────────────────────── */
+  .example-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .example-block .ex-title {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #4f8ef7;
+    margin-bottom: 6px;
+  }
+  .example-block .ex-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* ── Slice visualiser ────────────────────────────── */
+  .slice-vis {
+    display: flex;
+    gap: 0;
+    margin: 12px 0;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.85em;
+    overflow-x: auto;
+  }
+  .sv-cell {
+    border: 1px solid #2a2d3a;
+    text-align: center;
+    min-width: 52px;
+  }
+  .sv-cell .sv-idx { background: #1e2235; color: #4f8ef7; padding: 3px 6px; font-size: 0.8em; display: block; border-bottom: 1px solid #2a2d3a; }
+  .sv-cell .sv-neg { background: #1e2235; color: #7c5cbf; padding: 3px 6px; font-size: 0.8em; display: block; border-bottom: 1px solid #2a2d3a; }
+  .sv-cell .sv-val { background: #12141e; color: #7ecfa0; padding: 5px 6px; display: block; }
+
+  /* ── Methods table ───────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.88em;
+    margin-top: 12px;
+    margin-bottom: 24px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.9em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.8em; color: #7a7f96; font-style: italic; }
+
+  /* ── Loop pattern cards ──────────────────────────── */
+  .loop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .loop-grid { grid-template-columns: 1fr; } }
+
+  .loop-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .loop-card:hover { border-color: #7c5cbf; }
+  .loop-card .lc-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7c5cbf;
+    margin-bottom: 4px;
+  }
+  .loop-card .lc-pattern {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.95em;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .loop-card .lc-code {
+    background: #12141e;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #e2e4ec;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .loop-card .lc-desc {
+    font-size: 0.82em;
+    color: #7a7f96;
+    margin-top: 8px;
+    font-style: italic;
+  }
+</style>
+
+<div class="py-lesson">
+
+  <h2>🔁 Lists &amp; Loops</h2>
+  <p class="section-intro">Lists are Python's workhorse collection — flexible, powerful, and everywhere in real code. Python's loop syntax is simpler than Java's but more expressive, especially with list comprehensions, which replace most <code>map()</code> / <code>filter()</code> patterns.</p>
+
+  <div class="java-box">
+    <span class="java-label">⚡ Coming from Java / JavaScript</span>
+    <strong>Python has no C-style <code>for</code> loop.</strong> There is no <code>for (int i = 0; i &lt; n; i++)</code>. Python's <code>for</code> is always a for-each. Want an index? Use <code>enumerate()</code>. Want a numeric range? Use <code>range()</code>. List comprehensions replace most <code>stream().map().filter().collect()</code> chains from Java and <code>array.map().filter()</code> from JavaScript — but they're more readable.
+  </div>
+
+  <div class="fastapi-box">
+    <span class="fastapi-label">🚀 FastAPI relevance — HIGH</span>
+    <strong>FastAPI endpoints routinely return lists.</strong> List comprehensions are the standard way to transform database results into API response models. Understanding how to iterate, filter, and reshape lists is essential for writing clean FastAPI route handlers.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       LISTS — CREATION & INDEXING
+  ═══════════════════════════════════════════ -->
+  <h2>📋 Lists — Creation, Indexing &amp; Slicing</h2>
+
+  <h3>Creating Lists</h3>
+  <div class="concept-grid">
+
+    <div class="concept-card">
+      <div class="cc-type">List Literals</div>
+      <span class="cc-name">[ ] syntax</span>
+      <div class="cc-desc">Square brackets, comma-separated. Can hold mixed types (but keep them consistent in practice). The empty list is just <code>[]</code>.</div>
+      <div class="cc-example"><span class="cm"># Typed consistently</span>
+ingredients = [<span class="st">"eggs"</span>, <span class="st">"milk"</span>, <span class="st">"flour"</span>]
+quantities = [<span class="nu">6</span>, <span class="nu">2</span>, <span class="nu">500</span>]
+empty = []
+
+<span class="cm"># Mixed types (avoid in practice)</span>
+mixed = [<span class="st">"eggs"</span>, <span class="nu">6</span>, <span class="kw">True</span>]</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Constructing Lists</div>
+      <span class="cc-name">list() &amp; range()</span>
+      <div class="cc-desc"><code>list()</code> converts any iterable to a list. <code>range()</code> generates a sequence of integers — combine them to make numeric lists.</div>
+      <div class="cc-example"><span class="cm"># Convert other iterables</span>
+chars = <span class="fn">list</span>(<span class="st">"hello"</span>)
+<span class="cm"># → ['h', 'e', 'l', 'l', 'o']</span>
+
+<span class="cm"># range(start, stop, step)</span>
+days = <span class="fn">list</span>(<span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">8</span>))
+<span class="cm"># → [1, 2, 3, 4, 5, 6, 7]</span>
+
+weeks = <span class="fn">list</span>(<span class="fn">range</span>(<span class="nu">0</span>, <span class="nu">28</span>, <span class="nu">7</span>))
+<span class="cm"># → [0, 7, 14, 21]</span></div>
+    </div>
+
+  </div>
+
+  <h3>Indexing &amp; Slicing</h3>
+  <p class="section-intro">Python supports negative indexing and slicing — two features that have no direct Java equivalent and are genuinely useful.</p>
+
+  <div class="slice-vis">
+    <div class="sv-cell"><span class="sv-idx">0</span><span class="sv-neg">-5</span><span class="sv-val">"eggs"</span></div>
+    <div class="sv-cell"><span class="sv-idx">1</span><span class="sv-neg">-4</span><span class="sv-val">"milk"</span></div>
+    <div class="sv-cell"><span class="sv-idx">2</span><span class="sv-neg">-3</span><span class="sv-val">"flour"</span></div>
+    <div class="sv-cell"><span class="sv-idx">3</span><span class="sv-neg">-2</span><span class="sv-val">"butter"</span></div>
+    <div class="sv-cell"><span class="sv-idx">4</span><span class="sv-neg">-1</span><span class="sv-val">"sugar"</span></div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Indexing — Positive &amp; Negative</div>
+    <div class="ex-desc">Positive indices count from the start; negative indices count from the end. No more <code>list.get(list.size() - 1)</code> to get the last element!</div>
+<code class="code-block">items = [<span class="st">"eggs"</span>, <span class="st">"milk"</span>, <span class="st">"flour"</span>, <span class="st">"butter"</span>, <span class="st">"sugar"</span>]
+
+<span class="cm"># Positive indexing</span>
+<span class="fn">print</span>(items[<span class="nu">0</span>])   <span class="cm"># "eggs"   — first</span>
+<span class="fn">print</span>(items[<span class="nu">2</span>])   <span class="cm"># "flour"</span>
+
+<span class="cm"># Negative indexing — counts from the end</span>
+<span class="fn">print</span>(items[<span class="op">-</span><span class="nu">1</span>])  <span class="cm"># "sugar"  — last (no .size()-1 needed!)</span>
+<span class="fn">print</span>(items[<span class="op">-</span><span class="nu">2</span>])  <span class="cm"># "butter" — second to last</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Slicing — list[start : stop : step]</div>
+    <div class="ex-desc">Returns a new list — the original is unchanged. <code>stop</code> is exclusive. Any part can be omitted to mean "from the beginning" or "to the end".</div>
+<code class="code-block">meals = [<span class="st">"Mon"</span>, <span class="st">"Tue"</span>, <span class="st">"Wed"</span>, <span class="st">"Thu"</span>, <span class="st">"Fri"</span>, <span class="st">"Sat"</span>, <span class="st">"Sun"</span>]
+
+meals[<span class="nu">0</span>:<span class="nu">3</span>]   <span class="cm"># → ["Mon", "Tue", "Wed"]  (stop is exclusive)</span>
+meals[<span class="nu">5</span>:]    <span class="cm"># → ["Sat", "Sun"]          (from index 5 to end)</span>
+meals[:<span class="nu">2</span>]    <span class="cm"># → ["Mon", "Tue"]          (first 2)</span>
+meals[<span class="op">-</span><span class="nu">2</span>:]   <span class="cm"># → ["Sat", "Sun"]          (last 2)</span>
+meals[::]     <span class="cm"># → full copy of the list</span>
+meals[::<span class="op">-</span><span class="nu">1</span>]  <span class="cm"># → reversed list (very Pythonic!)</span>
+meals[<span class="nu">1</span>:<span class="nu">6</span>:<span class="nu">2</span>] <span class="cm"># → ["Tue", "Thu", "Sat"]   (every 2nd from 1 to 5)</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       LIST METHODS
+  ═══════════════════════════════════════════ -->
+  <h2>🛠️ Essential List Methods</h2>
+  <p class="section-intro">Python lists are mutable — methods modify them in place (they return <code>None</code>, not a new list). This is different from string methods, which always return a new value.</p>
+
+  <div class="example-block">
+    <div class="ex-title">Adding, Removing &amp; Reordering</div>
+<code class="code-block">pantry = [<span class="st">"flour"</span>, <span class="st">"sugar"</span>, <span class="st">"salt"</span>]
+
+<span class="cm"># Adding</span>
+pantry.append(<span class="st">"butter"</span>)           <span class="cm"># add to end → ["flour","sugar","salt","butter"]</span>
+pantry.insert(<span class="nu">1</span>, <span class="st">"eggs"</span>)          <span class="cm"># insert at index 1</span>
+pantry.extend([<span class="st">"milk"</span>, <span class="st">"cream"</span>]) <span class="cm"># add multiple items</span>
+
+<span class="cm"># Removing</span>
+pantry.remove(<span class="st">"salt"</span>)   <span class="cm"># remove by value (first match)</span>
+popped = pantry.pop()    <span class="cm"># remove & return last item</span>
+popped = pantry.pop(<span class="nu">0</span>)  <span class="cm"># remove & return item at index 0</span>
+pantry.clear()           <span class="cm"># remove all items</span>
+
+<span class="cm"># Reordering</span>
+pantry.sort()            <span class="cm"># sort in place (ascending)</span>
+pantry.sort(reverse=<span class="kw">True</span>) <span class="cm"># sort descending</span>
+pantry.reverse()         <span class="cm"># reverse in place</span>
+
+<span class="cm"># Non-mutating alternatives (return new list/value)</span>
+new_list = <span class="fn">sorted</span>(pantry)        <span class="cm"># sorted() → new sorted list</span>
+n = <span class="fn">len</span>(pantry)                   <span class="cm"># length</span>
+idx = pantry.index(<span class="st">"eggs"</span>)       <span class="cm"># index of first match</span>
+count = pantry.count(<span class="st">"flour"</span>)    <span class="cm"># how many times it appears</span>
+exists = <span class="st">"milk"</span> <span class="kw">in</span> pantry        <span class="cm"># True / False</span></code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       LOOPS
+  ═══════════════════════════════════════════ -->
+  <h2>🔄 Loop Patterns</h2>
+
+  <div class="loop-grid">
+
+    <div class="loop-card">
+      <div class="lc-label">Basic for-each</div>
+      <span class="lc-pattern">for item in collection:</span>
+      <div class="lc-code"><span class="kw">for</span> ingredient <span class="kw">in</span> pantry:
+    <span class="fn">print</span>(ingredient)
+
+<span class="cm"># Works on any iterable:</span>
+<span class="cm"># lists, tuples, strings,</span>
+<span class="cm"># dicts, files, ranges...</span></div>
+      <div class="lc-desc">The standard loop. Always prefer this over index-based loops when you just need the values.</div>
+    </div>
+
+    <div class="loop-card">
+      <div class="lc-label">With index — enumerate()</div>
+      <span class="lc-pattern">for i, item in enumerate(collection):</span>
+      <div class="lc-code"><span class="kw">for</span> i, meal <span class="kw">in</span> <span class="fn">enumerate</span>(meals):
+    <span class="fn">print</span>(<span class="st">f"Day </span>{i+<span class="nu">1</span>}<span class="st">: </span>{meal}<span class="st">"</span>)
+
+<span class="cm"># Start at 1 instead of 0:</span>
+<span class="kw">for</span> i, meal <span class="kw">in</span> <span class="fn">enumerate</span>(meals, <span class="nu">1</span>):
+    <span class="fn">print</span>(<span class="st">f"Day </span>{i}<span class="st">: </span>{meal}<span class="st">"</span>)</div>
+      <div class="lc-desc">Replaces the <code>for(int i=0...)</code> pattern. Never use <code>range(len(x))</code> when <code>enumerate</code> will do.</div>
+    </div>
+
+    <div class="loop-card">
+      <div class="lc-label">Parallel iteration — zip()</div>
+      <span class="lc-pattern">for a, b in zip(list1, list2):</span>
+      <div class="lc-code">items = [<span class="st">"eggs"</span>, <span class="st">"milk"</span>]
+qtys  = [<span class="nu">6</span>, <span class="nu">2</span>]
+
+<span class="kw">for</span> item, qty <span class="kw">in</span> <span class="fn">zip</span>(items, qtys):
+    <span class="fn">print</span>(<span class="st">f"</span>{item}<span class="st">: </span>{qty}<span class="st">"</span>)
+
+<span class="cm"># Stops at the shortest list</span></div>
+      <div class="lc-desc">Iterate two (or more) lists in parallel. Much cleaner than indexing manually.</div>
+    </div>
+
+    <div class="loop-card">
+      <div class="lc-label">Numeric range</div>
+      <span class="lc-pattern">for i in range(start, stop, step):</span>
+      <div class="lc-code"><span class="kw">for</span> day <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">7</span>):       <span class="cm"># 0–6</span>
+    <span class="fn">print</span>(<span class="st">f"Day </span>{day}<span class="st">"</span>)
+
+<span class="kw">for</span> week <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">5</span>):    <span class="cm"># 1–4</span>
+    <span class="fn">print</span>(<span class="st">f"Week </span>{week}<span class="st">"</span>)
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">10</span>, <span class="nu">0</span>, <span class="op">-</span><span class="nu">1</span>): <span class="cm"># countdown</span>
+    <span class="fn">print</span>(i)</div>
+      <div class="lc-desc">When you genuinely need a number, not an item. <code>stop</code> is always exclusive.</div>
+    </div>
+
+    <div class="loop-card">
+      <div class="lc-label">While loop</div>
+      <span class="lc-pattern">while condition:</span>
+      <div class="lc-code">days_left = <span class="nu">7</span>
+
+<span class="kw">while</span> days_left <span class="op">></span> <span class="nu">0</span>:
+    <span class="fn">print</span>(<span class="st">f"</span>{days_left}<span class="st"> days left"</span>)
+    days_left <span class="op">-=</span> <span class="nu">1</span>
+
+<span class="cm"># Useful for: polling, retries,</span>
+<span class="cm"># user input, unknown length</span></div>
+      <div class="lc-desc">Use when you don't know how many iterations upfront. Prefer <code>for</code> when iterating a collection.</div>
+    </div>
+
+    <div class="loop-card">
+      <div class="lc-label">break / continue / else</div>
+      <span class="lc-pattern">Control flow inside loops</span>
+      <div class="lc-code"><span class="kw">for</span> item <span class="kw">in</span> pantry:
+    <span class="kw">if</span> item <span class="op">==</span> <span class="st">"expired"</span>:
+        <span class="kw">break</span>       <span class="cm"># exit loop entirely</span>
+    <span class="kw">if</span> item <span class="op">==</span> <span class="st">"skip"</span>:
+        <span class="kw">continue</span>    <span class="cm"># skip to next iteration</span>
+    <span class="fn">print</span>(item)
+<span class="kw">else</span>:
+    <span class="cm"># Runs if loop wasn't broken</span>
+    <span class="fn">print</span>(<span class="st">"All items checked"</span>)</div>
+      <div class="lc-desc">The <code>for/else</code> block is Python-unique — the <code>else</code> runs only if the loop completed without a <code>break</code>.</div>
+    </div>
+
+  </div><!-- /loop-grid -->
+
+
+  <!-- ═══════════════════════════════════════════
+       LIST COMPREHENSIONS
+  ═══════════════════════════════════════════ -->
+  <h2>⚡ List Comprehensions</h2>
+  <p class="section-intro">List comprehensions are one of Python's most loved features — a concise way to build a new list by transforming or filtering an existing one. They replace most <code>map()</code> + <code>filter()</code> patterns and are more readable once you're used to them.</p>
+
+  <div class="example-block">
+    <div class="ex-title">The Pattern: [ expression  for  item  in  iterable  if  condition ]</div>
+    <div class="ex-desc">Read left to right: "give me <em>expression</em> for each <em>item</em> in <em>iterable</em>, but only if <em>condition</em> is true."</div>
+<code class="code-block"><span class="cm"># Traditional loop approach</span>
+expensive = []
+<span class="kw">for</span> item <span class="kw">in</span> shopping_list:
+    <span class="kw">if</span> item[<span class="st">"price"</span>] <span class="op">></span> <span class="nu">5.0</span>:
+        expensive.append(item[<span class="st">"name"</span>])
+
+<span class="cm"># List comprehension — same result, one line</span>
+expensive = [item[<span class="st">"name"</span>] <span class="kw">for</span> item <span class="kw">in</span> shopping_list <span class="kw">if</span> item[<span class="st">"price"</span>] <span class="op">></span> <span class="nu">5.0</span>]</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Meal Planner Examples</div>
+    <div class="ex-desc">Real-world comprehension patterns themed around the meal planner project.</div>
+<code class="code-block">ingredients = [
+    {<span class="st">"name"</span>: <span class="st">"milk"</span>,   <span class="st">"days_left"</span>: <span class="nu">2</span>,  <span class="st">"qty"</span>: <span class="nu">1</span>},
+    {<span class="st">"name"</span>: <span class="st">"eggs"</span>,   <span class="st">"days_left"</span>: <span class="nu">10</span>, <span class="st">"qty"</span>: <span class="nu">6</span>},
+    {<span class="st">"name"</span>: <span class="st">"yogurt"</span>, <span class="st">"days_left"</span>: <span class="nu">1</span>,  <span class="st">"qty"</span>: <span class="nu">2</span>},
+    {<span class="st">"name"</span>: <span class="st">"cheese"</span>, <span class="st">"days_left"</span>: <span class="nu">5</span>,  <span class="st">"qty"</span>: <span class="nu">1</span>},
+]
+
+<span class="cm"># 1. Transform — get just the names</span>
+names = [i[<span class="st">"name"</span>] <span class="kw">for</span> i <span class="kw">in</span> ingredients]
+<span class="cm"># → ["milk", "eggs", "yogurt", "cheese"]</span>
+
+<span class="cm"># 2. Filter — items expiring within 3 days</span>
+expiring = [i[<span class="st">"name"</span>] <span class="kw">for</span> i <span class="kw">in</span> ingredients <span class="kw">if</span> i[<span class="st">"days_left"</span>] <span class="op"><=</span> <span class="nu">3</span>]
+<span class="cm"># → ["milk", "yogurt"]</span>
+
+<span class="cm"># 3. Transform with expression</span>
+alerts = [
+    <span class="st">f"</span>{i[<span class="st">'name'</span>]}<span class="st"> expires in </span>{i[<span class="st">'days_left'</span>]}<span class="st"> day(s)!"</span>
+    <span class="kw">for</span> i <span class="kw">in</span> ingredients
+    <span class="kw">if</span> i[<span class="st">"days_left"</span>] <span class="op"><=</span> <span class="nu">3</span>
+]
+<span class="cm"># → ["milk expires in 2 day(s)!", "yogurt expires in 1 day(s)!"]</span>
+
+<span class="cm"># 4. Uppercase all names</span>
+upper_names = [i[<span class="st">"name"</span>].upper() <span class="kw">for</span> i <span class="kw">in</span> ingredients]
+<span class="cm"># → ["MILK", "EGGS", "YOGURT", "CHEESE"]</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Nested Loops &amp; Comprehensions — Weekly Meal Plan</div>
+    <div class="ex-desc">Nested comprehensions work but should stay readable — if it needs more than two levels, use a regular loop instead.</div>
+<code class="code-block">days = [<span class="st">"Mon"</span>, <span class="st">"Tue"</span>, <span class="st">"Wed"</span>, <span class="st">"Thu"</span>, <span class="st">"Fri"</span>]
+meals = [<span class="st">"Breakfast"</span>, <span class="st">"Lunch"</span>, <span class="st">"Dinner"</span>]
+
+<span class="cm"># Nested loop — all day/meal combinations</span>
+schedule = []
+<span class="kw">for</span> day <span class="kw">in</span> days:
+    <span class="kw">for</span> meal <span class="kw">in</span> meals:
+        schedule.append(<span class="st">f"</span>{day}<span class="st"> </span>{meal}<span class="st">"</span>)
+
+<span class="cm"># Same thing as a comprehension</span>
+schedule = [<span class="st">f"</span>{day}<span class="st"> </span>{meal}<span class="st">"</span> <span class="kw">for</span> day <span class="kw">in</span> days <span class="kw">for</span> meal <span class="kw">in</span> meals]
+
+<span class="cm"># Practical nested loop — expiry check across categories</span>
+fridge = {
+    <span class="st">"dairy"</span>:  [<span class="st">"milk"</span>, <span class="st">"yogurt"</span>],
+    <span class="st">"produce"</span>: [<span class="st">"spinach"</span>, <span class="st">"carrots"</span>],
+}
+<span class="kw">for</span> category, items <span class="kw">in</span> fridge.items():
+    <span class="kw">for</span> item <span class="kw">in</span> items:
+        <span class="fn">print</span>(<span class="st">f"[</span>{category}<span class="st">] </span>{item}<span class="st">"</span>)</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>📋 Quick Reference</h2>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Operation</th><th>Syntax</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Create</td><td><code>items = ["a", "b"]</code></td><td class="note">Empty list: <code>items = []</code></td></tr>
+      <tr><td>Get by index</td><td><code>items[0]</code> / <code>items[-1]</code></td><td class="note">Negative counts from end</td></tr>
+      <tr><td>Slice</td><td><code>items[1:3]</code> / <code>items[::-1]</code></td><td class="note">stop is exclusive; <code>[::-1]</code> reverses</td></tr>
+      <tr><td>Length</td><td><code>len(items)</code></td><td class="note">Works on all collections and strings</td></tr>
+      <tr><td>Membership</td><td><code>"a" in items</code></td><td class="note">Returns True/False</td></tr>
+      <tr><td>Append</td><td><code>items.append("c")</code></td><td class="note">Adds to end — O(1)</td></tr>
+      <tr><td>Insert</td><td><code>items.insert(1, "x")</code></td><td class="note">Inserts at index — O(n)</td></tr>
+      <tr><td>Extend</td><td><code>items.extend(other)</code></td><td class="note">Add all items from another list</td></tr>
+      <tr><td>Remove by value</td><td><code>items.remove("a")</code></td><td class="note">Removes first match — raises ValueError if missing</td></tr>
+      <tr><td>Remove by index</td><td><code>items.pop(0)</code></td><td class="note">Returns the removed item</td></tr>
+      <tr><td>Sort in place</td><td><code>items.sort()</code></td><td class="note">Returns None — modifies original</td></tr>
+      <tr><td>Sort (new list)</td><td><code>sorted(items)</code></td><td class="note">Returns new sorted list — original unchanged</td></tr>
+      <tr><td>Reverse</td><td><code>items.reverse()</code></td><td class="note">In place — or use <code>items[::-1]</code> for new list</td></tr>
+      <tr><td>for-each</td><td><code>for x in items:</code></td><td class="note">Always prefer over index-based loops</td></tr>
+      <tr><td>With index</td><td><code>for i, x in enumerate(items):</code></td><td class="note">Replaces <code>for(int i=0...)</code></td></tr>
+      <tr><td>Parallel</td><td><code>for a, b in zip(l1, l2):</code></td><td class="note">Stops at shortest list</td></tr>
+      <tr><td>Range</td><td><code>for i in range(5):</code></td><td class="note"><code>range(start, stop, step)</code></td></tr>
+      <tr><td>Comprehension</td><td><code>[f(x) for x in items if cond]</code></td><td class="note">Transform + filter in one expression</td></tr>
+      <tr><td>Copy</td><td><code>items.copy()</code> / <code>items[:]</code></td><td class="note">Shallow copy — see gotcha below!</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       GOTCHAS
+  ═══════════════════════════════════════════ -->
+  <div class="tip-box">
+    <strong>⚠ Gotchas for Java / JavaScript Programmers:</strong><br><br>
+    <span class="trap">Assignment copies the reference, not the list</span> — <code>b = a</code> makes both variables point to the same list. Changing <code>b</code> changes <code>a</code> too. To copy, use <code>b = a.copy()</code> or <code>b = a[:]</code>. This is the same as Java object references — it just surprises people who expect value semantics.<br><br>
+    <span class="trap">sort() returns None</span> — unlike Java's <code>Collections.sort()</code> which also returns void, Python beginners often write <code>items = items.sort()</code> and wonder why <code>items</code> is now <code>None</code>. Use <code>items.sort()</code> to sort in place, or <code>items = sorted(items)</code> to get a new sorted list.<br><br>
+    <span class="trap">Never modify a list while iterating over it</span> — removing items from a list inside a <code>for</code> loop over that same list causes skipped items and hard-to-find bugs. Instead, iterate over a copy: <code>for item in items.copy():</code> or build a new list with a comprehension.<br><br>
+    <span class="trap">range() is lazy</span> — <code>range(1000000)</code> doesn't create a million-element list in memory. It generates numbers on demand. This is a good thing — just don't be surprised when <code>print(range(5))</code> shows <code>range(0, 5)</code> instead of a list.
+  </div>
+
+</div><!-- /py-lesson -->

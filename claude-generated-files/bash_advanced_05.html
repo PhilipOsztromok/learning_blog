@@ -1,0 +1,761 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 5 — Concurrency and Parallelism</h1>
+<p>Bash has no threads, but it has processes — and processes are cheap enough on Linux
+that genuine parallel execution is well within reach of a shell script. This chapter
+covers the full spectrum: basic background jobs, precise waiting semantics, bounded
+job pools, race-condition avoidance, and GNU parallel for when you need industrial-
+strength throughput.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — Background Jobs and <code>wait</code></h2>
+
+<h3>The basics</h3>
+<pre><span class="cm"># & sends a command to the background; $! is its PID</span>
+<span class="cmd">sleep</span> <span class="nu">2</span> <span class="op">&</span>
+<span class="vr">PID1</span><span class="op">=</span><span class="vr">$!</span>
+<span class="cmd">sleep</span> <span class="nu">3</span> <span class="op">&</span>
+<span class="vr">PID2</span><span class="op">=</span><span class="vr">$!</span>
+
+<span class="cm"># wait PID — block until that specific process exits, return its exit status</span>
+<span class="kw">wait</span> <span class="vr">$PID1</span>; <span class="cmd">echo</span> <span class="st">"sleep 2 exited: $?"</span>
+<span class="kw">wait</span> <span class="vr">$PID2</span>; <span class="cmd">echo</span> <span class="st">"sleep 3 exited: $?"</span>
+
+<span class="cm"># wait (no args) — block until ALL background jobs finish</span>
+<span class="kw">for</span> <span class="vr">host</span> <span class="kw">in</span> server{<span class="nu">1</span>..<span class="nu">8</span>}; <span class="kw">do</span>
+  <span class="cmd">ping</span> <span class="fl">-c1</span> <span class="fl">-W1</span> <span class="st">"<span class="vr">$host</span>"</span> <span class="op">&>/dev/null</span> <span class="op">&</span>
+<span class="kw">done</span>
+<span class="kw">wait</span>
+<span class="cmd">echo</span> <span class="st">"All pings done"</span></pre>
+
+<h3><code>wait -n</code> — first to finish (Bash 5.1+)</h3>
+<pre><span class="cm"># wait -n returns as soon as any one background job exits
+# The exit status is that of the completed job</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">pids</span>
+<span class="kw">for</span> <span class="vr">url</span> <span class="kw">in</span> <span class="st">"${urls[@]}"</span>; <span class="kw">do</span>
+  <span class="cmd">curl</span> <span class="fl">-sfo</span> <span class="st">"/tmp/dl_$$_${#pids[@]}"</span> <span class="st">"<span class="vr">$url</span>"</span> <span class="op">&</span>
+  <span class="vr">pids</span><span class="op">+=</span>( <span class="vr">$!</span> )
+<span class="kw">done</span>
+
+<span class="cm"># Harvest results as they complete</span>
+<span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="st">"${#pids[@]}"</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+  <span class="kw">wait</span> <span class="fl">-n</span>
+  <span class="cmd">echo</span> <span class="st">"A job finished with status $?"</span>
+<span class="kw">done</span>
+
+<span class="cm"># wait -n -p VAR (Bash 5.3+) — also stores the PID of the completed job</span>
+<span class="kw">wait</span> <span class="fl">-n</span> <span class="fl">-p</span> <span class="vr">finished_pid</span>
+<span class="cmd">echo</span> <span class="st">"PID $finished_pid just completed"</span></pre>
+
+<h3>Capturing exit statuses from background jobs</h3>
+<pre><span class="cm"># Pattern: store PIDs, then wait for each and record exit codes</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">job_pids</span>   <span class="cm"># job_name → PID</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">job_exit</span>   <span class="cm"># job_name → exit code</span>
+
+<span class="fn">run_job</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="st">"$@"</span> <span class="op">&</span>
+  <span class="vr">job_pids</span>[<span class="st">"<span class="vr">$name</span>"</span>]<span class="op">=</span><span class="vr">$!</span>
+}
+
+<span class="fn">harvest_jobs</span>() {
+  <span class="kw">local</span> <span class="vr">name</span> <span class="vr">pid</span>
+  <span class="kw">for</span> <span class="vr">name</span> <span class="kw">in</span> <span class="st">"${!job_pids[@]}"</span>; <span class="kw">do</span>
+    <span class="vr">pid</span><span class="op">=</span><span class="st">"${job_pids[$name]}"</span>
+    <span class="kw">wait</span> <span class="st">"<span class="vr">$pid</span>"</span>
+    <span class="vr">job_exit</span>[<span class="st">"<span class="vr">$name</span>"</span>]<span class="op">=</span><span class="vr">$?</span>
+  <span class="kw">done</span>
+}
+
+<span class="fn">run_job</span> backup    <span class="cmd">rsync</span> <span class="fl">-a</span> <span class="pth">/data/</span>  <span class="pth">/backup/</span>
+<span class="fn">run_job</span> compress  <span class="cmd">gzip</span> <span class="fl">-k</span> <span class="pth">/tmp/report.csv</span>
+<span class="fn">run_job</span> notify    <span class="cmd">curl</span> <span class="fl">-s</span> <span class="st">"<span class="vr">$WEBHOOK</span>"</span> <span class="fl">-d</span> <span class="st">'{"text":"starting"}'</span>
+<span class="fn">harvest_jobs</span>
+
+<span class="kw">for</span> <span class="vr">name</span> <span class="kw">in</span> <span class="st">"${!job_exit[@]}"</span>; <span class="kw">do</span>
+  <span class="cmd">printf</span> <span class="st">'%s: exit %d\n'</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="st">"${job_exit[$name]}"</span>
+<span class="kw">done</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — Bounded Parallelism: Job Pools</h2>
+
+<p>Firing all jobs at once saturates CPU and I/O. A bounded pool keeps exactly
+<em>N</em> jobs running simultaneously — new ones start as old ones finish.</p>
+
+<h3>Simple semaphore with <code>wait -n</code></h3>
+<pre><span class="fn">parallel_run</span>() {
+  <span class="cm"># parallel_run MAX_JOBS CMD [ARGS...]
+  # Reads newline-delimited work items from stdin and runs CMD ITEM for each,
+  # keeping at most MAX_JOBS running simultaneously.</span>
+  <span class="kw">local</span> <span class="vr">max</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">running</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">local</span> <span class="vr">item</span>
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">item</span>; <span class="kw">do</span>
+    <span class="st">"$@"</span> <span class="st">"<span class="vr">$item</span>"</span> <span class="op">&</span>
+    (( <span class="vr">running</span>++ ))
+    <span class="kw">if</span> (( <span class="vr">running</span> <span class="op">>=</span> <span class="vr">max</span> )); <span class="kw">then</span>
+      <span class="kw">wait</span> <span class="fl">-n</span>    <span class="cm"># block until any one job finishes</span>
+      (( <span class="vr">running</span>-- ))
+    <span class="kw">fi</span>
+  <span class="kw">done</span>
+  <span class="kw">wait</span>   <span class="cm"># drain remaining jobs</span>
+}
+
+<span class="fn">process_file</span>() {
+  <span class="cm"># Example worker: compress a file</span>
+  <span class="cmd">gzip</span> <span class="fl">-k</span> <span class="st">"$1"</span> <span class="op">&&</span> <span class="cmd">printf</span> <span class="st">'compressed %s\n'</span> <span class="st">"$1"</span>
+}
+
+<span class="cmd">find</span> <span class="pth">/data</span> <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="op">|</span> <span class="fn">parallel_run</span> <span class="nu">4</span> process_file</pre>
+
+<h3>FD-based semaphore (works in Bash 4.x without <code>wait -n</code>)</h3>
+<pre><span class="cm"># A counting semaphore using a FIFO and FD slots.
+# Each "token" is a byte in the FIFO; a worker reads one to acquire,
+# writes one back when done.</span>
+
+<span class="fn">sem_init</span>() {
+  <span class="cm"># sem_init N SEMAPHORE_FD_VAR</span>
+  <span class="kw">local</span> <span class="vr">n</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__fd</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">fifo</span>
+  <span class="vr">fifo</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-u</span>)
+  <span class="cmd">mkfifo</span> <span class="st">"<span class="vr">$fifo</span>"</span>
+  <span class="kw">exec</span> {<span class="vr">__fd</span>}<span class="op"><></span><span class="st">"<span class="vr">$fifo</span>"</span>   <span class="cm"># open for read+write so the FIFO stays open</span>
+  <span class="cmd">rm</span> <span class="st">"<span class="vr">$fifo</span>"</span>
+  <span class="cm"># Pre-fill with N tokens (one byte each)</span>
+  <span class="kw">local</span> <span class="vr">i</span>
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="vr">n</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">'x'</span> <span class="op">>&$__fd</span>
+  <span class="kw">done</span>
+}
+
+<span class="fn">sem_acquire</span>() { <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-n1</span> <span class="vr">_</span> <span class="op"><&$1</span>; }   <span class="cm"># blocks until a token is available</span>
+<span class="fn">sem_release</span>() { <span class="cmd">printf</span> <span class="st">'x'</span> <span class="op">>&$1</span>; }              <span class="cm"># returns a token</span>
+
+<span class="cm"># Usage</span>
+<span class="vr">SEM_FD</span>
+<span class="fn">sem_init</span> <span class="nu">4</span> SEM_FD
+
+<span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"${items[@]}"</span>; <span class="kw">do</span>
+  <span class="fn">sem_acquire</span> <span class="st">"<span class="vr">$SEM_FD</span>"</span>   <span class="cm"># blocks if 4 jobs already running</span>
+  {
+    <span class="fn">process_file</span> <span class="st">"<span class="vr">$item</span>"</span>
+    <span class="fn">sem_release</span> <span class="st">"<span class="vr">$SEM_FD</span>"</span>
+  } <span class="op">&</span>
+<span class="kw">done</span>
+<span class="kw">wait</span>
+<span class="kw">exec</span> {<span class="vr">SEM_FD</span>}<span class="op">>&-</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — Collecting Output Safely</h2>
+
+<p>Background jobs write to the same stdout as the parent. Interleaved output is
+a common problem. The cleanest solutions: write to per-job temp files, or use
+a dedicated output file per job.</p>
+
+<pre><span class="cm"># Anti-pattern: interleaved output</span>
+<span class="kw">for</span> <span class="vr">host</span> <span class="kw">in</span> a b c d; <span class="kw">do</span>
+  { <span class="cmd">echo</span> <span class="st">"=== <span class="vr">$host</span> ==="; <span class="cmd">ssh</span> <span class="st">"<span class="vr">$host</span>"</span> <span class="st">'uptime'</span>; } <span class="op">&</span>    <span class="cm"># lines from different hosts intermix</span>
+<span class="kw">done</span>
+<span class="kw">wait</span>
+
+<span class="cm"># Better: each job writes to its own temp file</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">tmpfiles</span>
+<span class="kw">for</span> <span class="vr">host</span> <span class="kw">in</span> a b c d; <span class="kw">do</span>
+  <span class="vr">tmpfiles</span>[<span class="st">"<span class="vr">$host</span>"</span>]<span class="op">=</span>$(<span class="cmd">mktemp</span>)
+  { <span class="cmd">echo</span> <span class="st">"=== <span class="vr">$host</span> ==="; <span class="cmd">ssh</span> <span class="st">"<span class="vr">$host</span>"</span> <span class="st">'uptime'</span>; } <span class="op">></span> <span class="st">"${tmpfiles[$host]}"</span> <span class="op">&</span>
+<span class="kw">done</span>
+<span class="kw">wait</span>
+
+<span class="cm"># Print results in submission order</span>
+<span class="kw">for</span> <span class="vr">host</span> <span class="kw">in</span> a b c d; <span class="kw">do</span>
+  <span class="cmd">cat</span> <span class="st">"${tmpfiles[$host]}"</span>
+  <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"${tmpfiles[$host]}"</span>
+<span class="kw">done</span>
+
+<span class="cm"># Best: mktemp in a trap-guarded tmpdir so cleanup is guaranteed</span>
+<span class="vr">TMPDIR</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span>)
+<span class="kw">trap</span> <span class="st">'rm -rf "$TMPDIR"'</span> EXIT
+
+<span class="kw">for</span> <span class="vr">host</span> <span class="kw">in</span> a b c d; <span class="kw">do</span>
+  { <span class="cmd">ssh</span> <span class="st">"<span class="vr">$host</span>"</span> <span class="st">'uptime'</span>; } <span class="op">></span> <span class="st">"${TMPDIR}/${host}"</span> <span class="op">&</span>
+<span class="kw">done</span>
+<span class="kw">wait</span>
+<span class="kw">for</span> <span class="vr">host</span> <span class="kw">in</span> a b c d; <span class="kw">do</span>
+  <span class="cmd">printf</span> <span class="st">'=== %s ===\n'</span> <span class="st">"<span class="vr">$host</span>"</span>
+  <span class="cmd">cat</span> <span class="st">"${TMPDIR}/${host}"</span>
+<span class="kw">done</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — Race Conditions and Shared Resources</h2>
+
+<p>Background jobs share the parent's open file descriptors and environment but
+run in separate processes with separate address spaces. The classic race conditions
+are: concurrent writes to a shared file and read-modify-write on a counter.</p>
+
+<h3>Atomic appends with <code>flock</code></h3>
+<pre><span class="cm"># flock -x LOCKFILE CMD — exclusive lock around CMD</span>
+<span class="vr">LOG</span><span class="op">=</span><span class="pth">/tmp/parallel.log</span>
+
+<span class="fn">safe_log</span>() {
+  <span class="cm"># Append atomically — flock serialises concurrent writers</span>
+  <span class="cmd">flock</span> <span class="fl">-x</span> <span class="st">"${LOG}.lock"</span> \
+    <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$(date +%T)"</span> <span class="st">"$*"</span> <span class="op">>></span> <span class="st">"<span class="vr">$LOG</span>"</span>
+}
+
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> {<span class="nu">1</span>..<span class="nu">20</span>}; <span class="kw">do</span>
+  { <span class="fn">safe_log</span> <span class="st">"job <span class="vr">$i</span> started"; <span class="cmd">sleep</span> 0.<span class="nu">1</span>; <span class="fn">safe_log</span> <span class="st">"job <span class="vr">$i</span> done"</span>; } <span class="op">&</span>
+<span class="kw">done</span>
+<span class="kw">wait</span></pre>
+
+<h3>Shared counters via a locked temp file</h3>
+<pre><span class="cm"># Shared mutable state between processes requires a file + lock.
+# In-memory variables are NOT shared — each child has its own copy.</span>
+
+<span class="vr">COUNTER_FILE</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)
+<span class="cmd">echo</span> <span class="nu">0</span> <span class="op">></span> <span class="st">"<span class="vr">$COUNTER_FILE</span>"</span>
+
+<span class="fn">counter_inc</span>() {
+  (
+    <span class="kw">flock</span> <span class="fl">-x</span> <span class="nu">9</span>
+    <span class="kw">local</span> <span class="vr">n</span>
+    <span class="vr">n</span><span class="op">=</span>$(<span class="op"><</span> <span class="st">"<span class="vr">$COUNTER_FILE</span>"</span>)
+    <span class="cmd">echo</span> $(( <span class="vr">n</span> <span class="op">+</span> <span class="nu">1</span> )) <span class="op">></span> <span class="st">"<span class="vr">$COUNTER_FILE</span>"</span>
+  ) <span class="nu">9</span><span class="op">></span><span class="st">"${COUNTER_FILE}.lock"</span>
+}
+
+<span class="fn">counter_get</span>() { <span class="op"><</span> <span class="st">"<span class="vr">$COUNTER_FILE</span>"</span>; }
+
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> {<span class="nu">1</span>..<span class="nu">50</span>}; <span class="kw">do</span>
+  { <span class="fn">counter_inc</span>; } <span class="op">&</span>
+<span class="kw">done</span>
+<span class="kw">wait</span>
+<span class="cmd">echo</span> <span class="st">"Final count: $(<span class="fn">counter_get</span>)"</span>   <span class="cm"># 50 — not a random number</span>
+<span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$COUNTER_FILE</span>"</span> <span class="st">"${COUNTER_FILE}.lock"</span></pre>
+
+<h3>The subshell variable trap</h3>
+<pre><span class="cm"># Variables set inside & subshells are invisible to the parent</span>
+<span class="vr">result</span><span class="op">=</span><span class="st">""</span>
+{ <span class="vr">result</span><span class="op">=</span><span class="st">"hello"</span>; } <span class="op">&</span>
+<span class="kw">wait</span>
+<span class="cmd">echo</span> <span class="st">"'<span class="vr">$result</span>'"</span>   <span class="cm"># '' — the assignment happened in a child process</span>
+
+<span class="cm"># Solution: communicate via file, pipe, or temp file</span>
+<span class="vr">tmpf</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)
+{ <span class="cmd">echo</span> <span class="st">"hello"</span> <span class="op">></span> <span class="st">"<span class="vr">$tmpf</span>"</span>; } <span class="op">&</span>
+<span class="kw">wait</span>
+<span class="vr">result</span><span class="op">=</span>$(<span class="op"><</span> <span class="st">"<span class="vr">$tmpf</span>"</span>)
+<span class="cmd">echo</span> <span class="st">"'<span class="vr">$result</span>'"</span>   <span class="cm"># 'hello'</span>
+<span class="cmd">rm</span> <span class="st">"<span class="vr">$tmpf</span>"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — Signal Propagation to Children</h2>
+
+<p>When your script receives SIGINT or SIGTERM, background jobs do not automatically
+die — the kernel sends SIGINT to the entire foreground process group, but
+<span class="inline-code">trap</span> in the parent does not automatically reach
+<span class="inline-code">&amp;</span> children spawned before the trap was set.
+Be explicit.</p>
+
+<pre><span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">CHILD_PIDS</span>
+
+<span class="fn">cleanup</span>() {
+  <span class="cmd">printf</span> <span class="st">'\nInterrupted — killing children\n'</span> <span class="op">>&2</span>
+  <span class="cm"># Kill all children in our tracking array</span>
+  <span class="kw">local</span> <span class="vr">pid</span>
+  <span class="kw">for</span> <span class="vr">pid</span> <span class="kw">in</span> <span class="st">"${CHILD_PIDS[@]}"</span>; <span class="kw">do</span>
+    <span class="cmd">kill</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+  <span class="kw">done</span>
+  <span class="kw">wait</span>
+  <span class="kw">exit</span> <span class="nu">130</span>
+}
+<span class="kw">trap</span> cleanup INT TERM
+
+<span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="st">"${items[@]}"</span>; <span class="kw">do</span>
+  <span class="cmd">slow_process</span> <span class="st">"<span class="vr">$item</span>"</span> <span class="op">&</span>
+  <span class="vr">CHILD_PIDS</span><span class="op">+=</span>( <span class="vr">$!</span> )
+<span class="kw">done</span>
+<span class="kw">wait</span>
+
+<span class="cm"># Alternative: kill the entire process group</span>
+<span class="fn">cleanup_group</span>() {
+  <span class="cm"># kill -- -$$ sends signal to every process in this script's process group</span>
+  <span class="cmd">kill</span> <span class="fl">--</span> <span class="fl">-$$</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+  <span class="kw">exit</span> <span class="nu">130</span>
+}</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — GNU Parallel</h2>
+
+<p>GNU <span class="inline-code">parallel</span> is the right tool when you need
+configurable parallelism, progress bars, retry logic, argument templating,
+or cross-host execution. It is not a Bash built-in but is available on all
+major distributions and is worth knowing.</p>
+
+<h3>Basic usage</h3>
+<pre><span class="cm"># Run one job per CPU core (default)</span>
+<span class="cmd">parallel</span> <span class="cmd">gzip</span> <span class="op">:::</span> *.log
+
+<span class="cm"># Explicit job count</span>
+<span class="cmd">parallel</span> <span class="fl">-j8</span> <span class="cmd">gzip</span> <span class="op">:::</span> *.log
+
+<span class="cm"># Read arguments from stdin</span>
+<span class="cmd">find</span> <span class="pth">/data</span> <span class="fl">-name</span> <span class="st">'*.csv'</span> <span class="op">|</span> <span class="cmd">parallel</span> <span class="fl">-j4</span> <span class="fn">process_csv</span> {}
+
+<span class="cm"># {} is the input item; {.} strips extension; {/} basename; {//} dirname</span>
+<span class="cmd">find</span> <span class="pth">/data</span> <span class="fl">-name</span> <span class="st">'*.flac'</span> <span class="op">|</span> \
+  <span class="cmd">parallel</span> <span class="cmd">ffmpeg</span> <span class="fl">-i</span> {} <span class="fl">-q:a</span> <span class="nu">2</span> <span class="st">'{.}.mp3'</span>
+
+<span class="cm"># Multiple input sources</span>
+<span class="cmd">parallel</span> <span class="cmd">echo</span> <span class="st">'{1} x {2}'</span> <span class="op">:::</span> a b c <span class="op">:::</span> <span class="nu">1</span> <span class="nu">2</span>
+<span class="cm"># a x 1   a x 2   b x 1   b x 2   c x 1   c x 2</span></pre>
+
+<h3>Advanced options</h3>
+<pre><span class="cm"># --bar: progress bar  --eta: time estimate  --joblog: machine-readable log</span>
+<span class="cmd">parallel</span> <span class="fl">--bar</span> <span class="fl">--joblog</span> <span class="pth">/tmp/jobs.log</span> <span class="fl">-j4</span> process_file <span class="op">:::</span> <span class="st">"${files[@]}"</span>
+
+<span class="cm"># --retries N: retry failed jobs up to N times</span>
+<span class="cmd">parallel</span> <span class="fl">--retries</span> <span class="nu">3</span> <span class="fl">-j4</span> <span class="cmd">curl</span> <span class="fl">-sfo</span> <span class="st">'{/}'</span> <span class="op">:::</span> <span class="st">"${urls[@]}"</span>
+
+<span class="cm"># --keep-order: print results in submission order (not completion order)</span>
+<span class="cmd">parallel</span> <span class="fl">--keep-order</span> <span class="fl">-j8</span> <span class="cmd">sha256sum</span> <span class="op">:::</span> <span class="st">"${files[@]}"</span>
+
+<span class="cm"># --delay S: stagger job starts by S seconds (rate limiting)</span>
+<span class="cmd">parallel</span> <span class="fl">--delay</span> <span class="nu">0</span>.<span class="nu">5</span> <span class="fl">-j4</span> <span class="cmd">curl</span> <span class="fl">-s</span> <span class="op">:::</span> <span class="st">"${api_calls[@]}"</span>
+
+<span class="cm"># --halt now,fail=1: stop all jobs as soon as one fails</span>
+<span class="cmd">parallel</span> <span class="fl">--halt</span> now,fail=<span class="nu">1</span> <span class="fl">-j8</span> validate_file <span class="op">:::</span> <span class="st">"${files[@]}"</span>
+
+<span class="cm"># Run on multiple remote hosts via SSH</span>
+<span class="cmd">parallel</span> <span class="fl">--sshlogin</span> server1,server2,server3 <span class="cmd">uptime</span>
+
+<span class="cm"># Export a shell function for parallel to use</span>
+<span class="fn">my_func</span>() { <span class="cmd">echo</span> <span class="st">"Processing: $1"</span>; }
+<span class="kw">export</span> <span class="fl">-f</span> my_func
+<span class="cmd">parallel</span> <span class="fl">-j4</span> my_func <span class="op">:::</span> <span class="st">"${items[@]}"</span></pre>
+
+<h3>Reading the joblog</h3>
+<pre><span class="cm"># The joblog TSV format:
+# Seq  Host  Starttime  JobRuntime  Send  Receive  Exitval  Signal  Command</span>
+<span class="cmd">awk</span> <span class="fl">-F</span><span class="st">'\t'</span> <span class="st">'NR>1 && $7 != 0 { print "FAILED:", $NF }'</span> <span class="pth">/tmp/jobs.log</span>
+<span class="cm"># List only failed jobs for re-submission</span>
+<span class="cmd">awk</span> <span class="fl">-F</span><span class="st">'\t'</span> <span class="st">'NR>1 && $7 != 0 { print $NF }'</span> <span class="pth">/tmp/jobs.log</span> <span class="op">|</span>
+  <span class="cmd">parallel</span> <span class="fl">--retries</span> <span class="nu">5</span> <span class="fl">-j2</span> {}</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7 — Patterns: Fan-out / Fan-in</h2>
+
+<p>A common parallel pipeline: fan-out splits a work queue among N workers;
+fan-in collects results into a single ordered stream. Both stages can be
+implemented in pure Bash.</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Fan-out/fan-in: process files in parallel, collect results in order</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">JOBS</span><span class="op">=</span>${<span class="vr">JOBS</span><span class="op">:-</span>$(( $(nproc) * 2 ))}
+<span class="vr">WORKDIR</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span>)
+<span class="kw">trap</span> <span class="st">'rm -rf "$WORKDIR"'</span> EXIT
+
+<span class="cm"># --- Fan-out: submit all jobs, write output to numbered temp files ---</span>
+<span class="vr">seq_num</span><span class="op">=</span><span class="nu">0</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">pids</span> <span class="vr">seqfiles</span>
+
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">file</span>; <span class="kw">do</span>
+  <span class="vr">outfile</span><span class="op">=</span><span class="st">"${WORKDIR}/${seq_num}.out"</span>
+  <span class="vr">seqfiles</span><span class="op">+=</span>( <span class="st">"<span class="vr">$outfile</span>"</span> )
+
+  <span class="cm"># Bounded: wait if at capacity</span>
+  <span class="kw">if</span> (( <span class="st">"${#pids[@]}"</span> <span class="op">>=</span> <span class="vr">JOBS</span> )); <span class="kw">then</span>
+    <span class="kw">wait</span> <span class="fl">-n</span>
+    <span class="cm"># Remove any finished PIDs from the array</span>
+    <span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">live</span><span class="op">=</span>()
+    <span class="kw">for</span> <span class="vr">p</span> <span class="kw">in</span> <span class="st">"${pids[@]}"</span>; <span class="kw">do</span>
+      <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"<span class="vr">$p</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">&&</span> <span class="vr">live</span><span class="op">+=</span>( <span class="st">"<span class="vr">$p</span>"</span> )
+    <span class="kw">done</span>
+    <span class="vr">pids</span><span class="op">=</span>( <span class="st">"${live[@]}"</span> )
+  <span class="kw">fi</span>
+
+  <span class="cm"># Dispatch worker</span>
+  { <span class="cmd">sha256sum</span> <span class="st">"<span class="vr">$file</span>"</span>; } <span class="op">></span> <span class="st">"<span class="vr">$outfile</span>"</span> <span class="op">&</span>
+  <span class="vr">pids</span><span class="op">+=</span>( <span class="vr">$!</span> )
+  (( <span class="vr">seq_num</span>++ ))
+<span class="kw">done</span> <span class="op"><</span> <span class="op"><</span>(<span class="cmd">find</span> <span class="pth">/usr/lib</span> <span class="fl">-name</span> <span class="st">'*.so'</span> <span class="fl">-print0</span>)
+
+<span class="kw">wait</span>   <span class="cm"># drain remaining</span>
+
+<span class="cm"># --- Fan-in: concatenate results in submission order ---</span>
+<span class="kw">for</span> <span class="vr">outfile</span> <span class="kw">in</span> <span class="st">"${seqfiles[@]}"</span>; <span class="kw">do</span>
+  <span class="cmd">cat</span> <span class="st">"<span class="vr">$outfile</span>"</span>
+<span class="kw">done</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>8 — <code>xargs -P</code>: Simple Parallelism Without Bash Loops</h2>
+
+<pre><span class="cm"># xargs -P N runs up to N processes simultaneously
+# Combined with -n1 (one arg per process), this is a simple job pool</span>
+
+<span class="cmd">find</span> <span class="pth">/data</span> <span class="fl">-name</span> <span class="st">'*.gz'</span> <span class="fl">-print0</span> <span class="op">|</span>
+  <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-P8</span> <span class="fl">-I{}</span> <span class="cmd">gunzip</span> <span class="fl">-k</span> {}
+
+<span class="cm"># With a shell function: export the function, then call bash -c</span>
+<span class="fn">process_item</span>() {
+  <span class="cmd">convert</span> <span class="st">"$1"</span> <span class="fl">-resize</span> <span class="st">'800x600>'</span> <span class="st">"${1%.png}_thumb.png"</span>
+}
+<span class="kw">export</span> <span class="fl">-f</span> process_item
+
+<span class="cmd">find</span> <span class="pth">/photos</span> <span class="fl">-name</span> <span class="st">'*.png'</span> <span class="fl">-print0</span> <span class="op">|</span>
+  <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-P$(nproc)</span> <span class="fl">-I{}</span> <span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'process_item "$@"'</span> _ {}
+
+<span class="cm"># xargs -P exit-code caveat: xargs exits 0 even if some children fail (xargs < 4.8)
+# With GNU xargs 4.8+: exits non-zero if any child exited non-zero</span>
+<span class="cm"># Portable workaround: track failures in a temp file</span>
+<span class="vr">FAIL_FILE</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)
+<span class="cmd">find</span> <span class="pth">/data</span> <span class="fl">-name</span> <span class="st">'*.csv'</span> <span class="fl">-print0</span> <span class="op">|</span>
+  <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="fl">-P4</span> <span class="fl">-I{}</span> <span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'validate_csv "$1" || touch "$2"'</span> _ {} <span class="st">"<span class="vr">$FAIL_FILE</span>"</span>
+[[ <span class="fl">-s</span> <span class="st">"<span class="vr">$FAIL_FILE</span>"</span> ]] <span class="op">&&</span> { <span class="cmd">echo</span> <span class="er">"Some files failed validation"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="cmd">rm</span> <span class="st">"<span class="vr">$FAIL_FILE</span>"</span></pre>
+
+<table>
+  <tr>
+    <th>Technique</th>
+    <th>Bash version</th>
+    <th>Best for</th>
+    <th>Limitation</th>
+  </tr>
+  <tr>
+    <td><code>&amp;</code> + <code>wait</code></td>
+    <td>Any</td>
+    <td>Fire-and-forget, known small set</td>
+    <td>No built-in rate limiting</td>
+  </tr>
+  <tr>
+    <td><code>wait -n</code> pool</td>
+    <td>5.1+</td>
+    <td>Bounded concurrency, large input</td>
+    <td>Cannot retrieve which PID finished</td>
+  </tr>
+  <tr>
+    <td>FIFO semaphore</td>
+    <td>4.1+</td>
+    <td>Bounded concurrency on 4.x</td>
+    <td>Slightly more setup code</td>
+  </tr>
+  <tr>
+    <td><code>xargs -P</code></td>
+    <td>Any</td>
+    <td>Simple one-liner parallelism</td>
+    <td>No per-job exit code tracking</td>
+  </tr>
+  <tr>
+    <td>GNU parallel</td>
+    <td>Any (external)</td>
+    <td>Production pipelines, SSH, retries</td>
+    <td>External dependency</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Parallel URL checker</h4>
+  <p>Write a script <code>check_urls.sh</code> that reads URLs from a file (one per line)
+  and checks each with <code>curl -sIo /dev/null -w '%{http_code}'</code>.
+  Run at most 8 checks concurrently. Print a summary line per URL:
+  <code>200 OK   https://...</code> or <code>404 FAIL https://...</code>.
+  Output must appear in the original URL order regardless of completion order.
+  Non-200 codes should also be written to <code>failed_urls.txt</code>.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">URL_FILE</span><span class="op">=</span><span class="st">"${1:?Usage: $0 URL_FILE}"</span>
+<span class="vr">MAX_JOBS</span><span class="op">=</span><span class="nu">8</span>
+<span class="vr">WORKDIR</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span>)
+<span class="kw">trap</span> <span class="st">'rm -rf "$WORKDIR"'</span> EXIT
+
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">urls</span> <span class="vr">pids</span>
+<span class="cmd">mapfile</span> <span class="fl">-t</span> urls <span class="op"><</span> <span class="st">"<span class="vr">$URL_FILE</span>"</span>
+
+<span class="vr">running</span><span class="op">=</span><span class="nu">0</span>
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> <span class="st">"${!urls[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">url</span><span class="op">=</span><span class="st">"${urls[$i]}"</span>
+  <span class="vr">outf</span><span class="op">=</span><span class="st">"${WORKDIR}/${i}"</span>
+  {
+    <span class="vr">code</span><span class="op">=</span>$(<span class="cmd">curl</span> <span class="fl">-sIo</span> <span class="pth">/dev/null</span> <span class="fl">-w</span> <span class="st">'%{http_code}'</span> <span class="fl">--max-time</span> <span class="nu">10</span> <span class="st">"<span class="vr">$url</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">||</span> <span class="cmd">echo</span> <span class="st">"000"</span>)
+    <span class="cmd">printf</span> <span class="st">'%s %s\n'</span> <span class="st">"<span class="vr">$code</span>"</span> <span class="st">"<span class="vr">$url</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$outf</span>"</span>
+  } <span class="op">&</span>
+  <span class="vr">pids</span><span class="op">+=</span>( <span class="vr">$!</span> )
+  (( <span class="vr">++running</span> ))
+  <span class="kw">if</span> (( <span class="vr">running</span> <span class="op">>=</span> <span class="vr">MAX_JOBS</span> )); <span class="kw">then</span>
+    <span class="kw">wait</span> <span class="fl">-n</span>
+    (( <span class="vr">running</span>-- ))
+  <span class="kw">fi</span>
+<span class="kw">done</span>
+<span class="kw">wait</span>
+
+<span class="cm"># Fan-in: print in order, collect failures</span>
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> <span class="st">"${!urls[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">line</span><span class="op">=</span>$(<span class="op"><</span> <span class="st">"${WORKDIR}/${i}"</span>)
+  <span class="vr">code</span><span class="op">=</span><span class="st">"${line%% *}"</span>
+  <span class="kw">if</span> [[ <span class="vr">$code</span> <span class="op">==</span> <span class="st">"200"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'%s OK   %s\n'</span> <span class="st">"<span class="vr">$code</span>"</span> <span class="st">"${urls[$i]}"</span>
+  <span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'%s FAIL %s\n'</span> <span class="st">"<span class="vr">$code</span>"</span> <span class="st">"${urls[$i]}"</span>
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${urls[$i]}"</span> <span class="op">>></span> <span class="pth">failed_urls.txt</span>
+  <span class="kw">fi</span>
+<span class="kw">done</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Locked shared counter</h4>
+  <p>Write a script that launches 100 background subshells, each calling a
+  <code>counter_inc</code> function that increments a shared counter stored in a file.
+  Use <code>flock</code> to prevent lost updates. After all jobs complete, assert the
+  final counter value is exactly 100 and print PASS or FAIL. Then repeat the test
+  <em>without</em> the lock and show that the unprotected version produces a value
+  less than 100 (a classic race).</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="fn">run_test</span>() {
+  <span class="kw">local</span> <span class="vr">use_lock</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">cfile</span>
+  <span class="vr">cfile</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)
+  <span class="kw">local</span> <span class="vr">lfile</span><span class="op">=</span><span class="st">"${cfile}.lock"</span>
+  <span class="cmd">echo</span> <span class="nu">0</span> <span class="op">></span> <span class="st">"<span class="vr">$cfile</span>"</span>
+
+  <span class="fn">inc_locked</span>() {
+    (
+      <span class="kw">flock</span> <span class="fl">-x</span> <span class="nu">9</span>
+      <span class="vr">n</span><span class="op">=</span>$(<span class="op"><</span><span class="st">"$1"</span>)
+      <span class="cmd">printf</span> <span class="st">'%d\n'</span> $(( <span class="vr">n</span> <span class="op">+</span> <span class="nu">1</span> )) <span class="op">></span> <span class="st">"$1"</span>
+    ) <span class="nu">9</span><span class="op">>"$2"</span>
+  }
+
+  <span class="fn">inc_unlocked</span>() {
+    <span class="vr">n</span><span class="op">=</span>$(<span class="op"><</span><span class="st">"$1"</span>)
+    <span class="cmd">printf</span> <span class="st">'%d\n'</span> $(( <span class="vr">n</span> <span class="op">+</span> <span class="nu">1</span> )) <span class="op">></span> <span class="st">"$1"</span>
+  }
+
+  <span class="kw">for</span> <span class="vr">_</span> <span class="kw">in</span> {<span class="nu">1</span>..<span class="nu">100</span>}; <span class="kw">do</span>
+    <span class="kw">if</span> [[ <span class="vr">$use_lock</span> <span class="op">==</span> <span class="st">"yes"</span> ]]; <span class="kw">then</span>
+      <span class="fn">inc_locked</span> <span class="st">"<span class="vr">$cfile</span>"</span> <span class="st">"<span class="vr">$lfile</span>"</span> <span class="op">&</span>
+    <span class="kw">else</span>
+      <span class="fn">inc_unlocked</span> <span class="st">"<span class="vr">$cfile</span>"</span> <span class="op">&</span>
+    <span class="kw">fi</span>
+  <span class="kw">done</span>
+  <span class="kw">wait</span>
+
+  <span class="kw">local</span> <span class="vr">final</span>
+  <span class="vr">final</span><span class="op">=</span>$(<span class="op"><</span><span class="st">"<span class="vr">$cfile</span>"</span>)
+  <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$cfile</span>"</span> <span class="st">"<span class="vr">$lfile</span>"</span>
+
+  <span class="kw">if</span> (( <span class="vr">final</span> <span class="op">==</span> <span class="nu">100</span> )); <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'[lock=%s] final=%d PASS\n'</span> <span class="st">"<span class="vr">$use_lock</span>"</span> <span class="st">"<span class="vr">$final</span>"</span>
+  <span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'[lock=%s] final=%d FAIL (race condition demonstrated)\n'</span> \
+      <span class="st">"<span class="vr">$use_lock</span>"</span> <span class="st">"<span class="vr">$final</span>"</span>
+  <span class="kw">fi</span>
+}
+
+<span class="fn">run_test</span> yes   <span class="cm"># should always print PASS</span>
+<span class="fn">run_test</span> no    <span class="cm"># will usually print FAIL (race)</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Bounded image converter</h4>
+  <p>Write <code>convert_all.sh SRCDIR DSTDIR</code> that converts every
+  <code>.png</code> in SRCDIR to a 800px-wide JPEG in DSTDIR using ImageMagick's
+  <code>convert</code> command. Constraints:</p>
+  <ul>
+    <li>Run at most <code>$(nproc)</code> conversions concurrently</li>
+    <li>Trap SIGINT/SIGTERM and kill all running children before exiting</li>
+    <li>Print a progress line <code>[N/TOTAL] converting FILE</code> before each job starts</li>
+    <li>At the end print how many succeeded and how many failed (non-zero exit)</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">SRCDIR</span><span class="op">=</span><span class="st">"${1:?Usage: $0 SRCDIR DSTDIR}"</span>
+<span class="vr">DSTDIR</span><span class="op">=</span><span class="st">"${2:?Usage: $0 SRCDIR DSTDIR}"</span>
+<span class="vr">MAX</span><span class="op">=</span>$(nproc)
+<span class="vr">WORKDIR</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span>)
+<span class="kw">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$DSTDIR</span>"</span>
+
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">CHILD_PIDS</span>
+
+<span class="fn">cleanup</span>() {
+  <span class="kw">local</span> <span class="vr">p</span>
+  <span class="kw">for</span> <span class="vr">p</span> <span class="kw">in</span> <span class="st">"${CHILD_PIDS[@]}"</span>; <span class="kw">do</span> <span class="cmd">kill</span> <span class="st">"<span class="vr">$p</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>; <span class="kw">done</span>
+  <span class="cmd">rm</span> <span class="fl">-rf</span> <span class="st">"<span class="vr">$WORKDIR</span>"</span>
+  <span class="kw">exit</span> <span class="nu">130</span>
+}
+<span class="kw">trap</span> <span class="st">'rm -rf "$WORKDIR"'</span> EXIT
+<span class="kw">trap</span> cleanup INT TERM
+
+<span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">files</span> <span class="op"><</span> <span class="op"><</span>(<span class="cmd">find</span> <span class="st">"<span class="vr">$SRCDIR</span>"</span> <span class="fl">-maxdepth</span> <span class="nu">1</span> <span class="fl">-name</span> <span class="st">'*.png'</span> <span class="fl">-print0</span>)
+<span class="vr">total</span><span class="op">=</span><span class="st">"${#files[@]}"</span>
+<span class="vr">done_count</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">ok</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">fail</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">running</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> <span class="st">"${!files[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">src</span><span class="op">=</span><span class="st">"${files[$i]}"</span>
+  <span class="vr">base</span><span class="op">=</span>$(<span class="cmd">basename</span> <span class="st">"<span class="vr">$src</span>"</span> .png)
+  <span class="vr">dst</span><span class="op">=</span><span class="st">"${DSTDIR}/${base}.jpg"</span>
+  <span class="vr">statusf</span><span class="op">=</span><span class="st">"${WORKDIR}/${i}"</span>
+
+  (( <span class="vr">done_count</span>++ ))
+  <span class="cmd">printf</span> <span class="st">'[%d/%d] converting %s\n'</span> <span class="st">"<span class="vr">$done_count</span>"</span> <span class="st">"<span class="vr">$total</span>"</span> <span class="st">"<span class="vr">$base</span>"</span>
+
+  {
+    <span class="kw">if</span> <span class="cmd">convert</span> <span class="st">"<span class="vr">$src</span>"</span> <span class="fl">-resize</span> <span class="st">'800x>'</span> <span class="st">"<span class="vr">$dst</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>; <span class="kw">then</span>
+      <span class="cmd">echo</span> ok <span class="op">></span> <span class="st">"<span class="vr">$statusf</span>"</span>
+    <span class="kw">else</span>
+      <span class="cmd">echo</span> fail <span class="op">></span> <span class="st">"<span class="vr">$statusf</span>"</span>
+    <span class="kw">fi</span>
+  } <span class="op">&</span>
+  <span class="vr">CHILD_PIDS</span><span class="op">+=</span>( <span class="vr">$!</span> )
+  (( <span class="vr">++running</span> ))
+  <span class="kw">if</span> (( <span class="vr">running</span> <span class="op">>=</span> <span class="vr">MAX</span> )); <span class="kw">then</span>
+    <span class="kw">wait</span> <span class="fl">-n</span>; (( <span class="vr">running</span>-- ))
+  <span class="kw">fi</span>
+<span class="kw">done</span>
+<span class="kw">wait</span>
+
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> <span class="st">"${!files[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">status</span><span class="op">=</span>$(<span class="op"><</span> <span class="st">"${WORKDIR}/${i}"</span>)
+  [[ <span class="vr">$status</span> <span class="op">==</span> ok ]] <span class="op">&&</span> (( <span class="vr">ok</span>++ )) <span class="op">||</span> (( <span class="vr">fail</span>++ ))
+<span class="kw">done</span>
+<span class="cmd">printf</span> <span class="st">'\nDone: %d succeeded, %d failed\n'</span> <span class="st">"<span class="vr">$ok</span>"</span> <span class="st">"<span class="vr">$fail</span>"</span>
+(( <span class="vr">fail</span> <span class="op">==</span> <span class="nu">0</span> )) <span class="op">||</span> <span class="kw">exit</span> <span class="nu">1</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — GNU parallel deep dive</h4>
+  <p>Using GNU <code>parallel</code>, write a one-liner (or short pipeline) that:</p>
+  <ol>
+    <li>Finds all <code>.log</code> files under <code>/var/log</code></li>
+    <li>Counts the number of lines containing <code>ERROR</code> in each file (using <code>grep -c</code>)</li>
+    <li>Runs up to 6 jobs concurrently</li>
+    <li>Keeps output in the original file order</li>
+    <li>Writes a <code>joblog</code> to <code>/tmp/grep_jobs.log</code></li>
+    <li>Retries failed jobs up to 2 times</li>
+  </ol>
+  <p>Then write a second pipeline that reads the joblog and prints the filenames of
+  any jobs that ultimately failed (non-zero exit after retries).</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="cm"># Part 1: parallel grep with all requirements</span>
+<span class="cmd">find</span> <span class="pth">/var/log</span> <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="fl">-print0</span> <span class="op">|</span>
+  <span class="cmd">parallel</span> \
+    <span class="fl">--null</span> \
+    <span class="fl">--keep-order</span> \
+    <span class="fl">-j6</span> \
+    <span class="fl">--joblog</span> <span class="pth">/tmp/grep_jobs.log</span> \
+    <span class="fl">--retries</span> <span class="nu">2</span> \
+    <span class="st">'grep -c "ERROR" {} || true; printf "%s\n" {}'</span>
+
+<span class="cm"># Explanation of each flag:
+#   --null        : input items are NUL-delimited (matches find -print0)
+#   --keep-order  : output in submission order, not completion order
+#   -j6           : at most 6 concurrent jobs
+#   --joblog      : write TSV job log to this file
+#   --retries 2   : retry up to 2 times on non-zero exit
+#   || true       : grep exits 1 when no matches — treat as 0 matches, not failure</span>
+
+<span class="cm"># Part 2: report ultimately-failed jobs from the joblog
+# Joblog columns (tab-separated):
+#   Seq Host Starttime JobRuntime Send Receive Exitval Signal Command</span>
+<span class="cmd">awk</span> <span class="fl">-F</span><span class="st">'\t'</span> <span class="st">'
+  NR == 1 { next }        # skip header
+  $7 != 0 {               # Exitval column
+    cmd = $NF
+    # Extract filename: everything after the last space in the command
+    n = split(cmd, parts, " ")
+    print parts[n]
+  }
+'</span> <span class="pth">/tmp/grep_jobs.log</span>
+
+<span class="cm"># Simpler with grep+cut for quick inspection:</span>
+<span class="cmd">awk</span> <span class="fl">-F</span><span class="st">'\t'</span> <span class="st">'NR>1 && $7!=0'</span> <span class="pth">/tmp/grep_jobs.log</span> <span class="op">|</span>
+  <span class="cmd">cut</span> <span class="fl">-f9</span> <span class="op">|</span>
+  <span class="cmd">sed</span> <span class="st">'s/.*[[:space:]]//'</span></pre>
+  </div>
+</div>
+
+</div>

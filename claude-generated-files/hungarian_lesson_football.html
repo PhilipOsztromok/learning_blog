@@ -1,0 +1,366 @@
+<!-- ============================================================
+     HUNGARIAN LESSON: Football — Foci
+     Level: Beginner-plus | Hungarian + English
+     ============================================================ -->
+
+<style>
+  .hu-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .hu-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .hu-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* Dialogs */
+  .dialog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  @media (max-width: 600px) { .dialog-grid { grid-template-columns: 1fr; } }
+
+  .dialog-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .dialog-card:hover { border-color: #4f8ef7; }
+
+  .dialog-card h3 {
+    margin: 0 0 12px 0;
+    color: #4f8ef7;
+    font-size: 0.92em;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    border-bottom: 1px solid #2a2d3a;
+    padding-bottom: 6px;
+  }
+  .dialog-line { margin-bottom: 10px; }
+  .dialog-line .speaker {
+    font-weight: bold;
+    color: #7c5cbf;
+    min-width: 24px;
+    display: inline-block;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .dialog-line .hu {
+    font-size: 1.05em;
+    display: block;
+    margin-left: 28px;
+    color: #e2e4ec;
+  }
+  .dialog-line .pronunciation {
+    font-size: 0.78em;
+    color: #7a7f96;
+    display: block;
+    margin-left: 28px;
+    font-style: italic;
+  }
+  .dialog-line .en {
+    font-size: 0.82em;
+    color: #a0a4b8;
+    display: block;
+    margin-left: 28px;
+  }
+
+  /* Vocabulary table */
+  .vocab-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.9em;
+  }
+  .vocab-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.82em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .vocab-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+  }
+  .vocab-table tr:nth-child(even) td { background: #1a1d27; }
+  .vocab-table tr:hover td { background: #1e2235; }
+  .vocab-table .note {
+    font-size: 0.78em;
+    color: #7a7f96;
+    font-style: italic;
+  }
+
+  .tag-verb {
+    background: #7c5cbf;
+    color: #fff;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .tag-noun {
+    background: #2a5a8a;
+    color: #a8d4ff;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .tag-adj {
+    background: #1e3a2a;
+    color: #7ecfa0;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* Tip box */
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 24px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+
+  /* Pronunciation key */
+  .pronun-key {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.82em;
+    color: #a0a4b8;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+  .pronun-key span { white-space: nowrap; }
+  .pronun-key strong { color: #4f8ef7; }
+</style>
+
+<div class="hu-lesson">
+
+  <h2>⚽ Football — Foci</h2>
+  <p class="section-intro">Six short conversations about football — from watching a match to celebrating a goal. Natural, everyday Hungarian your family will recognise.</p>
+
+  <div class="pronun-key">
+    <strong>Pronunciation quick-guide:</strong>
+    <span><strong>cs</strong> = "ch" (church)</span>
+    <span><strong>sz</strong> = "s" (sun)</span>
+    <span><strong>zs</strong> = "zh" (measure)</span>
+    <span><strong>gy</strong> = soft "dj"</span>
+    <span><strong>ny</strong> = "ny" (canyon)</span>
+    <span><strong>j / ly</strong> = "y" (yes)</span>
+    <span><strong>s</strong> = "sh" (shop)</span>
+  </div>
+
+  <div class="dialog-grid">
+
+    <!-- Dialog 1: Watching together -->
+    <div class="dialog-card">
+      <h3>① Watching Together — Együtt nézni</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Nézel ma focit?</span>
+        <span class="en">Are you watching football today?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Igen! Magyarország játszik este.</span>
+        <span class="en">Yes! Hungary is playing tonight.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Hol nézzük a meccset?</span>
+        <span class="en">Where shall we watch the match?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Nálam. Hozz sört!</span>
+        <span class="en">At mine. Bring beer!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 2: The score -->
+    <div class="dialog-card">
+      <h3>② The Score — Az Eredmény</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Mi az eredmény?</span>
+        <span class="en">What's the score?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Kettő-egy! Mi vezetünk!</span>
+        <span class="en">Two-one! We're leading!</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Remek! Hajrá, Magyarország!</span>
+        <span class="en">Great! Come on, Hungary!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 3: Buying tickets -->
+    <div class="dialog-card">
+      <h3>③ Buying Tickets — Jegyvétel</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Van még jegy a meccsre?</span>
+        <span class="en">Are there still tickets for the match?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Igen, van. Hány darabot kér?</span>
+        <span class="en">Yes, there are. How many do you want?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Kettőt kérek, köszönöm.</span>
+        <span class="en">Two please, thank you.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 4: Goal! -->
+    <div class="dialog-card">
+      <h3>④ Goal! — Gól!</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">GÓÓÓL! Láttad?</span>
+        <span class="pronunciation">lát-tad = did you see it</span>
+        <span class="en">GOAAAL! Did you see it?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Igen! Gyönyörű gól volt!</span>
+        <span class="pronunciation">gyönyörű = "dyö-nyö-rű" = beautiful</span>
+        <span class="en">Yes! It was a beautiful goal!</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Ez a legjobb meccs!</span>
+        <span class="en">This is the best match!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 5: After the match -->
+    <div class="dialog-card">
+      <h3>⑤ After the Match — A Meccs Után</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Milyen volt a meccs?</span>
+        <span class="en">How was the match?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Sajnos vesztettünk. Kettő-nulla.</span>
+        <span class="en">Unfortunately we lost. Two-nil.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Legközelebb jobb lesz!</span>
+        <span class="en">It'll be better next time!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 6: Favourite team -->
+    <div class="dialog-card">
+      <h3>⑥ Favourite Team — Kedvenc Csapat</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Mi a kedvenc csapatod?</span>
+        <span class="en">What is your favourite team?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">A Ferencváros. És neked?</span>
+        <span class="en">Ferencváros. And yours?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="hu">Én az Újpestnek szurkolok.</span>
+        <span class="en">I support Újpest.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="hu">Akkor riválisok vagyunk!</span>
+        <span class="en">Then we are rivals!</span>
+      </div>
+    </div>
+
+  </div><!-- /dialog-grid -->
+
+
+  <h2>📖 Vocabulary — Szókincs</h2>
+  <p class="section-intro">20 key words for this topic. Verbs are given in their infinitive (-ni) form. Nouns include their definite article (a / az).</p>
+
+  <table class="vocab-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Hungarian</th>
+        <th>English</th>
+        <th>Type</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>a foci / a futball</td><td>football</td><td><span class="tag-noun">noun</span></td><td class="note">foci = informal, everyday word</td></tr>
+      <tr><td>2</td><td>a csapat</td><td>team</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>3</td><td>a meccs / a mérkőzés</td><td>match / game</td><td><span class="tag-noun">noun</span></td><td class="note">meccs = casual; mérkőzés = formal</td></tr>
+      <tr><td>4</td><td>a stadion</td><td>stadium</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>5</td><td>a gól</td><td>goal (scored)</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>6</td><td>a kapu</td><td>goal (the net / posts)</td><td><span class="tag-noun">noun</span></td><td class="note">also means "gate" or "door"</td></tr>
+      <tr><td>7</td><td>a labda</td><td>ball</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>8</td><td>a játékos</td><td>player</td><td><span class="tag-noun">noun</span></td><td class="note">játék = game/play + -os suffix</td></tr>
+      <tr><td>9</td><td>az edző</td><td>coach / trainer</td><td><span class="tag-noun">noun</span></td><td class="note">az (not a) — starts with a vowel</td></tr>
+      <tr><td>10</td><td>a jegy</td><td>ticket</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>11</td><td>az eredmény</td><td>result / score</td><td><span class="tag-noun">noun</span></td><td class="note">az — starts with a vowel</td></tr>
+      <tr><td>12</td><td>a félidő</td><td>half-time</td><td><span class="tag-noun">noun</span></td><td class="note">fél = half, idő = time</td></tr>
+      <tr><td>13</td><td>a bíró</td><td>referee</td><td><span class="tag-noun">noun</span></td><td class="note">also means "judge"</td></tr>
+      <tr><td>14</td><td>a bajnokság</td><td>league / championship</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>15</td><td>a szurkoló</td><td>fan / supporter</td><td><span class="tag-noun">noun</span></td><td class="note">from szurkol = to support/cheer</td></tr>
+      <tr><td>16</td><td>játszani</td><td>to play</td><td><span class="tag-verb">verb</span></td><td class="note">ő játszik = he/she plays</td></tr>
+      <tr><td>17</td><td>lőni</td><td>to shoot / to score</td><td><span class="tag-verb">verb</span></td><td class="note">ő lő = he/she shoots</td></tr>
+      <tr><td>18</td><td>nyerni</td><td>to win</td><td><span class="tag-verb">verb</span></td><td class="note">mi nyerünk = we win</td></tr>
+      <tr><td>19</td><td>veszíteni</td><td>to lose</td><td><span class="tag-verb">verb</span></td><td class="note">mi veszítünk = we lose</td></tr>
+      <tr><td>20</td><td>nézni</td><td>to watch</td><td><span class="tag-verb">verb</span></td><td class="note">én nézem = I watch (it)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box">
+    <strong>Grammar Tip — a vs. az (The Definite Article):</strong> Hungarian uses <em>a</em> before words starting with a consonant and <em>az</em> before words starting with a vowel — similar to "a" and "an" in English. So it's <em>a csapat</em> (the team) but <em>az edző</em> (the coach) and <em>az eredmény</em> (the score). You'll notice this pattern everywhere, and getting it right will instantly impress your Hungarian family! As a bonus cultural note: football (foci) is serious business in Hungary — Ferencváros vs. Újpest is one of Europe's oldest club rivalries, so knowing your csapatok (teams) will go down very well.
+  </div>
+
+</div><!-- /hu-lesson -->

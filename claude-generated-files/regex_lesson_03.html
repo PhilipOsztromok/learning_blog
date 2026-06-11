@@ -1,0 +1,516 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 210px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  /* anchor position visualiser */
+  .anchor-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.92rem;
+  }
+  .anchor-vis .av-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6em; display: block; }
+  .av-line { display: flex; align-items: center; gap: 0; margin: 0.5em 0; }
+  .av-anchor-start { color: #f97583; font-weight: bold; margin-right: 0.1em; }
+  .av-anchor-end   { color: #f97583; font-weight: bold; margin-left: 0.1em; }
+  .av-char  { display: inline-block; padding: 0.1em 0.3em; }
+  .av-match { background: #2a3a1a; color: #85e89d; border-radius: 2px; }
+  .av-space { color: #3a4a5a; }
+  .av-label { color: #5a6a8a; font-size: 0.82rem; margin-left: 1.2em; font-style: italic; }
+  /* word boundary visualiser */
+  .wb-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.9rem; line-height: 2;
+  }
+  .wb-vis .wv-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em; display: block; }
+  .wb-word { color: #85e89d; }
+  .wb-nonword { color: #7a8aaa; }
+  .wb-boundary { color: #f97583; font-size: 0.7rem; vertical-align: super; }
+  /* anchor cards */
+  .anchor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75em; margin: 1em 0; }
+  .anchor-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.75em 1em;
+  }
+  .anchor-card .ac-sym  { font-family: 'Consolas', monospace; font-size: 1.5rem; color: #f97583; display: block; margin-bottom: 0.2em; }
+  .anchor-card .ac-name { color: #c9d8ff; font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 0.4em; }
+  .anchor-card .ac-desc { color: #7a8aaa; font-size: 0.85rem; line-height: 1.5; }
+  .anchor-card .ac-tools { margin-top: 0.5em; font-size: 0.78rem; color: #ffab70; font-family: 'Consolas', monospace; }
+  /* portability table colours */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.no  { color: #f97583; }
+  .lx-lesson td.gnu { color: #ffab70; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 3 — Anchors: Start, End, and Word Boundaries</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>What Are Anchors?</h2>
+
+<p>An <strong>anchor</strong> does not match a character — it matches a <em>position</em> in the text. The two most important anchors, <code>^</code> and <code>$</code>, pin your pattern to the start or end of a line. Without anchors, a pattern can match anywhere on the line; with anchors, you specify exactly where it must appear.</p>
+
+<p>Think of anchors as invisible markers that say: "the match must begin here" or "the match must end here".</p>
+
+<div class="anchor-grid">
+  <div class="anchor-card">
+    <span class="ac-sym">^</span>
+    <span class="ac-name">Start of line</span>
+    <span class="ac-desc">Matches the position immediately before the first character of the line. The pattern that follows must appear at the very beginning.</span>
+    <span class="ac-tools">Works in: grep, sed, awk, [[ =~ ]]</span>
+  </div>
+  <div class="anchor-card">
+    <span class="ac-sym">$</span>
+    <span class="ac-name">End of line</span>
+    <span class="ac-desc">Matches the position immediately after the last character of the line (before the newline). The pattern that precedes must appear at the very end.</span>
+    <span class="ac-tools">Works in: grep, sed, awk, [[ =~ ]]</span>
+  </div>
+  <div class="anchor-card">
+    <span class="ac-sym">\b</span>
+    <span class="ac-name">Word boundary (GNU)</span>
+    <span class="ac-desc">Matches the position between a word character (<code>\w</code>) and a non-word character (<code>\W</code>) — i.e. the edge of a word. Matches at both the start and end of words.</span>
+    <span class="ac-tools">Works in: GNU grep, GNU sed, GNU awk</span>
+  </div>
+  <div class="anchor-card">
+    <span class="ac-sym">\&lt; \&gt;</span>
+    <span class="ac-name">Word start / end (POSIX)</span>
+    <span class="ac-desc"><code>\&lt;</code> matches the position at the start of a word; <code>\&gt;</code> matches the position at the end. Together they are the portable alternative to <code>\b</code>.</span>
+    <span class="ac-tools">Works in: grep, sed (POSIX BRE/ERE)</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>^ — The Start-of-Line Anchor</h2>
+
+<p><code>^</code> asserts that what follows must appear at the very beginning of the line. Without <code>^</code>, the pattern can match anywhere; with <code>^</code>, it must be the first thing on the line.</p>
+
+<div class="anchor-vis">
+  <span class="av-hdr">Pattern: ^Error — where does it match?</span>
+  <div class="av-line">
+    <span class="av-anchor-start">^</span>
+    <span class="av-char av-match">E</span><span class="av-char av-match">r</span><span class="av-char av-match">r</span><span class="av-char av-match">o</span><span class="av-char av-match">r</span><span class="av-char"> </span><span class="av-char">o</span><span class="av-char">n</span><span class="av-char"> </span><span class="av-char">l</span><span class="av-char">i</span><span class="av-char">n</span><span class="av-char">e</span><span class="av-char"> </span><span class="av-char">1</span>
+    <span class="av-label">✓ match — "Error" is at the start</span>
+  </div>
+  <div class="av-line">
+    <span class="av-anchor-start">^</span>
+    <span class="av-char">2</span><span class="av-char">0</span><span class="av-char">2</span><span class="av-char">4</span><span class="av-char"> </span><span class="av-char">E</span><span class="av-char">r</span><span class="av-char">r</span><span class="av-char">o</span><span class="av-char">r</span><span class="av-char"> </span><span class="av-char">f</span><span class="av-char">o</span><span class="av-char">u</span><span class="av-char">n</span><span class="av-char">d</span>
+    <span class="av-label">✗ no match — line starts with "2024", not "Error"</span>
+  </div>
+  <div class="av-line">
+    <span class="av-anchor-start">^</span>
+    <span class="av-char av-space">·</span><span class="av-char">E</span><span class="av-char">r</span><span class="av-char">r</span><span class="av-char">o</span><span class="av-char">r</span>
+    <span class="av-label">✗ no match — line starts with a space</span>
+  </div>
+</div>
+
+<pre><span class="cm"># Lines that start with "Error"</span>
+<span class="cmd">grep</span> <span class="st">'^Error'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Lines that start with a digit</span>
+<span class="cmd">grep</span> <span class="st">'^[0-9]'</span> <span class="pth">data.txt</span>
+
+<span class="cm"># Lines that start with optional whitespace then a # (comment lines)</span>
+<span class="cmd">grep</span> <span class="st">'^[[:space:]]*#'</span> <span class="pth">config.conf</span>
+
+<span class="cm"># Delete all comment lines from a config file</span>
+<span class="cmd">sed</span> <span class="st">'/^[[:space:]]*#/d'</span> <span class="pth">config.conf</span>
+
+<span class="cm"># In awk: process lines that start with "WARN"</span>
+<span class="cmd">awk</span> <span class="st">'/^WARN/ { print NR": "$0 }'</span> <span class="pth">app.log</span>
+
+<span class="cm"># In [[ =~ ]]: does this string start with a digit?</span>
+<span class="op">[[</span> <span class="st">"$line"</span> <span class="op">=~</span> <span class="rx">^[0-9]</span> <span class="op">]]</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"starts with digit"</span></pre>
+
+<h3>^ inside a character class means negation — not an anchor</h3>
+<pre><span class="cm"># ^ at the START of the pattern = start-of-line anchor</span>
+<span class="cmd">grep</span> <span class="st">'^cat'</span>         <span class="cm"># line must START with "cat"</span>
+
+<span class="cm"># ^ as the FIRST char inside [...] = negation (match anything NOT in set)</span>
+<span class="cmd">grep</span> <span class="st">'[^abc]'</span>       <span class="cm"># match any character that is NOT a, b, or c</span>
+
+<span class="cm"># ^ anywhere else inside [...] = literal caret character</span>
+<span class="cmd">grep</span> <span class="st">'[a^b]'</span>        <span class="cm"># matches a, ^, or b — ^ is literal here</span></pre>
+
+<div class="warn">
+  <strong><code>^</code> has two completely different meanings depending on context.</strong> At the start of a pattern or after <code>|</code> it is a start-of-line anchor. As the first character inside <code>[...]</code> it negates the class. Everywhere else inside <code>[...]</code> it is just a literal caret. Memorise this — it trips up everyone.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>$ — The End-of-Line Anchor</h2>
+
+<p><code>$</code> asserts that what precedes must appear at the very end of the line. The regex engine matches <code>$</code> against the position just before the newline character (which SED and grep strip off before processing).</p>
+
+<div class="anchor-vis">
+  <span class="av-hdr">Pattern: \.log$ — where does it match?</span>
+  <div class="av-line">
+    <span class="av-char">a</span><span class="av-char">p</span><span class="av-char">p</span><span class="av-char av-match">.</span><span class="av-char av-match">l</span><span class="av-char av-match">o</span><span class="av-char av-match">g</span>
+    <span class="av-anchor-end">$</span>
+    <span class="av-label">✓ match — ends with .log</span>
+  </div>
+  <div class="av-line">
+    <span class="av-char">a</span><span class="av-char">p</span><span class="av-char">p</span><span class="av-char">.</span><span class="av-char">l</span><span class="av-char">o</span><span class="av-char">g</span><span class="av-char">.</span><span class="av-char">1</span>
+    <span class="av-anchor-end">$</span>
+    <span class="av-label">✗ no match — ends with .1 not .log</span>
+  </div>
+  <div class="av-line">
+    <span class="av-char">e</span><span class="av-char">r</span><span class="av-char">r</span><span class="av-char">o</span><span class="av-char">r</span><span class="av-char">.</span><span class="av-char">l</span><span class="av-char">o</span><span class="av-char">g</span><span class="av-char av-space">·</span>
+    <span class="av-anchor-end">$</span>
+    <span class="av-label">✗ no match — trailing space after .log</span>
+  </div>
+</div>
+
+<pre><span class="cm"># Lines that end with a semicolon</span>
+<span class="cmd">grep</span> <span class="st">';$'</span> <span class="pth">source.js</span>
+
+<span class="cm"># List only .log files</span>
+<span class="cmd">ls</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'\.log$'</span>
+
+<span class="cm"># Lines that end with one or more digits</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]+$'</span> <span class="pth">data.txt</span>
+
+<span class="cm"># Remove trailing whitespace (common pre-commit fix)</span>
+<span class="cmd">sed</span> <span class="st">'s/[[:space:]]*$//'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Delete lines that end with a backslash (continuation lines)</span>
+<span class="cmd">grep</span> <span class="fl">-v</span> <span class="st">'\\$'</span> <span class="pth">makefile</span>   <span class="cm"># \\ matches literal \, then $ anchors to end</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Combining ^ and $ Together</h2>
+
+<p>When you use <code>^</code> and <code>$</code> together, you anchor the pattern to the <em>entire line</em> — the match must cover the line from start to finish.</p>
+
+<pre><span class="cm"># Match blank lines (nothing between start and end)</span>
+<span class="cmd">grep</span> <span class="st">'^$'</span> <span class="pth">file.txt</span>             <span class="cm"># exactly empty</span>
+<span class="cmd">grep</span> <span class="st">'^[[:space:]]*$'</span> <span class="pth">file.txt</span>  <span class="cm"># blank or whitespace-only</span>
+
+<span class="cm"># Delete blank lines</span>
+<span class="cmd">sed</span> <span class="st">'/^$/d'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match lines that contain ONLY digits (nothing else)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^[0-9]+$'</span> <span class="pth">data.txt</span>
+
+<span class="cm"># Validate that a variable is a positive integer</span>
+<span class="op">[[</span> <span class="st">"$val"</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> <span class="op">]]</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"valid integer"</span>
+
+<span class="cm"># Match lines that are exactly 8 characters long</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^.{8}$'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match lines containing ONLY uppercase letters and spaces</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^[A-Z ]+$'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># In sed: add text at the very start of every line</span>
+<span class="cmd">sed</span> <span class="st">'s/^/    /'</span> <span class="pth">file.txt</span>        <span class="cm"># indent every line by 4 spaces</span>
+
+<span class="cm"># In sed: add text at the very end of every line</span>
+<span class="cmd">sed</span> <span class="st">'s/$/;/'</span> <span class="pth">file.txt</span>           <span class="cm"># append semicolon to every line</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Word Boundaries</h2>
+
+<p>Line anchors pin you to the start or end of the entire line. But often you want to match a word only when it appears as a <em>complete word</em> — not as part of a longer word. Word boundary anchors solve this.</p>
+
+<div class="wb-vis">
+  <span class="wv-hdr">Word boundaries in: "the cat concatenate scat"</span>
+  <span>
+    <span class="wb-boundary">|</span><span class="wb-word">the</span><span class="wb-boundary">|</span><span class="wb-nonword"> </span><span class="wb-boundary">|</span><span class="wb-word">cat</span><span class="wb-boundary">|</span><span class="wb-nonword"> </span><span class="wb-boundary">|</span><span class="wb-word">concatenate</span><span class="wb-boundary">|</span><span class="wb-nonword"> </span><span class="wb-boundary">|</span><span class="wb-word">scat</span><span class="wb-boundary">|</span>
+  </span>
+  <span style="color:#5a6a8a; font-size:0.82rem;">
+    | marks a word boundary position (between word-char and non-word-char)
+  </span>
+  <span></span>
+  <span>Pattern <span class="rx">\bcat\b</span> matches: <span class="out">cat</span>  (standalone word only)</span>
+  <span>Pattern <span class="rx">\bcat\b</span> does NOT match: con<span style="color:#5a6a8a">cat</span>enate, s<span style="color:#5a6a8a">cat</span></span>
+</div>
+
+<h3>\b — word boundary (GNU)</h3>
+
+<p>A word character is any letter, digit, or underscore (<code>[[:alnum:]_]</code>). A word boundary is the position between a word character and a non-word character (or between a word character and the start/end of the line).</p>
+
+<pre><span class="cm"># Match the word "cat" but not "concatenate" or "scat"</span>
+<span class="cmd">echo</span> <span class="st">"the cat concatenate scat scatter"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'\bcat\b'</span>
+<span class="out">cat</span>
+
+<span class="cm"># Replace the word "error" but not "errors" or "no_error_code"</span>
+<span class="cmd">sed</span> <span class="st">'s/\berror\b/ERROR/g'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Count occurrences of the exact word "the"</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'\bthe\b'</span> <span class="pth">essay.txt</span> <span class="op">|</span> <span class="cmd">wc</span> <span class="fl">-l</span>
+
+<span class="cm"># \b also anchors to start/end of line</span>
+<span class="cmd">echo</span> <span class="st">"error at line 5"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\berror\b'</span>
+<span class="out">error at line 5</span>   <span class="cm"># matches — "error" is a standalone word at line start</span></pre>
+
+<h3>\B — non-word boundary (GNU)</h3>
+
+<p><code>\B</code> is the opposite of <code>\b</code> — it matches a position that is <em>not</em> at a word boundary, i.e. the middle of a word.</p>
+
+<pre><span class="cm"># Match "cat" only when it is part of a longer word</span>
+<span class="cmd">echo</span> <span class="st">"cat concatenate scat"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'\Bcat\B'</span>
+<span class="out">cat</span>   <span class="cm"># only the "cat" inside "con-cat-enate" matches</span>
+
+<span class="cm"># Practical: find compound words containing "data"</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\Bdata\B'</span> <span class="pth">source.py</span>   <span class="cm"># matches metadata, database but not standalone "data"</span></pre>
+
+<h3>\&lt; and \&gt; — POSIX word edges</h3>
+
+<p>These are the POSIX-portable way to match word boundaries. <code>\&lt;</code> matches the start of a word; <code>\&gt;</code> matches the end. They work in GNU grep and sed in BRE mode without <code>-E</code>, making them the safest choice in portable scripts.</p>
+
+<pre><span class="cm"># Match whole word "cat" using POSIX word boundaries</span>
+<span class="cmd">grep</span> <span class="st">'\&lt;cat\&gt;'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Same as \bcat\b but more portable</span>
+<span class="cmd">echo</span> <span class="st">"the cat concatenate scat"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-o</span> <span class="st">'\&lt;cat\&gt;'</span>
+<span class="out">cat</span>
+
+<span class="cm"># In sed: replace whole word only</span>
+<span class="cmd">sed</span> <span class="st">'s/\&lt;error\&gt;/ERROR/g'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Only word-start boundary (match words beginning with "pre")</span>
+<span class="cmd">grep</span> <span class="st">'\&lt;pre'</span> <span class="pth">dictionary.txt</span>   <span class="cm"># preview, prepare, prefix — but not "impressive"</span>
+
+<span class="cm"># Only word-end boundary (match words ending in "ing")</span>
+<span class="cmd">grep</span> <span class="st">'ing\&gt;'</span> <span class="pth">text.txt</span>          <span class="cm"># running, jumping — but not "rings"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Anchor Portability — What Works Where</h2>
+
+<table>
+  <tr>
+    <th>Anchor</th>
+    <th>grep (BRE)</th>
+    <th>grep -E (ERE)</th>
+    <th>grep -P (PCRE)</th>
+    <th>sed</th>
+    <th>awk</th>
+    <th>[[ =~ ]]</th>
+  </tr>
+  <tr>
+    <td><code>^</code></td>
+    <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+    <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+  </tr>
+  <tr>
+    <td><code>$</code></td>
+    <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+    <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+  </tr>
+  <tr>
+    <td><code>\b</code></td>
+    <td class="gnu">GNU only</td><td class="gnu">GNU only</td><td class="yes">✓</td>
+    <td class="gnu">GNU only</td><td class="gnu">GNU awk</td><td class="gnu">GNU bash</td>
+  </tr>
+  <tr>
+    <td><code>\B</code></td>
+    <td class="gnu">GNU only</td><td class="gnu">GNU only</td><td class="yes">✓</td>
+    <td class="gnu">GNU only</td><td class="gnu">GNU awk</td><td class="gnu">GNU bash</td>
+  </tr>
+  <tr>
+    <td><code>\&lt; \&gt;</code></td>
+    <td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td>
+    <td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <strong>Portable scripts:</strong> use <code>\&lt;</code> and <code>\&gt;</code> when writing scripts for POSIX environments or macOS (BSD tools). Use <code>\b</code> freely in interactive one-liners on Linux where GNU tools are guaranteed. In <code>[[ =~ ]]</code> and awk, use character class workarounds if portability matters.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Anchor Patterns</h2>
+
+<h3>Input validation in scripts</h3>
+<pre><span class="cm"># Is input a valid positive integer?</span>
+<span class="fn">is_integer</span>() {
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> <span class="op">]]</span>
+}
+<span class="cmd">is_integer</span> <span class="st">"42"</span>   <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"ok"</span>    <span class="cm"># ok</span>
+<span class="cmd">is_integer</span> <span class="st">"3.14"</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"ok"</span>  <span class="cm"># no match — dot disqualifies it</span>
+<span class="cmd">is_integer</span> <span class="st">"12x"</span>  <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"ok"</span>  <span class="cm"># no match — trailing x</span>
+
+<span class="cm"># Is input a valid ISO date (YYYY-MM-DD)?</span>
+<span class="fn">is_date</span>() {
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^[0-9]{4}-[0-9]{2}-[0-9]{2}$</span> <span class="op">]]</span>
+}
+<span class="cmd">is_date</span> <span class="st">"2026-06-11"</span>  <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"valid"</span>
+<span class="cmd">is_date</span> <span class="st">"06/11/2026"</span>  <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"valid"</span>  <span class="cm"># no match — wrong format</span>
+
+<span class="cm"># Does the string start with http:// or https://?</span>
+<span class="op">[[</span> <span class="st">"$url"</span> <span class="op">=~</span> <span class="rx">^https?://</span> <span class="op">]]</span> <span class="op">||</span> <span class="cmd">echo</span> <span class="st">"not a URL"</span></pre>
+
+<h3>Config and log file tasks</h3>
+<pre><span class="cm"># Print only non-blank, non-comment lines from a config file</span>
+<span class="cmd">grep</span> <span class="fl">-Ev</span> <span class="st">'^[[:space:]]*(#|$)'</span> <span class="pth">sshd_config</span>
+
+<span class="cm"># Find lines where a key appears at the start (key=value format)</span>
+<span class="cmd">grep</span> <span class="st">'^MaxSessions'</span> <span class="pth">/etc/ssh/sshd_config</span>
+
+<span class="cm"># Find duplicate words (same word at end and start of adjacent lines)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\bthe\b.*\bthe\b'</span> <span class="pth">essay.txt</span>   <span class="cm"># "the" twice on same line</span>
+
+<span class="cm"># Show only lines that are pure section headers [SectionName]</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^[[:space:]]*\[[[:alnum:]_]+\][[:space:]]*$'</span> <span class="pth">app.conf</span>
+
+<span class="cm"># Add a line number prefix only to non-blank lines</span>
+<span class="cmd">grep</span> <span class="fl">-n</span> <span class="st">'.'</span> <span class="pth">file.txt</span>   <span class="cm"># . matches any char = any non-empty line</span></pre>
+
+<h3>Whole-word replacement in sed</h3>
+<pre><span class="cm"># Replace standalone "cat" — not "cats", "tomcat", "concatenate"</span>
+<span class="cmd">sed</span> <span class="st">'s/\bcat\b/dog/g'</span> <span class="pth">file.txt</span>           <span class="cm"># GNU sed</span>
+<span class="cmd">sed</span> <span class="st">'s/\&lt;cat\&gt;/dog/g'</span> <span class="pth">file.txt</span>          <span class="cm"># POSIX portable</span>
+
+<span class="cm"># Rename a function across a codebase (word boundary prevents partial matches)</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'s/\bgetUser\b/fetchUser/g'</span> <span class="pth">*.js</span>
+
+<span class="cm"># Replace a word at the start of a line only</span>
+<span class="cmd">sed</span> <span class="st">'s/^TODO/DONE/'</span> <span class="pth">tasks.txt</span>
+
+<span class="cm"># Append a comma to every line that doesn't already end with one</span>
+<span class="cmd">sed</span> <span class="st">'/,$/! s/$/,/'</span> <span class="pth">list.txt</span>   <span class="cm"># /,$/! = lines NOT ending in comma</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Common Anchor Mistakes</h2>
+
+<table>
+  <tr>
+    <th>Mistake</th>
+    <th>Pattern used</th>
+    <th>Problem</th>
+    <th>Fix</th>
+  </tr>
+  <tr>
+    <td>Matching anywhere instead of start</td>
+    <td><code>grep 'Error'</code></td>
+    <td>Matches "Error" mid-line too</td>
+    <td><code>grep '^Error'</code></td>
+  </tr>
+  <tr>
+    <td>Trailing space breaks end anchor</td>
+    <td><code>grep '\.log$'</code></td>
+    <td>Fails if line has trailing space</td>
+    <td><code>grep '\.log[[:space:]]*$'</code></td>
+  </tr>
+  <tr>
+    <td>Partial word match</td>
+    <td><code>sed 's/cat/dog/g'</code></td>
+    <td>Changes "concatenate" → "condogenate"</td>
+    <td><code>sed 's/\bcat\b/dog/g'</code></td>
+  </tr>
+  <tr>
+    <td><code>^</code> inside class negates instead of anchors</td>
+    <td><code>grep '[^a-z]'</code></td>
+    <td>Matches non-lowercase chars, not start of line</td>
+    <td>Use <code>^[a-z]</code> outside brackets for anchoring</td>
+  </tr>
+  <tr>
+    <td>Using <code>\b</code> on macOS/BSD</td>
+    <td><code>grep '\bword\b'</code></td>
+    <td>BSD grep doesn't support <code>\b</code></td>
+    <td><code>grep '\&lt;word\&gt;'</code> or <code>grep -E '\bword\b'</code> with GNU grep</td>
+  </tr>
+  <tr>
+    <td>Forgetting <code>$</code> in validation</td>
+    <td><code>[[ "$v" =~ ^[0-9]+ ]]</code></td>
+    <td>"123abc" passes — only checks the start</td>
+    <td><code>[[ "$v" =~ ^[0-9]+$ ]]</code></td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 3</h2>
+
+<div class="cmd-ref">
+  <h4>Line Anchors</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">^pattern</span>
+    <span class="cmd-desc">Pattern must appear at the start of the line</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">pattern$</span>
+    <span class="cmd-desc">Pattern must appear at the end of the line</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">^pattern$</span>
+    <span class="cmd-desc">Pattern must match the entire line</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">^$</span>
+    <span class="cmd-desc">Match a completely empty line</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">^[[:space:]]*$</span>
+    <span class="cmd-desc">Match a blank or whitespace-only line</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Word Boundaries</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">\bword\b</span>
+    <span class="cmd-desc">Match whole word — GNU tools (grep, sed, awk)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\&lt;word\&gt;</span>
+    <span class="cmd-desc">Match whole word — POSIX portable (grep, sed)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\b</span>
+    <span class="cmd-desc">Position between word-char and non-word-char</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\B</span>
+    <span class="cmd-desc">Position inside a word (not at a boundary)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\&lt;</span>
+    <span class="cmd-desc">Start of a word (POSIX)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\&gt;</span>
+    <span class="cmd-desc">End of a word (POSIX)</span>
+  </div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 4 covers character classes — <code>[abc]</code>, <code>[a-z]</code>, negated classes <code>[^...]</code>, and the full set of POSIX named classes like <code>[[:alpha:]]</code>, <code>[[:digit:]]</code>, and <code>[[:space:]]</code>. Character classes give you precise control over which characters are allowed at any position in your pattern.
+</div>
+
+</div>

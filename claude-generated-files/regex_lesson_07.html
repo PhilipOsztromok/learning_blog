@@ -1,0 +1,546 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 220px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  /* flag cards */
+  .flag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7em; margin: 1em 0; }
+  .flag-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 0.95em;
+  }
+  .flag-card .fc-flag { font-family: 'Consolas', monospace; font-size: 1rem; color: #ffab70; display: block; margin-bottom: 0.15em; }
+  .flag-card .fc-name { color: #c9d8ff; font-size: 0.83rem; font-weight: bold; display: block; margin-bottom: 0.25em; }
+  .flag-card .fc-desc { color: #7a8aaa; font-size: 0.81rem; line-height: 1.45; }
+  /* mode cards */
+  .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7em; margin: 1em 0; }
+  .mode-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 0.95em;
+  }
+  .mode-card .mc-flag { font-family: 'Consolas', monospace; font-size: 1.05rem; color: #ffa657; display: block; margin-bottom: 0.15em; }
+  .mode-card .mc-name { color: #c9d8ff; font-size: 0.83rem; font-weight: bold; display: block; margin-bottom: 0.25em; }
+  .mode-card .mc-desc { color: #7a8aaa; font-size: 0.81rem; line-height: 1.45; }
+  /* output mode diagram */
+  .output-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2;
+  }
+  .output-vis .ov-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em; display: block; }
+  .ov-input  { color: #c9d8ff; }
+  .ov-match  { background: #2a3a1a; color: #85e89d; border-radius: 2px; padding: 0 0.1em; }
+  .ov-flag   { color: #ffab70; }
+  .ov-out    { color: #85e89d; }
+  .ov-ann    { color: #5a6a8a; font-style: italic; font-size: 0.82rem; }
+  /* context diagram */
+  .ctx-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.87rem; line-height: 1.85;
+  }
+  .ctx-vis .cv-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em; display: block; }
+  .ctx-match  { color: #85e89d; }
+  .ctx-before { color: #79b8ff; }
+  .ctx-after  { color: #d2a8ff; }
+  .ctx-sep    { color: #5a6a8a; }
+  .ctx-lnum   { color: #5a6a8a; font-size: 0.8rem; margin-right: 0.5em; }
+  /* exit code box */
+  .exit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7em; margin: 1em 0; }
+  .exit-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.65em 0.9em; text-align: center;
+  }
+  .exit-card .ec-code { font-family: 'Consolas', monospace; font-size: 1.5rem; display: block; margin-bottom: 0.15em; }
+  .exit-card .ec-name { font-size: 0.82rem; color: #c9d8ff; display: block; margin-bottom: 0.1em; }
+  .exit-card .ec-desc { font-size: 0.78rem; color: #7a8aaa; }
+  .ec-0 { color: #85e89d; }
+  .ec-1 { color: #f97583; }
+  .ec-2 { color: #f0a040; }
+  /* portability */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.gnu { color: #ffab70; }
+  .lx-lesson td.no  { color: #f97583; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 7 — grep and egrep in Depth</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>grep at a Glance</h2>
+
+<p><code>grep</code> — <em>Global Regular Expression Print</em> — is the primary regex tool at the Bash command line. It reads lines from files or stdin, tests each line against a pattern, and by default prints lines that match. It is fast, composable, and available on every Unix system.</p>
+
+<p>Understanding grep's flags is what separates one-line lookups from powerful search pipelines. This chapter covers every flag you will reach for regularly, how to combine them, and when to switch between the three grep modes: BRE, ERE, and PCRE.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Three grep Modes</h2>
+
+<div class="mode-grid">
+  <div class="mode-card">
+    <span class="mc-flag">grep  /  grep -G</span>
+    <span class="mc-name">BRE — Basic Regex</span>
+    <span class="mc-desc">Default mode. <code>+</code> <code>?</code> <code>(</code> <code>|</code> are literals; need <code>\+</code> <code>\?</code> <code>\(</code> <code>\|</code>. Portable to all Unix systems.</span>
+  </div>
+  <div class="mode-card">
+    <span class="mc-flag">grep -E  /  egrep</span>
+    <span class="mc-name">ERE — Extended Regex</span>
+    <span class="mc-desc">Cleaner syntax. <code>+</code> <code>?</code> <code>(</code> <code>|</code> work without backslashes. Recommended for everyday use.</span>
+  </div>
+  <div class="mode-card">
+    <span class="mc-flag">grep -P</span>
+    <span class="mc-name">PCRE — Perl Compatible</span>
+    <span class="mc-desc">Full Perl regex: lookahead, lookbehind, lazy <code>.*?</code>, named groups. GNU grep only — not on macOS BSD grep.</span>
+  </div>
+</div>
+
+<pre><span class="cm"># BRE: one-or-more needs \+</span>
+<span class="cmd">grep</span> <span class="st">'[0-9]\+'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># ERE: cleaner — + works directly</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]+'</span> <span class="pth">file.txt</span>
+<span class="cmd">egrep</span> <span class="st">'[0-9]+'</span> <span class="pth">file.txt</span>   <span class="cm"># egrep is an alias for grep -E</span>
+
+<span class="cm"># PCRE: lazy quantifier — not available in BRE/ERE</span>
+<span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'&lt;.+?&gt;'</span> <span class="pth">file.html</span></pre>
+
+<div class="note">
+  <strong><code>egrep</code> is deprecated</strong> in POSIX but still widely available as a symlink to <code>grep -E</code>. Prefer <code>grep -E</code> in scripts for clarity and portability.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Essential Output Flags</h2>
+
+<div class="flag-grid">
+  <div class="flag-card">
+    <span class="fc-flag">-o</span>
+    <span class="fc-name">Only matching</span>
+    <span class="fc-desc">Print only the matched text, not the whole line. Each match on its own line.</span>
+  </div>
+  <div class="flag-card">
+    <span class="fc-flag">-n</span>
+    <span class="fc-name">Line numbers</span>
+    <span class="fc-desc">Prefix each matching line with its line number in the file.</span>
+  </div>
+  <div class="flag-card">
+    <span class="fc-flag">-c</span>
+    <span class="fc-name">Count</span>
+    <span class="fc-desc">Print a count of matching lines instead of the lines themselves.</span>
+  </div>
+  <div class="flag-card">
+    <span class="fc-flag">-l</span>
+    <span class="fc-name">Files with matches</span>
+    <span class="fc-desc">Print only the filename of files that contain at least one match.</span>
+  </div>
+  <div class="flag-card">
+    <span class="fc-flag">-L</span>
+    <span class="fc-name">Files without matches</span>
+    <span class="fc-desc">Print only filenames of files that contain NO matches — the inverse of <code>-l</code>.</span>
+  </div>
+  <div class="flag-card">
+    <span class="fc-flag">-v</span>
+    <span class="fc-name">Invert match</span>
+    <span class="fc-desc">Print lines that do NOT match the pattern — every non-matching line.</span>
+  </div>
+  <div class="flag-card">
+    <span class="fc-flag">-i</span>
+    <span class="fc-name">Case insensitive</span>
+    <span class="fc-desc">Match regardless of letter case. <code>ERROR</code>, <code>Error</code>, <code>error</code> all match <code>'error'</code>.</span>
+  </div>
+  <div class="flag-card">
+    <span class="fc-flag">-w</span>
+    <span class="fc-name">Whole word</span>
+    <span class="fc-desc">Match only whole words — equivalent to wrapping the pattern in <code>\b...\b</code>.</span>
+  </div>
+  <div class="flag-card">
+    <span class="fc-flag">-x</span>
+    <span class="fc-name">Whole line</span>
+    <span class="fc-desc">Match only lines where the entire line matches — equivalent to <code>^pattern$</code>.</span>
+  </div>
+</div>
+
+<div class="output-vis">
+  <span class="ov-hdr">Input: three lines — "error: port 8080", "warning: low memory", "error: disk full"</span>
+  <span><span class="ov-flag">grep 'error'</span>       → <span class="ov-out">error: port 8080</span>  /  <span class="ov-out">error: disk full</span>   (whole matching lines)</span>
+  <span><span class="ov-flag">grep -o 'error'</span>    → <span class="ov-out">error</span>  /  <span class="ov-out">error</span>                (just the matched text)</span>
+  <span><span class="ov-flag">grep -c 'error'</span>    → <span class="ov-out">2</span>                               (count of matching lines)</span>
+  <span><span class="ov-flag">grep -n 'error'</span>    → <span class="ov-out">1:error: port 8080</span>  /  <span class="ov-out">3:error: disk full</span></span>
+  <span><span class="ov-flag">grep -v 'error'</span>    → <span class="ov-out">warning: low memory</span>             (non-matching line)</span>
+</div>
+
+<pre><span class="cm"># -o: extract only the matched portion — ideal for data extraction</span>
+<span class="cmd">echo</span> <span class="st">"order #12345 placed on 2026-06-11"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[0-9]{4}-[0-9]{2}-[0-9]{2}'</span>
+<span class="out">2026-06-11</span>
+
+<span class="cm"># -o with multiple matches per line: each on its own line</span>
+<span class="cmd">echo</span> <span class="st">"call 555-1234 or 555-5678"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[0-9]{3}-[0-9]{4}'</span>
+<span class="out">555-1234</span>
+<span class="out">555-5678</span>
+
+<span class="cm"># -c: count matching lines (not individual matches)</span>
+<span class="cmd">grep</span> <span class="fl">-c</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span>
+<span class="out">47</span>
+
+<span class="cm"># -l: which files in a directory contain a pattern?</span>
+<span class="cmd">grep</span> <span class="fl">-rl</span> <span class="st">'TODO'</span> <span class="pth">src/</span>
+
+<span class="cm"># -L: which files do NOT contain a shebang?</span>
+<span class="cmd">grep</span> <span class="fl">-rL</span> <span class="st">'^#!'</span> <span class="pth">bin/</span>
+
+<span class="cm"># -w: whole word — "error" won't match "errors" or "no_error_code"</span>
+<span class="cmd">grep</span> <span class="fl">-w</span> <span class="st">'error'</span> <span class="pth">app.log</span>
+
+<span class="cm"># -x: only lines that are EXACTLY this string</span>
+<span class="cmd">grep</span> <span class="fl">-x</span> <span class="st">'done'</span> <span class="pth">status.txt</span>   <span class="cm"># "done" alone on a line — not "done." or " done"</span>
+
+<span class="cm"># -i: case-insensitive (useful for logs with mixed conventions)</span>
+<span class="cmd">grep</span> <span class="fl">-i</span> <span class="st">'warning'</span> <span class="pth">app.log</span>    <span class="cm"># matches WARNING, Warning, warning</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Context Flags — Seeing Surrounding Lines</h2>
+
+<p>Context flags show lines before and/or after each match — invaluable when debugging log files or reading code with grep.</p>
+
+<div class="ctx-vis">
+  <span class="cv-hdr">grep -B2 -A2 'ERROR' — 2 lines before and after each match</span>
+  <span><span class="ctx-lnum">14-</span><span class="ctx-before">2026-06-11 14:31:58 INFO  Processing batch 7</span></span>
+  <span><span class="ctx-lnum">15-</span><span class="ctx-before">2026-06-11 14:31:59 INFO  Connecting to database</span></span>
+  <span><span class="ctx-lnum">16:</span><span class="ctx-match">2026-06-11 14:32:00 ERROR Connection timeout after 30s</span></span>
+  <span><span class="ctx-lnum">17-</span><span class="ctx-after">2026-06-11 14:32:01 INFO  Retrying connection (1/3)</span></span>
+  <span><span class="ctx-lnum">18-</span><span class="ctx-after">2026-06-11 14:32:04 INFO  Retrying connection (2/3)</span></span>
+  <span><span class="ctx-sep">--</span>  (separator between match groups)</span>
+</div>
+
+<pre><span class="cm"># -A n: show n lines After each match</span>
+<span class="cmd">grep</span> <span class="fl">-A3</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span>
+
+<span class="cm"># -B n: show n lines Before each match</span>
+<span class="cmd">grep</span> <span class="fl">-B2</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span>
+
+<span class="cm"># -C n: show n lines of Context (before AND after)</span>
+<span class="cmd">grep</span> <span class="fl">-C3</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Context with line numbers — very useful for finding the exact source location</span>
+<span class="cmd">grep</span> <span class="fl">-n</span> <span class="fl">-C2</span> <span class="st">'def process'</span> <span class="pth">module.py</span>
+
+<span class="cm"># Groups separated by "--" — suppress the separator</span>
+<span class="cmd">grep</span> <span class="fl">-A2</span> <span class="fl">--no-group-separator</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>File and Directory Flags</h2>
+
+<pre><span class="cm"># -r: recursive search through directories</span>
+<span class="cmd">grep</span> <span class="fl">-r</span> <span class="st">'api_key'</span> <span class="pth">/etc/</span>
+
+<span class="cm"># -R: recursive, but also follows symlinks (GNU grep)</span>
+<span class="cmd">grep</span> <span class="fl">-R</span> <span class="st">'TODO'</span> <span class="pth">src/</span>
+
+<span class="cm"># --include: only search files matching a glob</span>
+<span class="cmd">grep</span> <span class="fl">-r</span> <span class="fl">--include</span><span class="op">=</span><span class="st">'*.py'</span> <span class="st">'import os'</span> <span class="pth">.</span>
+<span class="cmd">grep</span> <span class="fl">-r</span> <span class="fl">--include</span><span class="op">=</span><span class="st">'*.{js,ts}'</span> <span class="st">'console\.log'</span> <span class="pth">src/</span>
+
+<span class="cm"># --exclude: skip files matching a glob</span>
+<span class="cmd">grep</span> <span class="fl">-r</span> <span class="fl">--exclude</span><span class="op">=</span><span class="st">'*.min.js'</span> <span class="st">'function'</span> <span class="pth">.</span>
+
+<span class="cm"># --exclude-dir: skip entire directories</span>
+<span class="cmd">grep</span> <span class="fl">-r</span> <span class="fl">--exclude-dir</span><span class="op">=</span><span class="st">'.git'</span> <span class="fl">--exclude-dir</span><span class="op">=</span><span class="st">'node_modules'</span> <span class="st">'password'</span> <span class="pth">.</span>
+
+<span class="cm"># Combine -rl with --include for scoped file search</span>
+<span class="cmd">grep</span> <span class="fl">-rl</span> <span class="fl">--include</span><span class="op">=</span><span class="st">'*.conf'</span> <span class="st">'MaxConnections'</span> <span class="pth">/etc/</span>
+
+<span class="cm"># Search a list of files from another command</span>
+<span class="cmd">find</span> <span class="pth">.</span> <span class="fl">-name</span> <span class="st">'*.log'</span> <span class="fl">-newer</span> <span class="pth">deploy.txt</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="cmd">grep</span> <span class="fl">-l</span> <span class="st">'ERROR'</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Multiple Patterns — -e and -f</h2>
+
+<pre><span class="cm"># -e: specify multiple patterns (OR logic — line matches if any pattern matches)</span>
+<span class="cmd">grep</span> <span class="fl">-e</span> <span class="st">'ERROR'</span> <span class="fl">-e</span> <span class="st">'FATAL'</span> <span class="fl">-e</span> <span class="st">'CRITICAL'</span> <span class="pth">app.log</span>
+<span class="cm"># Equivalent to: grep -E 'ERROR|FATAL|CRITICAL' app.log</span>
+
+<span class="cm"># -f: read patterns from a file (one pattern per line)</span>
+<span class="cmd">cat</span> <span class="pth">patterns.txt</span>
+<span class="out">ERROR</span>
+<span class="out">FATAL</span>
+<span class="out">CRITICAL</span>
+<span class="cmd">grep</span> <span class="fl">-f</span> <span class="pth">patterns.txt</span> <span class="pth">app.log</span>
+
+<span class="cm"># Combine -f with other flags</span>
+<span class="cmd">grep</span> <span class="fl">-if</span> <span class="pth">patterns.txt</span> <span class="pth">app.log</span>   <span class="cm"># -i = case insensitive</span>
+<span class="cmd">grep</span> <span class="fl">-cf</span> <span class="pth">patterns.txt</span> <span class="pth">app.log</span>   <span class="cm"># -c = count matching lines</span>
+
+<span class="cm"># AND logic: pipe two greps (both patterns must match)</span>
+<span class="cmd">grep</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'database'</span>  <span class="cm"># lines with both ERROR and database</span>
+
+<span class="cm"># NOT logic: grep -v to exclude a pattern</span>
+<span class="cmd">grep</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-v</span> <span class="st">'connection'</span>  <span class="cm"># ERROR lines NOT about connections</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>grep -F — Fixed String (No Regex)</h2>
+
+<p><code>grep -F</code> (also <code>fgrep</code>) treats the pattern as a plain string — no regex processing at all. It is significantly faster on large files because it uses the Boyer-Moore-Horspool string search algorithm instead of a regex engine.</p>
+
+<pre><span class="cm"># -F: safe for patterns that contain regex metacharacters</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">'192.168.1.1'</span> <span class="pth">access.log</span>   <span class="cm"># dots are literals, not any-char</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">'a+b=c'</span> <span class="pth">math.txt</span>          <span class="cm"># + is literal</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">'$100.00'</span> <span class="pth">invoice.txt</span>      <span class="cm"># $ is literal</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">'[::1]'</span> <span class="pth">access.log</span>         <span class="cm"># brackets are literal</span>
+
+<span class="cm"># -F with a variable (the safest pattern when content is unknown)</span>
+<span class="vr">SEARCH</span><span class="op">=</span><span class="st">"$USER_INPUT"</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">"<span class="vr">$SEARCH</span>"</span> <span class="pth">file.txt</span>
+
+<span class="cm"># -F is much faster on large files — no regex compilation overhead</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">"Connection refused"</span> <span class="pth">/var/log/syslog</span>   <span class="cm"># faster than grep -E</span>
+
+<span class="cm"># -F with -f: search for many fixed strings at once (very efficient)</span>
+<span class="cmd">grep</span> <span class="fl">-Ff</span> <span class="pth">known_ips.txt</span> <span class="pth">access.log</span>   <span class="cm"># match any of 10,000 IPs</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>grep Exit Codes — Using grep in Scripts</h2>
+
+<p>grep's exit code is what makes it useful inside shell scripts — not just for output, but as a conditional test.</p>
+
+<div class="exit-grid">
+  <div class="exit-card">
+    <span class="ec-code ec-0">0</span>
+    <span class="ec-name">Match found</span>
+    <span class="ec-desc">At least one line matched the pattern</span>
+  </div>
+  <div class="exit-card">
+    <span class="ec-code ec-1">1</span>
+    <span class="ec-name">No match</span>
+    <span class="ec-desc">Pattern was valid but no lines matched</span>
+  </div>
+  <div class="exit-card">
+    <span class="ec-code ec-2">2</span>
+    <span class="ec-name">Error</span>
+    <span class="ec-desc">Bad pattern syntax or file not found</span>
+  </div>
+</div>
+
+<pre><span class="cm"># Use grep as a boolean test — -q suppresses all output</span>
+<span class="kw">if</span> <span class="cmd">grep</span> <span class="fl">-q</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Errors found — alerting team"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># -q (quiet): suppress output, just set exit code</span>
+<span class="cm"># This is the standard idiom for "does this file contain X?"</span>
+<span class="cmd">grep</span> <span class="fl">-q</span> <span class="st">'pattern'</span> <span class="pth">file</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"found"</span> <span class="op">||</span> <span class="cmd">echo</span> <span class="st">"not found"</span>
+
+<span class="cm"># Check if a process is running</span>
+<span class="kw">if</span> <span class="cmd">grep</span> <span class="fl">-q</span> <span class="st">'nginx'</span> <span class="op">&lt;(</span><span class="cmd">ps</span> <span class="fl">aux</span><span class="op">)</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"nginx is running"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Validate that a config file has a required setting</span>
+<span class="kw">if</span> <span class="op">!</span> <span class="cmd">grep</span> <span class="fl">-qE</span> <span class="st">'^MaxSessions[[:space:]]'</span> <span class="pth">/etc/ssh/sshd_config</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"WARNING: MaxSessions not configured"</span> <span class="op">&gt;&amp;2</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Count errors and fail if threshold exceeded</span>
+<span class="vr">errors</span><span class="op">=</span><span class="op">$(</span><span class="cmd">grep</span> <span class="fl">-c</span> <span class="st">'ERROR'</span> <span class="pth">app.log</span><span class="op">)</span>
+<span class="op">((</span><span class="vr">errors</span> <span class="op">&gt;</span> <span class="nu">100</span><span class="op">))</span> <span class="op">&&</span> { <span class="cmd">echo</span> <span class="st">"Too many errors: $errors"</span>; <span class="kw">exit</span> <span class="nu">1</span>; }</pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Pipeline Patterns</h2>
+
+<h3>Log analysis</h3>
+<pre><span class="cm"># Frequency count of log levels</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'(ERROR|WARN|INFO|DEBUG)'</span> <span class="pth">app.log</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="op">|</span> <span class="cmd">uniq</span> <span class="fl">-c</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-rn</span>
+<span class="out">    523 INFO</span>
+<span class="out">     47 ERROR</span>
+<span class="out">     12 WARN</span>
+<span class="out">      3 DEBUG</span>
+
+<span class="cm"># Top 10 most frequent IP addresses in an access log</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'^[0-9.]+'</span> <span class="pth">access.log</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="op">|</span> <span class="cmd">uniq</span> <span class="fl">-c</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-rn</span> <span class="op">|</span> <span class="cmd">head</span> <span class="fl">-10</span>
+
+<span class="cm"># All unique HTTP status codes in today's log</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'" [0-9]{3} '</span> <span class="pth">access.log</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[0-9]{3}'</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-u</span>
+
+<span class="cm"># Extract all unique email addresses from a mailbox dump</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}'</span> <span class="pth">mail.txt</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-u</span>
+
+<span class="cm"># Show only error lines WITH their timestamp (context aware)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^[0-9]{4}-[0-9]{2}-[0-9]{2}.*ERROR'</span> <span class="pth">app.log</span></pre>
+
+<h3>Code search</h3>
+<pre><span class="cm"># Find all TODO/FIXME/HACK comments in a codebase</span>
+<span class="cmd">grep</span> <span class="fl">-rn</span> <span class="fl">--include</span><span class="op">=</span><span class="st">'*.py'</span> <span class="fl">-E</span> <span class="st">'#\s*(TODO|FIXME|HACK|XXX)'</span> <span class="pth">.</span>
+
+<span class="cm"># Find function definitions in Python files</span>
+<span class="cmd">grep</span> <span class="fl">-rn</span> <span class="fl">--include</span><span class="op">=</span><span class="st">'*.py'</span> <span class="fl">-E</span> <span class="st">'^[[:space:]]*(def|async def) [[:alnum:]_]+'</span> <span class="pth">.</span>
+
+<span class="cm"># Find hardcoded passwords or secrets (simple heuristic)</span>
+<span class="cmd">grep</span> <span class="fl">-rniE</span> <span class="st">'(password|secret|api_key|token)\s*=\s*["\x27][^\s"]+["\x27]'</span> <span class="pth">.</span> \
+    <span class="fl">--exclude-dir</span><span class="op">=</span><span class="st">'.git'</span> <span class="fl">--exclude-dir</span><span class="op">=</span><span class="st">'node_modules'</span>
+
+<span class="cm"># Find all files that import a specific module</span>
+<span class="cmd">grep</span> <span class="fl">-rl</span> <span class="fl">--include</span><span class="op">=</span><span class="st">'*.py'</span> <span class="st">'^import os'</span> <span class="pth">.</span>
+
+<span class="cm"># List all unique function names defined in a file</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'^def [[:alnum:]_]+'</span> <span class="pth">module.py</span> <span class="op">|</span> <span class="cmd">cut</span> <span class="fl">-d</span><span class="st">' '</span> <span class="fl">-f2</span> <span class="op">|</span> <span class="cmd">sort</span></pre>
+
+<h3>Security and compliance checks</h3>
+<pre><span class="cm"># Find files containing private key headers</span>
+<span class="cmd">grep</span> <span class="fl">-rl</span> <span class="st">'BEGIN.*PRIVATE KEY'</span> <span class="pth">/var/www/</span>
+
+<span class="cm"># Check sshd_config for insecure settings</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^(PermitRootLogin yes|PasswordAuthentication yes)'</span> <span class="pth">/etc/ssh/sshd_config</span>
+
+<span class="cm"># Audit: find world-writable files listed in a manifest</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?&lt;=path=")[^"]+'</span> <span class="pth">manifest.xml</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="cmd">ls</span> <span class="fl">-la</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'^......rw'</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>grep -P Highlights — PCRE-Specific Power</h2>
+
+<p>When <code>-E</code> isn't enough, <code>grep -P</code> unlocks PCRE features. Full PCRE coverage is in Chapter 11; here are the patterns worth knowing now:</p>
+
+<pre><span class="cm"># Lazy quantifier: match each HTML tag individually</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'&lt;.+?&gt;'</span> <span class="pth">file.html</span>
+
+<span class="cm"># Lookahead: match a word followed by a colon (but don't include the colon)</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'\w+(?=:)'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Lookbehind: match digits that follow a $ sign</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?&lt;=\$)[0-9]+'</span> <span class="pth">invoice.txt</span>
+
+<span class="cm"># Named group: extract the value of a specific JSON field</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'"user":\s*"(?P&lt;name&gt;[^"]+)"'</span> <span class="pth">data.json</span>
+
+<span class="cm"># Non-greedy: match content between the FIRST pair of matching delimiters</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'\[.+?\]'</span> <span class="pth">file.txt</span></pre>
+
+<div class="warn">
+  <strong><code>grep -P</code> is GNU grep only</strong> — it is not available on macOS (BSD grep) or strictly POSIX environments. Scripts that must run on macOS should use <code>-E</code> with workarounds, or call <code>perl -ne</code> for PCRE patterns.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Flag Combinations Cheat Sheet</h2>
+
+<table>
+  <tr>
+    <th>Combination</th>
+    <th>What it does</th>
+    <th>Typical use</th>
+  </tr>
+  <tr><td><code>grep -q</code></td><td>Silent test — exit code only</td><td>Script conditionals</td></tr>
+  <tr><td><code>grep -c</code></td><td>Count of matching lines</td><td>Metrics, thresholds</td></tr>
+  <tr><td><code>grep -n</code></td><td>Line numbers on output</td><td>Debugging, navigation</td></tr>
+  <tr><td><code>grep -o</code></td><td>Only the matched text</td><td>Data extraction</td></tr>
+  <tr><td><code>grep -oE</code></td><td>Extract matches with ERE</td><td>Parsing structured text</td></tr>
+  <tr><td><code>grep -v</code></td><td>Invert — non-matching lines</td><td>Filtering out noise</td></tr>
+  <tr><td><code>grep -i</code></td><td>Case insensitive</td><td>Mixed-case logs</td></tr>
+  <tr><td><code>grep -w</code></td><td>Whole word match</td><td>Avoid partial matches</td></tr>
+  <tr><td><code>grep -rn</code></td><td>Recursive with line numbers</td><td>Codebase search</td></tr>
+  <tr><td><code>grep -rl</code></td><td>Recursive, filenames only</td><td>Find which files contain X</td></tr>
+  <tr><td><code>grep -rL</code></td><td>Recursive, files without match</td><td>Find files missing a header</td></tr>
+  <tr><td><code>grep -C3</code></td><td>3 lines of context</td><td>Log debugging</td></tr>
+  <tr><td><code>grep -inE</code></td><td>Case-insensitive ERE with line numbers</td><td>General search</td></tr>
+  <tr><td><code>grep -Fxq</code></td><td>Exact line, fixed string, quiet</td><td>Check if list contains item</td></tr>
+  <tr><td><code>grep -oP</code></td><td>Extract with PCRE</td><td>Complex extraction</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 7</h2>
+
+<div class="cmd-ref">
+  <h4>Mode Flags</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">grep (no flag)</span>
+    <span class="cmd-desc">BRE — Basic Regular Expressions (default)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -E  /  egrep</span>
+    <span class="cmd-desc">ERE — Extended Regular Expressions (recommended)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -F  /  fgrep</span>
+    <span class="cmd-desc">Fixed string — no regex, fastest option</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -P</span>
+    <span class="cmd-desc">PCRE — lookahead, lookbehind, lazy (GNU only)</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Most-Used Flag Combinations</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -q 'pat' file</span>
+    <span class="cmd-desc">Silent boolean test — use in if statements</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -oE 'pat' file</span>
+    <span class="cmd-desc">Extract matching text only (one match per line)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -rn 'pat' dir/</span>
+    <span class="cmd-desc">Recursive search with line numbers</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -rl 'pat' dir/</span>
+    <span class="cmd-desc">List files containing a match (no content)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -v 'noise' file</span>
+    <span class="cmd-desc">Exclude lines matching a pattern</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -C3 'pat' file</span>
+    <span class="cmd-desc">Match with 3 lines of surrounding context</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -c 'pat' file</span>
+    <span class="cmd-desc">Count matching lines</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -Fxq 'str' file</span>
+    <span class="cmd-desc">Test if file contains an exact line (fixed, whole-line, quiet)</span>
+  </div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 8 covers <code>sed</code> and regex — the substitute command in depth, BRE vs ERE in sed, the <code>-E</code> flag, all substitution flags (<code>g</code>, <code>i</code>, <code>N</code>, <code>p</code>, <code>w</code>), replacement back-references, case-modifier sequences (<code>\u</code> <code>\U</code> <code>\l</code> <code>\L</code>), and address-targeted regex substitutions.
+</div>
+
+</div>

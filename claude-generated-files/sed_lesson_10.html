@@ -1,0 +1,591 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 200px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  /* match highlight */
+  .mh  { background: #2a3a1a; color: #85e89d; border-radius: 2px; padding: 0 0.15em; }
+  .mn  { background: #1a1a2e; color: #c9d8ff; }
+  /* BRE vs ERE comparison grid */
+  .bre-ere { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75em; margin: 1em 0; }
+  .bre-box, .ere-box {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.75em 1em; font-family: 'Consolas', monospace; font-size: 0.87rem; line-height: 2;
+  }
+  .bre-box .hdr { color: #f0a040; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3em; display: block; }
+  .ere-box .hdr { color: #3fb950; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3em; display: block; }
+  .rx-g { color: #ffa657; }  /* regex special char */
+  .rx-l { color: #9ecbff; }  /* literal */
+  .rx-c { color: #5a6a8a; font-style: italic; } /* comment */
+  /* match demo rows */
+  .mdemo { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.6em 1em; margin: 0.6em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 1.9; }
+  .mdemo .md-label { color: #5a6a8a; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.2em; display: block; }
+  .md-match { color: #85e89d; font-weight: bold; }
+  .md-no    { color: #f97583; }
+  .md-arrow { color: #4f8ef7; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning SED</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 10 — Regular Expressions in SED</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Regex in the SED Context</h2>
+
+<p>Regular expressions appear in two places in SED: in <strong>address patterns</strong> (<code>/regex/command</code>) and in the <strong>substitute command</strong> (<code>s/regex/replacement/</code>). Everything you know about regex applies in both places, but SED has its own flavour — with specific quirks, two distinct modes (BRE and ERE), and some useful extensions that are not found in other tools.</p>
+
+<p>This chapter covers the full regex feature set available in SED: what works in both modes, what requires <code>-E</code>, what is GNU-specific, and the common traps that catch even experienced users.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>BRE vs ERE — The Two Modes</h2>
+
+<p>SED operates in one of two regular expression modes:</p>
+
+<ul>
+  <li><strong>BRE — Basic Regular Expressions</strong> — the default. Older, more verbose syntax where many metacharacters must be backslash-escaped to activate their special meaning.</li>
+  <li><strong>ERE — Extended Regular Expressions</strong> — activated with the <code>-E</code> flag (or <code>-r</code> on older GNU sed). Cleaner, more intuitive syntax familiar from <code>grep -E</code>, <code>awk</code>, and most modern regex flavours.</li>
+</ul>
+
+<p>The table below shows every place where the syntax differs:</p>
+
+<table>
+  <tr>
+    <th>Feature</th>
+    <th>BRE (default)</th>
+    <th>ERE (with -E)</th>
+  </tr>
+  <tr><td>Grouping</td><td><code>\( \)</code></td><td><code>( )</code></td></tr>
+  <tr><td>Alternation</td><td><code>\|</code> (GNU) / not supported (POSIX)</td><td><code>|</code></td></tr>
+  <tr><td>One or more</td><td><code>\+</code> (GNU) / <code>[a-z][a-z]*</code> (POSIX)</td><td><code>+</code></td></tr>
+  <tr><td>Zero or one</td><td><code>\?</code> (GNU) / workaround needed (POSIX)</td><td><code>?</code></td></tr>
+  <tr><td>Repetition exact</td><td><code>\{n\}</code></td><td><code>{n}</code></td></tr>
+  <tr><td>Repetition range</td><td><code>\{n,m\}</code></td><td><code>{n,m}</code></td></tr>
+  <tr><td>Backreferences</td><td><code>\1</code> … <code>\9</code></td><td><code>\1</code> … <code>\9</code> (same)</td></tr>
+  <tr><td>Literal <code>(</code></td><td><code>(</code> is literal</td><td><code>\(</code> is literal</td></tr>
+  <tr><td>Literal <code>+</code></td><td><code>+</code> is literal</td><td><code>\+</code> is literal</td></tr>
+  <tr><td>Literal <code>?</code></td><td><code>?</code> is literal</td><td><code>\?</code> is literal</td></tr>
+  <tr><td>Literal <code>|</code></td><td><code>|</code> is literal</td><td><code>\|</code> is literal</td></tr>
+</table>
+
+<div class="bre-ere">
+  <div class="bre-box">
+    <span class="hdr">BRE — default sed</span>
+    <span><span class="rx-g">\(</span>foo<span class="rx-g">\|</span>bar<span class="rx-g">\)</span>  <span class="rx-c"># group + alternation</span></span>
+    <span><span class="rx-l">foo</span><span class="rx-g">\+</span>          <span class="rx-c"># one or more</span></span>
+    <span><span class="rx-l">foo</span><span class="rx-g">\?</span>          <span class="rx-c"># zero or one</span></span>
+    <span><span class="rx-l">foo</span><span class="rx-g">\{3\}</span>       <span class="rx-c"># exactly 3</span></span>
+    <span><span class="rx-l">foo</span><span class="rx-g">\{2,5\}</span>     <span class="rx-c"># 2 to 5</span></span>
+  </div>
+  <div class="ere-box">
+    <span class="hdr">ERE — sed -E</span>
+    <span><span class="rx-g">(</span>foo<span class="rx-g">|</span>bar<span class="rx-g">)</span>      <span class="rx-c"># group + alternation</span></span>
+    <span><span class="rx-l">foo</span><span class="rx-g">+</span>           <span class="rx-c"># one or more</span></span>
+    <span><span class="rx-l">foo</span><span class="rx-g">?</span>           <span class="rx-c"># zero or one</span></span>
+    <span><span class="rx-l">foo</span><span class="rx-g">{3}</span>        <span class="rx-c"># exactly 3</span></span>
+    <span><span class="rx-l">foo</span><span class="rx-g">{2,5}</span>      <span class="rx-c"># 2 to 5</span></span>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>Use <code>-E</code> for almost everything.</strong> ERE syntax is cleaner, less error-prone, and more familiar. The only reason to stay in BRE is when writing POSIX-portable scripts that must run on BSD sed without <code>-E</code> — even then, test carefully because BSD sed's BRE support has its own quirks.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Anchors</h2>
+
+<p>Anchors match positions in the line rather than characters. SED supports four anchors:</p>
+
+<table>
+  <tr>
+    <th>Anchor</th>
+    <th>Matches</th>
+    <th>Example</th>
+    <th>Matches</th>
+  </tr>
+  <tr><td><code>^</code></td><td>Start of line (after the implicit newline that precedes the line)</td><td><code>/^Error/</code></td><td>Lines beginning with "Error"</td></tr>
+  <tr><td><code>$</code></td><td>End of line (before the trailing newline stripped by SED)</td><td><code>/\.$/</code></td><td>Lines ending with a period</td></tr>
+  <tr><td><code>\b</code></td><td>Word boundary (GNU sed) — between a word char and a non-word char</td><td><code>/\bcat\b/</code></td><td>"cat" but not "concatenate"</td></tr>
+  <tr><td><code>\B</code></td><td>Non-word boundary (GNU sed) — inside a word</td><td><code>/\Bcat\B/</code></td><td>"concatenate" but not standalone "cat"</td></tr>
+</table>
+
+<pre><span class="cm"># Match lines that start with a digit</span>
+<span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'/^[0-9]/p'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match blank lines (start immediately followed by end)</span>
+<span class="cmd">sed</span> <span class="st">'/^$/d'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match lines that end with a semicolon</span>
+<span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'/;$/p'</span> <span class="pth">source.js</span>
+
+<span class="cm"># Replace the word "cat" but not "category" or "concatenate"</span>
+<span class="cmd">sed</span> <span class="st">'s/\bcat\b/dog/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Remove trailing whitespace (match any whitespace at end of line)</span>
+<span class="cmd">sed</span> <span class="st">'s/[[:space:]]*$//'</span> <span class="pth">file.txt</span></pre>
+
+<div class="warn">
+  <strong><code>^</code> and <code>$</code> in multi-line pattern space:</strong> After <code>N</code> has joined lines, <code>^</code> matches only the very start of the pattern space and <code>$</code> matches only the very end. They do <em>not</em> match at embedded newlines. To match at embedded line starts/ends use the <code>m</code> flag on <code>s</code> in GNU sed: <code>s/^/prefix/mg</code> — though this is a rarely needed advanced feature.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Dot — Matching Any Character</h2>
+
+<p><code>.</code> matches any single character <em>except</em> a newline. This "except newline" rule is the default in SED and most regex flavours. In a multi-line pattern space (after <code>N</code>), the embedded <code>\n</code> is not matched by <code>.</code>.</p>
+
+<pre><span class="cm"># . matches any single character (not newline)</span>
+<span class="cmd">echo</span> <span class="st">"cat bat hat sat"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/.at/dog/g'</span>
+<span class="out">dog dog dog dog</span>
+
+<span class="cm"># Common mistake: using . when you mean a literal dot</span>
+<span class="cmd">echo</span> <span class="st">"192.168.1.1 and 192X168X1X1"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/192.168/NETWORK/g'</span>
+<span class="out">NETWORK.1.1 and NETWORKX1X1</span>   <span class="cm"># both matched! . = "any char"</span>
+
+<span class="cm"># Fix: escape the dot</span>
+<span class="cmd">echo</span> <span class="st">"192.168.1.1 and 192X168X1X1"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/192\.168/NETWORK/g'</span>
+<span class="out">NETWORK.1.1 and 192X168X1X1</span>   <span class="cm"># only the real IP matched</span>
+
+<span class="cm"># .* — match everything (greedy)</span>
+<span class="cmd">echo</span> <span class="st">"&lt;b&gt;bold&lt;/b&gt; and &lt;b&gt;more&lt;/b&gt;"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/&lt;.*&gt;//'</span>
+<span class="out"> and &lt;b&gt;more&lt;/b&gt;</span>   <span class="cm"># .* is greedy — matches as much as possible</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quantifiers</h2>
+
+<p>Quantifiers control how many times the preceding element must match:</p>
+
+<table>
+  <tr>
+    <th>Quantifier</th>
+    <th>Meaning</th>
+    <th>BRE</th>
+    <th>ERE</th>
+  </tr>
+  <tr><td>Zero or more</td><td>Match 0 or more of preceding</td><td><code>*</code></td><td><code>*</code></td></tr>
+  <tr><td>One or more</td><td>Match 1 or more of preceding</td><td><code>\+</code> (GNU)</td><td><code>+</code></td></tr>
+  <tr><td>Zero or one</td><td>Match 0 or 1 of preceding (optional)</td><td><code>\?</code> (GNU)</td><td><code>?</code></td></tr>
+  <tr><td>Exactly n</td><td>Match exactly <em>n</em> times</td><td><code>\{n\}</code></td><td><code>{n}</code></td></tr>
+  <tr><td>At least n</td><td>Match n or more times</td><td><code>\{n,\}</code></td><td><code>{n,}</code></td></tr>
+  <tr><td>n to m</td><td>Match between n and m times (inclusive)</td><td><code>\{n,m\}</code></td><td><code>{n,m}</code></td></tr>
+</table>
+
+<h3>Greedy matching — the default and its consequences</h3>
+
+<p>All quantifiers in SED are <strong>greedy</strong> — they match as much as possible while still allowing the overall pattern to succeed. This is the source of many surprising match results:</p>
+
+<pre><span class="cm"># Greedy: .* matches as much as possible</span>
+<span class="cmd">echo</span> <span class="st">"start middle end"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/s.*e/X/'</span>
+<span class="out">X nd</span>   <span class="cm"># matched from "s" all the way to the last "e"</span>
+
+<span class="cm"># Lazy matching does not exist in SED (no .*? syntax)</span>
+<span class="cm"># Workaround: use a negated character class to stop at the first delimiter</span>
+<span class="cmd">echo</span> <span class="st">"&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/&lt;[^&gt;]*&gt;//g'</span>
+<span class="out">bold and italic</span>   <span class="cm"># [^>]* means "anything that is not >"</span></pre>
+
+<div class="note">
+  <strong>SED has no lazy (non-greedy) quantifiers.</strong> There is no <code>*?</code>, <code>+?</code>, or <code>??</code>. The standard workaround is to use a negated character class <code>[^delimiter]*</code> to stop matching at the first occurrence of a boundary character instead of the last.
+</div>
+
+<h3>Practical quantifier examples</h3>
+<pre><span class="cm"># Match one or more digits</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/[0-9]+/NUM/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match an optional minus sign before digits</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/-?[0-9]+/NUM/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match exactly 4 digits (year)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\b[0-9]{4}\b/YEAR/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match 2 to 4 lowercase letters</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\b[a-z]{2,4}\b/WORD/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match an HTTP or HTTPS URL</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s|https?://[^[:space:]]+|URL|g'</span> <span class="pth">file.txt</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Character Classes</h2>
+
+<p>A character class <code>[...]</code> matches any single character from the listed set. A negated class <code>[^...]</code> matches any character <em>not</em> in the set.</p>
+
+<h3>Literal character classes</h3>
+<pre><span class="cm"># Match any vowel</span>
+<span class="cmd">sed</span> <span class="st">'s/[aeiouAEIOU]/*/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match any hex digit</span>
+<span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'/^[0-9A-Fa-f]\+$/p'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match anything that is not a digit</span>
+<span class="cmd">sed</span> <span class="st">'s/[^0-9]//g'</span> <span class="pth">file.txt</span>   <span class="cm"># strip all non-digits</span></pre>
+
+<h3>Special characters inside <code>[...]</code></h3>
+<p>Most regex metacharacters lose their special meaning inside a character class. But a few need care:</p>
+
+<table>
+  <tr>
+    <th>Character</th>
+    <th>Inside <code>[...]</code></th>
+    <th>How to include literally</th>
+  </tr>
+  <tr><td><code>]</code></td><td>Closes the class</td><td>Put it first: <code>[]abc]</code></td></tr>
+  <tr><td><code>-</code></td><td>Range specifier between two chars</td><td>Put it first or last: <code>[a-z-]</code> or <code>[-a-z]</code></td></tr>
+  <tr><td><code>^</code></td><td>Negates the class if first char</td><td>Put it anywhere but first: <code>[a^b]</code></td></tr>
+  <tr><td><code>\</code></td><td>Escape character</td><td><code>\\</code></td></tr>
+</table>
+
+<h3>POSIX character classes — the portable way</h3>
+
+<p>POSIX defines named character classes that work correctly across different locales and character sets. These are written inside an extra pair of brackets within the class: <code>[[:name:]]</code>.</p>
+
+<table>
+  <tr>
+    <th>POSIX class</th>
+    <th>Equivalent range (ASCII)</th>
+    <th>Matches</th>
+  </tr>
+  <tr><td><code>[[:alpha:]]</code></td><td><code>[a-zA-Z]</code></td><td>Any letter</td></tr>
+  <tr><td><code>[[:digit:]]</code></td><td><code>[0-9]</code></td><td>Any digit</td></tr>
+  <tr><td><code>[[:alnum:]]</code></td><td><code>[a-zA-Z0-9]</code></td><td>Letter or digit</td></tr>
+  <tr><td><code>[[:upper:]]</code></td><td><code>[A-Z]</code></td><td>Uppercase letter</td></tr>
+  <tr><td><code>[[:lower:]]</code></td><td><code>[a-z]</code></td><td>Lowercase letter</td></tr>
+  <tr><td><code>[[:space:]]</code></td><td><code>[ \t\n\r\f\v]</code></td><td>Any whitespace</td></tr>
+  <tr><td><code>[[:blank:]]</code></td><td><code>[ \t]</code></td><td>Space or tab only</td></tr>
+  <tr><td><code>[[:punct:]]</code></td><td>(all punctuation)</td><td>Any punctuation character</td></tr>
+  <tr><td><code>[[:print:]]</code></td><td>(all printable)</td><td>Any printable character incl. space</td></tr>
+  <tr><td><code>[[:graph:]]</code></td><td>(printable minus space)</td><td>Any printable character excl. space</td></tr>
+  <tr><td><code>[[:cntrl:]]</code></td><td>(ASCII 0–31, 127)</td><td>Control characters</td></tr>
+  <tr><td><code>[[:xdigit:]]</code></td><td><code>[0-9A-Fa-f]</code></td><td>Hexadecimal digit</td></tr>
+</table>
+
+<pre><span class="cm"># Trim leading whitespace using POSIX class (portable across locales)</span>
+<span class="cmd">sed</span> <span class="st">'s/^[[:space:]]*//'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Remove all punctuation from a line</span>
+<span class="cmd">sed</span> <span class="st">'s/[[:punct:]]//g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Keep only alphanumeric characters and spaces</span>
+<span class="cmd">sed</span> <span class="st">'s/[^[:alnum:][:space:]]//g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Remove control characters (e.g. stray \r, bell chars)</span>
+<span class="cmd">sed</span> <span class="st">'s/[[:cntrl:]]//g'</span> <span class="pth">file.txt</span></pre>
+
+<div class="tip">
+  <strong>Prefer POSIX classes over raw ranges for letters and digits in scripts.</strong> <code>[[:alpha:]]</code> correctly handles non-ASCII letters when the locale is set to UTF-8, whereas <code>[a-zA-Z]</code> may not. For pure ASCII text either works, but POSIX classes are more defensive.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>GNU sed Extensions</h2>
+
+<p>GNU sed adds several escape sequences not in POSIX BRE or ERE. These are available in both BRE and ERE mode (unless noted):</p>
+
+<table>
+  <tr>
+    <th>Sequence</th>
+    <th>Matches</th>
+    <th>Equivalent POSIX class</th>
+  </tr>
+  <tr><td><code>\w</code></td><td>Word character</td><td><code>[[:alnum:]_]</code></td></tr>
+  <tr><td><code>\W</code></td><td>Non-word character</td><td><code>[^[:alnum:]_]</code></td></tr>
+  <tr><td><code>\b</code></td><td>Word boundary</td><td>Position between <code>\w</code> and <code>\W</code></td></tr>
+  <tr><td><code>\B</code></td><td>Non-word boundary</td><td>Position inside a word</td></tr>
+  <tr><td><code>\s</code></td><td>Whitespace character</td><td><code>[[:space:]]</code></td></tr>
+  <tr><td><code>\S</code></td><td>Non-whitespace character</td><td><code>[^[:space:]]</code></td></tr>
+  <tr><td><code>\d</code></td><td>Digit (GNU sed 4.9+)</td><td><code>[[:digit:]]</code></td></tr>
+  <tr><td><code>\D</code></td><td>Non-digit (GNU sed 4.9+)</td><td><code>[^[:digit:]]</code></td></tr>
+  <tr><td><code>\a</code></td><td>Bell character (ASCII 7)</td><td><code>[\x07]</code></td></tr>
+  <tr><td><code>\t</code></td><td>Tab character</td><td><code>[\x09]</code></td></tr>
+  <tr><td><code>\n</code></td><td>Newline (in pattern: embedded newline in pattern space)</td><td>—</td></tr>
+  <tr><td><code>\x<em>HH</em></code></td><td>Character with hex code <em>HH</em></td><td>—</td></tr>
+</table>
+
+<pre><span class="cm"># Match word boundaries using \b (GNU sed)</span>
+<span class="cmd">sed</span> <span class="st">'s/\bthe\b/THE/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Strip all whitespace characters (including tabs)</span>
+<span class="cmd">sed</span> <span class="st">'s/\s//g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match a tab character explicitly</span>
+<span class="cmd">sed</span> <span class="st">'s/\t/  /g'</span> <span class="pth">file.txt</span>   <span class="cm"># replace tabs with two spaces</span>
+
+<span class="cm"># Match word characters (letters, digits, underscore)</span>
+<span class="cmd">sed</span> <span class="st">'s/\w\+/TOKEN/g'</span> <span class="pth">file.txt</span></pre>
+
+<div class="warn">
+  <strong>GNU extensions are not portable.</strong> Scripts using <code>\w</code>, <code>\s</code>, <code>\b</code>, <code>\t</code>, or <code>\x<em>HH</em></code> will fail on BSD sed and strict POSIX environments. Use POSIX character classes (<code>[[:space:]]</code>, <code>[[:alnum:]_]</code>) in scripts that must be portable, and save the GNU extensions for interactive one-liners on Linux systems where you know GNU sed is present.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Grouping and Backreferences</h2>
+
+<p>Parentheses group parts of a pattern, and the text matched by each group can be referenced in the replacement string as <code>\1</code>, <code>\2</code>, etc. This is one of SED's most powerful features.</p>
+
+<pre><span class="cm"># Capture groups in BRE (backslash required around parentheses)</span>
+<span class="cmd">echo</span> <span class="st">"2024-07-15"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/\([0-9]\{4\}\)-\([0-9]\{2\}\)-\([0-9]\{2\}\)/\3\/\2\/\1/'</span>
+<span class="out">15/07/2024</span>
+
+<span class="cm"># Same thing in ERE — much cleaner</span>
+<span class="cmd">echo</span> <span class="st">"2024-07-15"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([0-9]{4})-([0-9]{2})-([0-9]{2})/\3\/\2\/\1/'</span>
+<span class="out">15/07/2024</span>
+
+<span class="cm"># Use backreferences to match repeated content (BRE)</span>
+<span class="cmd">echo</span> <span class="st">"the the cat cat"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/\(\b\w\+\b\) \1/\1/g'</span>
+<span class="out">the cat</span>   <span class="cm"># removes duplicated consecutive words</span>
+
+<span class="cm"># Wrap numbers in brackets</span>
+<span class="cmd">echo</span> <span class="st">"port 8080 and timeout 30"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([0-9]+)/[\1]/g'</span>
+<span class="out">port [8080] and timeout [30]</span>
+
+<span class="cm"># Swap two comma-separated fields</span>
+<span class="cmd">echo</span> <span class="st">"Smith,John"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([^,]+),([^,]+)/\2 \1/'</span>
+<span class="out">John Smith</span></pre>
+
+<h3>Backreferences in patterns (not just replacements)</h3>
+
+<p>Backreferences can also appear in the <em>pattern</em> itself to match repeated content:</p>
+
+<pre><span class="cm"># Delete lines where the same word appears twice consecutively</span>
+<span class="cmd">sed</span> <span class="st">'/\(\b[a-z]\+\b\).*\1/d'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Delete adjacent duplicate lines (hold space approach — but this also works)</span>
+<span class="cmd">sed</span> <span class="st">'/^\(.*\)$/ { N; /^\(.*\)\n\1$/d }'</span> <span class="pth">file.txt</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Alternation</h2>
+
+<p>Alternation matches one of several alternatives. In ERE the pipe character <code>|</code> separates alternatives; in BRE you need <code>\|</code> (GNU extension — not POSIX).</p>
+
+<pre><span class="cm"># Match "colour" or "color" — ERE</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/colou?r/colour/g'</span> <span class="pth">file.txt</span>   <span class="cm"># using ? is cleaner here</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/colour|color/colour/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match any of several log levels</span>
+<span class="cmd">sed</span> <span class="fl">-En</span> <span class="st">'/(ERROR|WARN|FATAL)/p'</span> <span class="pth">logfile.txt</span>
+
+<span class="cm"># Delete lines containing any of three patterns</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'/DEBUG|TRACE|VERBOSE/d'</span> <span class="pth">logfile.txt</span>
+
+<span class="cm"># BRE equivalent (GNU extension — not portable)</span>
+<span class="cmd">sed</span> <span class="st">'/DEBUG\|TRACE\|VERBOSE/d'</span> <span class="pth">logfile.txt</span></pre>
+
+<div class="mdemo">
+  <span class="md-label">sed -E 's/(cat|dog|bird)/ANIMAL/g' applied to input</span>
+  <span>I have a <span class="md-match">cat</span> and a <span class="md-match">dog</span> and a <span class="md-match">bird</span>   → I have a ANIMAL and a ANIMAL and a ANIMAL</span>
+  <span>The <span class="md-match">cat</span>erpillar   → The ANIMALerpillar   <span class="cm"># matches within "caterpillar"!</span></span>
+  <span>Add \b: <span class="md-match">\b(cat|dog|bird)\b</span>  → only whole-word matches</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Common Regex Traps in SED</h2>
+
+<h3>Trap 1: Unescaped dot matching too broadly</h3>
+<pre><span class="cm"># Intended: match IP 192.168.0.1</span>
+<span class="cmd">sed</span> <span class="st">'s/192.168.0.1/REDACTED/'</span> <span class="pth">file.txt</span>
+<span class="er"># Problem: matches 192X168Y0Z1 too (. = any char)</span>
+
+<span class="cm"># Fix: escape the dots</span>
+<span class="cmd">sed</span> <span class="st">'s/192\.168\.0\.1/REDACTED/'</span> <span class="pth">file.txt</span></pre>
+
+<h3>Trap 2: Greedy .* swallowing too much</h3>
+<pre><span class="cm"># Intended: remove each HTML tag individually</span>
+<span class="cmd">echo</span> <span class="st">"&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/&lt;.*&gt;//g'</span>
+<span class="out"> </span>   <span class="er"># wrong — .* consumed everything from &lt;b&gt; to &lt;/i&gt;</span>
+
+<span class="cm"># Fix: use [^>]* to stop at the first ></span>
+<span class="cmd">echo</span> <span class="st">"&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/&lt;[^&gt;]*&gt;//g'</span>
+<span class="out">bold and italic</span></pre>
+
+<h3>Trap 3: Forgetting BRE vs ERE parenthesis rules</h3>
+<pre><span class="cm"># BRE: ( is literal, \( starts a group</span>
+<span class="cmd">echo</span> <span class="st">"foo(bar)"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/(bar)/[bar]/'</span>
+<span class="out">foo[bar]</span>   <span class="cm"># ( and ) are literal in BRE — matched the literal parentheses</span>
+
+<span class="cmd">echo</span> <span class="st">"foobar"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/\(bar\)/[\1]/'</span>
+<span class="out">foo[bar]</span>   <span class="cm"># \( \) are grouping in BRE — captured "bar"</span>
+
+<span class="cm"># ERE: ( is grouping, \( is a literal parenthesis</span>
+<span class="cmd">echo</span> <span class="st">"foobar"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/(bar)/[\1]/'</span>
+<span class="out">foo[bar]</span>   <span class="cm"># ( ) are grouping in ERE</span>
+
+<span class="cmd">echo</span> <span class="st">"foo(bar)"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\(bar\)/[bar]/'</span>
+<span class="out">foo[bar]</span>   <span class="cm"># \( \) are literal in ERE</span></pre>
+
+<h3>Trap 4: Character range ambiguity in different locales</h3>
+<pre><span class="cm"># [a-z] matches differently depending on LC_COLLATE</span>
+<span class="cm"># In a C/POSIX locale: only a-z ASCII lowercase</span>
+<span class="cm"># In some UTF-8 locales: may include accented characters between a and z</span>
+
+<span class="cm"># Safe: use POSIX class instead</span>
+<span class="cmd">sed</span> <span class="st">'s/[[:lower:]]/*/g'</span> <span class="pth">file.txt</span>   <span class="cm"># always matches lowercase letters for current locale</span>
+
+<span class="cm"># Or force POSIX locale for predictable ASCII behaviour</span>
+<span class="cmd">LC_ALL=C</span> <span class="cmd">sed</span> <span class="st">'s/[a-z]/*/g'</span> <span class="pth">file.txt</span></pre>
+
+<h3>Trap 5: <code>*</code> matching zero occurrences</h3>
+<pre><span class="cm"># * means ZERO or more — it can match the empty string</span>
+<span class="cmd">echo</span> <span class="st">"abc"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/x*/X/g'</span>
+<span class="out">XaXbXcX</span>   <span class="cm"># x* matches the empty string before and after every character!</span>
+
+<span class="cm"># Fix: use + (one or more) instead of * when you need at least one match</span>
+<span class="cmd">echo</span> <span class="st">"abc"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/x+/X/g'</span>
+<span class="out">abc</span>   <span class="cm"># no match — there are no x's</span></pre>
+
+<h3>Trap 6: Forgetting that SED regex is not PCRE</h3>
+<pre><span class="cm"># These PCRE features do NOT exist in SED:</span>
+<span class="er"># (?:...)   — non-capturing group</span>
+<span class="er"># (?=...)   — lookahead</span>
+<span class="er"># (?&lt;!...)  — lookbehind</span>
+<span class="er"># .*?       — lazy quantifier</span>
+<span class="er"># \d \w \s  — only in GNU sed, not POSIX</span>
+<span class="cm"># For complex PCRE needs, use: grep -P, perl, or python</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Regex Recipes</h2>
+
+<h3>Validate and extract patterns</h3>
+<pre><span class="cm"># Print only valid IPv4 addresses</span>
+<span class="cmd">sed</span> <span class="fl">-En</span> <span class="st">'/^([0-9]{1,3}\.){3}[0-9]{1,3}$/p'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Print only lines that look like email addresses</span>
+<span class="cmd">sed</span> <span class="fl">-En</span> <span class="st">'/^[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}$/p'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Extract all hex colour codes from a CSS file</span>
+<span class="cmd">sed</span> <span class="fl">-En</span> <span class="st">'s/.*#([0-9A-Fa-f]{3,6}).*/\1/p'</span> <span class="pth">styles.css</span></pre>
+
+<h3>Transformations using groups</h3>
+<pre><span class="cm"># Reformat US date MM/DD/YYYY to ISO YYYY-MM-DD</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s|([0-9]{2})/([0-9]{2})/([0-9]{4})|\3-\1-\2|g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Convert snake_case to camelCase</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/_([a-z])/\u\1/g'</span> <span class="pth">file.txt</span>
+<span class="cm"># \u makes next char uppercase (GNU sed replacement extension)</span>
+
+<span class="cm"># Add thousands separators to numbers (1234567 → 1,234,567)</span>
+<span class="cmd">sed</span> <span class="st">'<span class="rx">:a</span>; s/\([0-9]\)\([0-9]\{3\}\)\b/\1,\2/; ta'</span> <span class="pth">file.txt</span></pre>
+
+<h3>Defensive patterns</h3>
+<pre><span class="cm"># Match a whole word safely (not a substring)</span>
+<span class="cmd">sed</span> <span class="st">'s/\bword\b/replacement/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Match from start of line to first colon (non-greedy via negated class)</span>
+<span class="cmd">sed</span> <span class="st">'s/^[^:]*/KEY/'</span> <span class="pth">file.txt</span>   <span class="cm"># replace everything before first :</span>
+
+<span class="cm"># Match a quoted string (single quotes, no embedded quotes)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">"s/'[^']*'/STRING/g"</span> <span class="pth">file.txt</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 10</h2>
+
+<div class="cmd-ref">
+  <h4>BRE vs ERE — Syntax Differences</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">-E flag</span>
+    <span class="cmd-desc">Enable ERE — cleaner syntax, recommended for most work</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">BRE: \( \) \| \+ \? \{n\}</span>
+    <span class="cmd-desc">Grouping, alternation, quantifiers need backslashes</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">ERE: ( ) | + ? {n}</span>
+    <span class="cmd-desc">Same features — no backslashes needed</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Anchors and Special Sequences</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">^  $</span>
+    <span class="cmd-desc">Start and end of line</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\b  \B</span>
+    <span class="cmd-desc">Word boundary / non-boundary (GNU sed)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\w  \W  \s  \S</span>
+    <span class="cmd-desc">Word / non-word / space / non-space chars (GNU sed)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\t  \n  \xHH</span>
+    <span class="cmd-desc">Tab / newline / hex character (GNU sed)</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>POSIX Character Classes</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">[[:alpha:]]  [[:digit:]]</span>
+    <span class="cmd-desc">Letters / digits — portable across locales</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">[[:alnum:]]  [[:space:]]</span>
+    <span class="cmd-desc">Alphanumeric / any whitespace</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">[[:upper:]]  [[:lower:]]</span>
+    <span class="cmd-desc">Uppercase / lowercase letters</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">[[:punct:]]  [[:blank:]]</span>
+    <span class="cmd-desc">Punctuation / space+tab only</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>The "No Lazy Quantifier" Workaround</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">&lt;.*&gt;</span>
+    <span class="cmd-desc">Greedy — matches from first &lt; to LAST &gt;</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">&lt;[^&gt;]*&gt;</span>
+    <span class="cmd-desc">Stops at first &gt; — the lazy equivalent in SED</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">[^delimiter]*</span>
+    <span class="cmd-desc">General pattern: match up to (but not including) <em>delimiter</em></span>
+  </div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 11 covers SED scripts and real-world recipes — writing multi-command <code>-f</code> script files, the essential one-liner library, log file processing, config file manipulation, and CSV/data transformations. Everything learned across the course comes together in practical, ready-to-use patterns.
+</div>
+
+</div>

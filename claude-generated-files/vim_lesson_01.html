@@ -1,0 +1,287 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; }
+  .lx-lesson .cmd-key { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 160px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  .lx-lesson .mode-badge {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    padding: 0.15em 0.55em; border-radius: 3px; margin-right: 0.3em; vertical-align: middle;
+  }
+  .lx-lesson .mode-normal  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }
+  .lx-lesson .mode-insert  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }
+  .lx-lesson .mode-command { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 1 — Introduction</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Why Vim?</h2>
+
+<p>Vim is a text editor unlike any other. Most editors behave the way you expect — you open a file, click where you want to type, and start editing. Vim does not work that way, and that difference is exactly what makes it powerful. Once you have learned Vim's way of thinking, you can edit text faster, more precisely, and with less hand movement than in almost any other editor.</p>
+
+<p>Here is what makes Vim worth the investment:</p>
+
+<ul>
+  <li><strong>It is everywhere.</strong> Vim — or its predecessor <code>vi</code> — comes pre-installed on virtually every Unix-based system. Linux servers, macOS, embedded devices, cloud VMs: if you can SSH into it, Vim is almost certainly available. You will never be stranded without an editor.</li>
+  <li><strong>It runs in a terminal.</strong> You do not need a graphical interface. This is critical when working on remote servers, in containers, or in recovery environments where a GUI simply does not exist.</li>
+  <li><strong>It is fast.</strong> Opening, editing, and closing a file in Vim takes seconds. For quick configuration file edits — the kind of task you do dozens of times a day as a developer or sysadmin — this adds up to a significant amount of saved time.</li>
+  <li><strong>It is composable.</strong> Vim commands combine like building blocks. Once you understand the grammar — <em>operator + motion</em> — you can do things you have never explicitly learned just by combining parts you already know.</li>
+  <li><strong>It is enduring.</strong> Vim was released in 1991, built on the ideas of <code>vi</code> from 1976. After more than 30 years it is still actively developed and widely used. This kind of longevity (sometimes called the <em>Lindy effect</em> — the longer something has survived, the longer it is likely to continue surviving) is a strong signal that the time you invest in learning it will pay off for the rest of your career.</li>
+</ul>
+
+<div class="note">
+  <strong>The Stack Overflow statistic:</strong> According to Stack Overflow's own data, the question "How do I exit Vim?" has been viewed millions of times, with around 80 people per hour looking it up at its peak. This is not evidence that Vim is bad — it is evidence that Vim is surprising. The moment you understand <em>why</em> exiting Vim is non-obvious (modes, which we cover in Chapter 2), that surprise transforms into clarity.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Learning Curve — An Honest Picture</h2>
+
+<p>Vim has a well-earned reputation for a steep learning curve. A common joke in developer circles is that Vim's learning curve is not just steep but <em>vertical</em> — you put a lot of effort in before you get any results out. That is partially true, but it is more nuanced than the joke suggests.</p>
+
+<p>A better analogy is learning to drive a manual (stick-shift) car:</p>
+
+<ul>
+  <li>The first time you sit behind the wheel, every action is conscious and effortful. You have to think about the clutch, the gear, the mirror, the steering — all at once.</li>
+  <li>You will stall. You will forget which gear you are in. The car will do things you did not expect.</li>
+  <li>After a few weeks of practice, the conscious effort fades. You change gear without thinking about it. Your hands know what to do before your brain has finished forming the instruction.</li>
+  <li>At that point, you are more in control of the car than you ever were when it was automatic — because you understand what it is doing and why.</li>
+</ul>
+
+<p>Vim follows the same arc. The awkward phase is real but it is finite. Most people find that after one to two weeks of daily use (even just 20–30 minutes a day), the basic movements and editing commands start to feel natural. After a month, they start to miss Vim when they are forced to use something else.</p>
+
+<p>The trick is to <strong>not abandon Vim during the awkward phase</strong>. It helps to have a project or file you actually need to edit — real motivation to push through the discomfort. This course is designed to get you through that phase as efficiently as possible by focusing on the commands you will use every day, explained in a way that makes the underlying logic visible.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Vim's Modal Design — A First Look</h2>
+
+<p>The most important thing to understand about Vim before you even open it is that it is a <strong>modal editor</strong>. This is the idea behind all of Vim's apparent strangeness, and once you understand it everything else clicks into place.</p>
+
+<p>Most editors have one mode: you are always typing text. Vim has several modes, and the meaning of every key you press depends on which mode you are currently in. The three you will use most are:</p>
+
+<table>
+  <tr>
+    <th>Mode</th>
+    <th>What it is for</th>
+    <th>How to enter it</th>
+  </tr>
+  <tr>
+    <td><span class="mode-badge mode-normal">NORMAL</span></td>
+    <td>Navigating, deleting, copying, and issuing commands. This is Vim's <em>home base</em> — the mode you should return to when you are not actively inserting text.</td>
+    <td>Press <code>Esc</code> from any other mode</td>
+  </tr>
+  <tr>
+    <td><span class="mode-badge mode-insert">INSERT</span></td>
+    <td>Typing text into the file, just like a conventional editor.</td>
+    <td>Press <code>i</code> in Normal mode</td>
+  </tr>
+  <tr>
+    <td><span class="mode-badge mode-command">COMMAND</span></td>
+    <td>Running editor commands — saving, quitting, searching, changing settings.</td>
+    <td>Press <code>:</code> in Normal mode</td>
+  </tr>
+</table>
+
+<p>The reason most people get stuck when they first open Vim is that they are dropped straight into Normal mode. They start typing, and nothing appears (or unexpected things happen) because keystrokes in Normal mode are commands, not text. This single piece of knowledge — <strong>Vim starts in Normal mode</strong> — eliminates the most common source of confusion.</p>
+
+<p>We will explore each mode thoroughly in the chapters ahead. For now, just hold onto this mental model: Normal mode is your home; Insert mode is where you type; Command mode is where you talk to the editor.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Installation</h2>
+
+<h3>Checking whether Vim is already installed</h3>
+
+<p>On macOS and most Linux distributions, Vim is pre-installed. Open a terminal and run:</p>
+
+<pre><span class="cmd">vim</span> <span class="vr">--version</span></pre>
+
+<p>If Vim is installed you will see several lines of output beginning with the version number:</p>
+
+<pre><span class="out">VIM - Vi IMproved 9.0 (2022 Jun 28, compiled ...)
+Included patches: 1-749
+...</span></pre>
+
+<p>The first line tells you the version. Vim 8 or 9 is recommended — both support all the features in this course. If you see <code>command not found</code>, follow the installation steps below.</p>
+
+<div class="note">
+  <strong>vi vs vim:</strong> Many systems also have <code>vi</code> — the original editor that Vim is based on. Running <code>vi --version</code> on such a system often actually invokes Vim in compatibility mode. For this course, always use <code>vim</code> explicitly to ensure you have the full feature set.
+</div>
+
+<h3>macOS</h3>
+
+<p>macOS ships with Vim, but it may be an older version. To install the latest:</p>
+
+<pre><span class="cm"># Using Homebrew (recommended)</span>
+<span class="cmd">brew install vim</span>
+
+<span class="cm"># Verify the new version is on your PATH</span>
+<span class="cmd">which vim</span>     <span class="cm"># should show /usr/local/bin/vim or /opt/homebrew/bin/vim</span>
+<span class="cmd">vim --version</span></pre>
+
+<h3>Linux</h3>
+
+<p>Use your distribution's package manager:</p>
+
+<pre><span class="cm"># Debian / Ubuntu</span>
+<span class="cmd">sudo apt update</span> <span class="kw">&amp;&amp;</span> <span class="cmd">sudo apt install vim</span>
+
+<span class="cm"># Fedora / RHEL / CentOS</span>
+<span class="cmd">sudo dnf install vim</span>
+
+<span class="cm"># Arch Linux</span>
+<span class="cmd">sudo pacman -S vim</span>
+
+<span class="cm"># Alpine (common in Docker containers)</span>
+<span class="cmd">apk add vim</span></pre>
+
+<h3>Windows</h3>
+
+<p>Vim is not pre-installed on Windows. Download the official installer from <strong>www.vim.org</strong>:</p>
+
+<ol>
+  <li>Go to <strong>vim.org → Download → PC, MS-DOS and MS-Windows</strong></li>
+  <li>Download the latest <strong>gvim_X.Y.exe</strong> installer (this installs both the terminal <code>vim</code> and the GUI <code>gvim</code>)</li>
+  <li>Run the installer with default options</li>
+  <li>Open a new Command Prompt or PowerShell window and run <code>vim --version</code> to verify</li>
+</ol>
+
+<div class="tip">
+  <strong>Windows Subsystem for Linux (WSL):</strong> If you are a developer on Windows, running Vim inside WSL (Ubuntu or similar) gives you the full Linux experience and is the recommended approach for this course. Install WSL first (<code>wsl --install</code> in an elevated PowerShell), then install Vim inside your Linux distribution as described above.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Opening Vim &amp; the Interface</h2>
+
+<h3>Starting Vim</h3>
+
+<p>To open an existing file:</p>
+<pre><span class="cmd">vim</span> <span class="st">filename.txt</span></pre>
+
+<p>To create a new file:</p>
+<pre><span class="cmd">vim</span> <span class="st">newfile.txt</span></pre>
+
+<p>To open Vim with no file (you can name the file when saving):</p>
+<pre><span class="cmd">vim</span></pre>
+
+<h3>Reading the interface</h3>
+
+<p>When Vim opens a new empty file you will see something like this:</p>
+
+<pre><span class="out">~
+~
+~
+~
+~
+~
+                                                       0,0-1         All
+</span></pre>
+
+<p>Each <code>~</code> represents a line that does not exist — it is Vim telling you "there is no content here". The status bar at the bottom right shows your position in the file: <code>0,0-1</code> means line 0 (no lines yet), column 0. <code>All</code> means the entire file is visible on screen.</p>
+
+<p>When you open an existing file the content fills the screen and the status bar shows the filename and line/column position:</p>
+
+<pre><span class="out">This is the first line of my file
+This is the second line
+~
+~
+"myfile.txt" 2 lines, 58 characters
+</span></pre>
+
+<h3>Enabling line numbers</h3>
+
+<p>Line numbers make navigation much easier — you can jump directly to a specific line, and error messages from compilers and interpreters almost always refer to line numbers. To enable them, switch to Command mode and run:</p>
+
+<pre><span class="kw">:</span><span class="cmd">set number</span></pre>
+
+<p>Type the colon (<code>:</code>) first — this moves you from Normal mode into Command mode and you will see the cursor jump to the bottom of the screen. Then type <code>set number</code> and press <code>Enter</code>. Line numbers will appear on the left of every line.</p>
+
+<pre><span class="out">  1 This is the first line of my file
+  2 This is the second line
+  3 ~
+  4 ~</span></pre>
+
+<p>To turn line numbers off:</p>
+<pre><span class="kw">:</span><span class="cmd">set nonumber</span></pre>
+
+<p>This setting only lasts for the current session. In Chapter 8 we will cover the <code>.vimrc</code> configuration file, where you can make it permanent with a single line.</p>
+
+<div class="tip">
+  <strong>Relative line numbers:</strong> Vim also supports <em>relative</em> line numbers, which show the distance from the current line rather than absolute line numbers. Many experienced Vim users prefer these because they make vertical motion commands (covered in Chapter 3) more intuitive. Enable them with <code>:set relativenumber</code>.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Your First Vim Session — A Safe Walkthrough</h2>
+
+<p>Before we go any further, here is a simple sequence you can follow right now to open Vim, make a small edit, and get out safely. Think of it as a first driving lesson in a car park.</p>
+
+<pre><span class="cm"># 1. Open a new test file</span>
+<span class="cmd">vim</span> <span class="st">test.txt</span></pre>
+
+<p>Vim opens in <span class="mode-badge mode-normal">NORMAL</span> mode. The screen is empty (or shows the file contents). Nothing you type will appear as text yet.</p>
+
+<ol>
+  <li>Press <code>i</code> — this enters <span class="mode-badge mode-insert">INSERT</span> mode. You will see <code>-- INSERT --</code> at the bottom of the screen.</li>
+  <li>Type a few words: <code>Hello from Vim!</code></li>
+  <li>Press <code>Esc</code> — this returns you to <span class="mode-badge mode-normal">NORMAL</span> mode. The <code>-- INSERT --</code> indicator disappears.</li>
+  <li>Type <code>:w</code> and press <code>Enter</code> — this saves (writes) the file.</li>
+  <li>Type <code>:q</code> and press <code>Enter</code> — this quits Vim.</li>
+</ol>
+
+<p>Congratulations — you have successfully entered, edited, saved, and exited Vim. These five steps cover the most common stumbling block new users face.</p>
+
+<div class="warn">
+  <strong>Made a mistake and want to quit without saving?</strong> Use <code>:q!</code> — the exclamation mark forces Vim to quit and discard any unsaved changes. This is your escape hatch whenever something has gone wrong and you just want out.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Commands Introduced in This Chapter</h2>
+
+<div class="cmd-ref">
+  <h4>Chapter 1 — Command Reference</h4>
+  <div class="cmd-row"><span class="cmd-key">vim --version</span><span class="cmd-desc">Check whether Vim is installed and display the version number</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim &lt;filename&gt;</span><span class="cmd-desc">Open a file in Vim (creates it if it does not exist)</span></div>
+  <div class="cmd-row"><span class="cmd-key">i</span><span class="cmd-desc">Enter Insert mode at the cursor position <span class="mode-badge mode-normal">NORMAL</span> → <span class="mode-badge mode-insert">INSERT</span></span></div>
+  <div class="cmd-row"><span class="cmd-key">Esc</span><span class="cmd-desc">Return to Normal mode from any other mode</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set number</span><span class="cmd-desc">Display line numbers</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set nonumber</span><span class="cmd-desc">Hide line numbers</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set relativenumber</span><span class="cmd-desc">Display line numbers relative to the current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">:w</span><span class="cmd-desc">Write (save) the current file</span></div>
+  <div class="cmd-row"><span class="cmd-key">:q</span><span class="cmd-desc">Quit Vim (only works if there are no unsaved changes)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:q!</span><span class="cmd-desc">Force quit — discard unsaved changes and exit</span></div>
+  <div class="cmd-row"><span class="cmd-key">:wq</span><span class="cmd-desc">Write and quit in one step</span></div>
+</div>
+
+</div>

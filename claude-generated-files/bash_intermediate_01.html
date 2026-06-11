@@ -1,0 +1,1056 @@
+<!-- ============================================================
+     BASH INTERMEDIATE: Topic 1 — Advanced Parameter Expansion
+     Subject: Bash / Linux Shell Scripting (Intermediate)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+  .sh  { color: #e8a87d; }
+  .vr  { color: #ffd580; }
+  .op  { color: #e8a87d; }
+  .er  { color: #e05c5c; }
+  .fn  { color: #7ab8ff; }
+  .rx  { color: #ff9eb5; }
+
+  /* ── Platform blocks ─────────────────────────────── */
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 12px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; color: #7ab8ff; opacity: 0.8; }
+  .platform-block.both { border-color: #2a3a2a; }
+  .platform-block.both .pb-header { background: #1a2a1a; color: #7ecfa0; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin: 16px 0;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .new-box {
+    background: #1a1e2a;
+    border-left: 3px solid #c9a8ff;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    font-size: 0.85em;
+    color: #a0a4b8;
+  }
+  .new-box strong { color: #c9a8ff; }
+
+  /* ── Reference table ─────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+  .ref-table .version { font-size: 0.72em; color: #c9a8ff; font-style: italic; }
+
+  /* ── Compare grid ────────────────────────────────── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-card { background: #12141e; border: 1px solid #2a2d3a; border-radius: 6px; overflow: hidden; }
+  .compare-card .cc-hdr {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    padding: 6px 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .compare-card.a .cc-hdr { background: #1a2a1a; color: #7ecfa0; }
+  .compare-card.b .cc-hdr { background: #1a1e2a; color: #7ab8ff; }
+  .compare-card .cc-body { padding: 10px 12px; }
+  .compare-card .cc-body .code-block { margin: 0; font-size: 0.82em; }
+
+  /* ── Exercise blocks ─────────────────────────────── */
+  .exercise-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-block .ex-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+  .exercise-block .ex-task {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .exercise-block .ex-hint {
+    font-size: 0.85em;
+    color: #a0a4b8;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-solution-toggle {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    color: #7ecfa0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .exercise-block .ex-solution-toggle:hover { background: #1e2235; }
+  .exercise-block .ex-solution { display: none; margin-top: 12px; }
+  .exercise-block .ex-solution.visible { display: block; }
+  .exercise-block .sol-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+</style>
+
+<script>
+function toggleSolution(btn) {
+  var sol = btn.nextElementSibling;
+  if (sol.classList.contains('visible')) {
+    sol.classList.remove('visible');
+    btn.textContent = '▶ Show Sample Solution';
+  } else {
+    sol.classList.add('visible');
+    btn.textContent = '▼ Hide Solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>⚙️ Intermediate Topic 1 — Advanced Parameter Expansion</h2>
+  <p class="section-intro">The beginner course introduced the essentials of parameter expansion — defaults, string length, substring removal, and basic substitution. This chapter goes much deeper. Bash's parameter expansion system is one of the most powerful features of the shell, capable of replacing entire awk and sed pipelines with a single expression. We cover every operator in the language, the bash 4.4+ transformation flags, indirect expansion, namerefs, and compound patterns that combine multiple expansions into concise, readable one-liners.</p>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. DEFAULT / ASSIGN / ERROR / ALTERNATE
+  ═══════════════════════════════════════════ -->
+  <h2>1 — Default, Assign, Error, and Alternate Operators</h2>
+
+  <p>You know <code>${var:-default}</code>. But there are four operators in this family, each with a <em>colon</em> and a <em>no-colon</em> variant — eight forms in total — and the distinction between them matters.</p>
+
+  <table class="ref-table">
+    <thead><tr><th>Form</th><th>Meaning</th><th>Triggers when var is…</th></tr></thead>
+    <tbody>
+      <tr><td><code>${var:-val}</code></td><td>Use <em>val</em> if unset <strong>or empty</strong></td><td>unset or <code>""</code></td></tr>
+      <tr><td><code>${var-val}</code></td><td>Use <em>val</em> only if unset</td><td>unset only (empty string is fine)</td></tr>
+      <tr><td><code>${var:=val}</code></td><td>Assign <em>val</em> if unset or empty, then expand</td><td>unset or <code>""</code></td></tr>
+      <tr><td><code>${var=val}</code></td><td>Assign <em>val</em> only if unset, then expand</td><td>unset only</td></tr>
+      <tr><td><code>${var:?msg}</code></td><td>Error and exit if unset or empty</td><td>unset or <code>""</code></td></tr>
+      <tr><td><code>${var?msg}</code></td><td>Error and exit if unset</td><td>unset only</td></tr>
+      <tr><td><code>${var:+val}</code></td><td>Use <em>val</em> if set and non-empty (opposite of <code>:-</code>)</td><td>when var <em>has</em> a value</td></tr>
+      <tr><td><code>${var+val}</code></td><td>Use <em>val</em> if set at all (even if empty)</td><td>when var exists at all</td></tr>
+    </tbody>
+  </table>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 The colon makes all the difference</div>
+    <div class="pb-body">
+<code class="code-block"><span class="vr">empty</span>=<span class="st">""</span>
+<span class="kw">unset</span> <span class="vr">gone</span>
+
+<span class="cm"># :- vs - (empty string triggers :- but NOT -)</span>
+<span class="cmd">echo</span> <span class="st">"${empty:-fallback}"</span>      <span class="out">→ fallback    (empty triggers it)</span>
+<span class="cmd">echo</span> <span class="st">"${empty-fallback}"</span>       <span class="out">→              (empty string returned — no trigger)</span>
+<span class="cmd">echo</span> <span class="st">"${gone:-fallback}"</span>        <span class="out">→ fallback</span>
+<span class="cmd">echo</span> <span class="st">"${gone-fallback}"</span>         <span class="out">→ fallback</span>
+
+<span class="cm"># := assigns as a side-effect — useful for lazy initialisation</span>
+<span class="cmd">echo</span> <span class="st">"${cache:=computed_value}"</span> <span class="out">→ computed_value  (also sets $cache)</span>
+<span class="cmd">echo</span> <span class="st">"$cache"</span>                   <span class="out">→ computed_value  (now set)</span>
+<span class="cm"># Cannot use := on positional parameters ($1, $2) or special vars</span>
+
+<span class="cm"># :? aborts with a message — great for required arguments</span>
+<span class="vr">db_host</span>=<span class="st">"${DB_HOST:?DB_HOST environment variable must be set}"</span>
+<span class="cm"># If DB_HOST is unset:  bash: DB_HOST: DB_HOST environment variable must be set</span>
+
+<span class="cm"># :+ is the logical opposite of :- — "use this value IF the var IS set"</span>
+<span class="vr">debug</span>=<span class="st">"1"</span>
+<span class="cmd">echo</span> <span class="st">"${debug:+--verbose}"</span>      <span class="out">→ --verbose   (because debug is set)</span>
+<span class="cmd">echo</span> <span class="st">"${unset_var:+--verbose}"</span>  <span class="out">→              (nothing, because it's unset)</span>
+
+<span class="cm"># Practical: conditionally add a flag to a command</span>
+<span class="cmd">curl</span> <span class="st">"${verbose:+--silent}"</span> https://example.com
+<span class="cm"># Passes --silent only when $verbose is empty/unset (backwards logic example)</span>
+
+<span class="cm"># +  without colon: even an empty string counts as "set"</span>
+<span class="vr">empty</span>=<span class="st">""</span>
+<span class="cmd">echo</span> <span class="st">"${empty+was_set}"</span>         <span class="out">→ was_set     (empty var still "exists")</span>
+<span class="cmd">echo</span> <span class="st">"${gone+was_set}"</span>          <span class="out">→              (unset var — nothing)</span></code>
+      <div class="pb-note">The <strong>colon variants</strong> (<code>:-</code> <code>:=</code> <code>:?</code> <code>:+</code>) treat an empty string the same as unset. The <strong>no-colon variants</strong> (<code>-</code> <code>=</code> <code>?</code> <code>+</code>) only act when the variable is completely unset. In practice you almost always want the colon forms.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. SUBSTRING OPERATIONS
+  ═══════════════════════════════════════════ -->
+  <h2>2 — Substring Extraction and Prefix/Suffix Removal</h2>
+
+  <h3>Substring extraction — <code>${var:offset:length}</code></h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Slicing strings with offset and length</div>
+    <div class="pb-body">
+<code class="code-block"><span class="vr">str</span>=<span class="st">"Hello, World!"</span>
+
+<span class="cm"># ${var:offset}    — from offset to end</span>
+<span class="cmd">echo</span> <span class="st">"${str:7}"</span>           <span class="out">→ World!</span>
+
+<span class="cm"># ${var:offset:length}</span>
+<span class="cmd">echo</span> <span class="st">"${str:7:5}"</span>         <span class="out">→ World</span>
+<span class="cmd">echo</span> <span class="st">"${str:0:5}"</span>         <span class="out">→ Hello</span>
+
+<span class="cm"># Negative offset counts from the END — note the space before the minus</span>
+<span class="cm"># (space required to distinguish from :- default operator)</span>
+<span class="cmd">echo</span> <span class="st">"${str: -6}"</span>         <span class="out">→ orld!</span>
+<span class="cmd">echo</span> <span class="st">"${str: -6:5}"</span>       <span class="out">→ orld!  wait — 5 chars from position -6</span>
+<span class="cmd">echo</span> <span class="st">"${str: -6:4}"</span>       <span class="out">→ orld</span>
+
+<span class="cm"># Negative length means "exclude this many chars from the end"</span>
+<span class="cmd">echo</span> <span class="st">"${str:7: -1}"</span>       <span class="out">→ World  (6 chars: "World!" minus last 1)</span>
+
+<span class="cm"># Works on arrays too — returns a slice of elements</span>
+<span class="vr">arr</span>=( a b c d e f )
+<span class="cmd">echo</span> <span class="st">"${arr[@]:2:3}"</span>       <span class="out">→ c d e</span>
+<span class="cmd">echo</span> <span class="st">"${arr[@]: -2}"</span>       <span class="out">→ e f</span>
+
+<span class="cm"># Works on positional parameters</span>
+<span class="cm"># Inside a function: ${@:2} = all args from the second onwards</span>
+<span class="fn">all_but_first</span>() { <span class="cmd">echo</span> <span class="st">"${@:2}"</span>; }
+<span class="fn">all_but_first</span> one two three four
+<span class="out">→ two three four</span></code>
+    </div>
+  </div>
+
+  <h3>Pattern-based prefix and suffix removal — going deeper</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 # ## % %% — with full glob patterns</div>
+    <div class="pb-body">
+<code class="code-block"><span class="vr">path</span>=<span class="st">"/usr/local/lib/libmyapp.so.2.1.0"</span>
+
+<span class="cm"># # removes shortest prefix matching the pattern</span>
+<span class="cmd">echo</span> <span class="st">"${path#*/}"</span>          <span class="out">→ usr/local/lib/libmyapp.so.2.1.0</span>
+
+<span class="cm"># ## removes longest prefix matching the pattern</span>
+<span class="cmd">echo</span> <span class="st">"${path##*/}"</span>         <span class="out">→ libmyapp.so.2.1.0   (basename)</span>
+
+<span class="cm"># % removes shortest suffix</span>
+<span class="cmd">echo</span> <span class="st">"${path%/*}"</span>          <span class="out">→ /usr/local/lib      (dirname)</span>
+<span class="cmd">echo</span> <span class="st">"${path%.*}"</span>          <span class="out">→ /usr/local/lib/libmyapp.so.2.1</span>
+
+<span class="cm"># %% removes longest suffix</span>
+<span class="cmd">echo</span> <span class="st">"${path%%.*}"</span>         <span class="out">→ /usr/local/lib/libmyapp</span>
+
+<span class="cm"># Practical: strip all extensions from a filename</span>
+<span class="vr">f</span>=<span class="st">"archive.tar.gz"</span>
+<span class="cmd">echo</span> <span class="st">"${f%%.*}"</span>            <span class="out">→ archive</span>
+
+<span class="cm"># Replace extension: strip suffix then add new one</span>
+<span class="cmd">echo</span> <span class="st">"${f%.gz}.bz2"</span>       <span class="out">→ archive.tar.bz2</span>
+
+<span class="cm"># Works in a loop — bulk rename files</span>
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="pth">*.jpeg</span>; <span class="kw">do</span>
+    <span class="cmd">mv</span> <span class="st">"$f"</span> <span class="st">"${f%.jpeg}.jpg"</span>
+<span class="kw">done</span>
+
+<span class="cm"># Combined: extract just the base filename without any extension</span>
+<span class="vr">file</span>=<span class="st">"/var/log/myapp/error.log.1"</span>
+<span class="vr">base</span>=<span class="st">"${file##*/}"</span>        <span class="cm"># → error.log.1  (strip directory)</span>
+<span class="vr">name</span>=<span class="st">"${base%%.*}"</span>        <span class="cm"># → error         (strip all extensions)</span>
+<span class="vr">dir</span>=<span class="st">"${file%/*}"</span>          <span class="cm"># → /var/log/myapp  (dirname)</span></code>
+    </div>
+  </div>
+
+  <h3>Search and replace — all four forms</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 / // /# /% — replace first, all, prefix, suffix</div>
+    <div class="pb-body">
+<code class="code-block"><span class="vr">str</span>=<span class="st">"the cat sat on the mat"</span>
+
+<span class="cm"># / — replace FIRST occurrence</span>
+<span class="cmd">echo</span> <span class="st">"${str/the/a}"</span>        <span class="out">→ a cat sat on the mat</span>
+
+<span class="cm"># // — replace ALL occurrences</span>
+<span class="cmd">echo</span> <span class="st">"${str//the/a}"</span>       <span class="out">→ a cat sat on a mat</span>
+
+<span class="cm"># /# — replace only if pattern matches at the START</span>
+<span class="cmd">echo</span> <span class="st">"${str/#the/a}"</span>       <span class="out">→ a cat sat on the mat</span>
+<span class="cmd">echo</span> <span class="st">"${str/#cat/a}"</span>       <span class="out">→ the cat sat on the mat  (no match — not at start)</span>
+
+<span class="cm"># /% — replace only if pattern matches at the END</span>
+<span class="cmd">echo</span> <span class="st">"${str/%mat/rug}"</span>     <span class="out">→ the cat sat on the rug</span>
+
+<span class="cm"># Replace with empty string = deletion</span>
+<span class="cmd">echo</span> <span class="st">"${str// /}"</span>          <span class="out">→ thecatsatonthemat  (remove all spaces)</span>
+<span class="cmd">echo</span> <span class="st">"${str//[aeiou]/}"</span>   <span class="out">→ th ct st n th mt    (remove vowels)</span>
+
+<span class="cm"># Patterns support globs</span>
+<span class="vr">csv</span>=<span class="st">"one,  two ,  three  "</span>
+<span class="cmd">echo</span> <span class="st">"${csv// /}"</span>          <span class="out">→ one,two,three  (remove all spaces)</span>
+
+<span class="cm"># Works on each element of an array (expands to modified array)</span>
+<span class="vr">names</span>=( "Alice Smith" "Bob Jones" "Carol White" )
+<span class="cmd">echo</span> <span class="st">"${names[@]// /_}"</span>   <span class="out">→ Alice_Smith Bob_Jones Carol_White</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. CASE CONVERSION
+  ═══════════════════════════════════════════ -->
+  <h2>3 — Case Conversion Operators</h2>
+
+  <p>Bash 4.0 added four case-conversion operators. They're useful for normalising user input, building slugs, and formatting output without spawning <code>tr</code> or <code>awk</code>.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 ^ ^^ , ,, ~ ~~ — case conversion</div>
+    <div class="pb-body">
+<code class="code-block"><span class="vr">str</span>=<span class="st">"Hello World"</span>
+
+<span class="cm"># ^ — uppercase first character only</span>
+<span class="vr">lower</span>=<span class="st">"hello world"</span>
+<span class="cmd">echo</span> <span class="st">"${lower^}"</span>           <span class="out">→ Hello world</span>
+
+<span class="cm"># ^^ — uppercase ALL characters</span>
+<span class="cmd">echo</span> <span class="st">"${lower^^}"</span>          <span class="out">→ HELLO WORLD</span>
+
+<span class="cm"># , — lowercase first character only</span>
+<span class="cmd">echo</span> <span class="st">"${str,}"</span>             <span class="out">→ hello World</span>
+
+<span class="cm"># ,, — lowercase ALL characters</span>
+<span class="cmd">echo</span> <span class="st">"${str,,}"</span>            <span class="out">→ hello world</span>
+
+<span class="cm"># ~ — toggle case of first character</span>
+<span class="cmd">echo</span> <span class="st">"${str~}"</span>             <span class="out">→ hello World</span>
+
+<span class="cm"># ~~ — toggle case of ALL characters</span>
+<span class="cmd">echo</span> <span class="st">"${str~~}"</span>            <span class="out">→ hELLO wORLD</span>
+
+<span class="cm"># All operators accept a glob pattern — only matching chars are converted</span>
+<span class="cmd">echo</span> <span class="st">"${lower^^[aeiou]}"</span>   <span class="out">→ hEllO wOrld   (only vowels uppercased)</span>
+<span class="cmd">echo</span> <span class="st">"${str,,[A-Z]}"</span>      <span class="out">→ hello world   (only uppercase letters lowercased)</span>
+
+<span class="cm"># Practical: normalise input for case-insensitive comparison</span>
+<span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-p</span> <span class="st">"Continue? [y/n]: "</span> <span class="vr">ans</span>
+<span class="kw">if</span> [[ <span class="st">"${ans,,}"</span> == <span class="st">"y"</span> || <span class="st">"${ans,,}"</span> == <span class="st">"yes"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Proceeding..."</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Build a slug from a title</span>
+<span class="vr">title</span>=<span class="st">"My Blog Post Title"</span>
+<span class="vr">slug</span>=<span class="st">"${title,,}"</span>         <span class="cm"># → "my blog post title"</span>
+<span class="vr">slug</span>=<span class="st">"${slug// /-}"</span>       <span class="cm"># → "my-blog-post-title"</span></code>
+      <div class="pb-note">The case operators require bash 4.0+. On macOS, the system <code>/bin/bash</code> may still be version 3.2 (due to GPL licensing). If portability to macOS system bash matters, use <code>tr</code> instead, or ensure a newer bash is installed via Homebrew.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. INDIRECT EXPANSION
+  ═══════════════════════════════════════════ -->
+  <h2>4 — Indirect Expansion: <code>${!var}</code></h2>
+
+  <p>The <code>!</code> prefix makes bash expand the <em>value</em> of a variable as the <em>name</em> of another variable to expand. This allows dynamic variable lookup and is the classic way to implement dispatch tables without associative arrays.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Variable indirection — ${!varname}</div>
+    <div class="pb-body">
+<code class="code-block"><span class="vr">fruit</span>=<span class="st">"apple"</span>
+<span class="vr">apple</span>=<span class="st">"green"</span>
+
+<span class="cm"># Normal expansion</span>
+<span class="cmd">echo</span> <span class="st">"$fruit"</span>              <span class="out">→ apple</span>
+
+<span class="cm"># Indirect: expand $fruit to get the name "apple", then expand $apple</span>
+<span class="cmd">echo</span> <span class="st">"${!fruit}"</span>           <span class="out">→ green</span>
+
+<span class="cm"># Indirect expansion with a variable holding a variable name</span>
+<span class="vr">varname</span>=<span class="st">"PATH"</span>
+<span class="cmd">echo</span> <span class="st">"${!varname}"</span>         <span class="out">→ /usr/local/bin:/usr/bin:/bin:...</span>
+
+<span class="cm"># Practical: environment-specific config lookup</span>
+<span class="vr">env</span>=<span class="st">"prod"</span>
+<span class="vr">prod_host</span>=<span class="st">"db.example.com"</span>
+<span class="vr">staging_host</span>=<span class="st">"db-staging.example.com"</span>
+<span class="vr">dev_host</span>=<span class="st">"localhost"</span>
+
+<span class="vr">host_var</span>=<span class="st">"${env}_host"</span>     <span class="cm"># → "prod_host"</span>
+<span class="cmd">echo</span> <span class="st">"${!host_var}"</span>        <span class="out">→ db.example.com</span>
+
+<span class="cm"># Dispatch table: map command names to function names</span>
+<span class="vr">cmd_start</span>=<span class="st">"do_start"</span>
+<span class="vr">cmd_stop</span>=<span class="st">"do_stop"</span>
+<span class="vr">cmd_status</span>=<span class="st">"do_status"</span>
+
+<span class="fn">do_start</span>()  { <span class="cmd">echo</span> <span class="st">"Starting..."</span>; }
+<span class="fn">do_stop</span>()   { <span class="cmd">echo</span> <span class="st">"Stopping..."</span>; }
+<span class="fn">do_status</span>() { <span class="cmd">echo</span> <span class="st">"Running."</span>; }
+
+<span class="vr">action</span>=<span class="st">"start"</span>
+<span class="vr">fn_var</span>=<span class="st">"cmd_${action}"</span>     <span class="cm"># → "cmd_start"</span>
+<span class="st">"${!fn_var}"</span>               <span class="cm"># calls do_start</span>
+<span class="out">Starting...</span></code>
+    </div>
+  </div>
+
+  <h3>Listing variables by prefix — <code>${!prefix*}</code> and <code>${!prefix@}</code></h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Enumerate all variables matching a prefix</div>
+    <div class="pb-body">
+<code class="code-block"><span class="vr">DB_HOST</span>=<span class="st">"localhost"</span>
+<span class="vr">DB_PORT</span>=<span class="st">"5432"</span>
+<span class="vr">DB_NAME</span>=<span class="st">"myapp"</span>
+<span class="vr">APP_ENV</span>=<span class="st">"production"</span>
+
+<span class="cm"># ${!prefix*} expands to all variable NAMES starting with prefix</span>
+<span class="cmd">echo</span> <span class="st">"${!DB_*}"</span>            <span class="out">→ DB_HOST DB_NAME DB_PORT</span>
+
+<span class="cm"># Iterate over all DB_ variables and print their names + values</span>
+<span class="kw">for</span> <span class="vr">varname</span> <span class="kw">in</span> <span class="st">"${!DB_@}"</span>; <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">"%-15s = %s\n"</span> <span class="st">"$varname"</span> <span class="st">"${!varname}"</span>
+<span class="kw">done</span>
+<span class="out">DB_HOST         = localhost</span>
+<span class="out">DB_NAME         = myapp</span>
+<span class="out">DB_PORT         = 5432</span>
+
+<span class="cm"># Useful for printing a config dump at script startup</span>
+<span class="fn">dump_config</span>() {
+    <span class="cmd">echo</span> <span class="st">"Configuration:"</span>
+    <span class="kw">local</span> <span class="vr">v</span>
+    <span class="kw">for</span> <span class="vr">v</span> <span class="kw">in</span> <span class="st">"${!APP_@}"</span> <span class="st">"${!DB_@}"</span>; <span class="kw">do</span>
+        <span class="cmd">printf</span> <span class="st">"  %s=%s\n"</span> <span class="st">"$v"</span> <span class="st">"${!v}"</span>
+    <span class="kw">done</span>
+}
+
+<span class="cm"># ${!prefix*} vs ${!prefix@}</span>
+<span class="cm"># When unquoted: identical</span>
+<span class="cm"># When quoted: * joins with IFS; @ produces separate words (like $* vs $@)</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. NAMEREFS
+  ═══════════════════════════════════════════ -->
+  <h2>5 — Namerefs: <code>declare -n</code></h2>
+
+  <p>A nameref is a variable that acts as an <em>alias</em> for another variable — named at runtime. This is the clean, modern solution to passing arrays in and out of functions, and removes the need for the fragile <code>${!varname}</code> indirect expansion pattern in most cases.</p>
+
+  <div class="new-box"><strong>Requires bash 4.3+.</strong> Namerefs were introduced in bash 4.3 (2014). They are available on all modern Linux distributions. macOS system bash (3.2) does not support them.</div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Nameref basics</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># declare -n creates a nameref — the variable IS the other variable</span>
+<span class="vr">original</span>=<span class="st">"hello"</span>
+<span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">ref</span>=<span class="st">"original"</span>
+
+<span class="cmd">echo</span> <span class="st">"$ref"</span>                 <span class="out">→ hello</span>
+<span class="vr">ref</span>=<span class="st">"world"</span>                <span class="cm"># modifying ref modifies original</span>
+<span class="cmd">echo</span> <span class="st">"$original"</span>           <span class="out">→ world</span>
+
+<span class="cm"># A nameref to an array — you get the full array</span>
+<span class="vr">colours</span>=( red green blue )
+<span class="kw">declare</span> <span class="fl">-n</span> <span class="vr">arr_ref</span>=<span class="st">"colours"</span>
+<span class="cmd">echo</span> <span class="st">"${arr_ref[1]}"</span>        <span class="out">→ green</span>
+<span class="vr">arr_ref</span>+=( yellow )
+<span class="cmd">echo</span> <span class="st">"${colours[@]}"</span>       <span class="out">→ red green blue yellow</span></code>
+    </div>
+  </div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Namerefs in functions — the right way to return arrays</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Pass the name of the caller's variable; the function writes to it</span>
+<span class="fn">get_stats</span>() {
+    <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_result</span>=<span class="st">"$1"</span>   <span class="cm"># _result IS the caller's variable</span>
+    <span class="kw">local</span> <span class="vr">total</span>=<span class="nu">0</span> <span class="vr">count</span>=<span class="nu">0</span> <span class="vr">min</span> <span class="vr">max</span>
+    <span class="kw">shift</span>                      <span class="cm"># remaining args are the numbers</span>
+
+    <span class="vr">min</span>=<span class="st">$1</span>; <span class="vr">max</span>=<span class="st">$1</span>
+    <span class="kw">for</span> <span class="vr">n</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+        <span class="st">(( total += n, count++ ))</span>
+        (( n < min )) && <span class="vr">min</span>=<span class="st">$n</span>
+        (( n > max )) && <span class="vr">max</span>=<span class="st">$n</span>
+    <span class="kw">done</span>
+
+    <span class="cm"># Write into an associative array via the nameref</span>
+    <span class="vr">_result</span>[count]=<span class="st">$count</span>
+    <span class="vr">_result</span>[total]=<span class="st">$total</span>
+    <span class="vr">_result</span>[min]=<span class="st">$min</span>
+    <span class="vr">_result</span>[max]=<span class="st">$max</span>
+    <span class="vr">_result</span>[mean]=<span class="st">$(</span><span class="cmd">echo</span> <span class="st">"scale=2; $total/$count"</span> | <span class="cmd">bc</span><span class="st">)</span>
+}
+
+<span class="cm"># Caller declares the output map first, then passes its name</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">stats</span>
+<span class="fn">get_stats</span> <span class="vr">stats</span> <span class="nu">5</span> <span class="nu">10</span> <span class="nu">3</span> <span class="nu">8</span> <span class="nu">15</span> <span class="nu">2</span>
+
+<span class="cmd">printf</span> <span class="st">"Count: %d  Total: %d  Min: %d  Max: %d  Mean: %s\n"</span> \
+    <span class="st">"${stats[count]}"</span> <span class="st">"${stats[total]}"</span> \
+    <span class="st">"${stats[min]}"</span>   <span class="st">"${stats[max]}"</span>   <span class="st">"${stats[mean]}"</span>
+<span class="out">Count: 6  Total: 43  Min: 2  Max: 15  Mean: 7.16</span>
+
+<span class="cm"># Returning an indexed array from a function</span>
+<span class="fn">split_csv</span>() {
+    <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_out</span>=<span class="st">"$1"</span>
+    <span class="kw">IFS</span>=<span class="st">','</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-a</span> <span class="vr">_out</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$2"</span>
+}
+<span class="fn">split_csv</span> <span class="vr">parts</span> <span class="st">"alpha,beta,gamma,delta"</span>
+<span class="cmd">echo</span> <span class="st">"${parts[2]}"</span>         <span class="out">→ gamma</span></code>
+      <div class="pb-note">Always name your nameref variables with a leading underscore (e.g. <code>_result</code>) inside functions. If the caller passes in a variable name that happens to match your local nameref name, bash will produce a circular reference error. The underscore prefix makes collisions essentially impossible in practice.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. TRANSFORMATION OPERATORS @Q @E @A etc.
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Transformation Operators: <code>${var@operator}</code></h2>
+
+  <p>Bash 4.4 added a family of transformation operators using the <code>@</code> suffix. These are less well-known but extremely useful for safe quoting, debugging, and code generation.</p>
+
+  <div class="new-box"><strong>Requires bash 4.4+</strong> (released 2016). Available on Ubuntu 18.04+, Debian 9+, and any modern distro. Run <code>echo $BASH_VERSION</code> to check.</div>
+
+  <table class="ref-table">
+    <thead><tr><th>Operator</th><th>What it produces</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><code>${var@Q}</code></td><td>Quoted form — safe to re-use in shell input</td><td><code>"hello world"</code> → <code>'hello world'</code></td></tr>
+      <tr><td><code>${var@E}</code></td><td>Expands escape sequences like <code>$'...'</code></td><td><code>"tab:\t"</code> → <code>tab:	</code></td></tr>
+      <tr><td><code>${var@P}</code></td><td>Expanded as a prompt string (like PS1)</td><td><code>"\u@\h"</code> → <code>alice@myhost</code></td></tr>
+      <tr><td><code>${var@A}</code></td><td>Assignment form — declare statement to recreate the variable</td><td><code>declare -- myvar='hello'</code></td></tr>
+      <tr><td><code>${var@a}</code></td><td>Attribute flags of the variable</td><td><code>r</code> for readonly, <code>A</code> for assoc array, etc.</td></tr>
+      <tr><td><code>${var@U}</code></td><td>Uppercase (alias for <code>${var^^}</code>)</td><td class="note">bash 5.1+</td></tr>
+      <tr><td><code>${var@u}</code></td><td>First char uppercase (alias for <code>${var^}</code>)</td><td class="note">bash 5.1+</td></tr>
+      <tr><td><code>${var@L}</code></td><td>Lowercase (alias for <code>${var,,}</code>)</td><td class="note">bash 5.1+</td></tr>
+    </tbody>
+  </table>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 @Q — safe quoting, the most practically useful operator</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># @Q wraps the value in single quotes (or $'...' for special chars)</span>
+<span class="cm"># making it safe to embed in eval, log output, or generated scripts</span>
+
+<span class="vr">name</span>=<span class="st">"Alice O'Brien"</span>
+<span class="cmd">echo</span> <span class="st">"${name@Q}"</span>           <span class="out">→ 'Alice O'\''Brien'   (properly escaped)</span>
+
+<span class="vr">path</span>=<span class="st">"/home/alice/my documents"</span>
+<span class="cmd">echo</span> <span class="st">"${path@Q}"</span>           <span class="out">→ '/home/alice/my documents'</span>
+
+<span class="cm"># Log a command in a way that can be copy-pasted and re-run</span>
+<span class="fn">log_command</span>() {
+    <span class="kw">local</span> <span class="vr">quoted</span>=()
+    <span class="kw">local</span> <span class="vr">arg</span>
+    <span class="kw">for</span> <span class="vr">arg</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+        <span class="vr">quoted</span>+=( <span class="st">"${arg@Q}"</span> )
+    <span class="kw">done</span>
+    <span class="cmd">echo</span> <span class="st">"[CMD] ${quoted[*]}"</span> <span class="op">>&amp;2</span>
+}
+<span class="fn">log_command</span> cp <span class="st">"file with spaces.txt"</span> <span class="st">"/dest/path"</span>
+<span class="out">[CMD] cp 'file with spaces.txt' '/dest/path'</span>
+
+<span class="cm"># @A — get the declaration form of a variable</span>
+<span class="vr">myvar</span>=<span class="st">"hello world"</span>
+<span class="cmd">echo</span> <span class="st">"${myvar@A}"</span>          <span class="out">→ declare -- myvar='hello world'</span>
+
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">config</span>=( [host]=localhost [port]=5432 )
+<span class="cmd">echo</span> <span class="st">"${config@A}"</span>         <span class="out">→ declare -A config=([host]="localhost" [port]="5432" )</span>
+<span class="cm"># This is exactly what declare -p produces — useful for serialising to a file</span></code>
+    </div>
+  </div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 @a — inspecting variable attributes</div>
+    <div class="pb-body">
+<code class="code-block"><span class="kw">declare</span> <span class="fl">-r</span>  <span class="vr">READONLY_VAR</span>=<span class="st">"fixed"</span>
+<span class="kw">declare</span> <span class="fl">-i</span>  <span class="vr">INT_VAR</span>=<span class="nu">42</span>
+<span class="kw">declare</span> <span class="fl">-a</span>  <span class="vr">INDEXED</span>=( a b c )
+<span class="kw">declare</span> <span class="fl">-A</span>  <span class="vr">ASSOC</span>=( [k]=v )
+<span class="kw">declare</span> <span class="fl">-x</span>  <span class="vr">EXPORTED</span>=<span class="st">"val"</span>
+<span class="kw">declare</span> <span class="fl">-l</span>  <span class="vr">LOWER_VAR</span>=<span class="st">"INPUT"</span>
+
+<span class="cmd">echo</span> <span class="st">"${READONLY_VAR@a}"</span>   <span class="out">→ r</span>
+<span class="cmd">echo</span> <span class="st">"${INT_VAR@a}"</span>        <span class="out">→ i</span>
+<span class="cmd">echo</span> <span class="st">"${INDEXED@a}"</span>        <span class="out">→ a</span>
+<span class="cmd">echo</span> <span class="st">"${ASSOC@a}"</span>          <span class="out">→ A</span>
+<span class="cmd">echo</span> <span class="st">"${EXPORTED@a}"</span>       <span class="out">→ x</span>
+<span class="cmd">echo</span> <span class="st">"${LOWER_VAR@a}"</span>      <span class="out">→ l    (auto-lowercase attribute)</span>
+
+<span class="cm"># Use @a in a guard to check a variable is the right type</span>
+<span class="kw">if</span> [[ <span class="st">"${myvar@a}"</span> == *<span class="st">"A"</span>* ]]; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"myvar is an associative array"</span>
+<span class="kw">fi</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. COMPOUND AND NESTED EXPANSIONS
+  ═══════════════════════════════════════════ -->
+  <h2>7 — Compound and Nested Expansions</h2>
+
+  <p>Parameter expansions can be nested and combined. The patterns below replace entire pipelines with single in-shell expressions — no subshell, no fork, no external process.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Chaining and nesting expansions</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Combining operations ─────────────────────────────────────</span>
+
+<span class="cm"># Trim leading whitespace (no sed needed)</span>
+<span class="vr">str</span>=<span class="st">"   hello world   "</span>
+<span class="vr">trimmed</span>=<span class="st">"${str#"${str%%[! ]*}"}"</span>    <span class="cm"># strip leading spaces</span>
+<span class="cmd">echo</span> <span class="st">"'$trimmed'"</span>          <span class="out">→ 'hello world   '</span>
+
+<span class="cm"># Trim trailing whitespace</span>
+<span class="vr">trimmed</span>=<span class="st">"${trimmed%"${trimmed##*[! ]}"}"</span>
+<span class="cmd">echo</span> <span class="st">"'$trimmed'"</span>          <span class="out">→ 'hello world'</span>
+
+<span class="cm"># ── Default with transformation ──────────────────────────────</span>
+<span class="cm"># Uppercase the value, or use a default if unset</span>
+<span class="vr">mode</span>=<span class="st">"production"</span>
+<span class="cmd">echo</span> <span class="st">"${mode^^:-UNKNOWN}"</span>  <span class="out">→ PRODUCTION</span>
+
+<span class="cm"># The above doesn't nest — you need two steps for that:</span>
+<span class="vr">mode_upper</span>=<span class="st">"${mode:-unknown}"</span>   <span class="cm"># apply default first</span>
+<span class="cmd">echo</span> <span class="st">"${mode_upper^^}"</span>     <span class="out">→ PRODUCTION</span>
+
+<span class="cm"># ── Dynamic variable names via indirection ────────────────────</span>
+<span class="cm"># Build variable names on the fly and look them up</span>
+<span class="vr">region</span>=<span class="st">"eu"</span>
+<span class="vr">eu_endpoint</span>=<span class="st">"https://eu.api.example.com"</span>
+<span class="vr">us_endpoint</span>=<span class="st">"https://us.api.example.com"</span>
+
+<span class="vr">endpoint_var</span>=<span class="st">"${region}_endpoint"</span>
+<span class="cmd">echo</span> <span class="st">"${!endpoint_var}"</span>    <span class="out">→ https://eu.api.example.com</span>
+
+<span class="cm"># ── Length of a transformed value ────────────────────────────</span>
+<span class="vr">word</span>=<span class="st">"Hello"</span>
+<span class="cmd">echo</span> <span class="st">"${#word}"</span>            <span class="out">→ 5</span>
+<span class="cm"># You can't do ${#word^^} directly — assign to intermediate var</span>
+<span class="vr">upper</span>=<span class="st">"${word^^}"</span>
+<span class="cmd">echo</span> <span class="st">"${#upper}"</span>           <span class="out">→ 5  (same length, different case)</span>
+
+<span class="cm"># ── Array expansion with per-element transformation ──────────</span>
+<span class="vr">tags</span>=( bash linux scripting )
+<span class="cm"># Uppercase every element</span>
+<span class="cmd">echo</span> <span class="st">"${tags[@]^^}"</span>        <span class="out">→ BASH LINUX SCRIPTING</span>
+<span class="cm"># Replace hyphens with underscores in every element</span>
+<span class="vr">keys</span>=( "my-key" "another-key" "third-key" )
+<span class="cmd">echo</span> <span class="st">"${keys[@]//-/_}"</span>    <span class="out">→ my_key another_key third_key</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       8. QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>8 — Quick Reference</h2>
+
+  <h3>Default / assign / error / alternate</h3>
+  <table class="ref-table">
+    <thead><tr><th>Expansion</th><th>Expands to</th><th>Side effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>${v:-val}</code></td><td><em>val</em> if v unset or empty, else v</td><td>none</td></tr>
+      <tr><td><code>${v-val}</code></td><td><em>val</em> if v unset, else v</td><td>none</td></tr>
+      <tr><td><code>${v:=val}</code></td><td><em>val</em> if v unset or empty, else v</td><td>assigns v=val</td></tr>
+      <tr><td><code>${v=val}</code></td><td><em>val</em> if v unset, else v</td><td>assigns v=val</td></tr>
+      <tr><td><code>${v:?msg}</code></td><td>v (if set and non-empty)</td><td>error+exit if unset/empty</td></tr>
+      <tr><td><code>${v?msg}</code></td><td>v (if set)</td><td>error+exit if unset</td></tr>
+      <tr><td><code>${v:+val}</code></td><td><em>val</em> if v set and non-empty, else empty</td><td>none</td></tr>
+      <tr><td><code>${v+val}</code></td><td><em>val</em> if v set at all, else empty</td><td>none</td></tr>
+    </tbody>
+  </table>
+
+  <h3>String / substring operations</h3>
+  <table class="ref-table">
+    <thead><tr><th>Expansion</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><code>${#v}</code></td><td>Length of v in characters</td></tr>
+      <tr><td><code>${v:n}</code></td><td>Substring from position n to end</td></tr>
+      <tr><td><code>${v:n:len}</code></td><td>Substring: len chars from position n</td></tr>
+      <tr><td><code>${v: -n}</code></td><td>Last n characters (space before minus)</td></tr>
+      <tr><td><code>${v#pat}</code></td><td>Remove shortest prefix matching pat</td></tr>
+      <tr><td><code>${v##pat}</code></td><td>Remove longest prefix matching pat</td></tr>
+      <tr><td><code>${v%pat}</code></td><td>Remove shortest suffix matching pat</td></tr>
+      <tr><td><code>${v%%pat}</code></td><td>Remove longest suffix matching pat</td></tr>
+      <tr><td><code>${v/pat/rep}</code></td><td>Replace first match of pat with rep</td></tr>
+      <tr><td><code>${v//pat/rep}</code></td><td>Replace all matches of pat with rep</td></tr>
+      <tr><td><code>${v/#pat/rep}</code></td><td>Replace pat only at start</td></tr>
+      <tr><td><code>${v/%pat/rep}</code></td><td>Replace pat only at end</td></tr>
+      <tr><td><code>${v^}</code></td><td>Uppercase first char <span class="version">bash 4.0+</span></td></tr>
+      <tr><td><code>${v^^}</code></td><td>Uppercase all chars <span class="version">bash 4.0+</span></td></tr>
+      <tr><td><code>${v,}</code></td><td>Lowercase first char <span class="version">bash 4.0+</span></td></tr>
+      <tr><td><code>${v,,}</code></td><td>Lowercase all chars <span class="version">bash 4.0+</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Indirection and transformation</h3>
+  <table class="ref-table">
+    <thead><tr><th>Expansion</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><code>${!v}</code></td><td>Value of the variable whose name is stored in v</td></tr>
+      <tr><td><code>${!prefix@}</code></td><td>Names of all variables starting with prefix</td></tr>
+      <tr><td><code>${v@Q}</code></td><td>Shell-quoted form of v <span class="version">bash 4.4+</span></td></tr>
+      <tr><td><code>${v@A}</code></td><td>declare statement to recreate v <span class="version">bash 4.4+</span></td></tr>
+      <tr><td><code>${v@a}</code></td><td>Attribute flags of v (r=readonly, i=integer, a=array…) <span class="version">bash 4.4+</span></td></tr>
+      <tr><td><code>${v@E}</code></td><td>Expand escape sequences in v <span class="version">bash 4.4+</span></td></tr>
+      <tr><td><code>declare -n ref=name</code></td><td>Make ref an alias for the variable named name <span class="version">bash 4.3+</span></td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXERCISES
+  ═══════════════════════════════════════════ -->
+  <h2>✏️ Exercises</h2>
+  <p class="section-intro">Each exercise is designed to be solved purely with parameter expansion — resist the urge to reach for <code>sed</code>, <code>awk</code>, or <code>python</code>. The goal is to develop fluency with the shell's built-in string machinery.</p>
+
+  <!-- Exercise 1 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 1</div>
+    <div class="ex-task">Write a function called <code>path_info()</code> that accepts a full file path as its only argument and — using only parameter expansion, no external commands — prints four lines: the directory, the filename (with extension), the base name (without any extension), and the extension (without the dot). Test it with <code>/var/log/nginx/access.log.2</code>.</div>
+    <div class="ex-hint">Hint: directory = <code>${path%/*}</code>, filename = <code>${path##*/}</code>, extension = <code>${filename##*.}</code>, base = <code>${filename%%.*}</code>. Edge case: a file with no extension.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="fn">path_info</span>() {
+    <span class="kw">local</span> <span class="vr">path</span>=<span class="st">"${1:?path_info: argument required}"</span>
+
+    <span class="kw">local</span> <span class="vr">dir</span>      <span class="vr">filename</span>    <span class="vr">base</span>    <span class="vr">ext</span>
+    <span class="vr">dir</span>=<span class="st">"${path%/*}"</span>
+    <span class="vr">filename</span>=<span class="st">"${path##*/}"</span>
+
+    <span class="cm"># Only split extension if there is a dot in the filename</span>
+    <span class="kw">if</span> [[ <span class="st">"$filename"</span> == *<span class="st">"."</span>* ]]; <span class="kw">then</span>
+        <span class="vr">ext</span>=<span class="st">"${filename##*.}"</span>
+        <span class="vr">base</span>=<span class="st">"${filename%%.*}"</span>
+    <span class="kw">else</span>
+        <span class="vr">ext</span>=<span class="st">""</span>
+        <span class="vr">base</span>=<span class="st">"$filename"</span>
+    <span class="kw">fi</span>
+
+    <span class="cmd">printf</span> <span class="st">"Directory : %s\n"</span> <span class="st">"$dir"</span>
+    <span class="cmd">printf</span> <span class="st">"Filename  : %s\n"</span> <span class="st">"$filename"</span>
+    <span class="cmd">printf</span> <span class="st">"Base name : %s\n"</span> <span class="st">"$base"</span>
+    <span class="cmd">printf</span> <span class="st">"Extension : %s\n"</span> <span class="st">"${ext:-(none)}"</span>
+}
+
+<span class="fn">path_info</span> <span class="st">"/var/log/nginx/access.log.2"</span>
+<span class="out">Directory : /var/log/nginx</span>
+<span class="out">Filename  : access.log.2</span>
+<span class="out">Base name : access</span>
+<span class="out">Extension : log.2</span>
+
+<span class="fn">path_info</span> <span class="st">"/usr/bin/bash"</span>
+<span class="out">Directory : /usr/bin</span>
+<span class="out">Filename  : bash</span>
+<span class="out">Base name : bash</span>
+<span class="out">Extension : (none)</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 2 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 2</div>
+    <div class="ex-task">Write a function called <code>return_multiple()</code> that calculates the quotient and remainder of two integers (passed as arguments), and returns <em>both</em> values to the caller using a nameref — so the caller can use them as separate variables. Also write a second function <code>swap()</code> that uses two namerefs to swap the values of two caller-side variables in place, without using a temporary variable visible to the caller.</div>
+    <div class="ex-hint">Hint: for <code>return_multiple</code>, accept two nameref names as the first two arguments. For <code>swap</code>, use <code>local -n _a="$1" _b="$2"</code> and a local temp variable for the swap itself.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="fn">divmod</span>() {
+    <span class="cm"># Usage: divmod QUOT_VAR REM_VAR DIVIDEND DIVISOR</span>
+    <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_quot</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_rem</span>=<span class="st">"$2"</span>
+    <span class="kw">local</span> <span class="vr">_a</span>=<span class="st">"$3"</span> <span class="vr">_b</span>=<span class="st">"$4"</span>
+    [[ <span class="st">"$_b"</span> <span class="fl">-ne</span> <span class="nu">0</span> ]] || { <span class="cmd">echo</span> <span class="st">"divmod: division by zero"</span> <span class="op">>&amp;2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+    <span class="vr">_quot</span>=<span class="st">$(( _a / _b ))</span>
+    <span class="vr">_rem</span>=<span class="st">$(( _a % _b ))</span>
+}
+
+<span class="fn">swap</span>() {
+    <span class="cm"># Usage: swap VAR1 VAR2  — swaps values in place</span>
+    <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_x</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_y</span>=<span class="st">"$2"</span>
+    <span class="kw">local</span> <span class="vr">_tmp</span>=<span class="st">"$_x"</span>
+    <span class="vr">_x</span>=<span class="st">"$_y"</span>
+    <span class="vr">_y</span>=<span class="st">"$_tmp"</span>
+}
+
+<span class="cm"># Test divmod</span>
+<span class="kw">declare</span> <span class="fl">-i</span> <span class="vr">q</span> <span class="vr">r</span>
+<span class="fn">divmod</span> <span class="vr">q</span> <span class="vr">r</span> <span class="nu">17</span> <span class="nu">5</span>
+<span class="cmd">echo</span> <span class="st">"17 ÷ 5 = $q remainder $r"</span>
+<span class="out">17 ÷ 5 = 3 remainder 2</span>
+
+<span class="cm"># Test swap</span>
+<span class="vr">x</span>=<span class="st">"hello"</span>; <span class="vr">y</span>=<span class="st">"world"</span>
+<span class="cmd">echo</span> <span class="st">"Before: x=$x  y=$y"</span>
+<span class="fn">swap</span> <span class="vr">x</span> <span class="vr">y</span>
+<span class="cmd">echo</span> <span class="st">"After:  x=$x  y=$y"</span>
+<span class="out">Before: x=hello  y=world</span>
+<span class="out">After:  x=world  y=hello</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 3 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 3</div>
+    <div class="ex-task">Write a script called <code>config_check.sh</code> that uses <code>${var:?}</code> to validate a set of required environment variables (<code>APP_ENV</code>, <code>DB_HOST</code>, <code>DB_PORT</code>, <code>SECRET_KEY</code>). For optional variables (<code>LOG_LEVEL</code>, <code>TIMEOUT</code>), provide sensible defaults using <code>${var:-default}</code>. Then print a startup summary showing each variable's name, its value, and its source ("required", "default", or "env"). Use <code>${!prefix@}</code> to discover and print all <code>APP_</code> and <code>DB_</code> variables automatically.</div>
+    <div class="ex-hint">Hint: store the "source" of each optional variable by checking before applying the default: <code>if [[ -n "${LOG_LEVEL+x}" ]]; then src="env"; else src="default"; fi</code>. Then apply the default. For the prefix listing, loop over <code>"${!APP_@}"</code> and <code>"${!DB_@}"</code>.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># config_check.sh</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail   <span class="cm"># no -e so :? error message is visible before exit</span>
+
+<span class="cm"># ── Required variables — script exits here if any are unset/empty ──</span>
+<span class="vr">APP_ENV</span>=<span class="st">"${APP_ENV:?APP_ENV is required (e.g. production, staging, dev)}"</span>
+<span class="vr">DB_HOST</span>=<span class="st">"${DB_HOST:?DB_HOST is required}"</span>
+<span class="vr">DB_PORT</span>=<span class="st">"${DB_PORT:?DB_PORT is required}"</span>
+<span class="vr">SECRET_KEY</span>=<span class="st">"${SECRET_KEY:?SECRET_KEY is required}"</span>
+
+<span class="cm"># ── Optional variables — track source before applying default ──</span>
+<span class="fn">resolve_optional</span>() {
+    <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_var</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">_default</span>=<span class="st">"$2"</span>
+    <span class="kw">if</span> [[ <span class="fl">-n</span> <span class="st">"${_var+x}"</span> && <span class="fl">-n</span> <span class="st">"${_var}"</span> ]]; <span class="kw">then</span>
+        <span class="cmd">echo</span> <span class="st">"env"</span>
+    <span class="kw">else</span>
+        <span class="vr">_var</span>=<span class="st">"$_default"</span>
+        <span class="cmd">echo</span> <span class="st">"default"</span>
+    <span class="kw">fi</span>
+}
+
+<span class="vr">ll_src</span>=<span class="st">$(</span><span class="fn">resolve_optional</span> <span class="vr">LOG_LEVEL</span> <span class="st">"INFO"</span><span class="st">)</span>
+<span class="vr">to_src</span>=<span class="st">$(</span><span class="fn">resolve_optional</span> <span class="vr">TIMEOUT</span>   <span class="st">"30"</span><span class="st">)</span>
+
+<span class="cm"># ── Print startup summary ─────────────────────────────────────</span>
+<span class="cmd">echo</span>
+<span class="cmd">printf</span> <span class="st">"\033[1mConfiguration Summary\033[0m\n"</span>
+<span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">50</span>}; <span class="cmd">echo</span>
+<span class="cmd">printf</span> <span class="st">"%-18s %-25s %s\n"</span> <span class="st">"Variable"</span> <span class="st">"Value"</span> <span class="st">"Source"</span>
+<span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">50</span>}; <span class="cmd">echo</span>
+
+<span class="cm"># Required</span>
+<span class="kw">for</span> <span class="vr">v</span> <span class="kw">in</span> APP_ENV DB_HOST DB_PORT; <span class="kw">do</span>
+    <span class="cm"># Mask SECRET_KEY</span>
+    <span class="vr">display</span>=<span class="st">"${!v}"</span>
+    <span class="cmd">printf</span> <span class="st">"%-18s %-25s \033[32mrequired\033[0m\n"</span> <span class="st">"$v"</span> <span class="st">"$display"</span>
+<span class="kw">done</span>
+<span class="cm"># Show masked secret</span>
+<span class="vr">masked</span>=<span class="st">"${SECRET_KEY:0:4}****${SECRET_KEY: -2}"</span>
+<span class="cmd">printf</span> <span class="st">"%-18s %-25s \033[32mrequired\033[0m\n"</span> <span class="st">"SECRET_KEY"</span> <span class="st">"$masked"</span>
+
+<span class="cm"># Optional</span>
+<span class="cmd">printf</span> <span class="st">"%-18s %-25s \033[33m%s\033[0m\n"</span> <span class="st">"LOG_LEVEL"</span> <span class="st">"$LOG_LEVEL"</span> <span class="st">"$ll_src"</span>
+<span class="cmd">printf</span> <span class="st">"%-18s %-25s \033[33m%s\033[0m\n"</span> <span class="st">"TIMEOUT"</span>   <span class="st">"$TIMEOUT"</span>   <span class="st">"$to_src"</span>
+
+<span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">50</span>}; <span class="cmd">echo</span>
+<span class="cmd">echo</span>
+<span class="cmd">echo</span> <span class="st">"All APP_ and DB_ variables in scope:"</span>
+<span class="kw">for</span> <span class="vr">v</span> <span class="kw">in</span> <span class="st">"${!APP_@}"</span> <span class="st">"${!DB_@}"</span>; <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">"  %s=%s\n"</span> <span class="st">"$v"</span> <span class="st">"${!v}"</span>
+<span class="kw">done</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 4 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 4</div>
+    <div class="ex-task">Write a function called <code>safe_log_args()</code> that takes any number of arguments (as a command and its arguments would be passed to it), and logs them in a copy-pasteable form using <code>${arg@Q}</code> to handle values containing spaces, quotes, or special characters. Then write a wrapper function <code>run()</code> that calls <code>safe_log_args</code> before executing its arguments as a command. Demonstrate it wrapping <code>cp</code> and <code>mkdir</code> with tricky paths.</div>
+    <div class="ex-hint">Hint: in <code>safe_log_args()</code>, loop over <code>"$@"</code> and collect <code>"${arg@Q}"</code> into an array, then print the array joined with spaces. In <code>run()</code>, call <code>safe_log_args "$@"</code> first, then <code>"$@"</code> to execute. Test with paths containing spaces.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="fn">safe_log_args</span>() {
+    <span class="kw">local</span> <span class="vr">quoted</span>=()
+    <span class="kw">local</span> <span class="vr">arg</span>
+    <span class="kw">for</span> <span class="vr">arg</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+        <span class="vr">quoted</span>+=( <span class="st">"${arg@Q}"</span> )
+    <span class="kw">done</span>
+    <span class="cm"># Print as a reproducible shell command</span>
+    <span class="cmd">printf</span> <span class="st">'\033[36m[RUN]\033[0m %s\n'</span> <span class="st">"${quoted[*]}"</span> <span class="op">>&amp;2</span>
+}
+
+<span class="fn">run</span>() {
+    <span class="fn">safe_log_args</span> <span class="st">"$@"</span>
+    <span class="st">"$@"</span>
+}
+
+<span class="cm"># Demonstration</span>
+<span class="vr">TMPDIR</span>=<span class="st">$(</span><span class="cmd">mktemp</span> <span class="fl">-d</span><span class="st">)</span>
+<span class="kw">trap</span> <span class="st">'rm -rf "$TMPDIR"'</span> EXIT
+
+<span class="cm"># These commands have spaces and special chars in paths</span>
+<span class="fn">run</span> <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"${TMPDIR}/my project/src files"</span>
+<span class="fn">run</span> <span class="cmd">touch</span> <span class="st">"${TMPDIR}/my project/src files/main script.sh"</span>
+<span class="fn">run</span> <span class="cmd">cp</span> <span class="st">"${TMPDIR}/my project/src files/main script.sh"</span> \
+       <span class="st">"${TMPDIR}/backup of main script.sh"</span>
+
+<span class="out">[RUN] mkdir -p '/tmp/tmp.abc123/my project/src files'</span>
+<span class="out">[RUN] touch '/tmp/tmp.abc123/my project/src files/main script.sh'</span>
+<span class="out">[RUN] cp '/tmp/tmp.abc123/my project/src files/main script.sh' '/tmp/tmp.abc123/backup of main script.sh'</span>
+
+<span class="cm"># The log output is safe to copy-paste and re-run exactly</span></code>
+    </div>
+  </div>
+
+</div><!-- /lx-lesson -->

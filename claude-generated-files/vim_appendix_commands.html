@@ -1,0 +1,416 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 1000px; margin: 0 auto; color: #e8e8e8; line-height: 1.6; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson p { margin: 0.7em 0; }
+
+  /* Mode badge */
+  .mb {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.7rem;
+    padding: 0.1em 0.45em; border-radius: 3px; white-space: nowrap; vertical-align: middle;
+    font-weight: bold; letter-spacing: 0.02em;
+  }
+  .mb-n  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }  /* Normal */
+  .mb-i  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }  /* Insert */
+  .mb-c  { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }  /* Command */
+  .mb-v  { background: #2a1a3a; color: #d2a8ff; border: 1px solid #4a2a6a; }  /* Visual */
+  .mb-s  { background: #1a1a1a; color: #aaaaaa; border: 1px solid #333333; }  /* Shell */
+  .mb-r  { background: #2a1a1a; color: #ff7b72; border: 1px solid #4a2a2a; }  /* vimrc */
+  .mb-any{ background: #1a2020; color: #7adcdc; border: 1px solid #2a4040; }  /* Any */
+
+  /* Two-column grid for command sections */
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 2em;
+    margin: 0.5em 0 1.5em 0;
+  }
+  @media (max-width: 700px) { .cmd-grid { grid-template-columns: 1fr; } }
+
+  .cmd-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0 2em;
+    margin: 0.5em 0 1.5em 0;
+  }
+  @media (max-width: 900px) { .cmd-grid-3 { grid-template-columns: 1fr 1fr; } }
+
+  /* Individual command row */
+  .cr {
+    display: flex; align-items: baseline; gap: 0.6em;
+    padding: 0.28em 0.5em; border-bottom: 1px solid #1a1d27;
+    font-size: 0.875rem;
+  }
+  .cr:hover { background: #1a1d27; }
+  .ck {
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: #ffab70; min-width: 180px; flex-shrink: 0; font-size: 0.85rem;
+  }
+  .cd { color: #c9d8ff; flex: 1; }
+
+  /* Section sub-header within grid */
+  .cs {
+    grid-column: 1 / -1;
+    color: #4f8ef7; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 0.8em 0.5em 0.3em 0.5em; margin-top: 0.5em;
+    border-bottom: 1px solid #2a2d3e;
+  }
+  .cs:first-child { margin-top: 0; }
+
+  /* Legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 0.5em 1.2em;
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 1em; margin: 1em 0 1.5em 0; font-size: 0.82rem;
+  }
+  .legend span { display: flex; align-items: center; gap: 0.4em; color: #9aabcc; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Appendix B — Vim Commands</p>
+
+<p style="color:#9aabcc; font-size:0.9rem;">A complete reference of every command introduced across all eight chapters of this course, grouped by topic. Use this alongside the lessons as a quick lookup or print it as a desk reference.</p>
+
+<div class="legend">
+  <span><span class="mb mb-n">N</span> Normal mode</span>
+  <span><span class="mb mb-i">I</span> Insert mode</span>
+  <span><span class="mb mb-c">C</span> Command mode</span>
+  <span><span class="mb mb-v">V</span> Visual mode</span>
+  <span><span class="mb mb-s">S</span> Shell / terminal</span>
+  <span><span class="mb mb-r">RC</span> .vimrc setting</span>
+  <span><span class="mb mb-any">ANY</span> Any mode</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Opening &amp; Quitting</h2>
+<div class="cmd-grid">
+  <div class="cs">Opening files</div>
+  <div class="cr"><span class="ck">vim &lt;file&gt;</span><span class="cd">Open or create a file</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">vim +N &lt;file&gt;</span><span class="cd">Open file at line N</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">vim +/pattern &lt;file&gt;</span><span class="cd">Open and jump to first match</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">vim +"cmd" &lt;file&gt;</span><span class="cd">Run command after opening</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">vim -R &lt;file&gt;</span><span class="cd">Open in read-only mode</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">vim -u NONE &lt;file&gt;</span><span class="cd">Open without loading vimrc</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">vim --version</span><span class="cd">Show Vim version</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">:e &lt;file&gt;</span><span class="cd">Open/edit a file (Tab completes)</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:e!</span><span class="cd">Reload file from disk, discard changes</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:e .</span><span class="cd">Open directory browser (netrw)</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Saving</div>
+  <div class="cr"><span class="ck">:w</span><span class="cd">Write (save) the file</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:w &lt;file&gt;</span><span class="cd">Save to a new filename (Save As)</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:saveas &lt;file&gt;</span><span class="cd">Save to new filename and switch to it</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Quitting</div>
+  <div class="cr"><span class="ck">:q</span><span class="cd">Quit (fails if unsaved changes)</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:q!</span><span class="cd">Force quit, discard changes</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:wq</span><span class="cd">Write and quit</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:x</span><span class="cd">Write (only if changed) and quit</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">ZZ</span><span class="cd">Write (if changed) and quit</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">ZQ</span><span class="cd">Force quit without saving</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">:qa</span><span class="cd">Quit all open buffers</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:qa!</span><span class="cd">Force quit all buffers, discard all changes</span><span class="mb mb-c">C</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Modes</h2>
+<div class="cmd-grid">
+  <div class="cr"><span class="ck">i</span><span class="cd">Enter Insert mode at cursor</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Esc</span><span class="cd">Return to Normal mode</span><span class="mb mb-any">ANY</span></div>
+  <div class="cr"><span class="ck">Ctrl+C</span><span class="cd">Alternative to Esc — return to Normal</span><span class="mb mb-i">I</span></div>
+  <div class="cr"><span class="ck">v</span><span class="cd">Enter character-wise Visual mode</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">V</span><span class="cd">Enter line-wise Visual mode</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+V</span><span class="cd">Enter block-wise (column) Visual mode</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+G</span><span class="cd">Show filename, line count, cursor position</span><span class="mb mb-n">N</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Navigation — Moving the Cursor</h2>
+<div class="cmd-grid-3">
+  <div class="cs">Basic movement</div>
+  <div class="cr"><span class="ck">h / j / k / l</span><span class="cd">Left / down / up / right</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">{n}h/j/k/l</span><span class="cd">Move n times</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Word movement</div>
+  <div class="cr"><span class="ck">w / W</span><span class="cd">Forward to start of next word / WORD</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">e / E</span><span class="cd">Forward to end of word / WORD</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">b / B</span><span class="cd">Backward to start of word / WORD</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">ge</span><span class="cd">Backward to end of previous word</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Line movement</div>
+  <div class="cr"><span class="ck">0</span><span class="cd">Start of line (column 1)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">^</span><span class="cd">First non-whitespace character</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">$</span><span class="cd">End of line</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">g_</span><span class="cd">Last non-whitespace character</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">f{char} / F{char}</span><span class="cd">Jump to char on line (forward/back)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">t{char} / T{char}</span><span class="cd">Jump before/after char on line</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">; / ,</span><span class="cd">Repeat last f/t in same / opposite direction</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Sentence &amp; paragraph</div>
+  <div class="cr"><span class="ck">) / (</span><span class="cd">Next / previous sentence</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">} / {</span><span class="cd">Next / previous paragraph</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">File-level jumps</div>
+  <div class="cr"><span class="ck">gg</span><span class="cd">Jump to first line</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">G</span><span class="cd">Jump to last line</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">{n}G / :{n}</span><span class="cd">Jump to line n</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">{n}%</span><span class="cd">Jump to n% through the file</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Scrolling</div>
+  <div class="cr"><span class="ck">Ctrl+F / Ctrl+B</span><span class="cd">Full page forward / backward</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+D / Ctrl+U</span><span class="cd">Half page down / up</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+E / Ctrl+Y</span><span class="cd">Scroll screen down / up one line</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">zz / zt / zb</span><span class="cd">Centre / top / bottom current line on screen</span><span class="mb mb-n">N</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Search</h2>
+<div class="cmd-grid">
+  <div class="cr"><span class="ck">/{pattern}</span><span class="cd">Search forward for pattern</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">?{pattern}</span><span class="cd">Search backward for pattern</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">n / N</span><span class="cd">Next / previous search match</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">* / #</span><span class="cd">Search exact word under cursor (fwd/back)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">g* / g#</span><span class="cd">Search partial word under cursor (fwd/back)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">:noh</span><span class="cd">Clear search highlights</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set hlsearch</span><span class="cd">Highlight all search matches</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set incsearch</span><span class="cd">Incremental search as you type</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set ignorecase</span><span class="cd">Case-insensitive search</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set smartcase</span><span class="cd">Case-sensitive when pattern has uppercase</span><span class="mb mb-c">C</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Editing Text</h2>
+<div class="cmd-grid">
+  <div class="cs">Deleting</div>
+  <div class="cr"><span class="ck">d{motion}</span><span class="cd">Delete text covered by motion</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">dd / {n}dd</span><span class="cd">Delete current line / n lines</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">D</span><span class="cd">Delete from cursor to end of line</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">x / X</span><span class="cd">Delete character under / before cursor</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">xp</span><span class="cd">Swap current character with next</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Changing</div>
+  <div class="cr"><span class="ck">c{motion}</span><span class="cd">Change text covered by motion</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">cc / C</span><span class="cd">Change line / from cursor to end of line</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">s / S</span><span class="cd">Substitute character / line + Insert mode</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">ciw / caw</span><span class="cd">Change inner / around word</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">ci" / ca"</span><span class="cd">Change inside / around double quotes</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">ci( / ca(</span><span class="cd">Change inside / around parentheses</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Undo &amp; redo</div>
+  <div class="cr"><span class="ck">u</span><span class="cd">Undo last change</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">U</span><span class="cd">Undo all changes to current line</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+R</span><span class="cd">Redo</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Yank (copy) &amp; put (paste)</div>
+  <div class="cr"><span class="ck">y{motion}</span><span class="cd">Yank text covered by motion</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">yy / {n}yy</span><span class="cd">Yank current line / n lines</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">p / P</span><span class="cd">Put after / before cursor</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">gp / gP</span><span class="cd">Put and move cursor to end of paste</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Insert mode editing</div>
+  <div class="cr"><span class="ck">Ctrl+W</span><span class="cd">Delete word before cursor</span><span class="mb mb-i">I</span></div>
+  <div class="cr"><span class="ck">Ctrl+U</span><span class="cd">Delete from cursor to start of line</span><span class="mb mb-i">I</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Registers</h2>
+<div class="cmd-grid">
+  <div class="cr"><span class="ck">"x{op}</span><span class="cd">Use named register x (e.g. "ayy, "ap)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">"X{op}</span><span class="cd">Append to named register x (uppercase)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">"0p</span><span class="cd">Paste from yank register (safe after deletes)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">"+y / "+p</span><span class="cd">Yank to / paste from system clipboard</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">"_d{motion}</span><span class="cd">Delete to black hole register (truly removes)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">:registers</span><span class="cd">Show contents of all registers</span><span class="mb mb-c">C</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Substitution &amp; Spell Checking</h2>
+<div class="cmd-grid">
+  <div class="cs">Substitution</div>
+  <div class="cr"><span class="ck">:s/old/new</span><span class="cd">Replace first occurrence on current line</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:s/old/new/g</span><span class="cd">Replace all on current line</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:s/old/new/gc</span><span class="cd">Replace all on line with confirmation</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:%s/old/new/g</span><span class="cd">Replace all in entire file</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:5,15s/old/new/g</span><span class="cd">Replace in line range</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:'&lt;,'&gt;s/old/new/g</span><span class="cd">Replace in Visual selection</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Spell checking</div>
+  <div class="cr"><span class="ck">:set spell</span><span class="cd">Enable spell checking</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set spelllang=en_gb</span><span class="cd">Set spell check language</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set nospell</span><span class="cd">Disable spell checking</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">]s / [s</span><span class="cd">Jump to next / previous misspelled word</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">z=</span><span class="cd">Show spelling suggestions</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">zg / zw</span><span class="cd">Add to personal dictionary / bad-word list</span><span class="mb mb-n">N</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Marks &amp; the Jump List</h2>
+<div class="cmd-grid">
+  <div class="cs">Setting &amp; jumping to marks</div>
+  <div class="cr"><span class="ck">m{a-z}</span><span class="cd">Set a local mark (current buffer)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">m{A-Z}</span><span class="cd">Set a global mark (across files, persists)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">'{mark}</span><span class="cd">Jump to start of line containing mark</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">`{mark}</span><span class="cd">Jump to exact position (line + column) of mark</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">'' / ``</span><span class="cd">Toggle back to line / exact position before last jump</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Automatic marks</div>
+  <div class="cr"><span class="ck">`. / '.</span><span class="cd">Exact position / line of last change</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">`[ and `]</span><span class="cd">Start and end of last changed or yanked text</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">`&lt; and `&gt;</span><span class="cd">Start and end of last Visual selection</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">`^</span><span class="cd">Position where Insert mode was last exited</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Managing marks</div>
+  <div class="cr"><span class="ck">:marks</span><span class="cd">List all current marks</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:delmarks {letter}</span><span class="cd">Delete a named mark</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:delmarks!</span><span class="cd">Delete all lowercase marks in buffer</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Marks as operator targets</div>
+  <div class="cr"><span class="ck">y`{mark}</span><span class="cd">Yank from cursor to exact position of mark</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">d'{mark}</span><span class="cd">Delete from cursor to line of mark</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">c`{mark}</span><span class="cd">Change from cursor to exact position of mark</span><span class="mb mb-n">N</span></div>
+
+  <div class="cs">Jump list</div>
+  <div class="cr"><span class="ck">Ctrl+O</span><span class="cd">Go to older (previous) position in jump list</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+I</span><span class="cd">Go to newer (next) position in jump list</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">:jumps</span><span class="cd">Display the full jump history</span><span class="mb mb-c">C</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Buffers, Windows &amp; Tabs</h2>
+<div class="cmd-grid">
+  <div class="cs">Buffers</div>
+  <div class="cr"><span class="ck">:ls</span><span class="cd">List all open buffers</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:bn / :bp</span><span class="cd">Next / previous buffer</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:bf / :bl</span><span class="cd">First / last buffer</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:b {n} / :b {name}</span><span class="cd">Switch to buffer by number / name</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">Ctrl+^</span><span class="cd">Toggle between current and alternate buffer</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">:bd / :bd!</span><span class="cd">Delete / force-delete current buffer</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:bw</span><span class="cd">Wipe buffer (remove from list entirely)</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Splits</div>
+  <div class="cr"><span class="ck">:split / :sp</span><span class="cd">Horizontal split</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:vsplit / :vsp</span><span class="cd">Vertical split</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">Ctrl+W s / v</span><span class="cd">Horizontal / vertical split (shortcut)</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W h/j/k/l</span><span class="cd">Move to window left/down/up/right</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W w / W</span><span class="cd">Cycle to next / previous window</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W =</span><span class="cd">Equalise all window sizes</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W _ / |</span><span class="cd">Maximise window height / width</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W c</span><span class="cd">Close current window</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W o / :only</span><span class="cd">Close all other windows</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W H/J/K/L</span><span class="cd">Move window to edge of screen</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">:resize {n}</span><span class="cd">Set window height to n lines</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:vertical resize {n}</span><span class="cd">Set window width to n columns</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Tabs</div>
+  <div class="cr"><span class="ck">:tabnew</span><span class="cd">Open new tab</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:tabclose</span><span class="cd">Close current tab</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">gt / gT</span><span class="cd">Next / previous tab</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">{n}gt</span><span class="cd">Go to tab n</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">:tabs</span><span class="cd">List all tabs</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Reading files into buffer</div>
+  <div class="cr"><span class="ck">:r {file}</span><span class="cd">Insert file contents below current line</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:0r {file}</span><span class="cd">Insert file at top of buffer</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:r! {cmd}</span><span class="cd">Insert shell command output into buffer</span><span class="mb mb-c">C</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Diff Mode</h2>
+<div class="cmd-grid">
+  <div class="cr"><span class="ck">vim -d file1 file2</span><span class="cd">Open two files in diff mode</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">vimdiff file1 file2</span><span class="cd">Alias for vim -d</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">:diffsplit {file}</span><span class="cd">Open file in diff mode (horizontal split)</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:vert diffsplit {file}</span><span class="cd">Open file in diff mode (vertical split)</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">]c / [c</span><span class="cd">Jump to next / previous difference</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">do</span><span class="cd">Diff Obtain — pull change from other file</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">dp</span><span class="cd">Diff Put — push change to other file</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">:diffupdate</span><span class="cd">Recalculate and refresh diff highlights</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set scrollbind</span><span class="cd">Link scrolling of multiple windows</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">set diffopt+=vertical</span><span class="cd">Always use vertical diff layout</span><span class="mb mb-r">RC</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>File Navigation</h2>
+<div class="cmd-grid">
+  <div class="cr"><span class="ck">gf</span><span class="cd">Open file whose name is under the cursor</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">gF</span><span class="cd">Open file under cursor at the line number shown</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W f</span><span class="cd">Open file under cursor in a new split</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">Ctrl+W gf</span><span class="cd">Open file under cursor in a new tab</span><span class="mb mb-n">N</span></div>
+  <div class="cr"><span class="ck">vim {file}.zip</span><span class="cd">Browse &amp; edit files inside a ZIP archive</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">vim {file}.tar.gz</span><span class="cd">Browse &amp; edit files inside a TAR archive</span><span class="mb mb-s">S</span></div>
+  <div class="cr"><span class="ck">:set path+=src/**</span><span class="cd">Add directories to search path for gf</span><span class="mb mb-c">C</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>External Commands &amp; Shell Filters</h2>
+<div class="cmd-grid">
+  <div class="cr"><span class="ck">:! {cmd}</span><span class="cd">Run shell command; show output in overlay</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:r ! {cmd}</span><span class="cd">Insert shell output below cursor</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:0r ! {cmd}</span><span class="cd">Insert shell output at top of file</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:%! {cmd}</span><span class="cd">Filter entire buffer through external command</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:{range}! {cmd}</span><span class="cd">Filter a line range through external command</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">'&lt;,'&gt;! {cmd}</span><span class="cd">Filter Visual selection through external command</span><span class="mb mb-v">V</span></div>
+  <div class="cr"><span class="ck">:%!jq .</span><span class="cd">Format JSON with jq</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:%!sort</span><span class="cd">Sort all lines alphabetically</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:%!xxd</span><span class="cd">Convert buffer to hex dump</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:%!xxd -r</span><span class="cd">Convert hex dump back to binary</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">% (in :! commands)</span><span class="cd">Expands to the current filename</span><span class="mb mb-c">C</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Configuration (.vimrc)</h2>
+<div class="cmd-grid">
+  <div class="cs">Reloading</div>
+  <div class="cr"><span class="ck">:source ~/.vimrc</span><span class="cd">Reload vimrc without restarting Vim</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:so %</span><span class="cd">Source the current file</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Querying settings</div>
+  <div class="cr"><span class="ck">:set</span><span class="cd">Show all non-default settings active</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set all</span><span class="cd">Show every setting with its current value</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set {option}?</span><span class="cd">Query the current value of an option</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set no{option}</span><span class="cd">Disable a boolean option</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:set {option}!</span><span class="cd">Toggle a boolean option</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Common settings</div>
+  <div class="cr"><span class="ck">set nocompatible</span><span class="cd">Disable Vi compatibility (always first)</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set number / nonu</span><span class="cd">Show / hide line numbers</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set relativenumber</span><span class="cd">Relative line numbers</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set cursorline</span><span class="cd">Highlight the current line</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set hidden</span><span class="cd">Allow switching buffers without saving</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set wildmenu</span><span class="cd">Enhanced Tab-completion menu</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set tabstop=4</span><span class="cd">Tab display width</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set shiftwidth=4</span><span class="cd">Indent width for &gt;&gt; and &lt;&lt;</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set expandtab</span><span class="cd">Insert spaces instead of tabs</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set clipboard=unnamedplus</span><span class="cd">Use system clipboard by default</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set history=1000</span><span class="cd">Increase command history size</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set undolevels=1000</span><span class="cd">Increase undo history depth</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">set backspace=indent,eol,start</span><span class="cd">Sensible Backspace in Insert mode</span><span class="mb mb-r">RC</span></div>
+
+  <div class="cs">Colour schemes</div>
+  <div class="cr"><span class="ck">:syntax on / off</span><span class="cd">Enable / disable syntax highlighting</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:colorscheme {name}</span><span class="cd">Switch to a colour scheme</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:colorscheme &lt;Tab&gt;</span><span class="cd">Browse all available colour schemes</span><span class="mb mb-c">C</span></div>
+
+  <div class="cs">Key mappings</div>
+  <div class="cr"><span class="ck">nnoremap {key} {action}</span><span class="cd">Map key in Normal mode (non-recursive)</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">inoremap {key} {action}</span><span class="cd">Map key in Insert mode</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">vnoremap {key} {action}</span><span class="cd">Map key in Visual mode</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">let mapleader = ","</span><span class="cd">Set the leader key</span><span class="mb mb-r">RC</span></div>
+
+  <div class="cs">Abbreviations</div>
+  <div class="cr"><span class="ck">:ab {trigger} {expansion}</span><span class="cd">Define an abbreviation interactively</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">iabbrev {trigger} {expansion}</span><span class="cd">Define an abbreviation in vimrc</span><span class="mb mb-r">RC</span></div>
+  <div class="cr"><span class="ck">Ctrl+V (in Insert)</span><span class="cd">Prevent abbreviation from triggering</span><span class="mb mb-i">I</span></div>
+
+  <div class="cs">Custom commands &amp; help</div>
+  <div class="cr"><span class="ck">:command! {Name} {action}</span><span class="cd">Define a custom Command-mode command</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:help</span><span class="cd">Open the built-in help index</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:help {topic}</span><span class="cd">Open help for a specific topic</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">:help option-summary</span><span class="cd">Browse all available settings</span><span class="mb mb-c">C</span></div>
+  <div class="cr"><span class="ck">Ctrl+] (in help)</span><span class="cd">Follow a help hyperlink</span><span class="mb mb-n">N</span></div>
+</div>
+
+</div>

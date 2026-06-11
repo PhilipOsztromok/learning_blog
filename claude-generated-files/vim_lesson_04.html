@@ -1,0 +1,497 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-section { color: #7a8aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0.9em 0 0.3em 0; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; }
+  .lx-lesson .cmd-key { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 180px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  .lx-lesson .mode-badge {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    padding: 0.15em 0.55em; border-radius: 3px; margin-right: 0.3em; vertical-align: middle;
+  }
+  .lx-lesson .mode-normal  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }
+  .lx-lesson .mode-insert  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }
+  .lx-lesson .mode-command { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }
+  .lx-lesson .mode-visual  { background: #2a1a35; color: #d2a8ff; border: 1px solid #4a2a60; }
+  .lx-lesson .demo-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0;
+  }
+  .lx-lesson .demo-box h4 { color: #4f8ef7; margin: 0 0 0.5em 0; font-size: 0.95rem; }
+  .lx-lesson .before { color: #f97583; font-family: 'Consolas', monospace; font-size: 0.88rem; }
+  .lx-lesson .after  { color: #85e89d; font-family: 'Consolas', monospace; font-size: 0.88rem; }
+  .lx-lesson .grammar-box {
+    background: #1e2235; border: 1px solid #4f8ef7; border-radius: 6px;
+    padding: 0.9em 1.2em; margin: 1em 0; text-align: center;
+  }
+  .lx-lesson .grammar-box .formula {
+    font-family: 'Consolas', monospace; font-size: 1.05rem; color: #e8e8e8; margin: 0.3em 0;
+  }
+  .lx-lesson .grammar-box .op  { color: #f97583; font-weight: bold; }
+  .lx-lesson .grammar-box .mot { color: #79b8ff; font-weight: bold; }
+  .lx-lesson .grammar-box .reg { color: #d2a8ff; font-weight: bold; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 4 — Changing Text</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Operator + Motion Grammar</h2>
+
+<p>In Chapter 3 we built a vocabulary of movement commands. Now we pair those movements with <em>operators</em> — commands that act on text — and unlock the composable editing system that makes Vim so powerful.</p>
+
+<p>Almost every editing command in Vim follows one simple grammar:</p>
+
+<div class="grammar-box">
+  <div class="formula"><span class="reg">[register]</span> <span class="op">operator</span> <span class="mot">[count]</span> <span class="mot">motion</span></div>
+  <p style="color:#7a8aaa; font-size:0.9rem; margin:0.4em 0 0 0;">The register and count are optional. The operator and motion are required.</p>
+</div>
+
+<p>For example: <code>d3w</code> means <em>delete</em> (<span class="op">operator</span>) <em>3 words</em> (<span class="mot">count + motion</span>). The operator and every motion from Chapter 3 can combine freely. Once you have learned the operators in this chapter you effectively have hundreds of editing commands without memorising hundreds of individual keystrokes.</p>
+
+<p>The three core operators are:</p>
+
+<table>
+  <tr><th>Operator</th><th>Action</th><th>Leaves cursor in</th></tr>
+  <tr><td><code>d</code></td><td>Delete (cuts to register)</td><td><span class="mode-badge mode-normal">NORMAL</span></td></tr>
+  <tr><td><code>y</code></td><td>Yank (copy to register)</td><td><span class="mode-badge mode-normal">NORMAL</span></td></tr>
+  <tr><td><code>c</code></td><td>Change (delete + enter Insert mode)</td><td><span class="mode-badge mode-insert">INSERT</span></td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Deleting Text</h2>
+
+<h3>The d operator</h3>
+
+<p>The <code>d</code> operator deletes the text covered by whatever motion follows it. Critically, deleted text is not just removed — it is placed into a register (Vim's internal clipboard), from where it can be pasted back with <code>p</code>. Think of it as "cut" rather than "delete".</p>
+
+<pre><span class="cmd">dw</span>       <span class="cm"># delete from cursor to start of next word</span>
+<span class="cmd">de</span>       <span class="cm"># delete from cursor to end of current word (leaves trailing space)</span>
+<span class="cmd">db</span>       <span class="cm"># delete from cursor back to start of current word</span>
+<span class="cmd">d$</span>       <span class="cm"># delete from cursor to end of line</span>
+<span class="cmd">d0</span>       <span class="cm"># delete from cursor back to start of line</span>
+<span class="cmd">d^</span>       <span class="cm"># delete from cursor back to first non-whitespace char</span>
+<span class="cmd">dG</span>       <span class="cm"># delete from current line to end of file</span>
+<span class="cmd">dgg</span>      <span class="cm"># delete from current line to start of file</span>
+<span class="cmd">d}</span>       <span class="cm"># delete to end of paragraph</span>
+<span class="cmd">d/word</span>   <span class="cm"># delete from cursor up to (but not including) the next "word"</span>
+<span class="vr">3</span><span class="cmd">dw</span>      <span class="cm"># delete 3 words (count before motion)</span>
+<span class="cmd">d</span><span class="vr">3</span><span class="cmd">w</span>      <span class="cm"># same — count can go before or after the operator</span></pre>
+
+<h3>Doubled operators — whole-line shortcuts</h3>
+
+<p>Doubling any operator applies it to the entire current line. This is one of the most-used patterns in Vim:</p>
+
+<pre><span class="cmd">dd</span>       <span class="cm"># delete the entire current line</span>
+<span class="vr">5</span><span class="cmd">dd</span>      <span class="cm"># delete 5 lines starting from the current line</span>
+<span class="cmd">yy</span>       <span class="cm"># yank (copy) the entire current line</span>
+<span class="vr">3</span><span class="cmd">yy</span>      <span class="cm"># yank 3 lines</span>
+<span class="cmd">cc</span>       <span class="cm"># change the entire current line (clears it and enters Insert mode)</span></pre>
+
+<h3>Shorthand delete commands</h3>
+
+<p>A few delete operations are so common they have single-key shortcuts:</p>
+
+<table>
+  <tr><th>Key</th><th>Equivalent to</th><th>Action</th></tr>
+  <tr><td><code>x</code></td><td><code>dl</code></td><td>Delete character <strong>under</strong> the cursor</td></tr>
+  <tr><td><code>X</code></td><td><code>dh</code></td><td>Delete character <strong>before</strong> the cursor</td></tr>
+  <tr><td><code>D</code></td><td><code>d$</code></td><td>Delete from cursor to <strong>end of line</strong></td></tr>
+  <tr><td><code>s</code></td><td><code>cl</code></td><td>Delete character under cursor and enter Insert mode</td></tr>
+  <tr><td><code>S</code></td><td><code>cc</code></td><td>Delete entire line and enter Insert mode</td></tr>
+</table>
+
+<div class="demo-box">
+  <h4>Before and after — common delete operations</h4>
+  <p style="color:#7a8aaa; font-size:0.88rem; margin:0 0 0.5em 0;">Cursor position shown as the affected region:</p>
+  <table style="font-size:0.88rem;">
+    <tr>
+      <th>Command</th>
+      <th>Before</th>
+      <th>After</th>
+    </tr>
+    <tr>
+      <td><code>dw</code></td>
+      <td class="before">The <u>quick</u> brown fox</td>
+      <td class="after">The brown fox</td>
+    </tr>
+    <tr>
+      <td><code>dd</code></td>
+      <td class="before"><u>This entire line is gone</u></td>
+      <td class="after"><em>(line removed)</em></td>
+    </tr>
+    <tr>
+      <td><code>d$</code></td>
+      <td class="before">Hello, <u>World!</u></td>
+      <td class="after">Hello,</td>
+    </tr>
+    <tr>
+      <td><code>x</code></td>
+      <td class="before">Helo<u>o</u> there</td>
+      <td class="after">Helo there</td>
+    </tr>
+    <tr>
+      <td><code>xp</code></td>
+      <td class="before">H<u>e</u>llo (swap e and l)</td>
+      <td class="after">Hlelo → <em>actually:</em> Hlelo… use <code>xp</code> at e → Hello ✓</td>
+    </tr>
+  </table>
+</div>
+
+<h3>The xp trick — swapping two characters</h3>
+
+<p>A classic Vim idiom for fixing a transposition typo (e.g. "teh" instead of "the") is <code>xp</code>: <code>x</code> deletes the character under the cursor into the unnamed register, and <code>p</code> immediately pastes it after the new cursor position — effectively swapping it with the next character.</p>
+
+<pre><span class="cm"># Fix "teh" → "the": place cursor on 'e'</span>
+<span class="cmd">x</span>    <span class="cm"># deletes 'e', cursor moves to 'h' → "th"</span>
+<span class="cmd">p</span>    <span class="cm"># pastes 'e' after 'h' → "the" ✓</span></pre>
+
+<h3>Undo and redo</h3>
+
+<p>Every deletion (and every edit) can be undone. Vim maintains a full undo history for the session:</p>
+
+<table>
+  <tr><th>Key</th><th>Action</th></tr>
+  <tr><td><code>u</code></td><td>Undo the last change</td></tr>
+  <tr><td><code>U</code></td><td>Undo all changes to the current line (resets the whole line)</td></tr>
+  <tr><td><code>Ctrl+R</code></td><td>Redo — re-apply an undone change</td></tr>
+  <tr><td><code>{n}u</code></td><td>Undo the last n changes</td></tr>
+</table>
+
+<div class="tip">
+  <strong>Vim's undo tree:</strong> Unlike most editors which have a linear undo history, Vim records a full <em>tree</em> of changes. If you undo several steps and then make a new edit, the undone branch is not lost — it can be accessed with <code>:undolist</code> and navigated with <code>g-</code> and <code>g+</code>. This is an advanced feature but worth knowing exists.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Yanking and Pasting</h2>
+
+<h3>The y operator — yank (copy)</h3>
+
+<p>"Yank" is Vim's word for copy. The <code>y</code> operator works exactly like <code>d</code> in terms of motions — the difference is that yanking does not remove the text, it only copies it into a register.</p>
+
+<pre><span class="cmd">yw</span>       <span class="cm"># yank from cursor to start of next word</span>
+<span class="cmd">ye</span>       <span class="cm"># yank to end of current word</span>
+<span class="cmd">y$</span>       <span class="cm"># yank to end of line</span>
+<span class="cmd">y0</span>       <span class="cm"># yank from cursor to start of line</span>
+<span class="cmd">yy</span>       <span class="cm"># yank entire line (most common)</span>
+<span class="vr">3</span><span class="cmd">yy</span>      <span class="cm"># yank 3 lines</span>
+<span class="cmd">yG</span>       <span class="cm"># yank from current line to end of file</span>
+<span class="cmd">y}</span>       <span class="cm"># yank to end of paragraph</span></pre>
+
+<h3>The p command — put (paste)</h3>
+
+<p>After deleting or yanking, <code>p</code> puts the text back. The exact position depends on what was copied:</p>
+
+<table>
+  <tr><th>Key</th><th>Behaviour</th></tr>
+  <tr><td><code>p</code></td><td>Put <strong>after</strong> the cursor. For whole lines, puts below the current line.</td></tr>
+  <tr><td><code>P</code></td><td>Put <strong>before</strong> the cursor. For whole lines, puts above the current line.</td></tr>
+  <tr><td><code>gp</code></td><td>Put after the cursor and move the cursor to the end of the pasted text.</td></tr>
+  <tr><td><code>gP</code></td><td>Put before the cursor and move the cursor to the end of the pasted text.</td></tr>
+  <tr><td><code>{n}p</code></td><td>Paste n times (e.g. <code>3p</code> pastes three copies).</td></tr>
+</table>
+
+<div class="note">
+  <strong>Line paste vs character paste:</strong> When you yank or delete an entire line (<code>yy</code>, <code>dd</code>), Vim marks the register as a <em>linewise</em> register. Pasting a linewise register with <code>p</code> inserts a new line <em>below</em> the current one, regardless of cursor column — very convenient for duplicating or rearranging lines. Character-wise yanks paste inline at the cursor.
+</div>
+
+<h3>Practical workflow — duplicate a line</h3>
+
+<pre><span class="cmd">yy</span>    <span class="cm"># yank the current line</span>
+<span class="cmd">p</span>     <span class="cm"># paste it below — now you have two identical lines</span>
+
+<span class="cm"># Or, to duplicate a line and move it somewhere else:</span>
+<span class="cmd">yy</span>    <span class="cm"># yank</span>
+<span class="vr">15</span><span class="cmd">j</span>   <span class="cm"># move 15 lines down</span>
+<span class="cmd">p</span>     <span class="cm"># paste below the new location</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Visual Mode for Selection-Based Editing</h2>
+
+<p>Sometimes the operator + motion model does not map neatly to what you want to select. Visual mode lets you <em>select text first</em>, then apply an operator to the selection.</p>
+
+<h3>The three visual modes</h3>
+
+<table>
+  <tr><th>Key</th><th>Mode</th><th>Selects</th></tr>
+  <tr><td><code>v</code></td><td><span class="mode-badge mode-visual">VISUAL</span></td><td>Character by character — any arbitrary range of text</td></tr>
+  <tr><td><code>V</code></td><td><span class="mode-badge mode-visual">V-LINE</span></td><td>Whole lines — always selects complete lines regardless of column</td></tr>
+  <tr><td><code>Ctrl+V</code></td><td><span class="mode-badge mode-visual">V-BLOCK</span></td><td>A rectangular block defined by rows and columns</td></tr>
+</table>
+
+<p>Once in any visual mode, use <strong>any motion command from Chapter 3</strong> to extend the selection. Then press an operator to act on the highlighted region:</p>
+
+<pre><span class="cm"># Select three lines and delete them:</span>
+<span class="cmd">V</span>         <span class="cm"># enter Visual Line mode (current line selected)</span>
+<span class="vr">2</span><span class="cmd">j</span>        <span class="cm"># extend selection 2 lines down (3 lines total highlighted)</span>
+<span class="cmd">d</span>         <span class="cm"># delete all selected lines</span>
+
+<span class="cm"># Select a word and replace it:</span>
+<span class="cmd">viw</span>       <span class="cm"># visual select "inner word" (entire word under cursor)</span>
+<span class="cmd">c</span>         <span class="cm"># change — deletes selected text and enters Insert mode</span>
+<span class="cm"># now type the replacement word, then Esc</span>
+
+<span class="cm"># Select a paragraph and yank it:</span>
+<span class="cmd">V</span>         <span class="cm"># Visual Line mode</span>
+<span class="cmd">}</span>         <span class="cm"># extend to end of paragraph</span>
+<span class="cmd">y</span>         <span class="cm"># yank the selection</span></pre>
+
+<h3>Visual Block mode — column editing</h3>
+
+<p>Visual Block (<code>Ctrl+V</code>) is unique — it selects a rectangular region of the screen, letting you edit multiple lines simultaneously. This is invaluable for tasks like adding a comment character to a block of lines, aligning columns, or deleting a column of whitespace.</p>
+
+<pre><span class="cm"># Delete the first 4 characters (indentation) from 5 lines:</span>
+<span class="cmd">Ctrl+V</span>    <span class="cm"># enter Visual Block</span>
+<span class="vr">4</span><span class="cmd">j</span>        <span class="cm"># extend down 4 lines (5 lines total selected)</span>
+<span class="vr">3</span><span class="cmd">l</span>        <span class="cm"># extend right to cover 4 columns</span>
+<span class="cmd">d</span>         <span class="cm"># delete the selected block</span>
+
+<span class="cm"># Add a "#" comment to the start of 4 lines simultaneously:</span>
+<span class="cmd">Ctrl+V</span>    <span class="cm"># Visual Block</span>
+<span class="vr">3</span><span class="cmd">j</span>        <span class="cm"># select 4 lines</span>
+<span class="cmd">I</span>         <span class="cm"># Insert at start of block (capital I)</span>
+<span class="st"># </span>        <span class="cm"># type the characters to insert</span>
+<span class="cmd">Esc</span>       <span class="cm"># the text is applied to all selected lines</span></pre>
+
+<div class="note">
+  <strong>Visual Block insert:</strong> When you press <code>I</code> in Visual Block mode, you only see the text being typed on the first line. After pressing <code>Esc</code>, Vim applies the same insertion to every line in the block. This looks like nothing is happening until you press Esc — do not be alarmed.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Change Operator</h2>
+
+<p>The <code>c</code> operator is a shortcut for the extremely common pattern of <em>delete something, then type something new</em>. It works exactly like <code>d</code> but drops you into Insert mode immediately after the deletion, ready to type the replacement.</p>
+
+<pre><span class="cmd">cw</span>       <span class="cm"># change word: delete to start of next word, enter Insert mode</span>
+<span class="cmd">ce</span>       <span class="cm"># change to end of word (more precise — does not eat trailing space)</span>
+<span class="cmd">c$</span>       <span class="cm"># change to end of line (also written C)</span>
+<span class="cmd">c0</span>       <span class="cm"># change from cursor to start of line</span>
+<span class="cmd">cc</span>       <span class="cm"># change entire line</span>
+<span class="cmd">ciw</span>      <span class="cm"># change inner word (deletes entire word, even from middle)</span>
+<span class="cmd">ci"</span>      <span class="cm"># change inside quotes: deletes content between " " and enters Insert</span>
+<span class="cmd">ci(</span>      <span class="cm"># change inside parentheses: deletes content between ( ) </span>
+<span class="cmd">c/text</span>   <span class="cm"># change from cursor up to next occurrence of "text"</span>
+<span class="vr">3</span><span class="cmd">cw</span>      <span class="cm"># change 3 words</span></pre>
+
+<div class="tip">
+  <strong>Text objects — <code>iw</code>, <code>i"</code>, <code>i(</code> and friends:</strong> The <code>i</code> in <code>ciw</code> stands for <em>inner</em> — it selects the word without surrounding whitespace. Its partner <code>a</code> (for <em>around</em>) includes the surrounding whitespace or delimiters. Text objects work with any operator:
+  <ul style="margin-top:0.5em;">
+    <li><code>diw</code> — delete inner word</li>
+    <li><code>ci(</code> — change inside parentheses</li>
+    <li><code>yi"</code> — yank inside double quotes</li>
+    <li><code>da[</code> — delete around square brackets (including the brackets)</li>
+  </ul>
+  Text objects are among the most powerful features in Vim and are worth practising until they feel natural.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Registers — Vim's Multiple Clipboards</h2>
+
+<p>Every time you delete or yank text, it goes into a <em>register</em>. By default it goes into the <em>unnamed register</em> (<code>"</code>), which is what <code>p</code> pastes from. But Vim has 26 named registers — one for each letter of the alphabet — letting you store multiple pieces of text simultaneously.</p>
+
+<h3>Why named registers matter</h3>
+
+<p>The problem with relying solely on the unnamed register is that any subsequent delete or yank overwrites it. If you yank some text, then accidentally delete a word before pasting, your yanked text is gone. Named registers solve this:</p>
+
+<pre><span class="cm"># Copy a function signature to register 'a':</span>
+<span class="st">"a</span><span class="cmd">yy</span>          <span class="cm"># yank current line into register a</span>
+
+<span class="cm"># Do other edits (the unnamed register may get overwritten)...</span>
+<span class="cmd">dd</span>            <span class="cm"># delete a line (overwrites unnamed register)</span>
+
+<span class="cm"># Paste the function signature from register 'a' — still safe:</span>
+<span class="st">"a</span><span class="cmd">p</span>           <span class="cm"># paste from register a</span></pre>
+
+<h3>Register syntax</h3>
+
+<pre><span class="cm"># General syntax: "x before any operator or paste command</span>
+<span class="st">"a</span><span class="cmd">yy</span>          <span class="cm"># yank line into register a</span>
+<span class="st">"b</span><span class="cmd">dw</span>          <span class="cm"># delete word into register b</span>
+<span class="st">"c</span><span class="cmd">p</span>           <span class="cm"># paste from register c</span>
+<span class="st">"A</span><span class="cmd">yy</span>          <span class="cm"># APPEND to register a (uppercase = append, lowercase = overwrite)</span>
+
+<span class="cm"># View all register contents:</span>
+<span class="kw">:</span><span class="cmd">registers</span>    <span class="cm"># (or :reg for short)</span></pre>
+
+<h3>Special registers</h3>
+
+<table>
+  <tr><th>Register</th><th>Contents</th></tr>
+  <tr><td><code>"</code></td><td>The unnamed register — what <code>p</code> pastes by default</td></tr>
+  <tr><td><code>0</code></td><td>The yank register — always holds the last <em>yanked</em> (not deleted) text. Useful when a delete has overwritten <code>"</code>.</td></tr>
+  <tr><td><code>1</code>–<code>9</code></td><td>Delete history — <code>1</code> is the most recent deletion, <code>2</code> the one before that, etc.</td></tr>
+  <tr><td><code>+</code></td><td>The system clipboard — use <code>"+y</code> to copy to and <code>"+p</code> to paste from the OS clipboard</td></tr>
+  <tr><td><code>*</code></td><td>The primary selection (Linux/X11 middle-click clipboard)</td></tr>
+  <tr><td><code>_</code></td><td>The black hole register — delete here and the text is truly gone, not stored anywhere</td></tr>
+  <tr><td><code>/</code></td><td>The last search pattern</td></tr>
+  <tr><td><code>%</code></td><td>The current filename</td></tr>
+</table>
+
+<div class="tip">
+  <strong>The yank register (<code>0</code>) is your safety net:</strong> If you yank a line (<code>yy</code>), then accidentally delete something before pasting, <code>"0p</code> will always paste your last yank — even though the unnamed register was overwritten. Make <code>"0p</code> a habit when you have a specific yank you want to preserve.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Search and Replace</h2>
+
+<p>Vim's substitute command is one of its most powerful features. It uses the same regular expression engine as the <code>/</code> search and can replace text across a range of lines or the entire file.</p>
+
+<h3>The substitute command</h3>
+
+<pre><span class="kw">:</span><span class="cmd">s</span><span class="kw">/</span><span class="st">old</span><span class="kw">/</span><span class="st">new</span>        <span class="cm"># replace FIRST occurrence of 'old' on the current line</span>
+<span class="kw">:</span><span class="cmd">s</span><span class="kw">/</span><span class="st">old</span><span class="kw">/</span><span class="st">new</span><span class="kw">/g</span>       <span class="cm"># replace ALL occurrences on the current line (global flag)</span>
+<span class="kw">:</span><span class="cmd">s</span><span class="kw">/</span><span class="st">old</span><span class="kw">/</span><span class="st">new</span><span class="kw">/gc</span>      <span class="cm"># replace all on line, ask for confirmation on each</span>
+<span class="kw">:</span><span class="cmd">s</span><span class="kw">/</span><span class="st">old</span><span class="kw">/</span><span class="st">new</span><span class="kw">/gi</span>      <span class="cm"># replace all, case-insensitive</span></pre>
+
+<h3>Specifying a range</h3>
+
+<pre><span class="kw">:</span><span class="vr">%</span><span class="cmd">s</span><span class="kw">/</span><span class="st">old</span><span class="kw">/</span><span class="st">new</span><span class="kw">/g</span>      <span class="cm"># replace all in the ENTIRE FILE (% = all lines)</span>
+<span class="kw">:</span><span class="vr">5,15</span><span class="cmd">s</span><span class="kw">/</span><span class="st">old</span><span class="kw">/</span><span class="st">new</span><span class="kw">/g</span>   <span class="cm"># replace all between lines 5 and 15</span>
+<span class="kw">:</span><span class="vr">.,+5</span><span class="cmd">s</span><span class="kw">/</span><span class="st">old</span><span class="kw">/</span><span class="st">new</span><span class="kw">/g</span>   <span class="cm"># replace all from current line (.) to 5 lines below</span>
+<span class="kw">:'&lt;,'&gt;</span><span class="cmd">s</span><span class="kw">/</span><span class="st">old</span><span class="kw">/</span><span class="st">new</span><span class="kw">/g</span>  <span class="cm"># replace in Visual selection (range is set automatically)</span></pre>
+
+<h3>Useful substitute patterns</h3>
+
+<pre><span class="cm"># Replace and use the matched text in the replacement (\0 or &amp;):</span>
+<span class="kw">:%</span><span class="cmd">s</span><span class="kw">/</span><span class="rx">error</span><span class="kw">/</span><span class="st">**&amp;**</span><span class="kw">/g</span>        <span class="cm"># wrap every "error" in ** **</span>
+
+<span class="cm"># Delete all blank lines:</span>
+<span class="kw">:%</span><span class="cmd">s</span><span class="kw">/</span><span class="rx">^$</span><span class="kw">//g</span>
+
+<span class="cm"># Remove trailing whitespace from every line:</span>
+<span class="kw">:%</span><span class="cmd">s</span><span class="kw">/</span><span class="rx">\s\+$</span><span class="kw">//g</span>
+
+<span class="cm"># Confirmation flags — responses when using /gc:</span>
+<span class="cm">#   y = yes (replace this one)</span>
+<span class="cm">#   n = no (skip this one)</span>
+<span class="cm">#   a = all (replace all remaining without asking)</span>
+<span class="cm">#   q = quit (stop substituting)</span>
+<span class="cm">#   l = last (replace this one, then quit)</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Spell Checking</h2>
+
+<p>Vim has a built-in spell checker that is disabled by default. It is useful for documentation, commit messages, or any prose writing done in Vim.</p>
+
+<pre><span class="kw">:</span><span class="cmd">set spell</span>           <span class="cm"># enable spell checking</span>
+<span class="kw">:</span><span class="cmd">set spelllang=en_gb</span> <span class="cm"># set language (en_us, en_gb, fr, de, etc.)</span>
+<span class="kw">:</span><span class="cmd">set nospell</span>         <span class="cm"># disable spell checking</span></pre>
+
+<p>When spell checking is on, misspelled words are highlighted. Use these keys to navigate and fix them:</p>
+
+<table>
+  <tr><th>Key</th><th>Action</th></tr>
+  <tr><td><code>]s</code></td><td>Jump to the next misspelled word</td></tr>
+  <tr><td><code>[s</code></td><td>Jump to the previous misspelled word</td></tr>
+  <tr><td><code>z=</code></td><td>Show a list of suggested corrections for the word under the cursor</td></tr>
+  <tr><td><code>zg</code></td><td>Mark word as good (add to personal dictionary)</td></tr>
+  <tr><td><code>zw</code></td><td>Mark word as wrong (add to personal bad-word list)</td></tr>
+  <tr><td><code>1z=</code></td><td>Accept the first suggestion without showing the list</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Commands Introduced in This Chapter</h2>
+
+<div class="cmd-ref">
+  <h4>Chapter 4 — Command Reference</h4>
+
+  <div class="cmd-section">Delete operator</div>
+  <div class="cmd-row"><span class="cmd-key">d{motion}</span><span class="cmd-desc">Delete text covered by motion (e.g. <code>dw</code>, <code>d$</code>, <code>dG</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">dd</span><span class="cmd-desc">Delete entire current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">{n}dd</span><span class="cmd-desc">Delete n lines</span></div>
+  <div class="cmd-row"><span class="cmd-key">D</span><span class="cmd-desc">Delete from cursor to end of line (= <code>d$</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">x</span><span class="cmd-desc">Delete character under cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">X</span><span class="cmd-desc">Delete character before cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">xp</span><span class="cmd-desc">Swap current character with the next (fix transposition typos)</span></div>
+
+  <div class="cmd-section">Undo / redo</div>
+  <div class="cmd-row"><span class="cmd-key">u</span><span class="cmd-desc">Undo last change</span></div>
+  <div class="cmd-row"><span class="cmd-key">U</span><span class="cmd-desc">Undo all changes to current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+R</span><span class="cmd-desc">Redo (re-apply an undone change)</span></div>
+
+  <div class="cmd-section">Yank (copy)</div>
+  <div class="cmd-row"><span class="cmd-key">y{motion}</span><span class="cmd-desc">Yank text covered by motion (e.g. <code>yw</code>, <code>y$</code>, <code>yG</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">yy</span><span class="cmd-desc">Yank entire current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">{n}yy</span><span class="cmd-desc">Yank n lines</span></div>
+  <div class="cmd-row"><span class="cmd-key">Y</span><span class="cmd-desc">Yank to end of line (some configs) — or <code>yy</code> depending on settings</span></div>
+
+  <div class="cmd-section">Put (paste)</div>
+  <div class="cmd-row"><span class="cmd-key">p</span><span class="cmd-desc">Put (paste) after cursor / below current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">P</span><span class="cmd-desc">Put before cursor / above current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">gp</span><span class="cmd-desc">Put after cursor, move cursor to end of pasted text</span></div>
+  <div class="cmd-row"><span class="cmd-key">gP</span><span class="cmd-desc">Put before cursor, move cursor to end of pasted text</span></div>
+
+  <div class="cmd-section">Change operator</div>
+  <div class="cmd-row"><span class="cmd-key">c{motion}</span><span class="cmd-desc">Delete motion + enter Insert mode (e.g. <code>cw</code>, <code>c$</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">cc</span><span class="cmd-desc">Change entire current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">C</span><span class="cmd-desc">Change from cursor to end of line (= <code>c$</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">s</span><span class="cmd-desc">Substitute character (delete char under cursor + Insert mode)</span></div>
+  <div class="cmd-row"><span class="cmd-key">S</span><span class="cmd-desc">Substitute line (delete entire line + Insert mode = <code>cc</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">ciw / caw</span><span class="cmd-desc">Change inner/around word (text object)</span></div>
+  <div class="cmd-row"><span class="cmd-key">ci" / ca"</span><span class="cmd-desc">Change inside/around double quotes</span></div>
+  <div class="cmd-row"><span class="cmd-key">ci( / ca(</span><span class="cmd-desc">Change inside/around parentheses</span></div>
+
+  <div class="cmd-section">Visual mode</div>
+  <div class="cmd-row"><span class="cmd-key">v</span><span class="cmd-desc">Enter character-wise Visual mode</span></div>
+  <div class="cmd-row"><span class="cmd-key">V</span><span class="cmd-desc">Enter line-wise Visual mode</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+V</span><span class="cmd-desc">Enter block-wise Visual mode (column selection)</span></div>
+
+  <div class="cmd-section">Registers</div>
+  <div class="cmd-row"><span class="cmd-key">"x{op}</span><span class="cmd-desc">Use named register x for next operation (e.g. <code>"ayy</code>, <code>"ap</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">"Ax{op}</span><span class="cmd-desc">Append to register x (uppercase letter)</span></div>
+  <div class="cmd-row"><span class="cmd-key">"0p</span><span class="cmd-desc">Paste from yank register (last yank, not overwritten by delete)</span></div>
+  <div class="cmd-row"><span class="cmd-key">"+y / "+p</span><span class="cmd-desc">Yank to / paste from the system clipboard</span></div>
+  <div class="cmd-row"><span class="cmd-key">"_d{motion}</span><span class="cmd-desc">Delete to black hole register (truly removes, no paste)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:registers</span><span class="cmd-desc">Show contents of all registers</span></div>
+
+  <div class="cmd-section">Search and replace</div>
+  <div class="cmd-row"><span class="cmd-key">:s/old/new</span><span class="cmd-desc">Replace first occurrence on current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">:s/old/new/g</span><span class="cmd-desc">Replace all occurrences on current line</span></div>
+  <div class="cmd-row"><span class="cmd-key">:s/old/new/gc</span><span class="cmd-desc">Replace all on current line with confirmation</span></div>
+  <div class="cmd-row"><span class="cmd-key">:%s/old/new/g</span><span class="cmd-desc">Replace all occurrences in entire file</span></div>
+  <div class="cmd-row"><span class="cmd-key">:5,15s/old/new/g</span><span class="cmd-desc">Replace in line range 5–15</span></div>
+  <div class="cmd-row"><span class="cmd-key">:'&lt;,'&gt;s/old/new/g</span><span class="cmd-desc">Replace in Visual selection</span></div>
+
+  <div class="cmd-section">Spell checking</div>
+  <div class="cmd-row"><span class="cmd-key">:set spell</span><span class="cmd-desc">Enable spell checking</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set spelllang=en_gb</span><span class="cmd-desc">Set spell check language</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set nospell</span><span class="cmd-desc">Disable spell checking</span></div>
+  <div class="cmd-row"><span class="cmd-key">]s / [s</span><span class="cmd-desc">Jump to next / previous misspelled word</span></div>
+  <div class="cmd-row"><span class="cmd-key">z=</span><span class="cmd-desc">Show spelling suggestions for word under cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">zg / zw</span><span class="cmd-desc">Add word to personal dictionary / bad-word list</span></div>
+</div>
+
+</div>

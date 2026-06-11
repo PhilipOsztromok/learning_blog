@@ -1,0 +1,701 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 4 — Coprocesses and Bidirectional IPC</h1>
+<p>Every time your script calls <span class="inline-code">$(command)</span> it forks a subshell,
+execs the command, collects the output through a pipe, and waits for the child to exit.
+For occasional calls that cost is negligible. For thousands of calls inside a tight loop
+it becomes the dominant bottleneck. Coprocesses and explicit bidirectional pipes give you
+a long-running peer process you can converse with — sending input and reading output
+repeatedly without ever re-forking the child.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — How <code>coproc</code> Works</h2>
+
+<p>The <span class="inline-code">coproc</span> keyword starts a command asynchronously
+and wires two anonymous pipes between it and the shell: one for the shell to write to
+the coprocess's stdin, and one to read from its stdout.</p>
+
+<pre><span class="cm"># Syntax forms</span>
+<span class="kw">coproc</span> <span class="vr">NAME</span> { <span class="cmd">command</span>; }   <span class="cm"># named coprocess — can be referenced by NAME</span>
+<span class="kw">coproc</span>      <span class="cmd">command</span>        <span class="cm"># unnamed — stored in array COPROC</span></pre>
+
+<p>After the <span class="inline-code">coproc</span> line runs, Bash exposes the pipe
+file descriptors in a two-element array:</p>
+
+<table>
+  <tr><th>Variable</th><th>Meaning</th></tr>
+  <tr><td><code>NAME[0]</code></td><td>FD open for reading (shell reads coprocess stdout)</td></tr>
+  <tr><td><code>NAME[1]</code></td><td>FD open for writing (shell writes coprocess stdin)</td></tr>
+  <tr><td><code>$NAME_PID</code></td><td>PID of the coprocess</td></tr>
+</table>
+
+<pre><span class="cm"># Minimal example: a coprocess running bc</span>
+<span class="kw">coproc</span> <span class="vr">BC</span> { <span class="cmd">bc</span> <span class="fl">-l</span>; }
+
+<span class="cm"># Send an expression to bc's stdin</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">'3.14159 * 2'</span> <span class="op">>&${BC[1]}</span>
+
+<span class="cm"># Read bc's answer from bc's stdout</span>
+<span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">answer</span> <span class="op"><&${BC[0]}</span>
+<span class="cmd">echo</span> <span class="st">"Result: <span class="vr">$answer</span>"</span>   <span class="cm"># Result: 6.28318</span>
+
+<span class="cm"># Keep using it — no extra fork</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">'sqrt(2)'</span> <span class="op">>&${BC[1]}</span>
+<span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">answer</span> <span class="op"><&${BC[0]}</span>
+<span class="cmd">echo</span> <span class="st">"Result: <span class="vr">$answer</span>"</span>   <span class="cm"># Result: 1.41421356</span>
+
+<span class="cm"># Clean up: close pipes, wait for the process to exit</span>
+<span class="kw">exec</span> <span class="op">${BC[1]}>&-</span>          <span class="cm"># close write end → coprocess sees EOF on its stdin</span>
+<span class="kw">wait</span> <span class="vr">$BC_PID</span></pre>
+
+<div class="note">
+<strong>The unnamed coprocess:</strong> <span class="inline-code">coproc command</span>
+without a name stores the FDs in <span class="inline-code">COPROC[0]</span> and
+<span class="inline-code">COPROC[1]</span>, and the PID in
+<span class="inline-code">$COPROC_PID</span>. Only one unnamed coprocess can exist at a time;
+a second <span class="inline-code">coproc</span> without a name silently replaces the first.
+Named coprocesses do not have this restriction.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — The Buffering Problem</h2>
+
+<p>The single most common coprocess failure is <strong>deadlock</strong> caused by
+output buffering. Most programs buffer their stdout when it is connected to a pipe
+(as opposed to a terminal). Your script writes a query, calls
+<span class="inline-code">read</span>, and blocks forever because the child's answer
+sits unflushed in its internal buffer.</p>
+
+<pre><span class="cm"># BROKEN: python's print() buffers stdout when stdout is a pipe</span>
+<span class="kw">coproc</span> <span class="vr">PY</span> { <span class="cmd">python3</span> <span class="fl">-c</span> <span class="st">'
+import sys
+for line in sys.stdin:
+    sys.stdout.write("ECHO: " + line)   # BUFFERED — shell will hang
+'</span>; }
+
+<span class="cm"># FIX 1: force line-buffering with -u flag (Python-specific)</span>
+<span class="kw">coproc</span> <span class="vr">PY</span> { <span class="cmd">python3</span> <span class="fl">-u</span> <span class="fl">-c</span> <span class="st">'
+import sys
+for line in sys.stdin:
+    sys.stdout.write("ECHO: " + line)
+    sys.stdout.flush()
+'</span>; }
+
+<span class="cm"># FIX 2: stdbuf (coreutils) — works for any C stdio program</span>
+<span class="kw">coproc</span> <span class="vr">GREP</span> { <span class="cmd">stdbuf</span> <span class="fl">-oL</span> <span class="cmd">grep</span> <span class="st">'ERROR'</span>; }   <span class="cm"># -oL = line-buffered stdout</span>
+
+<span class="cm"># FIX 3: script -q (opens a pty, forcing line buffering)</span>
+<span class="kw">coproc</span> <span class="vr">TOOL</span> { <span class="cmd">script</span> <span class="fl">-q</span> <span class="fl">-c</span> <span class="st">'some-program'</span> <span class="pth">/dev/null</span>; }
+
+<span class="cm"># FIX 4: expect's unbuffer utility</span>
+<span class="kw">coproc</span> <span class="vr">TOOL</span> { <span class="cmd">unbuffer</span> <span class="fl">-p</span> <span class="cmd">some-program</span>; }</pre>
+
+<table>
+  <tr><th>Technique</th><th>Works for</th><th>Requires</th></tr>
+  <tr><td><code>python3 -u</code></td><td>Python only</td><td>nothing extra</td></tr>
+  <tr><td><code>stdbuf -oL</code></td><td>Any C stdio program</td><td>GNU coreutils</td></tr>
+  <tr><td><code>unbuffer -p</code></td><td>Any program (PTY trick)</td><td>expect package</td></tr>
+  <tr><td><code>script -q -c</code></td><td>Any program (PTY trick)</td><td>util-linux</td></tr>
+  <tr><td>Redesign with <code>\0</code> delimiter + <code>read -d ''</code></td><td>Programs you control</td><td>nothing</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — Synchronisation Sentinels</h2>
+
+<p>When you cannot change the child's buffering, use a sentinel: a known output line
+that marks the end of a response. Your script writes a query <em>plus</em> a command
+that generates the sentinel, then reads until it sees the sentinel.</p>
+
+<pre><span class="cm"># Pattern: send a query + "echo SENTINEL", read until SENTINEL appears</span>
+<span class="kw">coproc</span> <span class="vr">SH</span> { <span class="cmd">bash</span>; }   <span class="cm"># a subordinate shell as coprocess</span>
+
+<span class="fn">sh_run</span>() {
+  <span class="kw">local</span> <span class="vr">cmd</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">output</span>
+  <span class="kw">local</span> <span class="vr">line</span>
+  <span class="kw">local</span> <span class="vr">sentinel</span><span class="op">=</span><span class="st">"__DONE_$$__"</span>   <span class="cm"># unique per PID</span>
+
+  <span class="cm"># Send the command, then emit the sentinel via the subordinate shell</span>
+  <span class="cmd">printf</span> <span class="st">'%s\necho %s\n'</span> <span class="st">"<span class="vr">$cmd</span>"</span> <span class="st">"<span class="vr">$sentinel</span>"</span> <span class="op">>&${SH[1]}</span>
+
+  <span class="cm"># Collect lines until we see the sentinel</span>
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span> <span class="op"><&${SH[0]}</span>; <span class="kw">do</span>
+    [[ <span class="vr">$line</span> <span class="op">==</span> <span class="st">"<span class="vr">$sentinel</span>"</span> ]] <span class="op">&&</span> <span class="kw">break</span>
+    <span class="vr">output</span><span class="op">+=</span>( <span class="st">"<span class="vr">$line</span>"</span> )
+  <span class="kw">done</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${output[@]}"</span>
+}
+
+<span class="fn">sh_run</span> <span class="st">'ls /etc | head -3'</span>
+<span class="fn">sh_run</span> <span class="st">'echo $HOSTNAME'</span>
+
+<span class="cm"># Clean up</span>
+<span class="kw">exec</span> <span class="op">${SH[1]}>&-</span>
+<span class="kw">wait</span> <span class="vr">$SH_PID</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — Explicit Bidirectional Pipes with <code>exec</code></h2>
+
+<p>Before <span class="inline-code">coproc</span> was added in Bash 4.0, scripts used
+named FDs wired to process substitutions. This technique still works in all Bash
+versions and is often clearer when you need finer control over FD lifetimes.</p>
+
+<pre><span class="cm"># Open FDs 3 (read from child) and 4 (write to child) manually</span>
+<span class="kw">exec</span> <span class="nu">3</span><span class="op"><</span><span class="op"><</span>(<span class="cmd">stdbuf</span> <span class="fl">-oL</span> <span class="cmd">some-command</span>)   <span class="cm"># stdin of some-command not wired</span>
+
+<span class="cm"># For true bidirectional wiring without coproc, use a FIFO</span>
+<span class="vr">FIFO</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-u</span>)
+<span class="cmd">mkfifo</span> <span class="st">"<span class="vr">$FIFO</span>"</span>
+
+<span class="cm"># Start the child with its stdin reading from the FIFO</span>
+<span class="cmd">stdbuf</span> <span class="fl">-oL</span> <span class="cmd">some-command</span> <span class="op"><</span> <span class="st">"<span class="vr">$FIFO</span>"</span> <span class="op">&</span>
+<span class="vr">CHILD_PID</span><span class="op">=</span><span class="vr">$!</span>
+
+<span class="cm"># Open FD 4 for writing to the FIFO (child's stdin)</span>
+<span class="kw">exec</span> <span class="nu">4</span><span class="op">></span> <span class="st">"<span class="vr">$FIFO</span>"</span>
+<span class="cmd">rm</span> <span class="st">"<span class="vr">$FIFO</span>"</span>   <span class="cm"># safe to unlink — FD 4 holds the write end open</span>
+
+<span class="cm"># Write to child's stdin via FD 4</span>
+<span class="cmd">printf</span> <span class="st">'query\n'</span> <span class="op">>&4</span>
+
+<span class="cm"># Clean up</span>
+<span class="kw">exec</span> <span class="nu">4</span><span class="op">>&-</span>
+<span class="kw">wait</span> <span class="vr">$CHILD_PID</span></pre>
+
+<div class="note">
+<strong>Process substitution FD lifetimes:</strong> a
+<span class="inline-code">&lt;(cmd)</span> process substitution creates a pipe FD that is
+open only for the current command's scope. To keep it open across multiple operations,
+<span class="inline-code">exec N&lt;&lt;(cmd)</span> assigns it to a persistent FD number.
+Remember to close it with <span class="inline-code">exec N&lt;&-</span> when done.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — Practical Coprocess Patterns</h2>
+
+<h3>Pattern 1: Reusable database connection</h3>
+<pre><span class="cm"># Open one persistent psql session instead of forking per query</span>
+<span class="kw">coproc</span> <span class="vr">PSQL</span> {
+  <span class="cmd">psql</span> <span class="fl">--no-psqlrc</span> <span class="fl">--no-align</span> <span class="fl">--tuples-only</span> \
+       <span class="fl">--field-separator</span><span class="op">=</span><span class="st">'|'</span> \
+       <span class="fl">-d</span> <span class="st">"<span class="vr">$DB_NAME</span>"</span> <span class="fl">-U</span> <span class="st">"<span class="vr">$DB_USER</span>"</span>
+}
+
+<span class="vr">_PSQL_SENTINEL</span><span class="op">=</span><span class="st">"__PSQL_END_<span class="vr">$$</span>__"</span>
+
+<span class="fn">db_query</span>() {
+  <span class="kw">local</span> <span class="vr">sql</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__rows</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">line</span>
+  <span class="vr">__rows</span><span class="op">=</span>()
+
+  <span class="cm"># Send SQL + a SELECT that emits the sentinel</span>
+  <span class="cmd">printf</span> <span class="st">'%s;\nSELECT '"'"'%s'"'"';\n'</span> \
+    <span class="st">"<span class="vr">$sql</span>"</span> <span class="st">"<span class="vr">$_PSQL_SENTINEL</span>"</span> <span class="op">>&${PSQL[1]}</span>
+
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span> <span class="op"><&${PSQL[0]}</span>; <span class="kw">do</span>
+    [[ <span class="vr">$line</span> <span class="op">==</span> <span class="st">"<span class="vr">$_PSQL_SENTINEL</span>"</span> ]] <span class="op">&&</span> <span class="kw">break</span>
+    [[ <span class="fl">-n</span> <span class="vr">$line</span> ]] <span class="op">&&</span> <span class="vr">__rows</span><span class="op">+=</span>( <span class="st">"<span class="vr">$line</span>"</span> )
+  <span class="kw">done</span>
+}
+
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">users</span>
+<span class="fn">db_query</span> <span class="st">'SELECT id, name FROM users WHERE active'</span> users
+<span class="kw">for</span> <span class="vr">row</span> <span class="kw">in</span> <span class="st">"${users[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">IFS</span><span class="op">=</span><span class="st">'|'</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">id</span> <span class="vr">name</span> <span class="op"><<<</span> <span class="st">"<span class="vr">$row</span>"</span>
+  <span class="cmd">printf</span> <span class="st">'User %s: %s\n'</span> <span class="st">"<span class="vr">$id</span>"</span> <span class="st">"<span class="vr">$name</span>"</span>
+<span class="kw">done</span>
+
+<span class="cm"># Disconnect</span>
+<span class="kw">exec</span> <span class="op">${PSQL[1]}>&-</span>
+<span class="kw">wait</span> <span class="vr">$PSQL_PID</span></pre>
+
+<h3>Pattern 2: Continuous log filter</h3>
+<pre><span class="cm"># Use a coprocess to stream-filter a log with grep, then react in the shell</span>
+<span class="kw">coproc</span> <span class="vr">FILTER</span> { <span class="cmd">stdbuf</span> <span class="fl">-oL</span> <span class="cmd">grep</span> <span class="fl">--line-buffered</span> <span class="fl">-E</span> <span class="st">'ERROR|WARN'</span>; }
+
+<span class="cm"># Feed the log into the coprocess's stdin in the background</span>
+<span class="cmd">tail</span> <span class="fl">-f</span> <span class="pth">/var/log/app.log</span> <span class="op">>&${FILTER[1]}</span> <span class="op">&</span>
+<span class="vr">TAIL_PID</span><span class="op">=</span><span class="vr">$!</span>
+
+<span class="cm"># React to each filtered line</span>
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span> <span class="op"><&${FILTER[0]}</span>; <span class="kw">do</span>
+  <span class="cmd">printf</span> <span class="st">'[ALERT] %s\n'</span> <span class="st">"<span class="vr">$line</span>"</span>
+  <span class="cm"># Could call send_slack_alert, page on-call, etc.</span>
+<span class="kw">done</span>
+
+<span class="cm"># Shutdown</span>
+<span class="cmd">kill</span> <span class="vr">$TAIL_PID</span>
+<span class="kw">exec</span> <span class="op">${FILTER[1]}>&-</span>
+<span class="kw">wait</span> <span class="vr">$FILTER_PID</span></pre>
+
+<h3>Pattern 3: Long-running encoder / hash worker</h3>
+<pre><span class="cm"># sha256sum reads one filename per line and emits HASH  FILENAME per line
+# Re-use the process instead of forking for each file</span>
+<span class="kw">coproc</span> <span class="vr">SHA</span> { <span class="cmd">sha256sum</span> <span class="fl">--</span> $(cat); }
+
+<span class="cm"># Better: pipe filenames to sha256sum directly</span>
+<span class="cm"># For line-by-line use, xargs is usually cleaner.
+# But for a genuine conversation pattern, use a Python worker:</span>
+
+<span class="kw">coproc</span> <span class="vr">HASHER</span> {
+  <span class="cmd">python3</span> <span class="fl">-u</span> <span class="fl">-c</span> <span class="st">'
+import sys, hashlib
+for path in sys.stdin:
+    path = path.rstrip("\n")
+    try:
+        h = hashlib.sha256(open(path,"rb").read()).hexdigest()
+        print(h, path, flush=True)
+    except Exception as e:
+        print("ERROR", path, str(e), flush=True)
+'</span>
+}
+
+<span class="fn">hash_file</span>() {
+  <span class="kw">local</span> <span class="vr">path</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$path</span>"</span> <span class="op">>&${HASHER[1]}</span>
+  <span class="kw">local</span> <span class="vr">result</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">result</span> <span class="op"><&${HASHER[0]}</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$result</span>"</span>
+}
+
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">f</span>; <span class="kw">do</span>
+  <span class="fn">hash_file</span> <span class="st">"<span class="vr">$f</span>"</span>
+<span class="kw">done</span> <span class="op"><</span> <span class="op"><</span>(<span class="cmd">find</span> <span class="pth">/data</span> <span class="fl">-name</span> <span class="st">'*.bin'</span> <span class="fl">-print0</span>)
+
+<span class="kw">exec</span> <span class="op">${HASHER[1]}>&-</span>
+<span class="kw">wait</span> <span class="vr">$HASHER_PID</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — Multiple Coprocesses and Multiplexed IPC</h2>
+
+<p>Named coprocesses allow multiple long-running peers simultaneously. Each has its
+own FD array and PID variable.</p>
+
+<pre><span class="cm"># Two coprocesses running in parallel</span>
+<span class="kw">coproc</span> <span class="vr">GEOCODER</span> { <span class="cmd">python3</span> <span class="fl">-u</span> geocode_worker.py; }
+<span class="kw">coproc</span> <span class="vr">VALIDATOR</span> { <span class="cmd">node</span> validate_worker.js; }
+
+<span class="cm"># Send to each independently</span>
+<span class="fn">geocode</span>()  { <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$1</span>"</span> <span class="op">>&${GEOCODER[1]}</span>;  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">REPLY</span> <span class="op"><&${GEOCODER[0]}</span>; }
+<span class="fn">validate</span>() { <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$1</span>"</span> <span class="op">>&${VALIDATOR[1]}</span>; <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">REPLY</span> <span class="op"><&${VALIDATOR[0]}</span>; }
+
+<span class="fn">geocode</span>  <span class="st">"1600 Amphitheatre Parkway"</span>
+<span class="fn">validate</span> <span class="st">"user@example.com"</span>
+
+<span class="cm"># Teardown helper — accept name, FD array, PID</span>
+<span class="fn">coproc_close</span>() {
+  <span class="kw">local</span> <span class="vr">wfd</span><span class="op">=</span><span class="st">"$1"</span>  <span class="vr">pid</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">exec</span> {<span class="vr">wfd</span>}<span class="op">>&-</span>    <span class="cm"># Bash 4.1+: exec {varname}>&- closes the FD stored in varname</span>
+  <span class="kw">wait</span> <span class="st">"<span class="vr">$pid</span>"</span>
+}
+<span class="fn">coproc_close</span> <span class="st">"${GEOCODER[1]}"</span>  <span class="vr">$GEOCODER_PID</span>
+<span class="fn">coproc_close</span> <span class="st">"${VALIDATOR[1]}"</span> <span class="vr">$VALIDATOR_PID</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7 — Bidirectional IPC Without <code>coproc</code>: FIFO Pairs</h2>
+
+<p>FIFOs are the portable alternative and are especially useful when the child process
+needs to be started by another mechanism (e.g. a service manager), or when you want
+multiple independent readers and writers.</p>
+
+<pre><span class="fn">bidir_open</span>() {
+  <span class="cm"># Creates two FIFOs and stores the FD numbers in the given variable names</span>
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>       <span class="cm"># name prefix for FIFOs</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__rfd</span><span class="op">=</span><span class="st">"$2"</span>   <span class="cm"># caller's variable to receive read FD</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__wfd</span><span class="op">=</span><span class="st">"$3"</span>   <span class="cm"># caller's variable to receive write FD</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__pid</span><span class="op">=</span><span class="st">"$4"</span>   <span class="cm"># caller's variable to receive child PID</span>
+  <span class="kw">local</span> <span class="vr">fin</span><span class="op">=</span><span class="st">"/tmp/${name}_in.$$"</span>
+  <span class="kw">local</span> <span class="vr">fout</span><span class="op">=</span><span class="st">"/tmp/${name}_out.$$"</span>
+  <span class="cmd">mkfifo</span> <span class="st">"<span class="vr">$fin</span>"</span> <span class="st">"<span class="vr">$fout</span>"</span>
+  <span class="cm"># Start child reading from fin, writing to fout</span>
+  <span class="cmd">shift</span> <span class="nu">4</span>
+  <span class="st">"$@"</span> <span class="op"><</span> <span class="st">"<span class="vr">$fin</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$fout</span>"</span> <span class="op">&</span>
+  <span class="vr">__pid</span><span class="op">=</span><span class="vr">$!</span>
+  <span class="kw">exec</span> {<span class="vr">__rfd</span>}<span class="op"><</span> <span class="st">"<span class="vr">$fout</span>"</span>
+  <span class="kw">exec</span> {<span class="vr">__wfd</span>}<span class="op">></span> <span class="st">"<span class="vr">$fin</span>"</span>
+  <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$fin</span>"</span> <span class="st">"<span class="vr">$fout</span>"</span>   <span class="cm"># unlink immediately — FDs keep the pipes alive</span>
+}
+
+<span class="vr">rfd</span> <span class="vr">wfd</span> <span class="vr">cpid</span>
+<span class="fn">bidir_open</span> worker rfd wfd cpid  <span class="cmd">stdbuf</span> <span class="fl">-oL</span> <span class="pth">./worker.sh</span>
+<span class="cmd">printf</span> <span class="st">'hello\n'</span> <span class="op">>&$wfd</span>
+<span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">response</span> <span class="op"><&$rfd</span>
+<span class="cmd">echo</span> <span class="st">"Worker replied: <span class="vr">$response</span>"</span>
+<span class="kw">exec</span> {<span class="vr">wfd</span>}<span class="op">>&-</span>; <span class="kw">exec</span> {<span class="vr">rfd</span>}<span class="op"><&-</span>
+<span class="kw">wait</span> <span class="st">"<span class="vr">$cpid</span>"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>8 — Error Handling and Timeouts</h2>
+
+<pre><span class="cm"># read -t N: read with timeout (fractional seconds supported)</span>
+<span class="fn">coproc_read_timeout</span>() {
+  <span class="kw">local</span> <span class="vr">fd</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">timeout</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__out</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">if</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-t</span> <span class="st">"<span class="vr">$timeout</span>"</span> <span class="vr">__out</span> <span class="op"><&$fd</span>; <span class="kw">then</span>
+    <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">else</span>
+    <span class="kw">local</span> <span class="vr">rc</span><span class="op">=</span><span class="vr">$?</span>
+    <span class="kw">if</span> (( <span class="vr">rc</span> <span class="op">></span> <span class="nu">128</span> )); <span class="kw">then</span>
+      <span class="cmd">printf</span> <span class="st">'coproc_read_timeout: timed out after %ss\n'</span> <span class="st">"<span class="vr">$timeout</span>"</span> <span class="op">>&2</span>
+      <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">else</span>
+      <span class="cm"># rc=1: EOF — coprocess has exited</span>
+      <span class="cmd">printf</span> <span class="st">'coproc_read_timeout: coprocess exited\n'</span> <span class="op">>&2</span>
+      <span class="kw">return</span> <span class="nu">2</span>
+    <span class="kw">fi</span>
+  <span class="kw">fi</span>
+}
+
+<span class="cm"># Check if a coprocess is still alive before sending</span>
+<span class="fn">coproc_alive</span>() {
+  <span class="kw">local</span> <span class="vr">pid</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+}
+
+<span class="cm"># Wrapper with alive-check, write, and timed read</span>
+<span class="fn">coproc_call</span>() {
+  <span class="kw">local</span> <span class="vr">wfd</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">rfd</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">pid</span><span class="op">=</span><span class="st">"$3"</span> <span class="vr">request</span><span class="op">=</span><span class="st">"$4"</span> <span class="vr">timeout</span><span class="op">=</span><span class="st">"${5:-5}"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__reply</span><span class="op">=</span><span class="st">"$6"</span>
+  <span class="fn">coproc_alive</span> <span class="st">"<span class="vr">$pid</span>"</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"coproc_call: process dead"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$request</span>"</span> <span class="op">>&$wfd</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"coproc_call: write failed"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="fn">coproc_read_timeout</span> <span class="st">"<span class="vr">$rfd</span>"</span> <span class="st">"<span class="vr">$timeout</span>"</span> __reply
+}</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>9 — Performance: When Coprocesses Pay Off</h2>
+
+<p>A fork+exec costs roughly 1–5 ms on a modern Linux system. The payoff threshold
+for a coprocess is therefore around 50–100 calls; below that, the code complexity
+is not worth it.</p>
+
+<pre><span class="cm"># Benchmark: 1000 SHA256 calls — subprocess fork vs coprocess</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">files</span>
+<span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="fl">-n</span> <span class="nu">1000</span> files <span class="op"><</span> <span class="op"><</span>(<span class="cmd">find</span> <span class="pth">/usr/lib</span> <span class="fl">-name</span> <span class="st">'*.so'</span> <span class="fl">-print</span>)
+
+<span class="cm"># Method A: subprocess per file</span>
+<span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'A (subproc): %Rs'</span>
+<span class="kw">time</span> {
+  <span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="st">"${files[@]}"</span>; <span class="kw">do</span>
+    <span class="cmd">sha256sum</span> <span class="st">"<span class="vr">$f</span>"</span>
+  <span class="kw">done</span> <span class="op">>/dev/null</span>
+}
+
+<span class="cm"># Method B: all files via a single xargs invocation (not a coprocess, but fair)</span>
+<span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'B (xargs):  %Rs'</span>
+<span class="kw">time</span> { <span class="cmd">printf</span> <span class="st">'%s\0'</span> <span class="st">"${files[@]}"</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="fl">-0</span> <span class="cmd">sha256sum</span> <span class="op">>/dev/null</span>; }
+
+<span class="cm"># Method C: coprocess Python worker
+# (as shown in pattern 3 above)
+# Typical ratio on a fast machine:
+#   A (subproc): ~5.2s   — 1000 forks
+#   B (xargs):   ~0.8s   — 1 fork, batched args
+#   C (coproc):  ~0.4s   — 1 fork, 1000 round-trips over pipes</span></pre>
+
+<div class="warn">
+<strong>The sweet spot:</strong> coprocesses shine when you need many
+<em>sequential</em> request-response exchanges with a single long-running process.
+If you want <em>parallel</em> execution, use <span class="inline-code">&amp;</span> +
+<span class="inline-code">wait</span> or GNU parallel instead — those are covered in chapter 5.
+A coprocess is not a thread pool.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Persistent <code>bc</code> calculator</h4>
+  <p>Write a function <code>calc EXPR</code> that evaluates a <code>bc -l</code>
+  expression and prints the result. The coprocess must be started on first use and
+  reused for all subsequent calls (lazy initialisation via a flag variable). Calling
+  <code>calc_close</code> should cleanly shut it down. Handle the case where the
+  coprocess has died unexpectedly — restart it transparently.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="vr">_CALC_STARTED</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="fn">_calc_start</span>() {
+  <span class="kw">coproc</span> <span class="vr">_BC</span> { <span class="cmd">bc</span> <span class="fl">-l</span>; }
+  <span class="vr">_CALC_STARTED</span><span class="op">=</span><span class="nu">1</span>
+}
+
+<span class="fn">calc</span>() {
+  <span class="kw">local</span> <span class="vr">expr</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">result</span>
+
+  <span class="cm"># Start or restart coprocess if needed</span>
+  <span class="kw">if</span> (( <span class="vr">_CALC_STARTED</span> <span class="op">==</span> <span class="nu">0</span> )) <span class="op">||</span> <span class="op">!</span> <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"<span class="vr">$_BC_PID</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>; <span class="kw">then</span>
+    <span class="fn">_calc_start</span>
+  <span class="kw">fi</span>
+
+  <span class="cm"># bc prints the result followed by a newline — one read suffices</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$expr</span>"</span> <span class="op">>&${_BC[1]}</span>
+  <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-t</span> <span class="nu">5</span> <span class="vr">result</span> <span class="op"><&${_BC[0]}</span> <span class="op">||</span> {
+    <span class="cmd">printf</span> <span class="st">'calc: timed out or EOF\n'</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>
+  }
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$result</span>"</span>
+}
+
+<span class="fn">calc_close</span>() {
+  (( <span class="vr">_CALC_STARTED</span> )) <span class="op">||</span> <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">exec</span> <span class="op">${_BC[1]}>&-</span>
+  <span class="kw">wait</span> <span class="vr">$_BC_PID</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+  <span class="vr">_CALC_STARTED</span><span class="op">=</span><span class="nu">0</span>
+}
+
+<span class="cm"># Usage</span>
+<span class="fn">calc</span> <span class="st">'2^10'</span>               <span class="cm"># 1024</span>
+<span class="fn">calc</span> <span class="st">'scale=4; sqrt(2)'</span>   <span class="cm"># 1.4142</span>
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> {<span class="nu">1</span>..<span class="nu">20</span>}; <span class="kw">do</span>
+  <span class="fn">calc</span> <span class="st">"<span class="vr">$i</span> * <span class="vr">$i</span>"</span>
+<span class="kw">done</span>
+<span class="fn">calc_close</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Coprocess-based CSV validator</h4>
+  <p>Write a function <code>csv_validate_stream INPUT_FILE</code> that processes a CSV
+  file line by line. For each data row (skip the header), send the row to a Python
+  coprocess that validates the fields and returns either <code>OK</code> or
+  <code>ERR: reason</code>. Collect and print a summary of how many rows passed and
+  failed. Use <span class="inline-code">stdbuf -oL</span> or <span class="inline-code">python3 -u</span>
+  to prevent buffering deadlock.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="fn">csv_validate_stream</span>() {
+  <span class="kw">local</span> <span class="vr">file</span><span class="op">=</span><span class="st">"$1"</span>
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$file</span>"</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"File not found: <span class="vr">$file</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="kw">coproc</span> <span class="vr">_VAL</span> {
+    <span class="cmd">python3</span> <span class="fl">-u</span> <span class="fl">-c</span> <span class="st">'
+import sys, re
+EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
+for raw in sys.stdin:
+    row = raw.rstrip("\n").split(",")
+    if len(row) != 3:
+        print(f"ERR: expected 3 fields, got {len(row)}", flush=True)
+        continue
+    name, email, age = row
+    if not name.strip():
+        print("ERR: name is empty", flush=True)
+    elif not EMAIL_RE.match(email.strip()):
+        print("ERR: invalid email", flush=True)
+    elif not age.strip().isdigit():
+        print("ERR: age not numeric", flush=True)
+    else:
+        print("OK", flush=True)
+'</span>
+  }
+
+  <span class="kw">local</span> <span class="vr">ok</span><span class="op">=</span><span class="nu">0</span> <span class="vr">fail</span><span class="op">=</span><span class="nu">0</span> <span class="vr">line</span> <span class="vr">lineno</span><span class="op">=</span><span class="nu">0</span> <span class="vr">reply</span>
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    (( <span class="vr">lineno</span>++ ))
+    (( <span class="vr">lineno</span> <span class="op">==</span> <span class="nu">1</span> )) <span class="op">&&</span> <span class="kw">continue</span>   <span class="cm"># skip header</span>
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$line</span>"</span> <span class="op">>&${_VAL[1]}</span>
+    <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-t</span> <span class="nu">3</span> <span class="vr">reply</span> <span class="op"><&${_VAL[0]}</span> <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"Validator timeout"</span> <span class="op">>&2</span>; <span class="kw">break</span>; }
+    <span class="kw">if</span> [[ <span class="vr">$reply</span> <span class="op">==</span> <span class="st">"OK"</span> ]]; <span class="kw">then</span>
+      (( <span class="vr">ok</span>++ ))
+    <span class="kw">else</span>
+      (( <span class="vr">fail</span>++ ))
+      <span class="cmd">printf</span> <span class="st">'Row %d: %s\n'</span> <span class="st">"<span class="vr">$lineno</span>"</span> <span class="st">"<span class="vr">$reply</span>"</span>
+    <span class="kw">fi</span>
+  <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$file</span>"</span>
+
+  <span class="kw">exec</span> <span class="op">${_VAL[1]}>&-</span>
+  <span class="kw">wait</span> <span class="vr">$_VAL_PID</span>
+  <span class="cmd">printf</span> <span class="st">'\nSummary: %d OK, %d FAILED\n'</span> <span class="st">"<span class="vr">$ok</span>"</span> <span class="st">"<span class="vr">$fail</span>"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — FIFO-based worker pool (single worker)</h4>
+  <p>Without using <span class="inline-code">coproc</span>, implement a bidirectional
+  communication channel using two FIFOs (one for requests, one for responses).
+  Start a worker script that reads one job per line and prints a result per line.
+  Write a <code>job_submit JOB</code> function and a <code>job_result</code> function
+  that reads the response. Demonstrate submitting 5 jobs and collecting their
+  results. Include a <code>worker_shutdown</code> function that sends a quit signal
+  and waits.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="cm">#!/usr/bin/env bash
+# worker.sh — process jobs from stdin, print results to stdout</span>
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">job</span>; <span class="kw">do</span>
+  [[ <span class="vr">$job</span> <span class="op">==</span> <span class="st">"QUIT"</span> ]] <span class="op">&&</span> <span class="kw">break</span>
+  <span class="cm"># Example: reverse each line</span>
+  <span class="cmd">rev</span> <span class="op"><<<</span> <span class="st">"<span class="vr">$job</span>"</span>
+<span class="kw">done</span>
+<span class="cm">#!/usr/bin/env bash
+# controller.sh</span>
+<span class="vr">_REQ_FIFO</span><span class="op">=</span><span class="st">"/tmp/worker_req.$$"</span>
+<span class="vr">_RES_FIFO</span><span class="op">=</span><span class="st">"/tmp/worker_res.$$"</span>
+<span class="vr">_WORKER_PID</span><span class="op">=</span><span class="st">""</span>
+
+<span class="fn">worker_start</span>() {
+  <span class="cmd">mkfifo</span> <span class="st">"<span class="vr">$_REQ_FIFO</span>"</span> <span class="st">"<span class="vr">$_RES_FIFO</span>"</span>
+  <span class="cmd">stdbuf</span> <span class="fl">-oL</span> <span class="pth">./worker.sh</span> <span class="op"><</span> <span class="st">"<span class="vr">$_REQ_FIFO</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$_RES_FIFO</span>"</span> <span class="op">&</span>
+  <span class="vr">_WORKER_PID</span><span class="op">=</span><span class="vr">$!</span>
+  <span class="kw">exec</span> {<span class="vr">_WREQ</span>}<span class="op">></span> <span class="st">"<span class="vr">$_REQ_FIFO</span>"</span>
+  <span class="kw">exec</span> {<span class="vr">_WRES</span>}<span class="op"><</span> <span class="st">"<span class="vr">$_RES_FIFO</span>"</span>
+  <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"<span class="vr">$_REQ_FIFO</span>"</span> <span class="st">"<span class="vr">$_RES_FIFO</span>"</span>
+}
+
+<span class="fn">job_submit</span>() {
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$1"</span> <span class="op">>&$_WREQ</span>
+}
+
+<span class="fn">job_result</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_r</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-t</span> <span class="nu">5</span> <span class="vr">_r</span> <span class="op"><&$_WRES</span>
+}
+
+<span class="fn">worker_shutdown</span>() {
+  <span class="fn">job_submit</span> <span class="st">"QUIT"</span>
+  <span class="kw">exec</span> {<span class="vr">_WREQ</span>}<span class="op">>&-</span>
+  <span class="kw">exec</span> {<span class="vr">_WRES</span>}<span class="op"><&-</span>
+  <span class="kw">wait</span> <span class="st">"<span class="vr">$_WORKER_PID</span>"</span>
+}
+
+<span class="fn">worker_start</span>
+
+<span class="kw">for</span> <span class="vr">word</span> <span class="kw">in</span> hello world bash script example; <span class="kw">do</span>
+  <span class="fn">job_submit</span> <span class="st">"<span class="vr">$word</span>"</span>
+  <span class="kw">declare</span> <span class="vr">result</span>
+  <span class="fn">job_result</span> result
+  <span class="cmd">printf</span> <span class="st">'%s → %s\n'</span> <span class="st">"<span class="vr">$word</span>"</span> <span class="st">"<span class="vr">$result</span>"</span>
+<span class="kw">done</span>
+
+<span class="fn">worker_shutdown</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Benchmark: subprocess vs coprocess</h4>
+  <p>Write a script that measures the wall-clock time to perform 500 integer
+  additions using two methods:</p>
+  <ol>
+    <li>A fresh <span class="inline-code">$(( ))</span> expansion per iteration
+    (no fork, but as a baseline)</li>
+    <li>A coprocess running <span class="inline-code">python3 -u -c '...'</span> that
+    reads <code>A+B</code> expressions and prints results</li>
+    <li>A fresh <span class="inline-code">python3 -c 'print(...)'</span> subprocess per
+    iteration</li>
+  </ol>
+  <p>Use <span class="inline-code">TIMEFORMAT='%R'</span> and
+  <span class="inline-code">{ time ...; } 2>&1</span> to capture elapsed time for each
+  method. Print a comparison table.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="vr">N</span><span class="op">=</span><span class="nu">500</span>
+<span class="vr">TIMEFORMAT</span><span class="op">=</span><span class="st">'%R'</span>
+
+<span class="cm"># Method 1: pure Bash arithmetic — no fork</span>
+<span class="vr">t1</span><span class="op">=</span>$( { <span class="kw">time</span> {
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="vr">N</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="vr">r</span><span class="op">=</span>$(( <span class="vr">i</span> <span class="op">+</span> <span class="vr">i</span> <span class="op">*</span> <span class="nu">2</span> ))
+  <span class="kw">done</span>
+}; } <span class="nu">2</span><span class="op">>&1</span> )
+
+<span class="cm"># Method 2: coprocess python3</span>
+<span class="kw">coproc</span> <span class="vr">_PY</span> {
+  <span class="cmd">python3</span> <span class="fl">-u</span> <span class="fl">-c</span> <span class="st">'
+import sys
+for line in sys.stdin:
+    a, b = map(int, line.split("+"))
+    print(a + b, flush=True)
+'</span>
+}
+<span class="vr">t2</span><span class="op">=</span>$( { <span class="kw">time</span> {
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="vr">N</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">'%d+%d\n'</span> <span class="st">"<span class="vr">$i</span>"</span> $(( <span class="vr">i</span><span class="op">*</span><span class="nu">2</span> )) <span class="op">>&${_PY[1]}</span>
+    <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">_</span> <span class="op"><&${_PY[0]}</span>
+  <span class="kw">done</span>
+}; } <span class="nu">2</span><span class="op">>&1</span> )
+<span class="kw">exec</span> <span class="op">${_PY[1]}>&-</span>
+<span class="kw">wait</span> <span class="vr">$_PY_PID</span>
+
+<span class="cm"># Method 3: subprocess per call</span>
+<span class="vr">t3</span><span class="op">=</span>$( { <span class="kw">time</span> {
+  <span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span><span class="op"><</span><span class="vr">N</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+    <span class="cmd">python3</span> <span class="fl">-c</span> <span class="st">"print(<span class="vr">$i</span> + <span class="vr">$i</span> * 2)"</span>
+  <span class="kw">done</span> <span class="op">>/dev/null</span>
+}; } <span class="nu">2</span><span class="op">>&1</span> )
+
+<span class="cmd">printf</span> <span class="st">'\n%-30s %8s\n'</span>   <span class="st">"Method (<span class="vr">$N</span> iterations)"</span> <span class="st">"Seconds"</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$(printf '%.0s-' {1..40})"</span>
+<span class="cmd">printf</span> <span class="st">'%-30s %8s\n'</span> <span class="st">"1. Bash arithmetic"</span>       <span class="st">"<span class="vr">$t1</span>"</span>
+<span class="cmd">printf</span> <span class="st">'%-30s %8s\n'</span> <span class="st">"2. Python3 coprocess"</span>     <span class="st">"<span class="vr">$t2</span>"</span>
+<span class="cmd">printf</span> <span class="st">'%-30s %8s\n'</span> <span class="st">"3. Python3 subprocess"</span>    <span class="st">"<span class="vr">$t3</span>"</span></pre>
+  </div>
+</div>
+
+</div>

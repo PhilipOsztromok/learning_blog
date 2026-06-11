@@ -1,0 +1,506 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 260px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  .fn  { color: #b392f0; }
+  /* assertion cards */
+  .assert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; margin: 1em 0; }
+  .assert-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.8em 1em;
+  }
+  .assert-card .ac-syn  { font-family: 'Consolas', monospace; font-size: 1rem; color: #ffa657; display: block; margin-bottom: 0.2em; }
+  .assert-card .ac-name { color: #c9d8ff; font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 0.25em; }
+  .assert-card .ac-desc { color: #7a8aaa; font-size: 0.82rem; line-height: 1.5; }
+  /* lookahead visualiser */
+  .la-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.87rem; line-height: 2.1;
+  }
+  .lv-hdr  { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35em; }
+  .lv-input  { color: #c9d8ff; }
+  .lv-match  { background: #1e3a1e; color: #85e89d; border-radius: 2px; padding: 0 0.1em; }
+  .lv-assert { background: #1e1e3a; color: #79b8ff; border-radius: 2px; padding: 0 0.1em; }
+  .lv-nocon  { color: #5a6a8a; }
+  .lv-pat    { color: #ffa657; }
+  .lv-out    { color: #85e89d; }
+  .lv-noout  { color: #f97583; }
+  /* lazy vs greedy */
+  .quant-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; margin: 1em 0; }
+  .quant-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.8em 1em;
+  }
+  .quant-card .qc-title { font-family: 'Consolas', monospace; font-size: 0.95rem; display: block; margin-bottom: 0.3em; }
+  .quant-card .qc-desc  { color: #7a8aaa; font-size: 0.82rem; line-height: 1.5; }
+  .qc-greedy { color: #f97583; }
+  .qc-lazy   { color: #85e89d; }
+  /* group type cards */
+  .grp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7em; margin: 1em 0; }
+  .grp-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.75em 1em;
+  }
+  .grp-card .gc-syn  { font-family: 'Consolas', monospace; font-size: 0.95rem; color: #d2a8ff; display: block; margin-bottom: 0.15em; }
+  .grp-card .gc-name { color: #c9d8ff; font-size: 0.83rem; font-weight: bold; display: block; margin-bottom: 0.2em; }
+  .grp-card .gc-desc { color: #7a8aaa; font-size: 0.8rem; line-height: 1.4; }
+  /* portability */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.no  { color: #f97583; }
+  .lx-lesson td.gnu { color: #ffab70; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 11 — PCRE: Lookahead, Lookbehind, and Advanced Features</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>What Is PCRE?</h2>
+
+<p>PCRE — Perl-Compatible Regular Expressions — is a regex engine originally written to match Perl 5's regex behaviour. It extends ERE with features that are impossible in BRE or ERE: lookahead and lookbehind assertions, lazy quantifiers, named capture groups, non-capturing groups, and more.</p>
+
+<p>In the Bash toolkit, PCRE is available via:</p>
+<ul>
+  <li><code>grep -P</code> — GNU grep with PCRE engine (Linux; not available in BSD/macOS grep)</li>
+  <li><code>perl -ne</code> — inline Perl one-liners, available everywhere Perl is installed</li>
+  <li><code>pcregrep</code> — standalone PCRE grep (installable on macOS via Homebrew)</li>
+</ul>
+
+<div class="warn">
+  <strong><code>grep -P</code> is GNU grep only.</strong> On macOS, <code>grep -P</code> will print an error. Use <code>perl -ne</code> or install <code>pcregrep</code> for portable PCRE across platforms.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Lookahead and Lookbehind Assertions</h2>
+
+<p>Assertions test what is <em>around</em> the match position without consuming characters — they are zero-width. The matched text does not include the assertion's content.</p>
+
+<div class="assert-grid">
+  <div class="assert-card">
+    <span class="ac-syn">(?=...)</span>
+    <span class="ac-name">Positive lookahead</span>
+    <span class="ac-desc">Match position where the pattern <em>ahead</em> succeeds. The ahead text is not included in the match.</span>
+  </div>
+  <div class="assert-card">
+    <span class="ac-syn">(?!...)</span>
+    <span class="ac-name">Negative lookahead</span>
+    <span class="ac-desc">Match position where the pattern <em>ahead</em> does NOT match. Useful for exclusions.</span>
+  </div>
+  <div class="assert-card">
+    <span class="ac-syn">(?&lt;=...)</span>
+    <span class="ac-name">Positive lookbehind</span>
+    <span class="ac-desc">Match position where the pattern <em>behind</em> succeeds. The behind text is not included in the match.</span>
+  </div>
+  <div class="assert-card">
+    <span class="ac-syn">(?&lt;!...)</span>
+    <span class="ac-name">Negative lookbehind</span>
+    <span class="ac-desc">Match position where the pattern <em>behind</em> does NOT match. Excludes by context.</span>
+  </div>
+</div>
+
+<div class="la-vis">
+  <span class="lv-hdr">Positive lookahead: \w+(?=:) — word followed by colon, colon not captured</span>
+  <span>Input: <span class="lv-input">host: localhost  port: 8080  timeout: 30</span></span>
+  <span>Match: <span class="lv-match">host</span>  <span class="lv-nocon">(colon stays in input, not consumed)</span></span>
+  <span>Match: <span class="lv-match">port</span></span>
+  <span>Match: <span class="lv-match">timeout</span></span>
+  <span> </span>
+  <span class="lv-hdr">Positive lookbehind: (?&lt;=\$)[0-9]+ — digits preceded by $, $ not captured</span>
+  <span>Input: <span class="lv-input">price is $42.00 and $199.99</span></span>
+  <span>Match: <span class="lv-match">42</span>   <span class="lv-nocon">($ was required but not included in match)</span></span>
+  <span>Match: <span class="lv-match">199</span></span>
+</div>
+
+<pre><span class="cm"># Positive lookahead: extract keys (words before a colon)</span>
+<span class="cmd">echo</span> <span class="st">"host: localhost  port: 8080"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'\w+(?=:)'</span>
+<span class="out">host</span>
+<span class="out">port</span>
+
+<span class="cm"># Positive lookbehind: extract values (digits after $)</span>
+<span class="cmd">echo</span> <span class="st">"price $42 or $199"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?&lt;=\$)[0-9]+'</span>
+<span class="out">42</span>
+<span class="out">199</span>
+
+<span class="cm"># Negative lookahead: match "foo" not followed by "bar"</span>
+<span class="cmd">echo</span> <span class="st">"foobar foobaz fooqux"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'foo(?!bar)\w*'</span>
+<span class="out">foobaz</span>
+<span class="out">fooqux</span>
+
+<span class="cm"># Negative lookbehind: match digits NOT preceded by a minus</span>
+<span class="cmd">echo</span> <span class="st">"count=42 temp=-7 size=100"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?&lt;!-)[0-9]+'</span>
+<span class="out">42</span>
+<span class="out">100</span>
+
+<span class="cm"># Lookahead + lookbehind together: extract value between delimiters</span>
+<span class="cmd">echo</span> <span class="st">'name="Alice"'</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?&lt;=")[^"]+'</span>
+<span class="out">Alice</span>
+
+<span class="cm"># Validate a password: must contain a digit AND an uppercase letter</span>
+<span class="vr">pw</span><span class="op">=</span><span class="st">"Secret42"</span>
+<span class="kw">if</span> <span class="cmd">echo</span> <span class="st">"$pw"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-qP</span> <span class="st">'^(?=.*[0-9])(?=.*[A-Z]).{8,}$'</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"password strong"</span>
+<span class="kw">fi</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Lazy Quantifiers</h2>
+
+<p>All ERE/BRE quantifiers are <em>greedy</em> — they match as much as possible. PCRE adds <em>lazy</em> (minimal) quantifiers by appending <code>?</code> to any quantifier. A lazy quantifier matches as little as possible while still allowing the overall pattern to succeed.</p>
+
+<div class="quant-grid">
+  <div class="quant-card">
+    <span class="qc-title qc-greedy">Greedy:  .*   .+   .{2,5}</span>
+    <span class="qc-desc">Match as MUCH as possible, then back off only if needed. The engine consumes the whole string first, then retreats.</span>
+  </div>
+  <div class="quant-card">
+    <span class="qc-title qc-lazy">Lazy:    .*?  .+?  .{2,5}?</span>
+    <span class="qc-desc">Match as LITTLE as possible, then expand only if needed. The engine tries the shortest match first.</span>
+  </div>
+</div>
+
+<div class="la-vis">
+  <span class="lv-hdr">Input: "&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;"</span>
+  <span><span class="lv-pat">Greedy:  &lt;.+&gt;</span>   matches <span class="lv-noout">&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;</span>  (one huge match)</span>
+  <span><span class="lv-pat">Lazy:    &lt;.+?&gt;</span>  matches <span class="lv-out">&lt;b&gt;</span>  then  <span class="lv-out">&lt;/b&gt;</span>  then  <span class="lv-out">&lt;i&gt;</span>  then  <span class="lv-out">&lt;/i&gt;</span></span>
+</div>
+
+<pre><span class="cm"># Greedy: matches from first &lt; to LAST &gt; on the line</span>
+<span class="cmd">echo</span> <span class="st">"&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'&lt;.+&gt;'</span>
+<span class="out">&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;</span>   <span class="cm"># one match — greedy consumed everything</span>
+
+<span class="cm"># Lazy: matches each individual tag</span>
+<span class="cmd">echo</span> <span class="st">"&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'&lt;.+?&gt;'</span>
+<span class="out">&lt;b&gt;</span>
+<span class="out">&lt;/b&gt;</span>
+<span class="out">&lt;i&gt;</span>
+<span class="out">&lt;/i&gt;</span>
+
+<span class="cm"># Lazy: extract content of the FIRST quoted string</span>
+<span class="cmd">echo</span> <span class="st">'"Alice" and "Bob"'</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'".*?"'</span>
+<span class="out">"Alice"</span>
+<span class="out">"Bob"</span>
+
+<span class="cm"># Lazy: match shortest balanced {...} block</span>
+<span class="cmd">echo</span> <span class="st">"{a} text {b} more {c}"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'\{.+?\}'</span>
+<span class="out">{a}</span>
+<span class="out">{b}</span>
+<span class="out">{c}</span>
+
+<span class="cm"># All lazy quantifier forms</span>
+<span class="cm"># *?   zero or more, lazy</span>
+<span class="cm"># +?   one or more, lazy</span>
+<span class="cm"># ??   zero or one, lazy</span>
+<span class="cm"># {n,m}?  between n and m, lazy</span></pre>
+
+<div class="tip">
+  <strong>ERE workaround without PCRE:</strong> <code>[^delimiter]*</code> is the ERE/BRE equivalent for lazy matching up to a delimiter. Use <code>[^"]*</code> instead of <code>.*?</code> to match inside double quotes. This works in all tools but only when the delimiter is a single character.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Named Capture Groups</h2>
+
+<p>PCRE allows capture groups to be named, making patterns self-documenting and the code that uses them easier to maintain. Names are referenced in the pattern and in replacement strings.</p>
+
+<pre><span class="cm"># Named group syntax: (?P&lt;name&gt;...) or (?&lt;name&gt;...) in PCRE</span>
+
+<span class="cm"># grep -oP: extract named match (prints the whole match — use perl for the name)</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?P&lt;year&gt;[0-9]{4})-(?P&lt;month&gt;[0-9]{2})-(?P&lt;day&gt;[0-9]{2})'</span>
+<span class="out">2026-06-11</span>
+
+<span class="cm"># perl -ne: access named groups via %+ hash</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11"</span> <span class="op">|</span> <span class="cmd">perl</span> <span class="fl">-ne</span> <span class="st">'
+    if (/(?P&lt;year&gt;\d{4})-(?P&lt;month&gt;\d{2})-(?P&lt;day&gt;\d{2})/) {
+        print "year=$+{year} month=$+{month} day=$+{day}\n"
+    }
+'</span>
+<span class="out">year=2026 month=06 day=11</span>
+
+<span class="cm"># perl: named group in replacement with \k&lt;name&gt;</span>
+<span class="cmd">echo</span> <span class="st">"Smith, John"</span> <span class="op">|</span> <span class="cmd">perl</span> <span class="fl">-pe</span> <span class="st">'s/(?P&lt;last&gt;\w+), (?P&lt;first&gt;\w+)/$+{first} $+{last}/'</span>
+<span class="out">John Smith</span>
+
+<span class="cm"># Parse a log line with named groups for readability</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11 14:32:00 ERROR connection failed"</span> <span class="op">|</span> <span class="cmd">perl</span> <span class="fl">-ne</span> <span class="st">'
+    if (/(?P&lt;date&gt;\S+) (?P&lt;time&gt;\S+) (?P&lt;level&gt;\S+) (?P&lt;msg&gt;.+)/) {
+        printf "LEVEL=%-8s MSG=%s\n", $+{level}, $+{msg}
+    }
+'</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Group Types — Complete Reference</h2>
+
+<div class="grp-grid">
+  <div class="grp-card">
+    <span class="gc-syn">(...)</span>
+    <span class="gc-name">Capturing group</span>
+    <span class="gc-desc">Captures the matched text. Numbered left-to-right by opening paren. Back-referenced as <code>\1</code>–<code>\9</code>.</span>
+  </div>
+  <div class="grp-card">
+    <span class="gc-syn">(?:...)</span>
+    <span class="gc-name">Non-capturing group</span>
+    <span class="gc-desc">Groups for alternation or quantification without consuming a capture slot. Keeps group numbers tidy.</span>
+  </div>
+  <div class="grp-card">
+    <span class="gc-syn">(?P&lt;name&gt;...)  (?&lt;name&gt;...)</span>
+    <span class="gc-name">Named capturing group</span>
+    <span class="gc-desc">Captures and assigns a name. Also numbered. Referenced as <code>(?P=name)</code> or <code>\k&lt;name&gt;</code>.</span>
+  </div>
+  <div class="grp-card">
+    <span class="gc-syn">(?=...)  (?!...)</span>
+    <span class="gc-name">Lookahead assertion</span>
+    <span class="gc-desc">Zero-width. Does not capture or consume. Tests what follows the current position.</span>
+  </div>
+  <div class="grp-card">
+    <span class="gc-syn">(?&lt;=...)  (?&lt;!...)</span>
+    <span class="gc-name">Lookbehind assertion</span>
+    <span class="gc-desc">Zero-width. Tests what precedes the current position. Must be fixed-width in most PCRE implementations.</span>
+  </div>
+  <div class="grp-card">
+    <span class="gc-syn">(?&gt;...)</span>
+    <span class="gc-name">Atomic group</span>
+    <span class="gc-desc">Once matched, the engine does not backtrack into this group. Prevents catastrophic backtracking.</span>
+  </div>
+  <div class="grp-card">
+    <span class="gc-syn">(?i:...)  (?s:...)  (?m:...)</span>
+    <span class="gc-name">Inline modifier group</span>
+    <span class="gc-desc">Apply flags to a portion of the pattern. <code>i</code>=case-insensitive, <code>s</code>=dot-all, <code>m</code>=multiline.</span>
+  </div>
+  <div class="grp-card">
+    <span class="gc-syn">(?|...)</span>
+    <span class="gc-name">Branch reset group</span>
+    <span class="gc-desc">Each branch of alternation uses the same group numbers. Useful for equivalent alternatives.</span>
+  </div>
+</div>
+
+<pre><span class="cm"># Non-capturing group: group for alternation without a capture slot</span>
+<span class="cmd">echo</span> <span class="st">"colour color"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'colo(?:u?r)'</span>
+<span class="out">colour</span>
+<span class="out">color</span>
+
+<span class="cm"># Contrast: capturing group uses a slot even if you don't need it</span>
+<span class="cm"># Non-capturing keeps group numbers clean when you only care about \1</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?:[0-9]{4})-([0-9]{2})-([0-9]{2})'</span>
+<span class="cm"># \1 = month (06), \2 = day (11) — year group not numbered</span>
+
+<span class="cm"># Inline modifier: case-insensitive only within a group</span>
+<span class="cmd">echo</span> <span class="st">"HTTP https FTP"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?i:https?)'</span>
+<span class="out">HTTP</span>
+<span class="out">https</span>
+
+<span class="cm"># Atomic group: prevent backtracking into a completed group</span>
+<span class="cm"># Useful for performance; prevents runaway backtracking on long strings</span>
+<span class="cmd">echo</span> <span class="st">"aaaaab"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'(?&gt;a+)b'</span>   <span class="cm"># a+ consumed, no backtrack needed</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>perl -ne — PCRE in Shell Pipelines</h2>
+
+<p><code>perl -ne</code> runs a Perl script line-by-line over stdin or a file. It is the most portable way to use full PCRE in shell pipelines, available on virtually every Unix system.</p>
+
+<pre><span class="cm"># -n: loop over lines, no auto-print; -e: inline script</span>
+<span class="cm"># Basic filter: print matching lines (equivalent to grep -P)</span>
+<span class="cmd">perl</span> <span class="fl">-ne</span> <span class="st">'print if /ERROR/'</span> <span class="pth">app.log</span>
+
+<span class="cm"># -p: loop and auto-print (like sed); substitution with s///</span>
+<span class="cmd">perl</span> <span class="fl">-pe</span> <span class="st">'s/foo/bar/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Extract only the matched portion (like grep -oP)</span>
+<span class="cmd">perl</span> <span class="fl">-ne</span> <span class="st">'print "$1\n" while /([0-9]{4}-[0-9]{2}-[0-9]{2})/g'</span> <span class="pth">log.txt</span>
+
+<span class="cm"># Named groups + formatted output</span>
+<span class="cmd">perl</span> <span class="fl">-ne</span> <span class="st">'
+    if (/(?P&lt;ip&gt;\d{1,3}(?:\.\d{1,3}){3}).*?"(?P&lt;method&gt;GET|POST|PUT|DELETE)/) {
+        print "$+{ip}  $+{method}\n"
+    }
+'</span> <span class="pth">access.log</span>
+
+<span class="cm"># Lazy match: extract each JSON string value</span>
+<span class="cmd">echo</span> <span class="st">'{"name":"Alice","city":"Paris"}'</span> <span class="op">|</span> \
+<span class="cmd">perl</span> <span class="fl">-ne</span> <span class="st">'print "$1\n" while /"([^"]+)":\s*"(.+?)"/g and print "key=$1 val=$2\n" and 0'</span>
+
+<span class="cm"># Cleaner version for key:value JSON extraction</span>
+<span class="cmd">echo</span> <span class="st">'{"name":"Alice","city":"Paris"}'</span> <span class="op">|</span> \
+<span class="cmd">perl</span> <span class="fl">-ne</span> <span class="st">'while (/"(\w+)":\s*"([^"]+)"/g) { print "$1 = $2\n" }'</span>
+<span class="out">name = Alice</span>
+<span class="out">city = Paris</span>
+
+<span class="cm"># Lookahead in perl: extract words before colons</span>
+<span class="cmd">echo</span> <span class="st">"host: localhost  port: 8080"</span> <span class="op">|</span> \
+<span class="cmd">perl</span> <span class="fl">-ne</span> <span class="st">'print "$1\n" while /(\w+)(?=:)/g'</span>
+<span class="out">host</span>
+<span class="out">port</span>
+
+<span class="cm"># Multi-line mode: . matches newlines with /s, ^ and $ match line ends with /m</span>
+<span class="cmd">perl</span> <span class="fl">-0777</span> <span class="fl">-ne</span> <span class="st">'print "$1\n" while /BEGIN(.*?)END/gs'</span> <span class="pth">file.txt</span>
+<span class="cm"># -0777: slurp entire file into $_; /s: dot matches newline; /g: all matches</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical PCRE Recipes</h2>
+
+<h3>Extraction</h3>
+<pre><span class="cm"># Extract all IPv4 addresses from a file</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'</span> <span class="pth">access.log</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-u</span>
+
+<span class="cm"># Extract all URLs (http and https)</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'https?://[^\s"&gt;]+'</span> <span class="pth">page.html</span>
+
+<span class="cm"># Extract email addresses</span>
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'[\w.+-]+@[\w-]+\.[\w.]+'</span> <span class="pth">mail.txt</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-u</span>
+
+<span class="cm"># Extract value of a specific JSON field (not for production — use jq)</span>
+<span class="cmd">echo</span> <span class="st">'{"user": "alice", "role": "admin"}'</span> <span class="op">|</span> \
+<span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?&lt;="user": ")[^"]+'</span>
+<span class="out">alice</span>
+
+<span class="cm"># Extract all words after a specific keyword</span>
+<span class="cmd">echo</span> <span class="st">"imported module requests as req"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oP</span> <span class="st">'(?&lt;=as )\w+'</span>
+<span class="out">req</span></pre>
+
+<h3>Validation and filtering</h3>
+<pre><span class="cm"># Password policy: min 8 chars, must have digit + uppercase + special</span>
+<span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'^(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&amp;*]).{8,}$'</span> <span class="pth">passwords.txt</span>
+
+<span class="cm"># Match lines that do NOT start with a comment or blank line</span>
+<span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'^(?!#|$)'</span> <span class="pth">config.txt</span>
+
+<span class="cm"># Find duplicate consecutive words</span>
+<span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'\b(\w+)\s+\1\b'</span> <span class="pth">document.txt</span>
+
+<span class="cm"># Validate that a version string follows MAJOR.MINOR.PATCH-PRERELEASE format</span>
+<span class="cmd">echo</span> <span class="st">"2.31.0-beta.1"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'^[0-9]+\.[0-9]+\.[0-9]+(?:-[\w.]+)?$'</span></pre>
+
+<h3>Substitution with perl -pe</h3>
+<pre><span class="cm"># Reformat date using named groups</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11"</span> <span class="op">|</span> <span class="cmd">perl</span> <span class="fl">-pe</span> <span class="st">'s/(?P&lt;y&gt;\d{4})-(?P&lt;m&gt;\d{2})-(?P&lt;d&gt;\d{2})/$+{d}\/$+{m}\/$+{y}/'</span>
+<span class="out">11/06/2026</span>
+
+<span class="cm"># Mask credit card numbers: keep last 4 digits</span>
+<span class="cmd">echo</span> <span class="st">"card: 4111-1111-1111-1234"</span> <span class="op">|</span> \
+<span class="cmd">perl</span> <span class="fl">-pe</span> <span class="st">'s/\b\d{4}(?:-\d{4}){2}(?=-\d{4}\b)/****-****-****/g'</span>
+<span class="out">card: ****-****-****-1234</span>
+
+<span class="cm"># Add a thousands separator to large numbers</span>
+<span class="cmd">echo</span> <span class="st">"1234567"</span> <span class="op">|</span> <span class="cmd">perl</span> <span class="fl">-pe</span> <span class="st">'s/(\d)(?=(\d{3})+(?!\d))/$1,/g'</span>
+<span class="out">1,234,567</span>
+
+<span class="cm"># Remove ANSI colour codes from terminal output</span>
+<span class="cmd">cat</span> <span class="pth">coloured.log</span> <span class="op">|</span> <span class="cmd">perl</span> <span class="fl">-pe</span> <span class="st">'s/\x1b\[[0-9;]*m//g'</span>
+
+<span class="cm"># Normalise line endings: CRLF to LF</span>
+<span class="cmd">perl</span> <span class="fl">-pi</span> <span class="fl">-e</span> <span class="st">'s/\r\n/\n/g'</span> <span class="pth">file.txt</span>    <span class="cm"># in-place edit</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Catastrophic Backtracking — and How to Avoid It</h2>
+
+<p>Poorly written PCRE patterns on adversarial input can cause the regex engine to run for an exponentially long time — a <em>ReDoS</em> (Regular Expression Denial of Service) attack. Understanding the cause is essential for writing safe patterns.</p>
+
+<pre><span class="cm"># DANGEROUS: nested quantifiers on overlapping patterns</span>
+<span class="cm"># Pattern (a+)+ on input "aaaaaaaaaaaab" causes exponential backtracking</span>
+<span class="cm"># Each 'a' can be assigned to inner or outer group in 2^N ways</span>
+<span class="er"># grep -P '(a+)+b' &lt;&lt;&lt; "aaaaaaaaaaaab"  — hangs!</span>
+
+<span class="cm"># SAFE alternatives:</span>
+<span class="cm"># 1. Atomic group — commit to match, no backtracking</span>
+<span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'(?&gt;a+)b'</span>  <span class="cm"># atomic: once a+ matched, don't re-try assignments</span>
+
+<span class="cm"># 2. Possessive quantifiers (PCRE2 / newer Perl)</span>
+<span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'a++b'</span>     <span class="cm"># ++ = possessive: no backtrack</span>
+
+<span class="cm"># 3. Rewrite to eliminate ambiguity</span>
+<span class="cmd">grep</span> <span class="fl">-P</span> <span class="st">'a+b'</span>      <span class="cm"># the nested group was unnecessary here</span></pre>
+
+<div class="warn">
+  <strong>ReDoS rules of thumb:</strong> avoid nesting quantifiers (<code>(a+)+</code>), avoid alternation where branches can match the same characters (<code>(a|a)+</code>), and always anchor patterns that validate full strings (<code>^...$</code>). Use <code>(?&gt;...)</code> atomic groups to commit the engine when backtracking serves no purpose.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>PCRE Feature Availability</h2>
+
+<table>
+  <tr><th>Feature</th><th>grep -P (GNU)</th><th>grep -P (BSD/macOS)</th><th>perl -ne</th><th>pcregrep</th></tr>
+  <tr><td>Lookahead <code>(?=...)</code></td><td class="yes">Yes</td><td class="no">Error</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Lookbehind <code>(?&lt;=...)</code></td><td class="yes">Yes</td><td class="no">Error</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Lazy quantifiers <code>.*?</code></td><td class="yes">Yes</td><td class="no">Error</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Named groups <code>(?P&lt;n&gt;...)</code></td><td class="yes">Yes</td><td class="no">Error</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Non-capturing <code>(?:...)</code></td><td class="yes">Yes</td><td class="no">Error</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Atomic group <code>(?&gt;...)</code></td><td class="yes">Yes</td><td class="no">Error</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Inline flags <code>(?i:...)</code></td><td class="yes">Yes</td><td class="no">Error</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Slurp mode <code>-0777</code></td><td class="no">N/A</td><td class="no">N/A</td><td class="yes">Yes</td><td class="gnu">pcregrep -M</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 11</h2>
+
+<div class="cmd-ref">
+  <h4>Assertions</h4>
+  <div class="cmd-row"><span class="cmd-key">(?=pat)</span><span class="cmd-desc">Positive lookahead — position followed by pat</span></div>
+  <div class="cmd-row"><span class="cmd-key">(?!pat)</span><span class="cmd-desc">Negative lookahead — position NOT followed by pat</span></div>
+  <div class="cmd-row"><span class="cmd-key">(?&lt;=pat)</span><span class="cmd-desc">Positive lookbehind — position preceded by pat</span></div>
+  <div class="cmd-row"><span class="cmd-key">(?&lt;!pat)</span><span class="cmd-desc">Negative lookbehind — position NOT preceded by pat</span></div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Lazy Quantifiers</h4>
+  <div class="cmd-row"><span class="cmd-key">*?   +?   ??   {n,m}?</span><span class="cmd-desc">Match as little as possible (PCRE only)</span></div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Group Types</h4>
+  <div class="cmd-row"><span class="cmd-key">(?:...)</span><span class="cmd-desc">Non-capturing group</span></div>
+  <div class="cmd-row"><span class="cmd-key">(?P&lt;name&gt;...)</span><span class="cmd-desc">Named capturing group</span></div>
+  <div class="cmd-row"><span class="cmd-key">(?&gt;...)</span><span class="cmd-desc">Atomic group — no backtracking</span></div>
+  <div class="cmd-row"><span class="cmd-key">(?i:...)</span><span class="cmd-desc">Inline flag — case-insensitive within group</span></div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Shell Tools</h4>
+  <div class="cmd-row"><span class="cmd-key">grep -oP 'pat'</span><span class="cmd-desc">Extract PCRE matches (GNU grep only)</span></div>
+  <div class="cmd-row"><span class="cmd-key">grep -P 'pat' file</span><span class="cmd-desc">Filter lines with PCRE (GNU grep only)</span></div>
+  <div class="cmd-row"><span class="cmd-key">perl -ne 'print if /pat/'</span><span class="cmd-desc">PCRE filter — portable alternative to grep -P</span></div>
+  <div class="cmd-row"><span class="cmd-key">perl -pe 's/pat/rep/'</span><span class="cmd-desc">PCRE substitution — portable alternative to sed -E</span></div>
+  <div class="cmd-row"><span class="cmd-key">perl -0777 -ne '...'</span><span class="cmd-desc">Slurp entire file; enables multi-line matching</span></div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 12 — the final chapter — covers building and maintaining a personal regex toolkit: a library of tested patterns, a test harness for validating your regex against edge cases, combining all the tools (grep, sed, awk, Bash, Perl) in real pipeline scripts, and a complete course reference card.
+</div>
+
+</div>

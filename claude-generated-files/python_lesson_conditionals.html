@@ -1,0 +1,614 @@
+<!-- ============================================================
+     PYTHON LESSON: Conditional Statements
+     Level: Beginner Python / Experienced Programmer
+     ============================================================ -->
+
+<style>
+  .py-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .py-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .py-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .py-lesson p { margin-bottom: 1rem; }
+  .py-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 16px;
+  }
+  .cm { color: #6a9153; font-style: italic; }
+  .kw { color: #c9a8ff; }
+  .st { color: #7ecfa0; }
+  .nu { color: #f08080; }
+  .fn { color: #7ab8ff; }
+  .cl { color: #ffd580; }
+  .op { color: #a0a4b8; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .java-box {
+    background: #1a1d27;
+    border-left: 3px solid #ffd580;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .java-box strong { color: #ffd580; }
+  .java-box .java-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .fastapi-box {
+    background: #1a1d27;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .fastapi-box strong { color: #7ecfa0; }
+  .fastapi-box .fastapi-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Concept cards ───────────────────────────────── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+
+  .concept-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: #4f8ef7; }
+  .concept-card .cc-type {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 4px;
+  }
+  .concept-card .cc-name {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 1.05em;
+    color: #ffd580;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .concept-card .cc-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 10px;
+  }
+  .concept-card .cc-example {
+    background: #12141e;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #e2e4ec;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  /* ── Example blocks ──────────────────────────────── */
+  .example-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .example-block .ex-title {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #4f8ef7;
+    margin-bottom: 6px;
+  }
+  .example-block .ex-desc {
+    font-size: 0.88em;
+    color: #a0a4b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* ── Truthiness table ────────────────────────────── */
+  .truth-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .truth-grid { grid-template-columns: 1fr; } }
+
+  .truth-card {
+    background: #1a1d27;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .truth-card .tc-header {
+    padding: 9px 14px;
+    font-family: system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.85em;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .truth-card.falsy  .tc-header { background: #2a1a1a; color: #f08080; border-left: 3px solid #f08080; }
+  .truth-card.truthy .tc-header { background: #1a2a1a; color: #7ecfa0; border-left: 3px solid #7ecfa0; }
+  .truth-card table { width: 100%; border-collapse: collapse; }
+  .truth-card td {
+    padding: 6px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.85em;
+  }
+  .truth-card.falsy  td:first-child { color: #f08080; }
+  .truth-card.truthy td:first-child { color: #7ecfa0; }
+  .truth-card td:last-child { color: #7a7f96; font-style: italic; font-family: system-ui, sans-serif; font-size: 0.8em; }
+  .truth-card tr:last-child td { border-bottom: none; }
+
+  /* ── Operator table ──────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.88em;
+    margin-top: 12px;
+    margin-bottom: 24px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.9em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.8em; color: #7a7f96; font-style: italic; }
+  .ref-table .java-eq { font-size: 0.8em; color: #ffd580; }
+
+  /* ── Version badge ───────────────────────────────── */
+  .version-badge {
+    display: inline-block;
+    background: #1e2235;
+    border: 1px solid #4f8ef7;
+    color: #4f8ef7;
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.04em;
+  }
+</style>
+
+<div class="py-lesson">
+
+  <h2>🔀 Conditional Statements</h2>
+  <p class="section-intro">Python's conditional syntax will feel immediately familiar — same logic as Java and JavaScript, but cleaner. No curly braces, no parentheses required around conditions, and several features (chained comparisons, truthiness, the conditional expression) that have no direct equivalent in Java.</p>
+
+  <div class="java-box">
+    <span class="java-label">⚡ Coming from Java / JavaScript</span>
+    <strong>Four key differences:</strong> (1) <code>elif</code> not <code>else if</code>. (2) <code>and</code> / <code>or</code> / <code>not</code> instead of <code>&amp;&amp;</code> / <code>||</code> / <code>!</code>. (3) Indentation defines blocks — no curly braces. (4) Python's concept of <em>truthiness</em> is broader — empty lists, <code>0</code>, <code>None</code>, and empty strings are all falsy, which leads to a more expressive style of condition writing.
+  </div>
+
+  <div class="fastapi-box">
+    <span class="fastapi-label">🚀 FastAPI relevance — HIGH</span>
+    <strong>Conditional logic is everywhere in route handlers.</strong> Checking if a requested item exists, validating user permissions, deciding what HTTP status code to return, branching on query parameter values — all of this uses the patterns in this lesson. The conditional expression (ternary) is particularly common in building response objects.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       CORE SYNTAX
+  ═══════════════════════════════════════════ -->
+  <h2>🧱 Core Syntax</h2>
+
+  <div class="concept-grid">
+
+    <div class="concept-card">
+      <div class="cc-type">Basic structure</div>
+      <span class="cc-name">if / elif / else</span>
+      <div class="cc-desc">Conditions don't need parentheses. Each block is defined by indentation (4 spaces is the Python standard). <code>elif</code> is short for "else if" — not two separate words as in Java/JS.</div>
+      <div class="cc-example"><span class="kw">if</span> days_left <span class="op"><=</span> <span class="nu">0</span>:
+    <span class="fn">print</span>(<span class="st">"Expired!"</span>)
+<span class="kw">elif</span> days_left <span class="op"><=</span> <span class="nu">3</span>:
+    <span class="fn">print</span>(<span class="st">"Expiring soon"</span>)
+<span class="kw">elif</span> days_left <span class="op"><=</span> <span class="nu">7</span>:
+    <span class="fn">print</span>(<span class="st">"Use this week"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"Plenty of time"</span>)</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Logical operators</div>
+      <span class="cc-name">and  /  or  /  not</span>
+      <div class="cc-desc">Python uses words, not symbols. <code>and</code> = <code>&amp;&amp;</code>, <code>or</code> = <code>||</code>, <code>not</code> = <code>!</code>. They work identically in terms of precedence: <code>not</code> first, then <code>and</code>, then <code>or</code>.</div>
+      <div class="cc-example"><span class="kw">if</span> is_vegetarian <span class="kw">and not</span> has_gluten:
+    <span class="fn">print</span>(<span class="st">"Suitable"</span>)
+
+<span class="kw">if</span> is_expired <span class="kw">or</span> qty <span class="op">==</span> <span class="nu">0</span>:
+    <span class="fn">print</span>(<span class="st">"Out of stock"</span>)
+
+<span class="kw">if not</span> pantry:  <span class="cm"># empty list is falsy</span>
+    <span class="fn">print</span>(<span class="st">"Nothing in pantry"</span>)</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Identity &amp; membership</div>
+      <span class="cc-name">is  /  in  /  not in</span>
+      <div class="cc-desc"><code>is</code> checks identity (same object), not equality. <code>in</code> checks membership in any iterable — much cleaner than Java's <code>.contains()</code> or JS's <code>.includes()</code>.</div>
+      <div class="cc-example"><span class="cm"># Identity — always use for None</span>
+<span class="kw">if</span> expiry <span class="kw">is</span> <span class="kw">None</span>:
+    <span class="fn">print</span>(<span class="st">"No expiry set"</span>)
+
+<span class="cm"># Membership — works on lists, tuples, strings, dicts</span>
+<span class="kw">if</span> <span class="st">"milk"</span> <span class="kw">in</span> pantry:
+    <span class="fn">print</span>(<span class="st">"Milk found"</span>)
+
+<span class="kw">if</span> <span class="st">"nuts"</span> <span class="kw">not in</span> allergens:
+    <span class="fn">print</span>(<span class="st">"Nut-free"</span>)</div>
+    </div>
+
+    <div class="concept-card">
+      <div class="cc-type">Chained comparisons</div>
+      <span class="cc-name">a &lt; b &lt; c</span>
+      <div class="cc-desc">Python allows chained comparisons — a feature Java and JavaScript don't have. <code>0 &lt; x &lt; 10</code> is genuinely equivalent to <code>x &gt; 0 and x &lt; 10</code>. Reads like mathematics.</div>
+      <div class="cc-example"><span class="cm"># Java: qty > 0 && qty <= 100</span>
+<span class="cm"># Python:</span>
+<span class="kw">if</span> <span class="nu">0</span> <span class="op">&lt;</span> qty <span class="op">&lt;=</span> <span class="nu">100</span>:
+    <span class="fn">print</span>(<span class="st">"Normal stock"</span>)
+
+<span class="kw">if</span> <span class="nu">1</span> <span class="op">&lt;=</span> days_left <span class="op">&lt;=</span> <span class="nu">3</span>:
+    <span class="fn">print</span>(<span class="st">"Expiring soon"</span>)</div>
+    </div>
+
+  </div><!-- /concept-grid -->
+
+
+  <!-- ═══════════════════════════════════════════
+       TRUTHINESS
+  ═══════════════════════════════════════════ -->
+  <h2>💡 Truthiness — Python's Flexible Booleans</h2>
+  <p class="section-intro">In Python, any object can be used in a boolean context. This lets you write natural-sounding conditions like <code>if pantry:</code> instead of <code>if len(pantry) > 0:</code>. Knowing what is falsy is essential — it's a short list.</p>
+
+  <div class="truth-grid">
+    <div class="truth-card falsy">
+      <div class="tc-header">❌ Falsy — evaluate as False</div>
+      <table>
+        <tr><td>None</td><td>Python's null</td></tr>
+        <tr><td>False</td><td>the boolean False</td></tr>
+        <tr><td>0</td><td>integer zero</td></tr>
+        <tr><td>0.0</td><td>float zero</td></tr>
+        <tr><td>""</td><td>empty string</td></tr>
+        <tr><td>[]</td><td>empty list</td></tr>
+        <tr><td>{}</td><td>empty dict</td></tr>
+        <tr><td>()</td><td>empty tuple</td></tr>
+        <tr><td>set()</td><td>empty set</td></tr>
+      </table>
+    </div>
+    <div class="truth-card truthy">
+      <div class="tc-header">✅ Truthy — evaluate as True</div>
+      <table>
+        <tr><td>True</td><td>the boolean True</td></tr>
+        <tr><td>1, -1, 42</td><td>any non-zero number</td></tr>
+        <tr><td>"hello"</td><td>any non-empty string</td></tr>
+        <tr><td>[1, 2]</td><td>any non-empty list</td></tr>
+        <tr><td>{"a": 1}</td><td>any non-empty dict</td></tr>
+        <tr><td>(1,)</td><td>any non-empty tuple</td></tr>
+        <tr><td>{1, 2}</td><td>any non-empty set</td></tr>
+        <tr><td>&lt;any object&gt;</td><td>instances are truthy by default</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Truthiness in Practice — the Pythonic Style</div>
+    <div class="ex-desc">Using truthiness directly (rather than explicit comparisons) is considered more idiomatic Python. Both versions work — the truthiness version is preferred.</div>
+<code class="code-block"><span class="cm"># Checking an empty list</span>
+pantry = []
+
+<span class="cm"># Java-style (works but not Pythonic)</span>
+<span class="kw">if</span> <span class="fn">len</span>(pantry) <span class="op">==</span> <span class="nu">0</span>:
+    <span class="fn">print</span>(<span class="st">"Empty"</span>)
+
+<span class="cm"># Pythonic — empty list is falsy</span>
+<span class="kw">if not</span> pantry:
+    <span class="fn">print</span>(<span class="st">"Empty"</span>)
+
+<span class="cm"># Checking a string</span>
+name = <span class="st">""</span>
+<span class="kw">if not</span> name:
+    <span class="fn">print</span>(<span class="st">"Name is missing"</span>)
+
+<span class="cm"># Checking None or empty together</span>
+description = <span class="kw">None</span>
+<span class="kw">if not</span> description:           <span class="cm"># catches both None AND ""</span>
+    description = <span class="st">"No description provided"</span>
+
+<span class="cm"># Checking a number is non-zero</span>
+quantity = <span class="nu">0</span>
+<span class="kw">if not</span> quantity:
+    <span class="fn">print</span>(<span class="st">"Out of stock"</span>)</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       CODE EXAMPLES
+  ═══════════════════════════════════════════ -->
+  <h2>💻 Examples in Context</h2>
+
+  <div class="example-block">
+    <div class="ex-title">Stock Level Check — Multi-Branch Logic</div>
+    <div class="ex-desc">A realistic example of chained elif branches — categorising an ingredient's status for the meal planner's inventory system.</div>
+<code class="code-block">ingredient = {<span class="st">"name"</span>: <span class="st">"milk"</span>, <span class="st">"qty"</span>: <span class="nu">1</span>, <span class="st">"days_left"</span>: <span class="nu">2</span>}
+
+name      = ingredient[<span class="st">"name"</span>]
+qty       = ingredient[<span class="st">"qty"</span>]
+days_left = ingredient[<span class="st">"days_left"</span>]
+
+<span class="cm"># Check expiry first, then quantity</span>
+<span class="kw">if</span> days_left <span class="op"><=</span> <span class="nu">0</span>:
+    status = <span class="st">"🚫 EXPIRED — discard"</span>
+<span class="kw">elif</span> days_left <span class="op"><=</span> <span class="nu">3</span> <span class="kw">and</span> qty <span class="op">></span> <span class="nu">0</span>:
+    status = <span class="st">"⚠ Use urgently"</span>
+<span class="kw">elif</span> qty <span class="op">==</span> <span class="nu">0</span>:
+    status = <span class="st">"🛒 Out of stock — add to shopping list"</span>
+<span class="kw">elif</span> <span class="nu">1</span> <span class="op">&lt;=</span> days_left <span class="op">&lt;=</span> <span class="nu">7</span>:
+    status = <span class="st">"✓ Use this week"</span>
+<span class="kw">else</span>:
+    status = <span class="st">"✓ Plenty of time"</span>
+
+<span class="fn">print</span>(<span class="st">f"</span>{name}<span class="st">: </span>{status}<span class="st">"</span>)
+<span class="cm"># → milk: ⚠ Use urgently</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Dietary Filter — Combining Conditions</div>
+    <div class="ex-desc">Using <code>and</code>, <code>or</code>, and <code>not</code> to check multiple dietary requirements at once.</div>
+<code class="code-block">recipe = {
+    <span class="st">"name"</span>:        <span class="st">"Mushroom Risotto"</span>,
+    <span class="st">"vegetarian"</span>:  <span class="kw">True</span>,
+    <span class="st">"vegan"</span>:       <span class="kw">False</span>,
+    <span class="st">"gluten_free"</span>: <span class="kw">True</span>,
+    <span class="st">"allergens"</span>:   [<span class="st">"dairy"</span>],
+    <span class="st">"prep_mins"</span>:   <span class="nu">45</span>,
+}
+
+user_is_vegan       = <span class="kw">False</span>
+user_is_vegetarian  = <span class="kw">True</span>
+user_max_prep       = <span class="nu">60</span>
+user_allergens      = [<span class="st">"nuts"</span>]
+
+<span class="cm"># Check if suitable for this user</span>
+diet_ok = (
+    <span class="kw">not</span> user_is_vegan <span class="kw">or</span> recipe[<span class="st">"vegan"</span>]
+) <span class="kw">and</span> (
+    <span class="kw">not</span> user_is_vegetarian <span class="kw">or</span> recipe[<span class="st">"vegetarian"</span>]
+)
+
+time_ok = recipe[<span class="st">"prep_mins"</span>] <span class="op">&lt;=</span> user_max_prep
+
+allergen_ok = <span class="kw">not</span> <span class="fn">any</span>(a <span class="kw">in</span> recipe[<span class="st">"allergens"</span>] <span class="kw">for</span> a <span class="kw">in</span> user_allergens)
+
+<span class="kw">if</span> diet_ok <span class="kw">and</span> time_ok <span class="kw">and</span> allergen_ok:
+    <span class="fn">print</span>(<span class="st">f"✓ </span>{recipe[<span class="st">'name'</span>]}<span class="st"> is suitable"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">f"✗ </span>{recipe[<span class="st">'name'</span>]}<span class="st"> doesn't meet requirements"</span>)</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Conditional Expression — Python's Ternary</div>
+    <div class="ex-desc">Python's one-line conditional. The syntax is <code>value_if_true if condition else value_if_false</code> — note the condition is in the <em>middle</em>, which is the opposite order to Java's <code>condition ? a : b</code>. Use it for simple assignments — not for complex logic.</div>
+<code class="code-block"><span class="cm"># Java:   String label = daysLeft &lt;= 3 ? "URGENT" : "OK";</span>
+<span class="cm"># Python:</span>
+label = <span class="st">"URGENT"</span> <span class="kw">if</span> days_left <span class="op">&lt;=</span> <span class="nu">3</span> <span class="kw">else</span> <span class="st">"OK"</span>
+
+<span class="cm"># Works great for building strings and setting defaults</span>
+unit_label = <span class="st">"item"</span> <span class="kw">if</span> qty <span class="op">==</span> <span class="nu">1</span> <span class="kw">else</span> <span class="st">"items"</span>
+<span class="fn">print</span>(<span class="st">f"</span>{qty}<span class="st"> </span>{unit_label}<span class="st">"</span>)  <span class="cm"># "1 item" or "3 items"</span>
+
+<span class="cm"># Inline in a list comprehension</span>
+inventory = [
+    {<span class="st">"name"</span>: <span class="st">"milk"</span>,   <span class="st">"days_left"</span>: <span class="nu">2</span>},
+    {<span class="st">"name"</span>: <span class="st">"eggs"</span>,   <span class="st">"days_left"</span>: <span class="nu">10</span>},
+    {<span class="st">"name"</span>: <span class="st">"yogurt"</span>, <span class="st">"days_left"</span>: <span class="nu">1</span>},
+]
+alerts = [
+    <span class="st">f"⚠ </span>{i[<span class="st">'name'</span>]}<span class="st">"</span> <span class="kw">if</span> i[<span class="st">"days_left"</span>] <span class="op">&lt;=</span> <span class="nu">3</span> <span class="kw">else</span> <span class="st">f"✓ </span>{i[<span class="st">'name'</span>]}<span class="st">"</span>
+    <span class="kw">for</span> i <span class="kw">in</span> inventory
+]
+<span class="cm"># → ["⚠ milk", "✓ eggs", "⚠ yogurt"]</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Short-Circuit Evaluation — and / or as Default Values</div>
+    <div class="ex-desc">Like JavaScript, Python's <code>and</code>/<code>or</code> use short-circuit evaluation and return one of their operands — not just <code>True</code>/<code>False</code>. This enables an idiomatic pattern for defaults. Note: prefer the walrus operator or explicit <code>if</code> for clarity in most cases.</div>
+<code class="code-block"><span class="cm"># or returns the first truthy value, or the last value</span>
+name = <span class="st">""</span>
+display_name = name <span class="kw">or</span> <span class="st">"Unknown ingredient"</span>
+<span class="cm"># → "Unknown ingredient"  (name is falsy/empty)</span>
+
+user_limit = <span class="kw">None</span>
+max_items = user_limit <span class="kw">or</span> <span class="nu">50</span>
+<span class="cm"># → 50  (None is falsy)</span>
+
+<span class="cm"># and returns the first falsy value, or the last value</span>
+<span class="cm"># (less commonly used for defaults)</span>
+days_left = <span class="nu">5</span>
+message = days_left <span class="kw">and</span> <span class="st">f"</span>{days_left}<span class="st"> days left"</span>
+<span class="cm"># → "5 days left"  (days_left is truthy, so and returns the second)</span>
+
+days_left = <span class="nu">0</span>
+message = days_left <span class="kw">and</span> <span class="st">f"</span>{days_left}<span class="st"> days left"</span>
+<span class="cm"># → 0  (days_left is falsy, and returns it immediately)</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">match Statement — Python's switch <span class="version-badge">Python 3.10+</span></div>
+    <div class="ex-desc">Python finally got a <code>switch</code>-like statement in version 3.10. It's far more powerful than Java's <code>switch</code> — it can match on values, types, structures, and even destructure objects. The <code>_</code> case is the default (like Java's <code>default:</code>).</div>
+<code class="code-block">meal_type = <span class="st">"dinner"</span>
+
+<span class="cm"># Basic value matching (like Java switch)</span>
+<span class="kw">match</span> meal_type:
+    <span class="kw">case</span> <span class="st">"breakfast"</span>:
+        suggestions = [<span class="st">"eggs"</span>, <span class="st">"toast"</span>, <span class="st">"yogurt"</span>]
+    <span class="kw">case</span> <span class="st">"lunch"</span>:
+        suggestions = [<span class="st">"soup"</span>, <span class="st">"sandwich"</span>, <span class="st">"salad"</span>]
+    <span class="kw">case</span> <span class="st">"dinner"</span>:
+        suggestions = [<span class="st">"pasta"</span>, <span class="st">"chicken"</span>, <span class="st">"curry"</span>]
+    <span class="kw">case</span> _:                      <span class="cm"># default — like Java's default:</span>
+        suggestions = []
+
+<span class="cm"># Match multiple values in one case (use | for OR)</span>
+<span class="kw">match</span> meal_type:
+    <span class="kw">case</span> <span class="st">"breakfast"</span> | <span class="st">"brunch"</span>:
+        <span class="fn">print</span>(<span class="st">"Morning meal"</span>)
+    <span class="kw">case</span> <span class="st">"lunch"</span> | <span class="st">"dinner"</span>:
+        <span class="fn">print</span>(<span class="st">"Main meal"</span>)
+    <span class="kw">case</span> _:
+        <span class="fn">print</span>(<span class="st">"Snack"</span>)
+
+<span class="cm"># Match with a guard condition (if clause inside case)</span>
+days_left = <span class="nu">2</span>
+<span class="kw">match</span> days_left:
+    <span class="kw">case</span> n <span class="kw">if</span> n <span class="op">&lt;=</span> <span class="nu">0</span>:
+        <span class="fn">print</span>(<span class="st">"Expired"</span>)
+    <span class="kw">case</span> n <span class="kw">if</span> n <span class="op">&lt;=</span> <span class="nu">3</span>:
+        <span class="fn">print</span>(<span class="st">f"Expiring soon — </span>{n}<span class="st"> day(s) left"</span>)
+    <span class="kw">case</span> _:
+        <span class="fn">print</span>(<span class="st">"Plenty of time"</span>)</code>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>📋 Quick Reference — Operators</h2>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Operator</th><th>Meaning</th><th>Example</th><th>Java/JS equivalent</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>==</code></td><td>Equal (by value)</td><td><code>qty == 0</code></td><td class="java-eq"><code>==</code> (primitives) / <code>.equals()</code> (objects)</td></tr>
+      <tr><td><code>!=</code></td><td>Not equal</td><td><code>name != "milk"</code></td><td class="java-eq"><code>!=</code></td></tr>
+      <tr><td><code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code></td><td>Comparison</td><td><code>days &lt;= 3</code></td><td class="java-eq">same symbols</td></tr>
+      <tr><td><code>is</code></td><td>Identity (same object)</td><td><code>val is None</code></td><td class="java-eq"><code>==</code> for object references</td></tr>
+      <tr><td><code>is not</code></td><td>Not identical</td><td><code>val is not None</code></td><td class="java-eq"><code>!= null</code></td></tr>
+      <tr><td><code>in</code></td><td>Membership</td><td><code>"milk" in pantry</code></td><td class="java-eq"><code>.contains()</code> / <code>.includes()</code></td></tr>
+      <tr><td><code>not in</code></td><td>Not a member</td><td><code>"nuts" not in allergens</code></td><td class="java-eq"><code>!list.contains()</code></td></tr>
+      <tr><td><code>and</code></td><td>Logical AND</td><td><code>a and b</code></td><td class="java-eq"><code>&amp;&amp;</code></td></tr>
+      <tr><td><code>or</code></td><td>Logical OR</td><td><code>a or b</code></td><td class="java-eq"><code>||</code></td></tr>
+      <tr><td><code>not</code></td><td>Logical NOT</td><td><code>not pantry</code></td><td class="java-eq"><code>!</code></td></tr>
+      <tr><td><code>a &lt; b &lt; c</code></td><td>Chained comparison</td><td><code>0 &lt; qty &lt;= 100</code></td><td class="java-eq">no equivalent — must use <code>&amp;&amp;</code></td></tr>
+      <tr><td><code>x if cond else y</code></td><td>Conditional expression</td><td><code>"yes" if ok else "no"</code></td><td class="java-eq"><code>cond ? x : y</code></td></tr>
+      <tr><td><code>match / case</code></td><td>Structural matching</td><td><code>match meal_type:</code></td><td class="java-eq"><code>switch</code> (but more powerful)</td></tr>
+      <tr><td><code>any()</code></td><td>True if any element truthy</td><td><code>any(x &gt; 0 for x in qtys)</code></td><td class="java-eq"><code>stream().anyMatch()</code></td></tr>
+      <tr><td><code>all()</code></td><td>True if all elements truthy</td><td><code>all(x &gt; 0 for x in qtys)</code></td><td class="java-eq"><code>stream().allMatch()</code></td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       GOTCHAS
+  ═══════════════════════════════════════════ -->
+  <div class="tip-box">
+    <strong>⚠ Gotchas for Java / JavaScript Programmers:</strong><br><br>
+    <span class="trap">== vs is — especially with None</span> — <code>val == None</code> works but is considered bad practice. Always write <code>val is None</code>. The reason: <code>==</code> can be overridden by a class's <code>__eq__</code> method, so a custom object could make <code>obj == None</code> return <code>True</code> even when it isn't None. <code>is None</code> is always reliable.<br><br>
+    <span class="trap">0 and 0.0 are falsy</span> — this catches Java programmers. If you have a quantity field that could legitimately be <code>0</code>, writing <code>if not quantity:</code> will incorrectly fire when the quantity is zero. Be explicit: <code>if quantity is None:</code> to check for missing vs. <code>if quantity == 0:</code> to check for zero stock.<br><br>
+    <span class="trap">The conditional expression order</span> — Python's ternary is <code>value_if_true if condition else value_if_false</code>. Java/JS is <code>condition ? value_if_true : value_if_false</code>. The condition is in the <em>middle</em> in Python, which feels backwards at first but reads naturally as a sentence: "give me 'urgent' <em>if</em> it's expiring <em>else</em> 'ok'."<br><br>
+    <span class="trap">match requires Python 3.10+</span> — if you're on an older Python, use <code>elif</code> chains instead. Check your Python version with <code>python --version</code>. Modern systems (2024+) generally ship with 3.10 or later.
+  </div>
+
+</div><!-- /py-lesson -->

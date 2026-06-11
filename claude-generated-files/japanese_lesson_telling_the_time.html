@@ -1,0 +1,431 @@
+<!-- ============================================================
+     JAPANESE LESSON: Telling the Time — 時間をいう
+     Level: Beginner-plus | Hiragana + Romaji + English
+     ============================================================ -->
+
+<style>
+  .jp-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .jp-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .jp-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+
+  /* Quick reference clock grid */
+  .clock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .clock-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .clock-card .jp-time { font-size: 1.1em; color: #e2e4ec; }
+  .clock-card .romaji-time { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+  .clock-card .en-time { font-size: 0.78em; color: #a0a4b8; }
+  .clock-card.highlight { border-color: #7c5cbf; }
+  .clock-card.highlight .jp-time { color: #c9a8ff; }
+
+  /* Dialogs */
+  .dialog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  @media (max-width: 600px) { .dialog-grid { grid-template-columns: 1fr; } }
+
+  .dialog-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .dialog-card:hover { border-color: #4f8ef7; }
+
+  .dialog-card h3 {
+    margin: 0 0 12px 0;
+    color: #4f8ef7;
+    font-size: 0.92em;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    border-bottom: 1px solid #2a2d3a;
+    padding-bottom: 6px;
+  }
+  .dialog-line { margin-bottom: 10px; }
+  .dialog-line .speaker {
+    font-weight: bold;
+    color: #7c5cbf;
+    min-width: 24px;
+    display: inline-block;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .dialog-line .jp {
+    font-size: 1.05em;
+    display: block;
+    margin-left: 28px;
+    color: #e2e4ec;
+  }
+  .dialog-line .romaji {
+    font-size: 0.82em;
+    color: #7a7f96;
+    display: block;
+    margin-left: 28px;
+    font-style: italic;
+  }
+  .dialog-line .en {
+    font-size: 0.82em;
+    color: #a0a4b8;
+    display: block;
+    margin-left: 28px;
+  }
+
+  /* Vocabulary table */
+  .vocab-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.9em;
+  }
+  .vocab-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.82em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .vocab-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+  }
+  .vocab-table tr:nth-child(even) td { background: #1a1d27; }
+  .vocab-table tr:hover td { background: #1e2235; }
+  .vocab-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+
+  .tag-verb {
+    background: #7c5cbf;
+    color: #fff;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .tag-noun {
+    background: #2a5a8a;
+    color: #a8d4ff;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .tag-adv {
+    background: #1e3a2a;
+    color: #7ecfa0;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* Tip box */
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap { color: #f08080; font-style: normal; font-weight: bold; }
+</style>
+
+<div class="jp-lesson">
+
+  <h2>🕐 Telling the Time — 時間をいう</h2>
+  <p class="section-intro">Hours, minutes, AM/PM, and making plans — everything you need to talk about time in natural, everyday Japanese. Watch out for the three irregular hours!</p>
+
+  <!-- Quick reference: the hours -->
+  <h2>🔢 The Hours at a Glance — 何時？</h2>
+  <p class="section-intro">Most hours are straightforward — but 4, 7 and 9 o'clock have irregular readings. They are highlighted below.</p>
+
+  <div class="clock-grid">
+    <div class="clock-card">
+      <div class="jp-time">いちじ（一時）</div>
+      <div class="romaji-time">ichi-ji</div>
+      <div class="en-time">1 o'clock</div>
+    </div>
+    <div class="clock-card">
+      <div class="jp-time">にじ（二時）</div>
+      <div class="romaji-time">ni-ji</div>
+      <div class="en-time">2 o'clock</div>
+    </div>
+    <div class="clock-card">
+      <div class="jp-time">さんじ（三時）</div>
+      <div class="romaji-time">san-ji</div>
+      <div class="en-time">3 o'clock</div>
+    </div>
+    <div class="clock-card highlight">
+      <div class="jp-time">よじ（四時）</div>
+      <div class="romaji-time">yo-ji ⚠</div>
+      <div class="en-time">4 o'clock</div>
+    </div>
+    <div class="clock-card">
+      <div class="jp-time">ごじ（五時）</div>
+      <div class="romaji-time">go-ji</div>
+      <div class="en-time">5 o'clock</div>
+    </div>
+    <div class="clock-card">
+      <div class="jp-time">ろくじ（六時）</div>
+      <div class="romaji-time">roku-ji</div>
+      <div class="en-time">6 o'clock</div>
+    </div>
+    <div class="clock-card highlight">
+      <div class="jp-time">しちじ（七時）</div>
+      <div class="romaji-time">shichi-ji ⚠</div>
+      <div class="en-time">7 o'clock</div>
+    </div>
+    <div class="clock-card">
+      <div class="jp-time">はちじ（八時）</div>
+      <div class="romaji-time">hachi-ji</div>
+      <div class="en-time">8 o'clock</div>
+    </div>
+    <div class="clock-card highlight">
+      <div class="jp-time">くじ（九時）</div>
+      <div class="romaji-time">ku-ji ⚠</div>
+      <div class="en-time">9 o'clock</div>
+    </div>
+    <div class="clock-card">
+      <div class="jp-time">じゅうじ（十時）</div>
+      <div class="romaji-time">juu-ji</div>
+      <div class="en-time">10 o'clock</div>
+    </div>
+    <div class="clock-card">
+      <div class="jp-time">じゅういちじ（十一時）</div>
+      <div class="romaji-time">juuichi-ji</div>
+      <div class="en-time">11 o'clock</div>
+    </div>
+    <div class="clock-card">
+      <div class="jp-time">じゅうにじ（十二時）</div>
+      <div class="romaji-time">juuni-ji</div>
+      <div class="en-time">12 o'clock</div>
+    </div>
+  </div>
+
+  <h2>💬 Dialogues</h2>
+
+  <div class="dialog-grid">
+
+    <!-- Dialog 1: Asking the time -->
+    <div class="dialog-card">
+      <h3>① Asking the Time — いまなんじですか？</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">すみません、いまなんじですか？</span>
+        <span class="romaji">Sumimasen, ima nanji desu ka?</span>
+        <span class="en">Excuse me, what time is it now?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">さんじはんです。</span>
+        <span class="romaji">Sanji han desu.</span>
+        <span class="en">It's half past three.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">ありがとうございます！</span>
+        <span class="romaji">Arigatou gozaimasu!</span>
+        <span class="en">Thank you very much!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 2: Making plans -->
+    <div class="dialog-card">
+      <h3>② Making Plans — やくそく</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">なんじにあいましょうか？</span>
+        <span class="romaji">Nanji ni aimashou ka?</span>
+        <span class="en">What time shall we meet?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">ごごしちじはどうですか？</span>
+        <span class="romaji">Gogo shichi-ji wa dou desu ka?</span>
+        <span class="en">How about 7pm?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">いいですね！じゃあ、しちじに。</span>
+        <span class="romaji">Ii desu ne! Jaa, shichi-ji ni.</span>
+        <span class="en">Sounds good! See you at seven then.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 3: Train departure -->
+    <div class="dialog-card">
+      <h3>③ Train Departure — でんしゃのじかん</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">つぎのでんしゃはなんじですか？</span>
+        <span class="romaji">Tsugi no densha wa nanji desu ka?</span>
+        <span class="en">What time is the next train?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">じゅうじじゅうごふんです。</span>
+        <span class="romaji">Juuji juugo-fun desu.</span>
+        <span class="en">It's at ten fifteen.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">あとごふんしかない！いきましょう！</span>
+        <span class="romaji">Ato go-fun shika nai! Ikimashou!</span>
+        <span class="en">We only have five minutes left! Let's go!</span>
+      </div>
+    </div>
+
+    <!-- Dialog 4: Shop opening hours -->
+    <div class="dialog-card">
+      <h3>④ Opening Hours — えいぎょうじかん</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">すみません、なんじからあきますか？</span>
+        <span class="romaji">Sumimasen, nanji kara akimasu ka?</span>
+        <span class="en">Excuse me, what time do you open?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">あさくじからよるじゅうじまでです。</span>
+        <span class="romaji">Asa ku-ji kara yoru juuji made desu.</span>
+        <span class="en">From 9am until 10pm.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">わかりました、ありがとうございます。</span>
+        <span class="romaji">Wakarimashita, arigatou gozaimasu.</span>
+        <span class="en">I understand, thank you.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 5: Restaurant reservation -->
+    <div class="dialog-card">
+      <h3>⑤ Restaurant Reservation — よやく</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">なんじによやくしますか？</span>
+        <span class="romaji">Nanji ni yoyaku shimasu ka?</span>
+        <span class="en">What time shall we make the reservation?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">ごごろくじはんはどうですか？</span>
+        <span class="romaji">Gogo roku-ji han wa dou desu ka?</span>
+        <span class="en">How about half past six in the evening?</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">いいですね、おねがいします。</span>
+        <span class="romaji">Ii desu ne, onegai shimasu.</span>
+        <span class="en">Sounds good, please go ahead.</span>
+      </div>
+    </div>
+
+    <!-- Dialog 6: Running late -->
+    <div class="dialog-card">
+      <h3>⑥ Running Late — おくれる</h3>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">いまどこですか？もうはちじですよ！</span>
+        <span class="romaji">Ima doko desu ka? Mou hachi-ji desu yo!</span>
+        <span class="en">Where are you now? It's already eight o'clock!</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">B:</span>
+        <span class="jp">ごめんなさい！あとじゅっぷんでつきます。</span>
+        <span class="romaji">Gomennasai! Ato juppun de tsukimasu.</span>
+        <span class="en">I'm sorry! I'll arrive in ten minutes.</span>
+      </div>
+      <div class="dialog-line">
+        <span class="speaker">A:</span>
+        <span class="jp">わかった、まっています。</span>
+        <span class="romaji">Wakatta, matte imasu.</span>
+        <span class="en">Okay, I'll be waiting.</span>
+      </div>
+    </div>
+
+  </div><!-- /dialog-grid -->
+
+
+  <h2>📖 Vocabulary List — ごい</h2>
+  <p class="section-intro">20 key words for telling the time. Verbs are in polite masu-form. Note the irregular hour readings!</p>
+
+  <table class="vocab-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Japanese</th>
+        <th>Romaji</th>
+        <th>English</th>
+        <th>Type</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>なんじ（何時）</td><td>nanji</td><td>what time / which hour</td><td><span class="tag-adv">question</span></td><td class="note">なん = "what number" + じ = hour</td></tr>
+      <tr><td>2</td><td>〜じ（〜時）</td><td>~ji</td><td>o'clock (hour counter)</td><td><span class="tag-noun">counter</span></td><td class="note">attach to a number: さんじ = 3 o'clock</td></tr>
+      <tr><td>3</td><td>〜ふん／〜ぷん（〜分）</td><td>~fun / ~pun</td><td>minutes</td><td><span class="tag-noun">counter</span></td><td class="note">ごふん=5 min, じゅっぷん=10 min</td></tr>
+      <tr><td>4</td><td>はん（半）</td><td>han</td><td>half past</td><td><span class="tag-noun">noun</span></td><td class="note">さんじはん = half past three</td></tr>
+      <tr><td>5</td><td>ごぜん（午前）</td><td>gozen</td><td>AM / morning</td><td><span class="tag-noun">noun</span></td><td class="note">ごぜんくじ = 9am</td></tr>
+      <tr><td>6</td><td>ごご（午後）</td><td>gogo</td><td>PM / afternoon</td><td><span class="tag-noun">noun</span></td><td class="note">ごごさんじ = 3pm</td></tr>
+      <tr><td>7</td><td>いま（今）</td><td>ima</td><td>now</td><td><span class="tag-adv">adverb</span></td><td class="note">いまなんじ？= What time is it now?</td></tr>
+      <tr><td>8</td><td>あさ（朝）</td><td>asa</td><td>morning</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>9</td><td>よる（夜）</td><td>yoru</td><td>evening / night</td><td><span class="tag-noun">noun</span></td><td class="note"></td></tr>
+      <tr><td>10</td><td>〜から</td><td>~kara</td><td>from (starting time)</td><td><span class="tag-adv">particle</span></td><td class="note">くじから = from 9 o'clock</td></tr>
+      <tr><td>11</td><td>〜まで</td><td>~made</td><td>until (ending time)</td><td><span class="tag-adv">particle</span></td><td class="note">じゅうじまで = until 10 o'clock</td></tr>
+      <tr><td>12</td><td>ごろ</td><td>goro</td><td>around / approximately</td><td><span class="tag-adv">adverb</span></td><td class="note">さんじごろ = around 3 o'clock</td></tr>
+      <tr><td>13</td><td>もう</td><td>mou</td><td>already</td><td><span class="tag-adv">adverb</span></td><td class="note">もうはちじ = it's already 8!</td></tr>
+      <tr><td>14</td><td>あと〜ふん</td><td>ato ~fun</td><td>in ~ minutes / ~ minutes left</td><td><span class="tag-adv">phrase</span></td><td class="note">あとごふん = 5 minutes left</td></tr>
+      <tr><td>15</td><td>よやく（予約）</td><td>yoyaku</td><td>reservation / booking</td><td><span class="tag-noun">noun</span></td><td class="note">used for restaurants, hotels, trains</td></tr>
+      <tr><td>16</td><td>あきます（開きます）</td><td>akimasu</td><td>to open (a shop etc.)</td><td><span class="tag-verb">verb</span></td><td class="note">なんじからあきますか？= What time do you open?</td></tr>
+      <tr><td>17</td><td>しまります（閉まります）</td><td>shimarimasu</td><td>to close</td><td><span class="tag-verb">verb</span></td><td class="note">なんじにしまりますか？= What time do you close?</td></tr>
+      <tr><td>18</td><td>つきます（着きます）</td><td>tsukimasu</td><td>to arrive</td><td><span class="tag-verb">verb</span></td><td class="note">じゅっぷんでつきます = I'll arrive in 10 min</td></tr>
+      <tr><td>19</td><td>まちます（待ちます）</td><td>machimasu</td><td>to wait</td><td><span class="tag-verb">verb</span></td><td class="note">まっています = I am waiting</td></tr>
+      <tr><td>20</td><td>はじまります（始まります）</td><td>hajimarimasu</td><td>to begin / start</td><td><span class="tag-verb">verb</span></td><td class="note">なんじにはじまりますか？= What time does it start?</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box">
+    <strong>⚠ The Three Irregular Hours — Watch Out!</strong> Most hours follow a simple pattern (number + じ), but three are irregular and will catch you out if you apply the rules blindly: <span class="trap">4時 = よじ</span> (not よんじ), <span class="trap">7時 = しちじ</span> (not ななじ), and <span class="trap">9時 = くじ</span> (not きゅうじ). These are so common that using the wrong reading sounds obviously unnatural to a Japanese ear — worth drilling until they're automatic. A handy memory trick: 4, 7, and 9 are the same three numbers that are irregular when counting plain objects too, so once you know them in one context they'll feel familiar everywhere.
+  </div>
+
+</div><!-- /jp-lesson -->

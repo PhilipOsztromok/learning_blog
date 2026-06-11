@@ -1,0 +1,1171 @@
+<!-- ============================================================
+     BASH INTERMEDIATE: Topic 3 — Job Control and Signals
+     Subject: Bash / Linux Shell Scripting (Intermediate)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+  .sh  { color: #e8a87d; }
+  .vr  { color: #ffd580; }
+  .op  { color: #e8a87d; }
+  .er  { color: #e05c5c; }
+  .fn  { color: #7ab8ff; }
+  .rx  { color: #ff9eb5; }
+
+  /* ── Platform blocks ─────────────────────────────── */
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 12px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; color: #7ab8ff; opacity: 0.8; }
+  .platform-block.both { border-color: #2a3a2a; }
+  .platform-block.both .pb-header { background: #1a2a1a; color: #7ecfa0; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin: 16px 0;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .new-box {
+    background: #1a1e2a;
+    border-left: 3px solid #c9a8ff;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    font-size: 0.85em;
+    color: #a0a4b8;
+  }
+  .new-box strong { color: #c9a8ff; }
+  .diagram {
+    background: #0e1018;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #a0a4b8;
+    white-space: pre;
+    line-height: 1.6;
+    margin: 8px 0 14px;
+    overflow-x: auto;
+  }
+  .diagram .dh { color: #4f8ef7; font-weight: bold; }
+  .diagram .dk { color: #c9a8ff; }
+  .diagram .dv { color: #7ecfa0; }
+  .diagram .da { color: #e8a87d; }
+  .diagram .dc { color: #6a9153; font-style: italic; }
+
+  /* ── Reference table ─────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+  .ref-table .sig  { color: #f08080; font-family: 'Courier New', monospace; font-size: 0.88em; }
+  .ref-table .num  { color: #7ecfa0; font-family: 'Courier New', monospace; font-size: 0.88em; }
+
+  /* ── Exercise blocks ─────────────────────────────── */
+  .exercise-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-block .ex-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+  .exercise-block .ex-task {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .exercise-block .ex-hint {
+    font-size: 0.85em;
+    color: #a0a4b8;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-solution-toggle {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    color: #7ecfa0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .exercise-block .ex-solution-toggle:hover { background: #1e2235; }
+  .exercise-block .ex-solution { display: none; margin-top: 12px; }
+  .exercise-block .ex-solution.visible { display: block; }
+  .exercise-block .sol-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+</style>
+
+<script>
+function toggleSolution(btn) {
+  var sol = btn.nextElementSibling;
+  if (sol.classList.contains('visible')) {
+    sol.classList.remove('visible');
+    btn.textContent = '▶ Show Sample Solution';
+  } else {
+    sol.classList.add('visible');
+    btn.textContent = '▼ Hide Solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>📡 Intermediate Topic 3 — Job Control and Signals</h2>
+  <p class="section-intro">Every process in Linux lives inside a web of signals — the operating system's notification mechanism for events ranging from "the user pressed Ctrl+C" to "your parent process died" to "please flush your buffers and exit gracefully." Most scripts ignore this entirely and work fine for simple tasks. But the moment your script spawns background jobs, holds open files, manages a lock, or does anything that matters, you need to understand signals and job control: how to catch them, forward them to child processes, clean up properly, and implement graceful shutdown. This chapter covers the full picture.</p>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. WHAT ARE SIGNALS?
+  ═══════════════════════════════════════════ -->
+  <h2>1 — What Are Signals?</h2>
+
+  <p>A signal is an asynchronous notification sent to a process by the kernel, another process, or the process itself. When a signal arrives, the process's current execution is interrupted and a signal handler runs — either a default kernel action or a custom function you register with <code>trap</code>. Signals have numbers, but are almost always referred to by name.</p>
+
+  <div class="diagram"><span class="dh">Signal delivery model:</span>
+
+  Sender                      Kernel                       Target process
+  ──────                      ──────                       ──────────────
+  kill -TERM 1234    ──────▶  marks signal pending  ──────▶  interrupted
+  Ctrl+C in terminal ──────▶  SIGINT to process group       handler runs
+  process exit       ──────▶  SIGHUP to children            (or default action)
+
+<span class="dh">Default actions for unhandled signals:</span>
+  <span class="dv">Terminate</span>   — kill the process                    (SIGTERM, SIGHUP, SIGPIPE…)
+  <span class="dv">Terminate+core</span> — kill and write a core dump       (SIGSEGV, SIGABRT…)
+  <span class="dv">Stop</span>        — pause the process (resumable)        (SIGTSTP, SIGSTOP)
+  <span class="dv">Continue</span>    — resume a stopped process             (SIGCONT)
+  <span class="da">Ignore</span>      — silently discard                      (SIGCHLD by default in some shells)</div>
+
+  <h3>Signal reference table</h3>
+  <table class="ref-table">
+    <thead><tr><th>Signal</th><th>Number</th><th>Default action</th><th>Common cause / meaning</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sig">SIGHUP</span></td><td><span class="num">1</span></td><td>Terminate</td><td>Terminal closed; also used to ask daemons to reload config</td></tr>
+      <tr><td><span class="sig">SIGINT</span></td><td><span class="num">2</span></td><td>Terminate</td><td>Ctrl+C — interactive interrupt</td></tr>
+      <tr><td><span class="sig">SIGQUIT</span></td><td><span class="num">3</span></td><td>Core dump</td><td>Ctrl+\ — quit and dump core</td></tr>
+      <tr><td><span class="sig">SIGKILL</span></td><td><span class="num">9</span></td><td>Terminate</td><td>Unconditional kill — cannot be caught, blocked, or ignored</td></tr>
+      <tr><td><span class="sig">SIGUSR1</span></td><td><span class="num">10</span></td><td>Terminate</td><td>Application-defined; use it for custom notifications</td></tr>
+      <tr><td><span class="sig">SIGUSR2</span></td><td><span class="num">12</span></td><td>Terminate</td><td>Application-defined; second user signal</td></tr>
+      <tr><td><span class="sig">SIGPIPE</span></td><td><span class="num">13</span></td><td>Terminate</td><td>Write to a pipe with no reader (broken pipe)</td></tr>
+      <tr><td><span class="sig">SIGALRM</span></td><td><span class="num">14</span></td><td>Terminate</td><td>Timer set with <code>alarm()</code> expired</td></tr>
+      <tr><td><span class="sig">SIGTERM</span></td><td><span class="num">15</span></td><td>Terminate</td><td>Polite termination request — the default signal sent by <code>kill</code></td></tr>
+      <tr><td><span class="sig">SIGCHLD</span></td><td><span class="num">17</span></td><td>Ignore</td><td>Child process stopped or terminated</td></tr>
+      <tr><td><span class="sig">SIGCONT</span></td><td><span class="num">18</span></td><td>Continue</td><td>Resume a stopped process</td></tr>
+      <tr><td><span class="sig">SIGSTOP</span></td><td><span class="num">19</span></td><td>Stop</td><td>Pause — cannot be caught or ignored</td></tr>
+      <tr><td><span class="sig">SIGTSTP</span></td><td><span class="num">20</span></td><td>Stop</td><td>Ctrl+Z — terminal stop (can be caught, unlike SIGSTOP)</td></tr>
+      <tr><td><span class="sig">SIGWINCH</span></td><td><span class="num">28</span></td><td>Ignore</td><td>Terminal window resized</td></tr>
+    </tbody>
+  </table>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Listing signals on your system</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cmd">kill</span> <span class="fl">-l</span>                    <span class="cm"># list all signal names</span>
+<span class="cmd">kill</span> <span class="fl">-l</span> TERM              <span class="cm"># get number for SIGTERM  → 15</span>
+<span class="cmd">kill</span> <span class="fl">-l</span> <span class="nu">9</span>                 <span class="cm"># get name for signal 9   → KILL</span>
+<span class="cmd">trap</span> <span class="fl">-l</span>                   <span class="cm"># bash's trap list (includes pseudo-signals)</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. TRAP IN DEPTH
+  ═══════════════════════════════════════════ -->
+  <h2>2 — <code>trap</code> In Depth</h2>
+
+  <p><code>trap</code> registers a handler — a shell command or function — to run when a specific signal or event is received. It is the primary mechanism for cleanup, graceful shutdown, and debugging in bash scripts.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 trap syntax and basic usage</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Syntax:  trap 'COMMAND' SIGNAL [SIGNAL ...]</span>
+<span class="cm"># The command is a string — evaluated when the signal fires, not when trap runs</span>
+
+<span class="cm"># ── Catch Ctrl+C ─────────────────────────────────────────────</span>
+<span class="kw">trap</span> <span class="st">'echo "Caught Ctrl+C — cleaning up"; exit 1'</span> INT
+
+<span class="cm"># ── Run cleanup on any exit — the most important trap ─────────</span>
+<span class="kw">trap</span> <span class="st">'rm -f /tmp/mylock.$$'</span> EXIT
+<span class="cm"># EXIT fires on: normal exit, exit N, error with set -e, signals</span>
+<span class="cm"># It does NOT fire on SIGKILL (nothing can catch that)</span>
+
+<span class="cm"># ── Reset a trap to its default behaviour ─────────────────────</span>
+<span class="kw">trap</span> <span class="fl">-</span> INT             <span class="cm"># reset SIGINT to default (terminate)</span>
+
+<span class="cm"># ── Ignore a signal ───────────────────────────────────────────</span>
+<span class="kw">trap</span> <span class="st">''</span> HUP            <span class="cm"># ignore SIGHUP (e.g. when run via nohup)</span>
+<span class="kw">trap</span> <span class="st">''</span> PIPE           <span class="cm"># ignore broken pipe — useful in producers</span>
+
+<span class="cm"># ── View currently registered traps ───────────────────────────</span>
+<span class="kw">trap</span> <span class="fl">-p</span>                <span class="cm"># print all active traps</span>
+<span class="kw">trap</span> <span class="fl">-p</span> EXIT           <span class="cm"># print just the EXIT trap</span></code>
+    </div>
+  </div>
+
+  <h3>Bash pseudo-signal events</h3>
+  <p>In addition to real signals, bash supports three special event names usable with <code>trap</code>:</p>
+  <table class="ref-table">
+    <thead><tr><th>Event</th><th>When it fires</th></tr></thead>
+    <tbody>
+      <tr><td><code>EXIT</code></td><td>When the shell exits for any reason (not SIGKILL). Runs after the last command.</td></tr>
+      <tr><td><code>ERR</code></td><td>When any command exits with a non-zero status (and <code>set -e</code> is not set, or is set and would trigger). Useful for centralised error logging.</td></tr>
+      <tr><td><code>DEBUG</code></td><td>Before every simple command. Used for tracing and step-by-step debuggers.</td></tr>
+      <tr><td><code>RETURN</code></td><td>When a function or sourced file returns.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The canonical EXIT trap pattern</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Clean, robust cleanup with EXIT trap</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="cm"># Declare resources upfront so cleanup is always safe to call</span>
+<span class="vr">TMPDIR</span>=<span class="st">""</span>
+<span class="vr">LOCKFILE</span>=<span class="st">""</span>
+<span class="vr">CHILD_PID</span>=<span class="st">""</span>
+
+<span class="fn">cleanup</span>() {
+    <span class="kw">local</span> <span class="vr">rc</span>=<span class="st">$?</span>        <span class="cm"># capture exit code before any cleanup commands change it</span>
+    <span class="cm"># Remove temp dir if it was created</span>
+    [[ <span class="fl">-n</span> <span class="st">"$TMPDIR"</span>   && <span class="fl">-d</span> <span class="st">"$TMPDIR"</span>   ]] && <span class="cmd">rm</span> <span class="fl">-rf</span> <span class="st">"$TMPDIR"</span>
+    <span class="cm"># Release lock if held</span>
+    [[ <span class="fl">-n</span> <span class="st">"$LOCKFILE"</span> && <span class="fl">-f</span> <span class="st">"$LOCKFILE"</span> ]] && <span class="cmd">rm</span> <span class="fl">-f</span>  <span class="st">"$LOCKFILE"</span>
+    <span class="cm"># Kill background child if still running</span>
+    [[ <span class="fl">-n</span> <span class="st">"$CHILD_PID"</span> ]] && <span class="cmd">kill</span> <span class="st">"$CHILD_PID"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">true</span>
+    <span class="kw">exit</span> <span class="st">"$rc"</span>          <span class="cm"># preserve the original exit code</span>
+}
+<span class="kw">trap</span> <span class="fn">cleanup</span> EXIT
+
+<span class="cm"># ── Script body ───────────────────────────────────────────────</span>
+<span class="vr">TMPDIR</span>=<span class="st">$(</span><span class="cmd">mktemp</span> <span class="fl">-d</span><span class="st">)</span>
+<span class="vr">LOCKFILE</span>=<span class="pth">/var/run/myscript.lock</span>
+<span class="cmd">touch</span> <span class="st">"$LOCKFILE"</span>
+
+<span class="cm"># Start a background worker</span>
+<span class="cmd">sleep</span> <span class="nu">60</span> &
+<span class="vr">CHILD_PID</span>=<span class="st">$!</span>
+
+<span class="cm"># ... script body ...</span>
+<span class="cmd">echo</span> <span class="st">"Working in $TMPDIR"</span>
+
+<span class="cm"># cleanup() runs automatically on exit, error, or Ctrl+C</span></code>
+      <div class="pb-note">Always capture <code>$?</code> as the very first thing inside the cleanup function — subsequent commands will overwrite it. Then call <code>exit "$rc"</code> at the end to preserve the original exit code for callers.</div>
+    </div>
+  </div>
+
+  <h3>The ERR trap — centralised error handling</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 ERR trap for logging failures with context</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="fn">on_error</span>() {
+    <span class="kw">local</span> <span class="vr">rc</span>=<span class="st">$?</span>
+    <span class="kw">local</span> <span class="vr">line</span>=<span class="st">$1</span>
+    <span class="cm"># BASH_COMMAND holds the command that failed</span>
+    <span class="cmd">printf</span> <span class="st">'\033[31m[ERROR]\033[0m Line %d: command "%s" exited with code %d\n'</span> \
+        <span class="st">"$line"</span> <span class="st">"$BASH_COMMAND"</span> <span class="st">"$rc"</span> <span class="op">>&amp;2</span>
+    <span class="cm"># Print a mini stack trace</span>
+    <span class="kw">local</span> <span class="vr">i</span>
+    <span class="cmd">printf</span> <span class="st">'  Stack:\n'</span> <span class="op">>&amp;2</span>
+    <span class="kw">for</span> (( <span class="vr">i</span>=<span class="nu">1</span>; i < ${#FUNCNAME[@]}; i++ )); <span class="kw">do</span>
+        <span class="cmd">printf</span> <span class="st">'    [%d] %s() at %s line %d\n'</span> \
+            <span class="st">"$i"</span> <span class="st">"${FUNCNAME[$i]}"</span> <span class="st">"${BASH_SOURCE[$i]}"</span> <span class="st">"${BASH_LINENO[$((i-1))]}"</span> <span class="op">>&amp;2</span>
+    <span class="kw">done</span>
+}
+<span class="cm"># Pass $LINENO as an argument so on_error knows where it was called</span>
+<span class="kw">trap</span> <span class="st">'on_error $LINENO'</span> ERR
+
+<span class="fn">inner</span>() { <span class="cmd">false</span>; }   <span class="cm"># a function that fails</span>
+<span class="fn">outer</span>() { <span class="fn">inner</span>; }   <span class="cm"># calls inner</span>
+<span class="fn">outer</span>
+<span class="out">[ERROR] Line 18: command "false" exited with code 1</span>
+<span class="out">  Stack:</span>
+<span class="out">    [1] inner() at script.sh line 18</span>
+<span class="out">    [2] outer() at script.sh line 19</span>
+<span class="out">    [3] main script at script.sh line 20</span></code>
+      <div class="pb-note">The ERR trap does <em>not</em> fire inside functions where the error is tested (e.g. <code>if cmd; then</code> or <code>cmd || true</code>). It fires only when a command fails and the failure would propagate — the same condition that triggers <code>set -e</code>.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. KILL PKILL KILLALL
+  ═══════════════════════════════════════════ -->
+  <h2>3 — Sending Signals: <code>kill</code>, <code>pkill</code>, <code>killall</code></h2>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Sending signals to processes</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── kill — send a signal to a PID or job spec ─────────────────</span>
+<span class="cmd">kill</span>      <span class="nu">1234</span>           <span class="cm"># send SIGTERM (default) to PID 1234</span>
+<span class="cmd">kill</span> <span class="fl">-TERM</span>  <span class="nu">1234</span>         <span class="cm"># same, explicit</span>
+<span class="cmd">kill</span> <span class="fl">-15</span>    <span class="nu">1234</span>         <span class="cm"># same, by number</span>
+<span class="cmd">kill</span> <span class="fl">-KILL</span>  <span class="nu">1234</span>         <span class="cm"># SIGKILL — last resort, unkillable by anything else</span>
+<span class="cmd">kill</span> <span class="fl">-HUP</span>   <span class="nu">1234</span>         <span class="cm"># SIGHUP — often means "reload config" for daemons</span>
+<span class="cmd">kill</span> <span class="fl">-0</span>     <span class="nu">1234</span>         <span class="cm"># test if process exists (no signal sent, just check)</span>
+<span class="cmd">kill</span> <span class="fl">-0</span>     <span class="nu">1234</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> && <span class="cmd">echo</span> <span class="st">"process is alive"</span>
+
+<span class="cm"># Send to multiple PIDs</span>
+<span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="nu">1234</span> <span class="nu">5678</span> <span class="nu">9012</span>
+
+<span class="cm"># Send to a job by job spec (only works in interactive shells or with set -m)</span>
+<span class="cmd">sleep</span> <span class="nu">100</span> &
+<span class="cmd">kill</span> <span class="fl">-TERM</span> %<span class="nu">1</span>            <span class="cm"># %1 = job 1</span>
+<span class="cmd">kill</span> <span class="fl">-TERM</span> %<span class="cm">sleep</span>        <span class="cm"># %sleep = job named sleep</span>
+
+<span class="cm"># Send to a process group (negative PID = whole group)</span>
+<span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="fl">-1234</span>         <span class="cm"># send SIGTERM to all processes in group 1234</span>
+<span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="fl">-$$</span>           <span class="cm"># send SIGTERM to the current script's process group</span>
+
+<span class="cm"># ── pkill — send signal by process name or attribute ──────────</span>
+<span class="cmd">pkill</span> <span class="st">myapp</span>              <span class="cm"># SIGTERM all processes named "myapp"</span>
+<span class="cmd">pkill</span> <span class="fl">-KILL</span> <span class="st">myapp</span>        <span class="cm"># force-kill</span>
+<span class="cmd">pkill</span> <span class="fl">-u</span> <span class="vr">$USER</span> <span class="st">python3</span>  <span class="cm"># only kill python3 owned by current user</span>
+<span class="cmd">pkill</span> <span class="fl">-f</span> <span class="st">'worker.py --queue high'</span>  <span class="cm"># match full command line (not just name)</span>
+<span class="cmd">pkill</span> <span class="fl">-P</span> <span class="st">$$</span>              <span class="cm"># kill all direct children of the current shell</span>
+
+<span class="cm"># ── killall — kill by exact name (GNU/Linux) ──────────────────</span>
+<span class="cmd">killall</span> <span class="st">firefox</span>          <span class="cm"># kill all processes named exactly "firefox"</span>
+<span class="cmd">killall</span> <span class="fl">-e</span> <span class="st">myapp</span>         <span class="cm"># -e = exact match (don't truncate at 15 chars)</span>
+<span class="cmd">killall</span> <span class="fl">-w</span> <span class="st">myapp</span>         <span class="cm"># -w = wait until all processes die</span>
+
+<span class="cm"># ── Graceful terminate, then force if needed ──────────────────</span>
+<span class="fn">kill_gracefully</span>() {
+    <span class="kw">local</span> <span class="vr">pid</span>=<span class="st">$1</span> <span class="vr">timeout</span>=<span class="st">${2:-10}</span>
+    <span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="st">"$pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">return</span> <span class="nu">0</span>  <span class="cm"># already gone</span>
+    <span class="kw">local</span> <span class="vr">i</span>
+    <span class="kw">for</span> (( <span class="vr">i</span>=<span class="nu">0</span>; i < timeout; i++ )); <span class="kw">do</span>
+        <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"$pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">return</span> <span class="nu">0</span>  <span class="cm"># gone</span>
+        <span class="cmd">sleep</span> <span class="nu">1</span>
+    <span class="kw">done</span>
+    <span class="cmd">kill</span> <span class="fl">-KILL</span> <span class="st">"$pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">true</span>
+    <span class="cmd">echo</span> <span class="st">"Process $pid did not stop gracefully; SIGKILL sent"</span> <span class="op">>&amp;2</span>
+}
+
+<span class="fn">kill_gracefully</span> <span class="nu">1234</span> <span class="nu">5</span>   <span class="cm"># give 5 seconds before SIGKILL</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. JOB CONTROL
+  ═══════════════════════════════════════════ -->
+  <h2>4 — Job Control: <code>bg</code>, <code>fg</code>, <code>jobs</code>, <code>disown</code></h2>
+
+  <p>Job control lets the shell manage multiple processes, suspending and resuming them as needed. It's enabled by default in interactive shells; in scripts, you need <code>set -m</code> to enable it. Each job has a job number (like <code>%1</code>) as well as a PID.</p>
+
+  <div class="diagram"><span class="dh">Job states:</span>
+
+  Running ──Ctrl+Z──▶ Stopped ──bg──▶ Running (background)
+  Running (background) ──fg──▶ Running (foreground)
+  Running (background) ──exits──▶ Done (reported at next prompt)
+
+<span class="dh">Job spec notation:</span>
+  <span class="dv">%1</span>          job number 1
+  <span class="dv">%%</span>  or <span class="dv">%+</span>  most recently started/resumed job
+  <span class="dv">%-</span>          second most recent job
+  <span class="dv">%sleep</span>      job whose command starts with "sleep"
+  <span class="dv">%?log</span>       job whose command contains "log"</div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Interactive job control</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Start a background job</span>
+<span class="cmd">sleep</span> <span class="nu">100</span> &
+<span class="out">[1] 4872</span>
+
+<span class="cm"># List all jobs</span>
+<span class="cmd">jobs</span>
+<span class="out">[1]+  Running    sleep 100 &</span>
+
+<span class="cmd">jobs</span> <span class="fl">-l</span>                   <span class="cm"># show PIDs too</span>
+<span class="out">[1]+  4872 Running    sleep 100 &</span>
+
+<span class="cmd">jobs</span> <span class="fl">-p</span>                   <span class="cm"># show only PIDs</span>
+
+<span class="cm"># Bring job to foreground (reclaims terminal)</span>
+<span class="cmd">fg</span> %<span class="nu">1</span>
+<span class="cm"># Now press Ctrl+Z to suspend it</span>
+<span class="out">[1]+  Stopped    sleep 100</span>
+
+<span class="cm"># Send it to background, still running</span>
+<span class="cmd">bg</span> %<span class="nu">1</span>
+<span class="out">[1]+ sleep 100 &</span>
+
+<span class="cm"># ── disown — detach a job from the shell ──────────────────────</span>
+<span class="cm"># Without disown: when the shell exits, SIGHUP is sent to all jobs</span>
+<span class="cmd">long_running_process</span> &
+<span class="cmd">disown</span>                   <span class="cm"># disown %% (most recent job)</span>
+<span class="cm"># Process now survives terminal close; shell no longer tracks it</span>
+
+<span class="cmd">disown</span> %<span class="nu">1</span>               <span class="cm"># disown specific job</span>
+<span class="cmd">disown</span> <span class="fl">-h</span> %<span class="nu">1</span>            <span class="cm"># disown but keep in jobs table (only removes SIGHUP)</span>
+<span class="cmd">disown</span> <span class="fl">-a</span>               <span class="cm"># disown all background jobs</span></code>
+    </div>
+  </div>
+
+  <h3>Job control in scripts with <code>set -m</code></h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Enabling job control in non-interactive scripts</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Job control is off by default in scripts — enable it explicitly</span>
+<span class="kw">set</span> <span class="fl">-m</span>
+
+<span class="cmd">sleep</span> <span class="nu">30</span> &
+<span class="vr">JOB_PID</span>=<span class="st">$!</span>
+<span class="vr">JOB_NUM</span>=<span class="st">$(</span><span class="cmd">jobs</span> <span class="fl">-l</span> | <span class="cmd">awk</span> <span class="st">'/'"$JOB_PID"'/{gsub(/[^0-9]/, "", $1); print $1}'</span><span class="st">)</span>
+
+<span class="cm"># With set -m, you can use job specs in kill/fg/bg</span>
+<span class="cmd">kill</span> <span class="fl">-STOP</span> %<span class="nu">1</span>            <span class="cm"># pause the job</span>
+<span class="cmd">kill</span> <span class="fl">-CONT</span> %<span class="nu">1</span>            <span class="cm"># resume it</span>
+
+<span class="cm"># More commonly in scripts: just use PIDs directly</span>
+<span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="st">"$JOB_PID"</span>
+
+<span class="cm"># Process groups: with set -m, each background job gets its own process group</span>
+<span class="cm"># Kill the whole group (including any children the job spawned):</span>
+<span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="fl">-</span><span class="st">"$JOB_PID"</span>   <span class="cm"># negative PID = process group</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. WAIT AND WAIT -N
+  ═══════════════════════════════════════════ -->
+  <h2>5 — <code>wait</code>: Collecting Background Jobs</h2>
+
+  <p><code>wait</code> pauses the script until background jobs complete, and crucially returns their exit codes. Without <code>wait</code>, background job failures are silently ignored.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 wait, wait PID, and wait -n</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── wait with no arguments — wait for ALL background jobs ─────</span>
+<span class="cmd">sleep</span> <span class="nu">2</span> &
+<span class="cmd">sleep</span> <span class="nu">3</span> &
+<span class="cmd">wait</span>                     <span class="cm"># blocks until both sleeps finish</span>
+<span class="cmd">echo</span> <span class="st">"all done"</span>
+
+<span class="cm"># ── wait PID — wait for a specific process ────────────────────</span>
+<span class="cmd">sleep</span> <span class="nu">5</span> &
+<span class="vr">pid</span>=<span class="st">$!</span>
+<span class="cmd">wait</span> <span class="st">"$pid"</span>
+<span class="vr">rc</span>=<span class="st">$?</span>
+<span class="cmd">echo</span> <span class="st">"sleep exited with: $rc"</span>
+
+<span class="cm"># ── Capturing exit codes from parallel jobs ───────────────────</span>
+<span class="fn">do_work</span>() {
+    <span class="kw">local</span> <span class="vr">id</span>=<span class="st">$1</span>
+    <span class="cmd">echo</span> <span class="st">"Worker $id starting"</span>
+    <span class="cmd">sleep</span> <span class="st">$(( RANDOM % 3 + 1 ))</span>
+    (( id == <span class="nu">2</span> )) && <span class="kw">return</span> <span class="nu">1</span>   <span class="cm"># worker 2 deliberately fails</span>
+    <span class="cmd">echo</span> <span class="st">"Worker $id done"</span>
+}
+
+<span class="vr">pids</span>=()
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> <span class="nu">1</span> <span class="nu">2</span> <span class="nu">3</span>; <span class="kw">do</span>
+    <span class="fn">do_work</span> <span class="st">"$i"</span> &
+    <span class="vr">pids</span>+=( <span class="st">$!</span> )
+<span class="kw">done</span>
+
+<span class="vr">failed</span>=<span class="nu">0</span>
+<span class="kw">for</span> <span class="vr">pid</span> <span class="kw">in</span> <span class="st">"${pids[@]}"</span>; <span class="kw">do</span>
+    <span class="kw">if</span> ! <span class="cmd">wait</span> <span class="st">"$pid"</span>; <span class="kw">then</span>
+        <span class="cmd">echo</span> <span class="st">"PID $pid failed"</span> <span class="op">>&amp;2</span>
+        <span class="st">(( failed++ ))</span>
+    <span class="kw">fi</span>
+<span class="kw">done</span>
+(( failed > <span class="nu">0</span> )) && { <span class="cmd">echo</span> <span class="st">"$failed job(s) failed"</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="cmd">echo</span> <span class="st">"All workers succeeded"</span></code>
+    </div>
+  </div>
+
+  <h3><code>wait -n</code> — act as soon as any job finishes (bash 5.1+)</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 wait -n and wait -p — first-completed patterns</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># wait -n returns when the FIRST background job finishes</span>
+<span class="cm"># Returns that job's exit code</span>
+
+<span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Requires bash 5.1+ for -p (store PID of the finished job)</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="cm"># Start several jobs</span>
+<span class="kw">for</span> <span class="vr">url</span> <span class="kw">in</span> \
+    https://api.example.com/health \
+    https://db.example.com/health \
+    https://cache.example.com/health
+<span class="kw">do</span>
+    <span class="cmd">curl</span> <span class="fl">-sf</span> <span class="st">"$url"</span> <span class="op">&gt;</span> <span class="pth">/dev/null</span> &
+<span class="kw">done</span>
+
+<span class="cm"># wait -n: wait for ANY one job to finish, capture its PID with -p</span>
+<span class="vr">failed</span>=<span class="nu">0</span>
+<span class="kw">while</span> <span class="cmd">wait</span> <span class="fl">-n</span> <span class="fl">-p</span> <span class="vr">finished_pid</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>; <span class="kw">do</span>
+    <span class="kw">true</span>   <span class="cm"># loop until all background jobs are done</span>
+<span class="kw">done</span> || (( failed++ ))
+<span class="cm"># Note: the loop exits when there are no more background jobs</span>
+<span class="cm"># Return value of wait -n is the finished job's exit code</span>
+
+<span class="cm"># Simpler pattern: bounded parallelism with wait -n</span>
+<span class="vr">MAX_JOBS</span>=<span class="nu">4</span>
+<span class="vr">running</span>=<span class="nu">0</span>
+
+<span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> a b c d e f g h; <span class="kw">do</span>
+    (( running >= MAX_JOBS )) && { <span class="cmd">wait</span> <span class="fl">-n</span>; (( running-- )); }
+    <span class="cmd">process_item</span> <span class="st">"$item"</span> &
+    (( running++ ))
+<span class="kw">done</span>
+<span class="cmd">wait</span>   <span class="cm"># wait for remaining jobs</span></code>
+      <div class="pb-note"><code>wait -n</code> requires bash 4.3+. The <code>-p var</code> option to store the finished PID requires bash 5.1+. Check with <code>echo $BASH_VERSION</code>. For older bash, track PIDs in an array and poll with <code>kill -0</code>.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. GRACEFUL SHUTDOWN PATTERNS
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Graceful Shutdown Patterns</h2>
+
+  <p>A graceful shutdown means: stop accepting new work, finish what's in progress, clean up resources, and exit with an accurate status code. The challenge is that SIGTERM can arrive at any moment — you can't predict whether it hits a sleep, a curl, or a database commit. The patterns below handle this robustly.</p>
+
+  <h3>Signal forwarding — don't leave children orphaned</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Forwarding signals to child processes</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="cm"># Problem: when the shell receives SIGTERM, child processes keep running</span>
+<span class="cm"># unless you explicitly forward the signal</span>
+
+<span class="vr">child_pid</span>=<span class="st">""</span>
+
+<span class="fn">forward_signal</span>() {
+    <span class="kw">local</span> <span class="vr">sig</span>=<span class="st">$1</span>
+    <span class="cm"># Kill the child with the same signal we received</span>
+    [[ <span class="fl">-n</span> <span class="st">"$child_pid"</span> ]] && <span class="cmd">kill</span> <span class="fl">-</span><span class="st">"$sig"</span> <span class="st">"$child_pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">true</span>
+}
+
+<span class="kw">trap</span> <span class="st">'forward_signal TERM'</span> TERM
+<span class="kw">trap</span> <span class="st">'forward_signal INT'</span>  INT
+<span class="kw">trap</span> <span class="st">'forward_signal HUP'</span>  HUP
+
+<span class="cm"># Launch the real worker</span>
+<span class="cmd">./my_worker</span> &
+<span class="vr">child_pid</span>=<span class="st">$!</span>
+
+<span class="cm"># Wait for it, but resume waiting if interrupted by a signal</span>
+<span class="cm"># (trap handlers interrupt wait — the "|| true" re-enters the loop)</span>
+<span class="kw">while</span> ! <span class="cmd">wait</span> <span class="st">"$child_pid"</span>; <span class="kw">do</span>
+    <span class="cm"># wait was interrupted (signal arrived) — check if child is still alive</span>
+    <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"$child_pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">break</span>
+<span class="kw">done</span></code>
+    </div>
+  </div>
+
+  <h3>The shutdown flag pattern — controlled loop termination</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Using a flag variable for clean loop exit</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">SHUTDOWN</span>=<span class="nu">0</span>
+
+<span class="fn">on_shutdown</span>() {
+    <span class="cmd">echo</span> <span class="st">"Shutdown signal received — finishing current item..."</span> <span class="op">>&amp;2</span>
+    <span class="vr">SHUTDOWN</span>=<span class="nu">1</span>
+}
+<span class="kw">trap</span> <span class="fn">on_shutdown</span> TERM INT HUP
+
+<span class="cm"># Main processing loop — check the flag at the top of each iteration</span>
+<span class="kw">while</span> (( SHUTDOWN == <span class="nu">0</span> )); <span class="kw">do</span>
+    <span class="cm"># Fetch next item from queue (this might block)</span>
+    <span class="vr">item</span>=<span class="st">$(</span><span class="fn">fetch_next_item</span><span class="st">)</span> || <span class="kw">break</span>
+
+    <span class="cm"># Process — we finish this even if shutdown was requested during fetch</span>
+    <span class="fn">process_item</span> <span class="st">"$item"</span>
+<span class="kw">done</span>
+
+<span class="cmd">echo</span> <span class="st">"Worker exited cleanly"</span>
+
+<span class="cm"># ── SIGUSR1 for operational control ──────────────────────────</span>
+<span class="cm"># Use SIGUSR1/SIGUSR2 for custom actions like dumping stats or rotating logs</span>
+<span class="vr">STATS_REQUESTED</span>=<span class="nu">0</span>
+
+<span class="fn">dump_stats</span>() {
+    <span class="vr">STATS_REQUESTED</span>=<span class="nu">1</span>
+}
+<span class="kw">trap</span> <span class="fn">dump_stats</span> USR1
+
+<span class="cm"># In the main loop, check and handle the flag:</span>
+<span class="kw">if</span> (( STATS_REQUESTED )); <span class="kw">then</span>
+    <span class="fn">print_stats</span>
+    <span class="vr">STATS_REQUESTED</span>=<span class="nu">0</span>
+<span class="kw">fi</span>
+<span class="cm"># Send stats from another terminal:  kill -USR1 &lt;script_pid&gt;</span></code>
+    </div>
+  </div>
+
+  <h3>Daemon-style restart-on-exit wrapper</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Supervising a child process with restart logic</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># supervisor.sh — restart a command if it exits unexpectedly</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">CMD</span>=( <span class="st">"$@"</span> )              <span class="cm"># the command to supervise</span>
+<span class="vr">MAX_RESTARTS</span>=<span class="st">${MAX_RESTARTS:-5}</span>
+<span class="vr">RESTART_DELAY</span>=<span class="st">${RESTART_DELAY:-3}</span>
+<span class="vr">QUIT</span>=<span class="nu">0</span>
+<span class="vr">restarts</span>=<span class="nu">0</span>
+
+<span class="kw">trap</span> <span class="st">'QUIT=1'</span> TERM INT HUP
+
+<span class="kw">while</span> (( QUIT == <span class="nu">0</span> && restarts < MAX_RESTARTS )); <span class="kw">do</span>
+    <span class="cmd">echo</span> <span class="st">"[supervisor] Starting: ${CMD[*]}"</span>
+
+    <span class="st">"${CMD[@]}"</span> &
+    <span class="vr">child</span>=<span class="st">$!</span>
+
+    <span class="cm"># Wait for child; resume after signal interruption</span>
+    <span class="kw">while</span> ! <span class="cmd">wait</span> <span class="st">"$child"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>; <span class="kw">do</span>
+        <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"$child"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">break</span>
+    <span class="kw">done</span>
+    <span class="vr">rc</span>=<span class="st">$?</span>
+
+    (( QUIT )) && <span class="kw">break</span>     <span class="cm"># we initiated the shutdown, don't restart</span>
+
+    (( restarts++ ))
+    <span class="cmd">echo</span> <span class="st">"[supervisor] Exited ($rc) — restart $restarts/$MAX_RESTARTS in ${RESTART_DELAY}s"</span>
+    <span class="cmd">sleep</span> <span class="st">"$RESTART_DELAY"</span>
+<span class="kw">done</span>
+
+(( restarts >= MAX_RESTARTS )) && <span class="cmd">echo</span> <span class="st">"[supervisor] Max restarts reached. Giving up."</span>
+<span class="cmd">echo</span> <span class="st">"[supervisor] Exiting"</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. TRAP GOTCHAS AND BEST PRACTICES
+  ═══════════════════════════════════════════ -->
+  <h2>7 — Trap Gotchas and Best Practices</h2>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Common trap mistakes and how to avoid them</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Gotcha 1: trap is NOT inherited by subshells ──────────────</span>
+<span class="kw">trap</span> <span class="st">'echo "parent cleanup"'</span> EXIT
+<span class="st">(</span>
+    <span class="cm"># This subshell does NOT inherit the EXIT trap — runs with no trap</span>
+    <span class="cmd">echo</span> <span class="st">"in subshell"</span>
+<span class="st">)</span>
+<span class="cm"># The parent's EXIT trap still fires when the parent exits</span>
+
+<span class="cm"># ── Gotcha 2: trap is NOT inherited by child processes ─────────</span>
+<span class="cm"># A script called by your script starts with clean traps</span>
+<span class="cm"># (unless you export with export -f or the child is a function)</span>
+
+<span class="cm"># ── Gotcha 3: trap string vs function name timing ─────────────</span>
+<span class="vr">file</span>=<span class="st">"initial"</span>
+<span class="cm"># BAD: the string is evaluated NOW — $file captures "initial"</span>
+<span class="kw">trap</span> <span class="st">"rm -f $file"</span>   EXIT   <span class="cm"># ← double quotes: expands immediately</span>
+
+<span class="cm"># GOOD: single quotes — $file evaluated when the trap fires</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$file"'</span> EXIT   <span class="cm"># ← single quotes: evaluates at trap time</span>
+
+<span class="cm"># BEST: use a function — most readable and testable</span>
+<span class="fn">my_cleanup</span>() { <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$file"</span>; }
+<span class="kw">trap</span> <span class="fn">my_cleanup</span> EXIT         <span class="cm"># no quotes needed for function name</span>
+
+<span class="cm"># ── Gotcha 4: stacking traps — each trap call REPLACES the previous ──</span>
+<span class="kw">trap</span> <span class="st">'echo first'</span>  EXIT
+<span class="kw">trap</span> <span class="st">'echo second'</span> EXIT      <span class="cm"># replaces the first trap!</span>
+<span class="cm"># Only "second" will print — not "first"</span>
+
+<span class="cm"># Fix: chain in a single trap, or use a cleanup function that accumulates</span>
+<span class="vr">CLEANUP_TASKS</span>=()
+<span class="fn">add_cleanup</span>() { <span class="vr">CLEANUP_TASKS</span>+=( <span class="st">"$1"</span> ); }
+<span class="fn">run_cleanups</span>() {
+    <span class="kw">local</span> <span class="vr">rc</span>=<span class="st">$?</span>
+    <span class="kw">local</span> <span class="vr">task</span>
+    <span class="kw">for</span> <span class="vr">task</span> <span class="kw">in</span> <span class="st">"${CLEANUP_TASKS[@]}"</span>; <span class="kw">do</span>
+        <span class="cmd">eval</span> <span class="st">"$task"</span> <span class="op">||</span> <span class="kw">true</span>   <span class="cm"># run each, don't stop on failure</span>
+    <span class="kw">done</span>
+    <span class="kw">exit</span> <span class="st">"$rc"</span>
+}
+<span class="kw">trap</span> <span class="fn">run_cleanups</span> EXIT
+
+<span class="cm"># Now register individual cleanup actions at any point in the script</span>
+<span class="fn">add_cleanup</span> <span class="st">'rm -f /tmp/myfile'</span>
+<span class="fn">add_cleanup</span> <span class="st">'echo "Done cleaning up"'</span>
+
+<span class="cm"># ── Gotcha 5: SIGKILL can never be caught ─────────────────────</span>
+<span class="kw">trap</span> <span class="st">'echo caught'</span> KILL     <span class="er"># ERROR: cannot trap SIGKILL</span>
+<span class="cm"># This is by design — SIGKILL is the OS's emergency stop</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       8. QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>8 — Quick Reference</h2>
+
+  <h3>trap syntax</h3>
+  <table class="ref-table">
+    <thead><tr><th>Form</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>trap 'cmd' SIG</code></td><td>Run cmd when SIG is received</td></tr>
+      <tr><td><code>trap fn SIG</code></td><td>Call function fn when SIG is received</td></tr>
+      <tr><td><code>trap 'cmd' SIG1 SIG2</code></td><td>Same command for multiple signals</td></tr>
+      <tr><td><code>trap '' SIG</code></td><td>Ignore signal SIG</td></tr>
+      <tr><td><code>trap - SIG</code></td><td>Reset signal to default behaviour</td></tr>
+      <tr><td><code>trap -p</code></td><td>Print all active traps</td></tr>
+      <tr><td><code>trap 'cmd' EXIT</code></td><td>Run on any shell exit</td></tr>
+      <tr><td><code>trap 'cmd' ERR</code></td><td>Run when any command fails (non-zero exit)</td></tr>
+      <tr><td><code>trap 'cmd' DEBUG</code></td><td>Run before every simple command</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Job control commands</h3>
+  <table class="ref-table">
+    <thead><tr><th>Command</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>cmd &amp;</code></td><td>Run cmd in background; sets $! to its PID</td></tr>
+      <tr><td><code>jobs</code></td><td>List background jobs with job numbers</td></tr>
+      <tr><td><code>jobs -l</code></td><td>List jobs with PIDs</td></tr>
+      <tr><td><code>fg %N</code></td><td>Bring job N to foreground</td></tr>
+      <tr><td><code>bg %N</code></td><td>Resume stopped job N in background</td></tr>
+      <tr><td><code>disown %N</code></td><td>Detach job N (survives terminal close)</td></tr>
+      <tr><td><code>disown -h %N</code></td><td>Stop job receiving SIGHUP (but keep in jobs table)</td></tr>
+      <tr><td><code>wait</code></td><td>Wait for all background jobs</td></tr>
+      <tr><td><code>wait $pid</code></td><td>Wait for a specific PID; returns its exit code</td></tr>
+      <tr><td><code>wait -n</code></td><td>Wait for any one job to finish (bash 4.3+)</td></tr>
+      <tr><td><code>wait -n -p var</code></td><td>Wait for any job; store its PID in var (bash 5.1+)</td></tr>
+      <tr><td><code>kill -0 $pid</code></td><td>Test if process exists (no signal sent)</td></tr>
+      <tr><td><code>pkill -P $$</code></td><td>Kill all direct children of this shell</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXERCISES
+  ═══════════════════════════════════════════ -->
+  <h2>✏️ Exercises</h2>
+  <p class="section-intro">These exercises focus on writing scripts that behave correctly under interruption — the real test of signal handling. Run them in a terminal and test by pressing Ctrl+C or running <code>kill -TERM &lt;pid&gt;</code> from another window.</p>
+
+  <!-- Exercise 1 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 1</div>
+    <div class="ex-task">Write a script called <code>safe_processor.sh</code> that reads lines from a file (passed as an argument), processes each one with a simulated 1-second operation, and — using a trap and shutdown flag — finishes the current item before exiting cleanly when it receives SIGTERM or SIGINT. It should print how many items it processed and whether it exited early.</div>
+    <div class="ex-hint">Hint: set <code>SHUTDOWN=0</code> and trap TERM and INT to set it to 1. The <code>while</code> loop checks <code>(( SHUTDOWN == 0 ))</code>. Use <code>sleep 1</code> to simulate processing. The trap handler should not call <code>exit</code> directly — let the loop terminate naturally.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># safe_processor.sh  FILE</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">FILE</span>=<span class="st">"${1:?Usage: safe_processor.sh FILE}"</span>
+[[ <span class="fl">-f</span> <span class="st">"$FILE"</span> ]] || { <span class="cmd">echo</span> <span class="er">"Error: '$FILE' not found"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="vr">SHUTDOWN</span>=<span class="nu">0</span>
+<span class="vr">processed</span>=<span class="nu">0</span>
+<span class="vr">total</span>=<span class="st">$(</span><span class="cmd">wc</span> <span class="fl">-l</span> <span class="op">&lt;</span> <span class="st">"$FILE"</span><span class="st">)</span>
+
+<span class="fn">on_signal</span>() {
+    <span class="cmd">echo</span> <span class="st">""</span>
+    <span class="cmd">echo</span> <span class="st">"Signal received — finishing current item and shutting down..."</span> <span class="op">>&amp;2</span>
+    <span class="vr">SHUTDOWN</span>=<span class="nu">1</span>
+}
+<span class="kw">trap</span> <span class="fn">on_signal</span> TERM INT
+
+<span class="cmd">echo</span> <span class="st">"Processing $total items from $FILE (PID: $$)"</span>
+<span class="cmd">echo</span> <span class="st">"Send SIGTERM with:  kill -TERM $$"</span>
+
+<span class="kw">while</span> (( SHUTDOWN == <span class="nu">0</span> )) && <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">"  Processing: %s ... "</span> <span class="st">"$line"</span>
+    <span class="cmd">sleep</span> <span class="nu">1</span>   <span class="cm"># simulate work</span>
+    <span class="cmd">printf</span> <span class="st">"done\n"</span>
+    (( processed++ ))
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="st">"$FILE"</span>
+
+<span class="cm"># Report result</span>
+<span class="cmd">echo</span>
+<span class="kw">if</span> (( SHUTDOWN )); <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">"\033[33mEarly exit:\033[0m processed %d of %d items\n"</span> \
+        <span class="st">"$processed"</span> <span class="st">"$total"</span>
+    <span class="kw">exit</span> <span class="nu">130</span>     <span class="cm"># conventional: 128 + signal number (SIGINT=2)</span>
+<span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">"\033[32mComplete:\033[0m processed all %d items\n"</span> <span class="st">"$processed"</span>
+<span class="kw">fi</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 2 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 2</div>
+    <div class="ex-task">Write a script called <code>parallel_jobs.sh</code> that takes a list of commands (one per line from stdin or a file) and runs them in parallel with a configurable concurrency limit (<code>MAX_JOBS</code> environment variable, default 3). It should collect each job's exit code, report which commands succeeded and which failed, and exit with a non-zero code if any job failed. Use <code>wait $pid</code> to collect exit codes.</div>
+    <div class="ex-hint">Hint: maintain a <code>pids</code> array mapping PID to command string. Use <code>jobs -p | wc -l</code> or a counter variable to track running jobs. When the count reaches <code>MAX_JOBS</code>, call <code>wait -n</code> (or loop over pids checking <code>kill -0</code>) before launching the next. At the end, wait for all remaining PIDs.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># parallel_jobs.sh  [FILE]   (reads commands from FILE or stdin)</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">MAX_JOBS</span>=<span class="st">${MAX_JOBS:-3}</span>
+
+<span class="cm"># pids[PID]="command string"</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">pids</span>=()
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">failed_cmds</span>=()
+<span class="vr">running</span>=<span class="nu">0</span>
+
+<span class="fn">reap_one</span>() {
+    <span class="cm"># Wait for any one job to finish; record failures</span>
+    <span class="kw">local</span> <span class="vr">pid</span> <span class="vr">rc</span>
+    <span class="kw">for</span> <span class="vr">pid</span> <span class="kw">in</span> <span class="st">"${!pids[@]}"</span>; <span class="kw">do</span>
+        <span class="kw">if</span> ! <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"$pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>; <span class="kw">then</span>
+            <span class="cm"># Process is gone — collect exit code</span>
+            <span class="cmd">wait</span> <span class="st">"$pid"</span> && <span class="vr">rc</span>=<span class="nu">0</span> || <span class="vr">rc</span>=<span class="st">$?</span>
+            <span class="kw">if</span> (( rc != <span class="nu">0</span> )); <span class="kw">then</span>
+                <span class="vr">failed_cmds</span>[<span class="st">"$pid"</span>]=<span class="st">"${pids[$pid]} (exit $rc)"</span>
+                <span class="cmd">printf</span> <span class="st">'\033[31m[FAIL]\033[0m %s\n'</span> <span class="st">"${pids[$pid]}"</span> <span class="op">>&amp;2</span>
+            <span class="kw">else</span>
+                <span class="cmd">printf</span> <span class="st">'\033[32m[OK]\033[0m   %s\n'</span> <span class="st">"${pids[$pid]}"</span>
+            <span class="kw">fi</span>
+            <span class="kw">unset</span> <span class="st">'pids[$pid]'</span>
+            (( running-- ))
+            <span class="kw">return</span>
+        <span class="kw">fi</span>
+    <span class="kw">done</span>
+    <span class="cm"># All still running — sleep briefly and retry</span>
+    <span class="cmd">sleep</span> <span class="nu">0.1</span>
+}
+
+<span class="vr">total</span>=<span class="nu">0</span>
+
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">cmd</span>; <span class="kw">do</span>
+    [[ <span class="fl">-z</span> <span class="st">"$cmd"</span> || <span class="st">"$cmd"</span> == <span class="st">'#'</span>* ]] && <span class="kw">continue</span>
+    <span class="cm"># Wait until a slot opens</span>
+    <span class="kw">while</span> (( running >= MAX_JOBS )); <span class="kw">do</span>
+        <span class="fn">reap_one</span>
+    <span class="kw">done</span>
+    <span class="cm"># Launch</span>
+    <span class="cmd">eval</span> <span class="st">"$cmd"</span> &
+    <span class="vr">pids</span>[<span class="st">$!</span>]=<span class="st">"$cmd"</span>
+    (( running++ ))
+    (( total++ ))
+<span class="kw">done</span>
+
+<span class="cm"># Wait for remaining jobs</span>
+<span class="kw">while</span> (( running > <span class="nu">0</span> )); <span class="kw">do</span>
+    <span class="fn">reap_one</span>
+<span class="kw">done</span>
+
+<span class="cm"># Summary</span>
+<span class="vr">nfailed</span>=<span class="st">${#failed_cmds[@]}</span>
+<span class="cmd">printf</span> <span class="st">'\n%d jobs total — %d failed\n'</span> <span class="st">"$total"</span> <span class="st">"$nfailed"</span>
+(( nfailed > <span class="nu">0</span> )) && <span class="kw">exit</span> <span class="nu">1</span> || <span class="kw">exit</span> <span class="nu">0</span>
+
+<span class="cm"># Usage:</span>
+<span class="cm"># echo -e "sleep 1\nsleeep 1\nsleep 2" | MAX_JOBS=2 ./parallel_jobs.sh</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 3 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 3</div>
+    <div class="ex-task">Write a script called <code>monitored_run.sh</code> that runs a command passed as arguments, sets a timeout using <code>SIGALRM</code> or a background sleep-and-kill pattern, and produces a structured report: command, start time, end time, duration in seconds, exit code, and whether it was killed due to timeout. The timeout should be configurable via a <code>TIMEOUT</code> environment variable (default: 10 seconds).</div>
+    <div class="ex-hint">Hint: the pure-bash timeout pattern is: start the command as a background job, also start a <code>sleep $TIMEOUT &</code> job, then <code>wait -n</code> for whichever finishes first — if the sleep wins, kill the command. Store both PIDs. The <code>SECONDS</code> built-in variable tracks elapsed time since the script started.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># monitored_run.sh  COMMAND [ARGS...]</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">TIMEOUT</span>=<span class="st">${TIMEOUT:-10}</span>
+(( $# > <span class="nu">0</span> )) || { <span class="cmd">echo</span> <span class="er">"Usage: monitored_run.sh COMMAND [ARGS]"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="vr">cmd_str</span>=<span class="st">"$*"</span>
+<span class="vr">start_time</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%Y-%m-%d %H:%M:%S'</span><span class="st">)</span>
+<span class="vr">start_sec</span>=<span class="st">$SECONDS</span>
+
+<span class="cm"># Start the target command</span>
+<span class="st">"$@"</span> &
+<span class="vr">cmd_pid</span>=<span class="st">$!</span>
+
+<span class="cm"># Start the timeout watchdog</span>
+<span class="cmd">sleep</span> <span class="st">"$TIMEOUT"</span> &
+<span class="vr">sleep_pid</span>=<span class="st">$!</span>
+
+<span class="vr">timed_out</span>=<span class="nu">0</span>
+<span class="vr">rc</span>=<span class="nu">0</span>
+
+<span class="cm"># Wait for whichever finishes first</span>
+<span class="cm"># We poll rather than use wait -n for broader compatibility</span>
+<span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span>
+    <span class="cm"># Check if the command is done</span>
+    <span class="kw">if</span> ! <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"$cmd_pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>; <span class="kw">then</span>
+        <span class="cmd">kill</span> <span class="st">"$sleep_pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">true</span>
+        <span class="cmd">wait</span> <span class="st">"$cmd_pid"</span> && <span class="vr">rc</span>=<span class="nu">0</span> || <span class="vr">rc</span>=<span class="st">$?</span>
+        <span class="kw">break</span>
+    <span class="kw">fi</span>
+    <span class="cm"># Check if timeout elapsed</span>
+    <span class="kw">if</span> ! <span class="cmd">kill</span> <span class="fl">-0</span> <span class="st">"$sleep_pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>; <span class="kw">then</span>
+        <span class="vr">timed_out</span>=<span class="nu">1</span>
+        <span class="cmd">kill</span> <span class="fl">-TERM</span> <span class="st">"$cmd_pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">true</span>
+        <span class="cmd">sleep</span> <span class="nu">1</span>
+        <span class="cmd">kill</span> <span class="fl">-KILL</span> <span class="st">"$cmd_pid"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span> || <span class="kw">true</span>
+        <span class="vr">rc</span>=<span class="nu">124</span>   <span class="cm"># GNU timeout convention</span>
+        <span class="kw">break</span>
+    <span class="kw">fi</span>
+    <span class="cmd">sleep</span> <span class="nu">0.1</span>
+<span class="kw">done</span>
+
+<span class="vr">end_time</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%Y-%m-%d %H:%M:%S'</span><span class="st">)</span>
+<span class="vr">duration</span>=$(( SECONDS - start_sec ))
+
+<span class="cm"># Structured report</span>
+<span class="cmd">printf</span> <span class="st">'\n╔══ Run Report ═══════════════════════════════\n'</span>
+<span class="cmd">printf</span> <span class="st">'  Command   : %s\n'</span>   <span class="st">"$cmd_str"</span>
+<span class="cmd">printf</span> <span class="st">'  Start     : %s\n'</span>   <span class="st">"$start_time"</span>
+<span class="cmd">printf</span> <span class="st">'  End       : %s\n'</span>   <span class="st">"$end_time"</span>
+<span class="cmd">printf</span> <span class="st">'  Duration  : %ds\n'</span>  <span class="st">"$duration"</span>
+<span class="cmd">printf</span> <span class="st">'  Exit code : %d\n'</span>  <span class="st">"$rc"</span>
+<span class="kw">if</span> (( timed_out )); <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'  Timeout   : \033[31mYES — killed after %ds\033[0m\n'</span> <span class="st">"$TIMEOUT"</span>
+<span class="kw">else</span>
+    <span class="cmd">printf</span> <span class="st">'  Timeout   : \033[32mno\033[0m\n'</span>
+<span class="kw">fi</span>
+<span class="cmd">printf</span> <span class="st">'╚═════════════════════════════════════════════\n'</span>
+
+<span class="kw">exit</span> <span class="st">"$rc"</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 4 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 4</div>
+    <div class="ex-task">Write a script called <code>cleanup_demo.sh</code> that demonstrates the stackable cleanup pattern from section 7. It should create a temp directory, a lock file, and a background process during its startup, registering each as a separate cleanup task using an <code>add_cleanup</code> function. It should then deliberately fail (using <code>false</code> or a bad command) to show that all cleanup tasks still run, in registration order. Print each cleanup step as it runs.</div>
+    <div class="ex-hint">Hint: implement the <code>CLEANUP_TASKS</code> array and <code>run_cleanups</code> function from the gotchas section. Make the cleanup functions print a message like <code>[cleanup] removing /tmp/demo.XYZ</code> before doing the actual removal. Use <code>set -e</code> so the deliberate failure triggers the EXIT trap.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># cleanup_demo.sh — stackable cleanup pattern</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="cm"># ── Cleanup stack ─────────────────────────────────────────────</span>
+<span class="vr">CLEANUP_TASKS</span>=()
+
+<span class="fn">add_cleanup</span>() {
+    <span class="vr">CLEANUP_TASKS</span>+=( <span class="st">"$1"</span> )
+}
+
+<span class="fn">run_cleanups</span>() {
+    <span class="kw">local</span> <span class="vr">rc</span>=<span class="st">$?</span>
+    <span class="cmd">echo</span> <span class="st">""</span>
+    <span class="cmd">printf</span> <span class="st">'\033[36m[cleanup]\033[0m Running %d cleanup tasks...\n'</span> \
+        <span class="st">"${#CLEANUP_TASKS[@]}"</span> <span class="op">>&amp;2</span>
+    <span class="kw">local</span> <span class="vr">task</span>
+    <span class="kw">for</span> <span class="vr">task</span> <span class="kw">in</span> <span class="st">"${CLEANUP_TASKS[@]}"</span>; <span class="kw">do</span>
+        <span class="cmd">eval</span> <span class="st">"$task"</span> <span class="op">||</span> <span class="cmd">printf</span> <span class="st">'\033[31m[cleanup]\033[0m Task failed: %s\n'</span> \
+            <span class="st">"$task"</span> <span class="op">>&amp;2</span>
+    <span class="kw">done</span>
+    <span class="cmd">printf</span> <span class="st">'\033[36m[cleanup]\033[0m Done. Original exit code: %d\n'</span> \
+        <span class="st">"$rc"</span> <span class="op">>&amp;2</span>
+    <span class="kw">exit</span> <span class="st">"$rc"</span>
+}
+
+<span class="kw">trap</span> <span class="fn">run_cleanups</span> EXIT
+
+<span class="cm"># ── Startup: acquire resources ────────────────────────────────</span>
+<span class="cmd">echo</span> <span class="st">"[1] Creating temp directory..."</span>
+<span class="vr">TMPDIR</span>=<span class="st">$(</span><span class="cmd">mktemp</span> <span class="fl">-d</span><span class="st">)</span>
+<span class="cmd">echo</span> <span class="st">"    Created: $TMPDIR"</span>
+<span class="fn">add_cleanup</span> <span class="st">"printf '[cleanup] removing temp dir %s\n' \"$TMPDIR\" >&2; rm -rf \"$TMPDIR\""</span>
+
+<span class="cmd">echo</span> <span class="st">"[2] Creating lock file..."</span>
+<span class="vr">LOCKFILE</span>=<span class="pth">/tmp/cleanup_demo_$$.lock</span>
+<span class="cmd">touch</span> <span class="st">"$LOCKFILE"</span>
+<span class="cmd">echo</span> <span class="st">"    Created: $LOCKFILE"</span>
+<span class="fn">add_cleanup</span> <span class="st">"printf '[cleanup] releasing lock %s\n' \"$LOCKFILE\" >&2; rm -f \"$LOCKFILE\""</span>
+
+<span class="cmd">echo</span> <span class="st">"[3] Starting background process..."</span>
+<span class="cmd">sleep</span> <span class="nu">60</span> &
+<span class="vr">BG_PID</span>=<span class="st">$!</span>
+<span class="cmd">echo</span> <span class="st">"    PID: $BG_PID"</span>
+<span class="fn">add_cleanup</span> <span class="st">"printf '[cleanup] stopping background PID %d\n' $BG_PID >&2; kill $BG_PID 2>/dev/null || true"</span>
+
+<span class="cm"># ── Deliberate failure ────────────────────────────────────────</span>
+<span class="cmd">echo</span>
+<span class="cmd">echo</span> <span class="st">"[!] About to fail deliberately..."</span>
+<span class="cmd">false</span>   <span class="cm"># set -e causes EXIT trap to fire here</span>
+
+<span class="cm"># This line never runs</span>
+<span class="cmd">echo</span> <span class="st">"This should not print"</span></code>
+    </div>
+  </div>
+
+</div><!-- /lx-lesson -->

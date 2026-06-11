@@ -1,0 +1,409 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; }
+  .lx-lesson .cmd-key { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 200px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  .lx-lesson .mode-badge {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    padding: 0.15em 0.55em; border-radius: 3px; margin-right: 0.3em; vertical-align: middle;
+  }
+  .lx-lesson .mode-normal  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }
+  .lx-lesson .mode-insert  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }
+  .lx-lesson .mode-command { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }
+  .lx-lesson .mode-visual  { background: #2a1a35; color: #d2a8ff; border: 1px solid #4a2a60; }
+  .lx-lesson .mode-replace { background: #2a1a1a; color: #f97583; border: 1px solid #4a2a2a; }
+  .lx-lesson .workflow-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0; counter-reset: workflow;
+  }
+  .lx-lesson .workflow-box h4 { color: #4f8ef7; margin: 0 0 0.7em 0; font-size: 0.95rem; }
+  .lx-lesson .workflow-step {
+    display: flex; gap: 1em; align-items: baseline; padding: 0.4em 0;
+    border-bottom: 1px solid #2a2d3e;
+  }
+  .lx-lesson .workflow-step:last-child { border-bottom: none; }
+  .lx-lesson .step-num { color: #4f8ef7; font-family: 'Consolas', monospace; font-weight: bold; min-width: 1.5em; }
+  .lx-lesson .step-cmd { color: #ffab70; font-family: 'Consolas', monospace; min-width: 140px; }
+  .lx-lesson .step-desc { color: #c9d8ff; font-size: 0.92rem; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #b392f0; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 2 — Basics</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Understanding the Interface</h2>
+
+<p>When you open Vim you are met with a deliberately minimal screen. There are no toolbars, no menus, no panels. This is intentional — every pixel is reserved for your file. Let us decode the few things that <em>are</em> on screen.</p>
+
+<h3>The tilde lines</h3>
+
+<p>Empty lines at the bottom of the editing area are shown as a single <code>~</code> (tilde) character. These are not part of your file — they are Vim's way of saying "there is no content here". This distinction matters: a blank line in your file (a line that exists but contains nothing) looks different from a <code>~</code> line. A blank line is truly empty; a <code>~</code> line does not exist at all.</p>
+
+<pre><span class="out">  1 This is line one of my file
+  2 This is line two
+  3
+  4 ~
+  5 ~
+  6 ~</span></pre>
+
+<p>In the example above, line 3 is a real blank line (you pressed Enter to create it). Lines 4–6 with tildes are beyond the end of the file.</p>
+
+<h3>The status line</h3>
+
+<p>The bottom of the Vim window is the status area. It serves multiple purposes depending on context:</p>
+
+<ul>
+  <li><strong>Mode indicator:</strong> When you enter Insert, Visual, or Replace mode, the current mode name appears here (e.g. <code>-- INSERT --</code>).</li>
+  <li><strong>Command input:</strong> When you press <code>:</code>, your typed command appears here.</li>
+  <li><strong>File information:</strong> After opening a file, Vim shows its name, line count, and character count briefly.</li>
+  <li><strong>Position:</strong> The bottom-right corner shows your cursor position as <code>line,column</code>.</li>
+</ul>
+
+<pre><span class="out">  1 Hello, Vim!
+  2 ~
+  3 ~
+"hello.txt" [New File]                           1,1           All</span></pre>
+
+<p>Reading the status line above: the file is called <code>hello.txt</code>, it is new (not yet saved to disk), the cursor is at line 1, column 1, and <code>All</code> means the entire file fits on screen.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Vim Modes — A Complete Picture</h2>
+
+<p>In Chapter 1 we introduced three modes. Now let us look at all five you will encounter, understand how they relate to each other, and learn the correct way to move between them.</p>
+
+<table>
+  <tr>
+    <th>Mode</th>
+    <th>Indicator</th>
+    <th>Purpose</th>
+    <th>Enter from Normal</th>
+  </tr>
+  <tr>
+    <td><span class="mode-badge mode-normal">NORMAL</span></td>
+    <td><em>(no indicator)</em></td>
+    <td>Navigation, text manipulation, issuing commands. Vim's home base.</td>
+    <td>It is the default — press <code>Esc</code> to return here from anywhere.</td>
+  </tr>
+  <tr>
+    <td><span class="mode-badge mode-insert">INSERT</span></td>
+    <td><code>-- INSERT --</code></td>
+    <td>Typing text into the file, just like a conventional editor.</td>
+    <td><code>i</code>, <code>a</code>, <code>o</code>, <code>I</code>, <code>A</code>, <code>O</code>, <code>s</code>, <code>c</code></td>
+  </tr>
+  <tr>
+    <td><span class="mode-badge mode-visual">VISUAL</span></td>
+    <td><code>-- VISUAL --</code></td>
+    <td>Selecting blocks of text to copy, delete, or transform.</td>
+    <td><code>v</code> (character), <code>V</code> (line), <code>Ctrl+v</code> (block)</td>
+  </tr>
+  <tr>
+    <td><span class="mode-badge mode-command">COMMAND</span></td>
+    <td><code>:</code> prompt at bottom</td>
+    <td>Running editor commands — save, quit, search/replace, settings.</td>
+    <td><code>:</code></td>
+  </tr>
+  <tr>
+    <td><span class="mode-badge mode-replace">REPLACE</span></td>
+    <td><code>-- REPLACE --</code></td>
+    <td>Overwriting existing text character by character (like Insert with overwrite).</td>
+    <td><code>R</code></td>
+  </tr>
+</table>
+
+<p>Visual mode and Replace mode are covered in depth in later chapters. For now the key insight is this: <strong>Normal mode is the hub.</strong> Every other mode is reached from Normal mode, and pressing <code>Esc</code> always brings you back to Normal mode.</p>
+
+<pre><span class="cm">Mode transition diagram:
+
+  INSERT  ←── i, a, o ───┐
+  VISUAL  ←── v, V ──────┤
+  COMMAND ←── : ─────────┼──── NORMAL  (always return with Esc)
+  REPLACE ←── R ─────────┘
+</span></pre>
+
+<h3>Normal mode in depth</h3>
+
+<p>Normal mode is not a "waiting" mode — it is an active editing mode in which every key is a command. This is Vim's core philosophy: you spend most of your time navigating and manipulating text, with only brief excursions into Insert mode to type new content. In a typical editing session you might be in Normal mode 70–80% of the time.</p>
+
+<p>A few examples of what single keys do in Normal mode (we cover all of these in later chapters):</p>
+
+<table>
+  <tr><th>Key</th><th>Action in Normal mode</th></tr>
+  <tr><td><code>d</code></td><td>Delete operator (combine with a motion: <code>dw</code> = delete word)</td></tr>
+  <tr><td><code>y</code></td><td>Yank (copy) operator</td></tr>
+  <tr><td><code>p</code></td><td>Put (paste) after cursor</td></tr>
+  <tr><td><code>u</code></td><td>Undo</td></tr>
+  <tr><td><code>D</code></td><td>Delete from cursor to end of line</td></tr>
+  <tr><td><code>G</code></td><td>Jump to the last line of the file</td></tr>
+  <tr><td><code>x</code></td><td>Delete the character under the cursor</td></tr>
+</table>
+
+<div class="warn">
+  <strong>The most important rule in Vim:</strong> If something unexpected is happening — keys are not doing what you expect, text is being deleted when you want to type, or you are lost — press <code>Esc</code> repeatedly until the mode indicator disappears from the status line. You are back in Normal mode and nothing more will change unexpectedly.
+</div>
+
+<h3>Returning to Normal mode: Esc vs Ctrl+C</h3>
+
+<p>There are two ways to return to Normal mode from Insert or Visual mode:</p>
+
+<ul>
+  <li><code>Esc</code> — the standard way. Always works, always safe.</li>
+  <li><code>Ctrl+C</code> — an alternative that most users find slightly faster to reach. It works identically to <code>Esc</code> in almost all situations, with one subtle difference: it will not trigger the <code>InsertLeave</code> autocommand event (relevant only if you use advanced plugins or autocommands — ignore this for now).</li>
+</ul>
+
+<p>Many experienced Vim users remap <code>Caps Lock</code> to <code>Esc</code> at the operating system level, since <code>Esc</code> is used so frequently and is awkward to reach. Another popular choice is to map <code>jj</code> or <code>jk</code> (typed quickly) to <code>Esc</code> in the Vim config. We will cover remapping in Chapter 8.</p>
+
+<h3>Insert mode — the creative phase</h3>
+
+<p>Insert mode is where you write. Once you are in Insert mode, Vim behaves much like any other text editor: the arrow keys move the cursor, <code>Backspace</code> deletes the previous character, <code>Enter</code> creates a new line, and what you type appears on screen.</p>
+
+<p>The important mental discipline is this: <strong>when you have finished writing a section of text, press <code>Esc</code> immediately.</strong> Do not stay in Insert mode while you read what you have written or think about what to write next. Return to Normal mode. This habit is what separates Vim users who feel fast from those who feel slow.</p>
+
+<div class="tip">
+  <strong>Insert mode keyboard shortcuts:</strong> Even while in Insert mode there are a handful of useful shortcuts that do not require switching to Normal mode first:
+  <ul style="margin-top:0.5em;">
+    <li><code>Ctrl+W</code> — delete the word before the cursor (equivalent to <code>Backspace</code> × word)</li>
+    <li><code>Ctrl+U</code> — delete from the cursor back to the start of the line</li>
+    <li><code>Ctrl+T</code> — indent the current line one shiftwidth to the right</li>
+    <li><code>Ctrl+D</code> — remove one level of indentation from the current line</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>File Operations</h2>
+
+<h3>Opening files</h3>
+
+<p>You have already seen <code>vim filename</code> from the shell. There are several variations worth knowing:</p>
+
+<pre><span class="cm"># Open a single file</span>
+<span class="cmd">vim</span> <span class="st">notes.txt</span>
+
+<span class="cm"># Open multiple files (cycles through them with :n and :prev)</span>
+<span class="cmd">vim</span> <span class="st">file1.txt</span> <span class="st">file2.txt</span> <span class="st">file3.txt</span>
+
+<span class="cm"># Open a file and jump to a specific line number</span>
+<span class="cmd">vim</span> <span class="kw">+</span><span class="vr">42</span> <span class="st">script.sh</span>
+
+<span class="cm"># Open a file and jump to the first occurrence of a pattern</span>
+<span class="cmd">vim</span> <span class="kw">+/</span><span class="st">"search term"</span> <span class="st">document.txt</span>
+
+<span class="cm"># Open a file in read-only mode (prevents accidental edits)</span>
+<span class="cmd">vim</span> <span class="kw">-R</span> <span class="st">important.conf</span></pre>
+
+<h3>Opening a different file from within Vim</h3>
+
+<p>You do not need to quit Vim to open another file. The <code>:e</code> command (short for <em>edit</em>) loads a new file into the current buffer:</p>
+
+<pre><span class="kw">:</span><span class="cmd">e</span> <span class="pth">filename.txt</span></pre>
+
+<p>If you have unsaved changes in the current file, Vim will warn you:</p>
+
+<pre><span class="out">E37: No write since last change (add ! to override)</span></pre>
+
+<p>Either save first with <code>:w</code>, or force the switch and discard changes with <code>:e!</code>.</p>
+
+<p><strong>Tab completion</strong> is available when typing filenames after <code>:e</code>. Start typing the filename and press <code>Tab</code> to autocomplete. If there are multiple matches, press <code>Tab</code> again to cycle through them, or press <code>Ctrl+D</code> to display all matches in a list below the command line.</p>
+
+<pre><span class="cm"># Example: typing :e kno&lt;Tab&gt; might complete to :e knowledge.txt</span>
+<span class="kw">:</span><span class="cmd">e</span> <span class="pth">kno</span><span class="kw">&lt;Tab&gt;</span>       <span class="cm">→  :e knowledge.txt</span>
+<span class="kw">:</span><span class="cmd">e</span> <span class="pth">script</span><span class="kw">&lt;Tab&gt;</span>    <span class="cm">→  :e script_   (cycles: script_one.sh, script_two.sh ...)</span></pre>
+
+<h3>Saving files</h3>
+
+<p>The write command <code>:w</code> has several useful forms:</p>
+
+<pre><span class="cm"># Save the current file (overwrite)</span>
+<span class="kw">:</span><span class="cmd">w</span>
+
+<span class="cm"># Save to a different filename (original file unchanged — like "Save As")</span>
+<span class="kw">:</span><span class="cmd">w</span> <span class="pth">newfilename.txt</span>
+
+<span class="cm"># Save a specific range of lines to a new file (lines 5 through 12)</span>
+<span class="kw">:5,12w</span> <span class="pth">excerpt.txt</span>
+
+<span class="cm"># Append the current file's contents to an existing file</span>
+<span class="kw">:</span><span class="cmd">w</span> <span class="kw">&gt;&gt;</span> <span class="pth">log.txt</span>
+
+<span class="cm"># Force save a file opened read-only (if you have filesystem permissions)</span>
+<span class="kw">:</span><span class="cmd">w!</span></pre>
+
+<div class="note">
+  <strong>Save vs Save As:</strong> <code>:w newname.txt</code> writes the current buffer's contents to <code>newname.txt</code>, but Vim continues to think you are editing the <em>original</em> file. To rename the file you are working on (i.e. change which file this buffer is associated with), use <code>:saveas newname.txt</code> instead — this writes the new file and changes the buffer's name.
+</div>
+
+<h3>Checking the current file</h3>
+
+<p>At any point in Normal mode, pressing <code>Ctrl+G</code> displays a summary of the current file in the status line:</p>
+
+<pre><span class="out">"knowledge.txt" line 3 of 10 --30%-- col 1</span></pre>
+
+<p>This tells you the filename, your current line number, the total number of lines, what percentage through the file you are, and your column position. It is a fast way to reorient yourself when you have been navigating through a long file.</p>
+
+<p>For more detail, the command <code>:f</code> (or <code>:file</code>) shows the same information.</p>
+
+<h3>Quitting Vim</h3>
+
+<p>There are more quit variants than you might expect, and knowing all of them prevents frustration:</p>
+
+<table>
+  <tr><th>Command</th><th>Behaviour</th></tr>
+  <tr><td><code>:q</code></td><td>Quit. Only works if there are no unsaved changes.</td></tr>
+  <tr><td><code>:q!</code></td><td>Force quit. Discards all unsaved changes.</td></tr>
+  <tr><td><code>:wq</code></td><td>Write and quit. Saves, then exits.</td></tr>
+  <tr><td><code>:x</code></td><td>Write and quit — but only writes if changes were made. Slightly smarter than <code>:wq</code>.</td></tr>
+  <tr><td><code>ZZ</code></td><td>Normal mode shortcut for <code>:x</code> — no colon needed.</td></tr>
+  <tr><td><code>ZQ</code></td><td>Normal mode shortcut for <code>:q!</code> — force quit without saving.</td></tr>
+  <tr><td><code>:qa</code></td><td>Quit all open buffers/windows.</td></tr>
+  <tr><td><code>:qa!</code></td><td>Force quit everything — all buffers, discarding any unsaved changes.</td></tr>
+</table>
+
+<div class="tip">
+  <strong>Anatomy of <code>:qa!</code>:</strong> Breaking this command down makes every Vim command easier to learn:
+  <ul style="margin-top:0.5em;">
+    <li><code>:</code> — enter Command mode</li>
+    <li><code>q</code> — the quit command</li>
+    <li><code>a</code> — modifier meaning "all" (apply to all open buffers)</li>
+    <li><code>!</code> — modifier meaning "force" (do not ask for confirmation)</li>
+  </ul>
+  Vim commands often follow this pattern of a base command plus optional modifiers. Once you learn the modifiers they apply consistently across many commands.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Walkthrough — Building a Knowledge File</h2>
+
+<p>Let us put everything from this chapter together in a practical session. We will create a file, add some content, practise moving between modes, and explore several ways to save and quit. Follow along in your own terminal.</p>
+
+<div class="workflow-box">
+  <h4>Workflow — Creating knowledge.txt</h4>
+  <div class="workflow-step">
+    <span class="step-num">1</span>
+    <span class="step-cmd">vim knowledge.txt</span>
+    <span class="step-desc">Open (create) the file from your terminal. Vim opens in Normal mode — the status line shows <code>"knowledge.txt" [New File]</code>.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">2</span>
+    <span class="step-cmd">:set number</span>
+    <span class="step-desc">Enable line numbers so you can follow along easily. Press Enter after typing the command.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">3</span>
+    <span class="step-cmd">i</span>
+    <span class="step-desc">Enter Insert mode. The status line shows <code>-- INSERT --</code>. You are now ready to type.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">4</span>
+    <span class="step-cmd">(type your content)</span>
+    <span class="step-desc">Type several lines, for example: <em>"The only source of knowledge is experience" — Albert Einstein</em>. Press Enter between lines.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">5</span>
+    <span class="step-cmd">Esc</span>
+    <span class="step-desc">Return to Normal mode. The <code>-- INSERT --</code> indicator disappears. Good habit: return here whenever you pause to read.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">6</span>
+    <span class="step-cmd">Ctrl+G</span>
+    <span class="step-desc">Check your position. The status line shows the filename, current line, total lines, and column. Useful for orientation.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">7</span>
+    <span class="step-cmd">:w</span>
+    <span class="step-desc">Save the file. The status line confirms: <code>"knowledge.txt" written</code>.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">8</span>
+    <span class="step-cmd">:w backup.txt</span>
+    <span class="step-desc">Save a copy to <code>backup.txt</code>. Note that you are still editing <code>knowledge.txt</code>.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">9</span>
+    <span class="step-cmd">:e backup.txt</span>
+    <span class="step-desc">Switch to the backup file to verify the copy is correct. Tab completion works here — try typing <code>:e bac&lt;Tab&gt;</code>.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">10</span>
+    <span class="step-cmd">:e knowledge.txt</span>
+    <span class="step-desc">Switch back to the original file.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">11</span>
+    <span class="step-cmd">ZZ</span>
+    <span class="step-desc">Save and quit in one keystroke (Normal mode shortcut — no colon needed). You are back at the shell prompt.</span>
+  </div>
+</div>
+
+<h3>Experimenting with the quit variants</h3>
+
+<p>Reopen the file and practice the different quit commands so they become muscle memory:</p>
+
+<pre><span class="cmd">vim</span> <span class="st">knowledge.txt</span>
+
+<span class="cm"># Make a change (enter Insert mode, type something, press Esc)</span>
+<span class="cm"># Then try quitting without saving:</span>
+<span class="kw">:</span><span class="cmd">q</span>           <span class="cm"># Vim refuses — there are unsaved changes</span>
+              <span class="cm"># Output: E37: No write since last change (add ! to override)</span>
+
+<span class="kw">:</span><span class="cmd">q!</span>          <span class="cm"># Force quit — change is discarded</span>
+
+<span class="cm"># Reopen, make another change, then save and quit:</span>
+<span class="cmd">vim</span> <span class="st">knowledge.txt</span>
+<span class="cm"># ... make a change ...</span>
+<span class="kw">ZZ</span>            <span class="cm"># save and quit — fastest method</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Commands Introduced in This Chapter</h2>
+
+<div class="cmd-ref">
+  <h4>Chapter 2 — Command Reference</h4>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+C</span><span class="cmd-desc">Alternative to <code>Esc</code> — return to Normal mode</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+G</span><span class="cmd-desc">Display filename, line number, and position in the status line <span class="mode-badge mode-normal">NORMAL</span></span></div>
+  <div class="cmd-row"><span class="cmd-key">ZZ</span><span class="cmd-desc">Write and quit (only writes if changes were made) <span class="mode-badge mode-normal">NORMAL</span></span></div>
+  <div class="cmd-row"><span class="cmd-key">ZQ</span><span class="cmd-desc">Force quit without saving <span class="mode-badge mode-normal">NORMAL</span></span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W  <small>(Insert)</small></span><span class="cmd-desc">Delete the word before the cursor <span class="mode-badge mode-insert">INSERT</span></span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+U  <small>(Insert)</small></span><span class="cmd-desc">Delete from cursor to start of line <span class="mode-badge mode-insert">INSERT</span></span></div>
+  <div class="cmd-row"><span class="cmd-key">:e &lt;file&gt;</span><span class="cmd-desc">Open (edit) a file; Tab key completes the filename</span></div>
+  <div class="cmd-row"><span class="cmd-key">:e!</span><span class="cmd-desc">Re-load the current file from disk, discarding unsaved changes</span></div>
+  <div class="cmd-row"><span class="cmd-key">:w &lt;file&gt;</span><span class="cmd-desc">Write buffer contents to a new filename (Save As)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:saveas &lt;file&gt;</span><span class="cmd-desc">Write to a new filename and switch the buffer to that file</span></div>
+  <div class="cmd-row"><span class="cmd-key">:x</span><span class="cmd-desc">Write (only if changed) and quit — smarter version of <code>:wq</code></span></div>
+  <div class="cmd-row"><span class="cmd-key">:qa</span><span class="cmd-desc">Quit all open buffers</span></div>
+  <div class="cmd-row"><span class="cmd-key">:qa!</span><span class="cmd-desc">Force quit all buffers, discarding all unsaved changes</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim +N &lt;file&gt;</span><span class="cmd-desc">Open file and jump to line N from the shell</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim -R &lt;file&gt;</span><span class="cmd-desc">Open file in read-only mode from the shell</span></div>
+</div>
+
+</div>

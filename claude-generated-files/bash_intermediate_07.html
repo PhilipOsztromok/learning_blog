@@ -1,0 +1,1079 @@
+<!-- ============================================================
+     BASH INTERMEDIATE: Topic 7 — Working with JSON and jq
+     Subject: Bash / Linux Shell Scripting (Intermediate)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+  .sh  { color: #e8a87d; }
+  .vr  { color: #ffd580; }
+  .op  { color: #e8a87d; }
+  .er  { color: #e05c5c; }
+  .fn  { color: #7ab8ff; }
+  .rx  { color: #ff9eb5; }
+  .jq  { color: #c9a8ff; }
+
+  /* ── Platform label blocks ───────────────────────── */
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 12px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+    background: #1a1d27;
+    color: #7ecfa0;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; color: #7ab8ff; opacity: 0.8; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin: 16px 0;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+
+  /* ── Reference table ─────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+  .ref-table .out  { color: #7a7f96; font-style: italic; font-family: 'Courier New', monospace; font-size: 0.85em; }
+
+  /* ── Exercise blocks ─────────────────────────────── */
+  .exercise-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-block .ex-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+  .exercise-block .ex-task {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .exercise-block .ex-hint {
+    font-size: 0.85em;
+    color: #a0a4b8;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-solution-toggle {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    color: #7ecfa0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .exercise-block .ex-solution-toggle:hover { background: #1e2235; }
+  .exercise-block .ex-solution { display: none; margin-top: 12px; }
+  .exercise-block .ex-solution.visible { display: block; }
+  .exercise-block .sol-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+</style>
+
+<script>
+function toggleSolution(btn) {
+  var sol = btn.nextElementSibling;
+  if (sol.classList.contains('visible')) {
+    sol.classList.remove('visible');
+    btn.textContent = '▶ Show Sample Solution';
+  } else {
+    sol.classList.add('visible');
+    btn.textContent = '▼ Hide Solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>🔧 Intermediate Topic 7 — Working with JSON and jq</h2>
+  <p class="section-intro">JSON is the dominant data interchange format for APIs, config files, and tool output. Nearly every CLI tool now supports <code>--output json</code>, and virtually every REST API speaks it. <code>jq</code> is the shell's native JSON processor — a full filter language that can extract, transform, reshape, and build JSON without leaving the terminal. This chapter covers the complete jq filter syntax, shell variable injection, building JSON from shell data, and the full pattern of calling REST APIs with <code>curl</code> and processing their responses. By the end you'll be able to treat any JSON-speaking API as a first-class data source in your scripts.</p>
+
+  <div class="info-box"><strong>Install jq:</strong> <code>apt install jq</code> / <code>brew install jq</code> / <code>dnf install jq</code>. Verify with <code>jq --version</code>. All examples in this chapter assume jq 1.6 or later.</div>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. JQ BASICS — IDENTITY, FIELDS, INDICES
+  ═══════════════════════════════════════════ -->
+  <h2>1 — jq Basics: Identity, Field Access, and Array Indexing</h2>
+
+  <p>Every jq program is a <em>filter</em> applied to a JSON input. The input flows in from stdin (or a file), passes through the filter, and the result goes to stdout. The simplest filter is <code>.</code> — the identity — which pretty-prints the input unchanged.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🔧 Field access, array indexing, and basic navigation</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Sample JSON for this section:</span>
+<span class="cm"># {</span>
+<span class="cm">#   "name": "Alice",</span>
+<span class="cm">#   "age": 32,</span>
+<span class="cm">#   "active": true,</span>
+<span class="cm">#   "scores": [95, 87, 91],</span>
+<span class="cm">#   "address": { "city": "London", "zip": "EC1A 1BB" },</span>
+<span class="cm">#   "tags": ["admin", "editor"]</span>
+<span class="cm"># }</span>
+
+<span class="cm"># ── Identity — pretty-print ────────────────────────────────────</span>
+<span class="cmd">echo</span> <span class="st">'{"name":"Alice","age":32}'</span> | <span class="cmd">jq</span> <span class="st">'.'</span>
+
+<span class="cm"># ── Object field access ────────────────────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'.name'</span>             data.json    <span class="out">→ "Alice"</span>
+<span class="cmd">jq</span> <span class="st">'.age'</span>              data.json    <span class="out">→ 32</span>
+<span class="cmd">jq</span> <span class="st">'.address.city'</span>     data.json    <span class="out">→ "London"</span>
+
+<span class="cm"># ── Strip quotes from string output ───────────────────────────</span>
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.name'</span>           data.json    <span class="out">→ Alice     (no quotes — use in scripts)</span>
+
+<span class="cm"># ── Array indexing ────────────────────────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'.scores[0]'</span>         data.json    <span class="out">→ 95</span>
+<span class="cmd">jq</span> <span class="st">'.scores[-1]'</span>        data.json    <span class="out">→ 91   (last element)</span>
+<span class="cmd">jq</span> <span class="st">'.scores[1:3]'</span>       data.json    <span class="out">→ [87, 91]</span>
+<span class="cmd">jq</span> <span class="st">'.tags[]'</span>            data.json    <span class="out">→ "admin"</span>
+<span class="out">                                           "editor"  (iterator — one per line)</span>
+
+<span class="cm"># ── Optional operator — suppress errors for missing keys ──────</span>
+<span class="cmd">jq</span> <span class="st">'.missing?'</span>          data.json    <span class="out">→ (nothing — no error)</span>
+<span class="cmd">jq</span> <span class="st">'.missing // "N/A"'</span> data.json    <span class="out">→ "N/A"   (alternative operator)</span>
+<span class="cmd">jq</span> <span class="st">'.age // 0'</span>          data.json    <span class="out">→ 32</span>
+
+<span class="cm"># ── Keys and values ───────────────────────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'keys'</span>               data.json    <span class="out">→ ["active","address","age","name","scores","tags"]</span>
+<span class="cmd">jq</span> <span class="st">'keys[]'</span>             data.json    <span class="out">→ one key per line</span>
+<span class="cmd">jq</span> <span class="st">'has("age")'</span>         data.json    <span class="out">→ true</span>
+<span class="cmd">jq</span> <span class="st">'type'</span>               data.json    <span class="out">→ "object"</span>
+<span class="cmd">jq</span> <span class="st">'.scores | type'</span>     data.json    <span class="out">→ "array"</span>
+<span class="cmd">jq</span> <span class="st">'.scores | length'</span>  data.json    <span class="out">→ 3</span>
+
+<span class="cm"># ── Assign to bash variables ───────────────────────────────────</span>
+<span class="vr">name</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.name'</span> data.json<span class="st">)</span>
+<span class="vr">city</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.address.city'</span> data.json<span class="st">)</span>
+<span class="cmd">echo</span> <span class="st">"$name lives in $city"</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. PIPE, COMMA, AND ARRAY/OBJECT CONSTRUCTION
+  ═══════════════════════════════════════════ -->
+  <h2>2 — Pipe, Comma, and Constructing New JSON</h2>
+
+  <p>The jq pipe <code>|</code> passes the output of one filter as input to the next — exactly like the shell pipe, but within a single jq program. The comma operator <code>,</code> runs two filters on the same input and outputs both results. Square brackets <code>[]</code> and curly braces <code>{}</code> construct new arrays and objects from the current input.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🔧 Pipe, comma, and building new structures</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Pipe: chain filters ───────────────────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'.address | .city'</span>          data.json   <span class="out">→ "London"</span>
+<span class="cmd">jq</span> <span class="st">'.scores | .[0]'</span>            data.json   <span class="out">→ 95</span>
+<span class="cmd">jq</span> <span class="st">'.scores | length'</span>          data.json   <span class="out">→ 3</span>
+<span class="cmd">jq</span> <span class="st">'.scores | add'</span>             data.json   <span class="out">→ 273  (sum of array)</span>
+<span class="cmd">jq</span> <span class="st">'.scores | add / length'</span>   data.json   <span class="out">→ 91   (average)</span>
+<span class="cmd">jq</span> <span class="st">'.scores | max'</span>             data.json   <span class="out">→ 95</span>
+<span class="cmd">jq</span> <span class="st">'.scores | min'</span>             data.json   <span class="out">→ 87</span>
+<span class="cmd">jq</span> <span class="st">'.scores | sort | reverse'</span> data.json   <span class="out">→ [95, 91, 87]</span>
+
+<span class="cm"># ── Comma: multiple outputs from one input ────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'.name, .age'</span>               data.json
+<span class="out">→ "Alice"</span>
+<span class="out">   32</span>
+
+<span class="cm"># ── Array construction: collect results into an array ─────────</span>
+<span class="cmd">jq</span> <span class="st">'[.name, .age]'</span>             data.json   <span class="out">→ ["Alice", 32]</span>
+<span class="cmd">jq</span> <span class="st">'[.scores[] | . * 2]'</span>      data.json   <span class="out">→ [190, 174, 182]</span>
+
+<span class="cm"># ── Object construction: build a new object ───────────────────</span>
+<span class="cmd">jq</span> <span class="st">'{user: .name, location: .address.city}'</span> data.json
+<span class="out">→ { "user": "Alice", "location": "London" }</span>
+
+<span class="cm"># Shorthand when key name matches field name:</span>
+<span class="cmd">jq</span> <span class="st">'{name, age}'</span>               data.json
+<span class="out">→ { "name": "Alice", "age": 32 }</span>
+
+<span class="cm"># ── Object and array expansion ────────────────────────────────</span>
+<span class="cm"># Spread all fields of a sub-object into current:</span>
+<span class="cmd">jq</span> <span class="st">'{name} + .address'</span>         data.json
+<span class="out">→ { "name": "Alice", "city": "London", "zip": "EC1A 1BB" }</span>
+
+<span class="cm"># ── to_entries / from_entries — iterate over key-value pairs ──</span>
+<span class="cmd">jq</span> <span class="st">'.address | to_entries'</span>     data.json
+<span class="out">→ [{"key":"city","value":"London"}, {"key":"zip","value":"EC1A 1BB"}]</span>
+
+<span class="cmd">jq</span> <span class="st">'.address | to_entries[] | "\(.key)=\(.value)"'</span> data.json
+<span class="out">→ "city=London"</span>
+<span class="out">   "zip=EC1A 1BB"</span>
+
+<span class="cm"># ── String interpolation with \() ─────────────────────────────</span>
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'"Hello \(.name), age \(.age)"'</span> data.json
+<span class="out">→ Hello Alice, age 32</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. SELECT, MAP, AND ARRAY FUNCTIONS
+  ═══════════════════════════════════════════ -->
+  <h2>3 — <code>select</code>, <code>map</code>, and Working with Arrays of Objects</h2>
+
+  <p>The most common real-world pattern: you have a JSON array of objects (API responses, log entries, config items) and you need to filter, transform, or aggregate it. <code>select(condition)</code> keeps items that pass the test; <code>map(filter)</code> applies a transformation to every element.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🔧 Filtering and transforming arrays of objects</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Sample: GitHub-style array of repos</span>
+<span class="cm"># [</span>
+<span class="cm">#   {"name":"alpha","stars":142,"lang":"Python","archived":false},</span>
+<span class="cm">#   {"name":"beta", "stars":38, "lang":"Go",    "archived":false},</span>
+<span class="cm">#   {"name":"gamma","stars":891,"lang":"Python","archived":true},</span>
+<span class="cm">#   {"name":"delta","stars":12, "lang":"Rust",  "archived":false}</span>
+<span class="cm"># ]</span>
+
+<span class="cm"># ── select: filter items by condition ─────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'.[] | select(.stars > 100)'</span>         repos.json
+<span class="out">→ alpha (142) and gamma (891)</span>
+
+<span class="cmd">jq</span> <span class="st">'.[] | select(.lang == "Python")'</span>     repos.json
+<span class="cmd">jq</span> <span class="st">'.[] | select(.archived == false)'</span>    repos.json
+<span class="cmd">jq</span> <span class="st">'.[] | select(.archived | not)'</span>       repos.json  <span class="cm"># same</span>
+
+<span class="cm"># Combine conditions (and = ,  or = |)</span>
+<span class="cmd">jq</span> <span class="st">'.[] | select(.lang == "Python" and .archived == false)'</span> repos.json
+
+<span class="cm"># ── Collect filtered results into an array ────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'[.[] | select(.stars > 50)]'</span>         repos.json
+
+<span class="cm"># ── map: apply filter to every element ───────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'map(.name)'</span>                            repos.json
+<span class="out">→ ["alpha","beta","gamma","delta"]</span>
+
+<span class="cmd">jq</span> <span class="st">'map({name, stars})'</span>                   repos.json
+<span class="out">→ [{"name":"alpha","stars":142}, ...]</span>
+
+<span class="cmd">jq</span> <span class="st">'map(select(.archived == false)) | map(.name)'</span> repos.json
+<span class="out">→ ["alpha","beta","delta"]</span>
+
+<span class="cm"># Equivalent shorthand:</span>
+<span class="cmd">jq</span> <span class="st">[.[]|select(.archived|not)|.name]</span>      repos.json
+
+<span class="cm"># ── map_values: transform values of an object ─────────────────</span>
+<span class="cmd">jq</span> <span class="st">'.address | map_values(ascii_upcase)'</span>  data.json
+<span class="out">→ {"city":"LONDON","zip":"EC1A 1BB"}</span>
+
+<span class="cm"># ── sort_by, group_by, unique_by ──────────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'sort_by(.stars)'</span>                      repos.json   <span class="cm"># ascending</span>
+<span class="cmd">jq</span> <span class="st">'sort_by(.stars) | reverse'</span>           repos.json   <span class="cm"># descending</span>
+<span class="cmd">jq</span> <span class="st">'sort_by(.name)'</span>                       repos.json   <span class="cm"># alphabetical</span>
+
+<span class="cmd">jq</span> <span class="st">'group_by(.lang)'</span>                      repos.json
+<span class="out">→ [[{Go items}], [{Python items}], [{Rust items}]]</span>
+
+<span class="cmd">jq</span> <span class="st">'unique_by(.lang) | map(.lang)'</span>        repos.json
+<span class="out">→ ["Go","Python","Rust"]</span>
+
+<span class="cm"># ── any / all ─────────────────────────────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'any(.[]; .stars > 500)'</span>              repos.json   <span class="out">→ true</span>
+<span class="cmd">jq</span> <span class="st">'all(.[]; .archived == false)'</span>        repos.json   <span class="out">→ false</span>
+
+<span class="cm"># ── flatten ───────────────────────────────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'. | flatten'</span>         <span class="op">&lt;&lt;&lt;</span> <span class="st">'[[1,2],[3,[4,5]]]'</span>   <span class="out">→ [1,2,3,4,5]</span>
+<span class="cmd">jq</span> <span class="st">'. | flatten(1)'</span>      <span class="op">&lt;&lt;&lt;</span> <span class="st">'[[1,2],[3,[4,5]]]'</span>   <span class="out">→ [1,2,3,[4,5]]</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. ADVANCED: REDUCE, PATHS, ENV, VARIABLES
+  ═══════════════════════════════════════════ -->
+  <h2>4 — Advanced Filters: <code>reduce</code>, Paths, and Shell Variable Injection</h2>
+
+  <h3>Shell variables in jq — the right way</h3>
+
+  <div class="warn-box"><strong>Never interpolate shell variables directly into jq filters.</strong> <code>jq ".name == \"$name\""</code> breaks on special characters and is a code injection risk. Always pass shell values via <code>--arg</code> (string) or <code>--argjson</code> (JSON value).</div>
+
+  <div class="platform-block">
+    <div class="pb-header">🔧 Passing shell variables into jq safely</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── --arg NAME VALUE — injects a shell string as $NAME ────────</span>
+<span class="vr">lang</span>=<span class="st">"Python"</span>
+<span class="cmd">jq</span> <span class="fl">--arg</span> <span class="st">lang</span> <span class="st">"$lang"</span> \
+   <span class="st">'.[] | select(.lang == $lang) | .name'</span> repos.json
+
+<span class="vr">threshold</span>=<span class="nu">100</span>
+<span class="cm"># --arg makes it a string; compare with tonumber to use as int</span>
+<span class="cmd">jq</span> <span class="fl">--arg</span> <span class="st">t</span> <span class="st">"$threshold"</span> \
+   <span class="st">'.[] | select(.stars > ($t | tonumber))'</span> repos.json
+
+<span class="cm"># ── --argjson NAME JSON — injects a real JSON value as $NAME ──</span>
+<span class="cmd">jq</span> <span class="fl">--argjson</span> <span class="st">t</span> <span class="st">"$threshold"</span> \
+   <span class="st">'.[] | select(.stars > $t)'</span> repos.json   <span class="cm"># $t is already int — no conversion</span>
+
+<span class="cmd">jq</span> <span class="fl">--argjson</span> <span class="st">active</span> <span class="st">"false"</span> \
+   <span class="st">'.[] | select(.archived == $active)'</span> repos.json
+
+<span class="cm"># ── --slurpfile NAME FILE — reads FILE as JSON array into $NAME</span>
+<span class="cmd">jq</span> <span class="fl">--slurpfile</span> <span class="st">cfg</span> config.json <span class="st">'$cfg[0].timeout'</span>
+
+<span class="cm"># ── --rawfile NAME FILE — reads FILE as raw string into $NAME ─</span>
+<span class="cmd">jq</span> <span class="fl">--rawfile</span> <span class="st">tmpl</span> template.txt <span class="st">'{template: $tmpl}'</span>
+
+<span class="cm"># ── env object — access environment variables ─────────────────</span>
+<span class="cmd">jq</span> <span class="fl">-n</span> <span class="st">'env.HOME'</span>                            <span class="out">→ "/home/user"</span>
+<span class="cmd">jq</span> <span class="fl">-n</span> <span class="st">'env | keys | length'</span>               <span class="out">→ count of env vars</span>
+<span class="vr">API_KEY</span>=<span class="st">"secret123"</span>
+<span class="cmd">jq</span> <span class="fl">-n</span> <span class="st">'{"key": env.API_KEY}'</span>              <span class="out">→ {"key":"secret123"}</span>
+
+<span class="cm"># ── -n flag — null input (no stdin needed) ────────────────────</span>
+<span class="cm"># Useful when building JSON from scratch or from --arg values</span>
+<span class="cmd">jq</span> <span class="fl">-n</span> <span class="fl">--arg</span> <span class="st">name</span> <span class="st">"Alice"</span> <span class="fl">--argjson</span> <span class="st">age</span> <span class="nu">32</span> \
+   <span class="st">'{name: $name, age: $age}'</span>
+<span class="out">→ {"name":"Alice","age":32}</span></code>
+    </div>
+  </div>
+
+  <h3>reduce and foreach</h3>
+  <div class="platform-block">
+    <div class="pb-header">🔧 reduce for accumulation, paths for deep navigation</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── reduce: fold an array into a single value ─────────────────</span>
+<span class="cm"># reduce EXPR as $var (INIT; ACCUMULATOR)</span>
+
+<span class="cm"># Sum of scores:</span>
+<span class="cmd">jq</span> <span class="st">'reduce .scores[] as $s (0; . + $s)'</span>  data.json    <span class="out">→ 273</span>
+
+<span class="cm"># Sum of stars across all repos:</span>
+<span class="cmd">jq</span> <span class="st">'reduce .[] as $r (0; . + $r.stars)'</span>  repos.json   <span class="out">→ 1083</span>
+
+<span class="cm"># Build a lookup map: name → stars</span>
+<span class="cmd">jq</span> <span class="st">'reduce .[] as $r ({}; . + {($r.name): $r.stars})'</span> repos.json
+<span class="out">→ {"alpha":142,"beta":38,"gamma":891,"delta":12}</span>
+
+<span class="cm"># ── paths: navigate deeply nested structures ─────────────────</span>
+<span class="cm"># paths outputs every path in the document as an array</span>
+<span class="cmd">jq</span> <span class="st">'[paths]'</span>            data.json
+<span class="out">→ [["name"],["age"],["address","city"],["address","zip"],...]</span>
+
+<span class="cm"># getpath / setpath / delpaths</span>
+<span class="cmd">jq</span> <span class="st">'getpath(["address","city"])'</span>         data.json   <span class="out">→ "London"</span>
+<span class="cmd">jq</span> <span class="st">'setpath(["address","country"]; "UK")'</span> data.json
+<span class="cmd">jq</span> <span class="st">'delpaths([["age"],["scores"]])'</span>       data.json
+
+<span class="cm"># ── walk: recursively transform every node ────────────────────</span>
+<span class="cm"># Lowercase all string values in an entire document:</span>
+<span class="cmd">jq</span> <span class="st">'walk(if type == "string" then ascii_downcase else . end)'</span> data.json
+
+<span class="cm"># ── limit: stop iteration early ───────────────────────────────</span>
+<span class="cmd">jq</span> <span class="st">'[limit(3; .[])]'</span>    repos.json             <span class="out">→ first 3 items</span>
+<span class="cmd">jq</span> <span class="st">'first(.[] | select(.stars > 100))'</span> repos.json  <span class="out">→ first match</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. BUILDING JSON FROM SHELL DATA
+  ═══════════════════════════════════════════ -->
+  <h2>5 — Building JSON from Shell Data</h2>
+
+  <p>Often you need to go the other direction: take shell variables and system data and assemble them into a JSON payload — for an API call, a log entry, or a config file. <code>jq -n</code> with <code>--arg</code>/<code>--argjson</code> is the safe, composable way to do this.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🔧 Constructing JSON payloads from shell variables</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Simple object from shell variables ───────────────────────</span>
+<span class="vr">hostname</span>=<span class="st">$(</span><span class="cmd">hostname</span><span class="st">)</span>
+<span class="vr">uptime_secs</span>=<span class="st">$(</span><span class="cmd">awk</span> <span class="st">'{print int($1)}'</span> /proc/uptime<span class="st">)</span>
+<span class="vr">timestamp</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="fl">-Is</span><span class="st">)</span>
+
+<span class="cmd">jq</span> <span class="fl">-n</span> \
+  <span class="fl">--arg</span>     <span class="st">host</span>    <span class="st">"$hostname"</span>     \
+  <span class="fl">--argjson</span> <span class="st">uptime</span>  <span class="st">"$uptime_secs"</span>  \
+  <span class="fl">--arg</span>     <span class="st">ts</span>      <span class="st">"$timestamp"</span>    \
+  <span class="st">'{
+    "hostname": $host,
+    "uptime_seconds": $uptime,
+    "timestamp": $ts
+  }'</span>
+
+<span class="cm"># ── Build a JSON array from a bash array ──────────────────────</span>
+<span class="vr">services</span>=( nginx postgres redis )
+<span class="cm"># Method 1: printf + jq --slurp --raw-input</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${services[@]}"</span> | <span class="cmd">jq</span> <span class="fl">-R</span> <span class="st">'.'</span> | <span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.'</span>
+<span class="out">→ ["nginx","postgres","redis"]</span>
+
+<span class="cm"># Method 2: build directly with --arg and string split</span>
+<span class="vr">svc_list</span>=<span class="st">"nginx,postgres,redis"</span>
+<span class="cmd">jq</span> <span class="fl">-n</span> <span class="fl">--arg</span> <span class="st">svcs</span> <span class="st">"$svc_list"</span> <span class="st">'$svcs | split(",")'</span>
+<span class="out">→ ["nginx","postgres","redis"]</span>
+
+<span class="cm"># ── Collect system metrics into a JSON report ─────────────────</span>
+<span class="fn">system_json</span>() {
+    <span class="kw">local</span> <span class="vr">host</span> <span class="vr">cpu_idle</span> <span class="vr">mem_free</span> <span class="vr">mem_total</span> <span class="vr">disk_pct</span>
+    <span class="vr">host</span>=<span class="st">$(</span><span class="cmd">hostname</span> <span class="fl">-f</span><span class="st">)</span>
+    <span class="vr">cpu_idle</span>=<span class="st">$(</span><span class="cmd">top</span> <span class="fl">-bn1</span> | <span class="cmd">awk</span> <span class="st">'/Cpu/ {print $8+0}'</span><span class="st">)</span>
+    <span class="vr">mem_free</span>=<span class="st">$(</span><span class="cmd">awk</span> <span class="st">'/MemAvailable/{print $2}'</span> /proc/meminfo<span class="st">)</span>
+    <span class="vr">mem_total</span>=<span class="st">$(</span><span class="cmd">awk</span> <span class="st">'/MemTotal/{print $2}'</span> /proc/meminfo<span class="st">)</span>
+    <span class="vr">disk_pct</span>=<span class="st">$(</span><span class="cmd">df</span> <span class="pth">/</span> | <span class="cmd">awk</span> <span class="st">'NR==2{print $5+0}'</span><span class="st">)</span>
+
+    <span class="cmd">jq</span> <span class="fl">-n</span> \
+      <span class="fl">--arg</span>     <span class="st">host</span>      <span class="st">"$host"</span>       \
+      <span class="fl">--argjson</span> <span class="st">cpu_idle</span>  <span class="st">"$cpu_idle"</span>  \
+      <span class="fl">--argjson</span> <span class="st">mem_free</span>  <span class="st">"$mem_free"</span>  \
+      <span class="fl">--argjson</span> <span class="st">mem_total</span> <span class="st">"$mem_total"</span> \
+      <span class="fl">--argjson</span> <span class="st">disk_pct</span>  <span class="st">"$disk_pct"</span>  \
+      <span class="fl">--arg</span>     <span class="st">ts</span>        <span class="st">"$(date -Is)"</span> \
+      <span class="st">'{
+        hostname:       $host,
+        timestamp:      $ts,
+        cpu_idle_pct:   $cpu_idle,
+        memory: {
+          total_kb:     $mem_total,
+          available_kb: $mem_free,
+          used_pct:     (100 - ($mem_free * 100 / $mem_total) | round)
+        },
+        disk_root_pct:  $disk_pct
+      }'</span>
+}
+
+<span class="fn">system_json</span> | <span class="cmd">tee</span> metrics.json</code>
+    </div>
+  </div>
+
+  <h3>Updating existing JSON</h3>
+  <div class="platform-block">
+    <div class="pb-header">🔧 The |= update operator and field manipulation</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># |= updates a field in place (reads current value as .)</span>
+<span class="cmd">jq</span> <span class="st">'.age |= . + 1'</span>                    data.json   <span class="cm"># increment age</span>
+<span class="cmd">jq</span> <span class="st">'.name |= ascii_upcase'</span>            data.json   <span class="cm"># uppercase name</span>
+<span class="cmd">jq</span> <span class="st">'.scores |= map(. + 5)'</span>            data.json   <span class="cm"># add 5 to every score</span>
+<span class="cmd">jq</span> <span class="st">'.tags |= . + ["reviewer"]'</span>        data.json   <span class="cm"># append to array</span>
+<span class="cmd">jq</span> <span class="st">'.address.country = "UK"'</span>          data.json   <span class="cm"># add new field</span>
+<span class="cmd">jq</span> <span class="st">'del(.age)'</span>                         data.json   <span class="cm"># remove field</span>
+<span class="cmd">jq</span> <span class="st">'del(.address.zip)'</span>                data.json   <span class="cm"># remove nested field</span>
+
+<span class="cm"># ── Merge two JSON objects ────────────────────────────────────</span>
+<span class="cm"># Shallow merge (right wins on conflict):</span>
+<span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.[0] * .[1]'</span> base.json override.json
+
+<span class="cm"># Deep merge (recursive, right wins):</span>
+<span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'
+  def deep_merge(a; b):
+    if (a | type) == "object" and (b | type) == "object"
+    then reduce (b | keys[]) as $k (a; .[$k] = deep_merge(a[$k]; b[$k]))
+    else b
+    end;
+  deep_merge(.[0]; .[1])
+'</span> base.json override.json
+
+<span class="cm"># ── Edit a JSON config file in-place ──────────────────────────</span>
+<span class="vr">tmp</span>=<span class="st">$(</span><span class="cmd">mktemp</span><span class="st">)</span>
+<span class="cmd">jq</span> <span class="st">'.database.port = 5433'</span> config.json <span class="op">&gt;</span> <span class="st">"$tmp"</span> && <span class="cmd">mv</span> <span class="st">"$tmp"</span> config.json</code>
+      <div class="pb-note">jq has no in-place edit flag — always redirect to a temp file, then move it over the original. This is atomic on POSIX filesystems (same partition).</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. CALLING REST APIs WITH curl + jq
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Calling REST APIs with <code>curl</code> + <code>jq</code></h2>
+
+  <p>The standard pattern: <code>curl</code> fetches the JSON response; <code>jq</code> extracts what you need. Topic 8 covers <code>curl</code> in depth — here we focus on the processing side and the patterns that make API scripts robust.</p>
+
+  <div class="platform-block">
+    <div class="pb-header">🔧 curl + jq patterns for REST APIs</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Basic GET → extract field ─────────────────────────────────</span>
+<span class="cmd">curl</span> <span class="fl">-s</span> https://api.github.com/repos/stedolan/jq \
+  | <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.stargazers_count'</span>
+
+<span class="cm"># ── POST with JSON body ───────────────────────────────────────</span>
+<span class="vr">payload</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-n</span> <span class="fl">--arg</span> <span class="st">user</span> <span class="st">"alice"</span> <span class="fl">--arg</span> <span class="st">pass</span> <span class="st">"$PASSWORD"</span> \
+           <span class="st">'{username: $user, password: $pass}'</span><span class="st">)</span>
+
+<span class="cmd">curl</span> <span class="fl">-s</span> <span class="fl">-X</span> POST \
+     <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span> \
+     <span class="fl">-d</span> <span class="st">"$payload"</span> \
+     https://api.example.com/auth/login \
+  | <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.token'</span>
+
+<span class="cm"># ── Check HTTP status + parse body ───────────────────────────</span>
+<span class="vr">response</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-s</span> <span class="fl">-w</span> <span class="st">'\n%{http_code}'</span> https://api.example.com/users<span class="st">)</span>
+<span class="vr">status</span>=<span class="st">$(</span><span class="cmd">tail</span> <span class="fl">-n1</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$response"</span><span class="st">)</span>
+<span class="vr">body</span>=<span class="st">$(</span><span class="cmd">head</span> <span class="fl">-n-1</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$response"</span><span class="st">)</span>
+
+<span class="kw">if</span> [[ <span class="st">"$status"</span> != <span class="st">"200"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="er">"API error $status: $(jq -r '.message // "unknown"' &lt;&lt;&lt; "$body")"</span> <span class="op">>&amp;2</span>
+    <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span>
+<span class="cmd">jq</span> <span class="st">'.'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$body"</span>
+
+<span class="cm"># ── Paginated API — collect all pages ─────────────────────────</span>
+<span class="fn">fetch_all_pages</span>() {
+    <span class="kw">local</span> <span class="vr">url</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">page</span>=<span class="nu">1</span>
+    <span class="kw">local</span> <span class="vr">all_items</span>=<span class="st">'[]'</span>
+
+    <span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span>
+        <span class="kw">local</span> <span class="vr">data</span>
+        <span class="vr">data</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-s</span> <span class="st">"${url}?page=${page}&per_page=100"</span><span class="st">)</span>
+        <span class="kw">local</span> <span class="vr">count</span>; <span class="vr">count</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="st">'length'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$data"</span><span class="st">)</span>
+        (( count == <span class="nu">0</span> )) && <span class="kw">break</span>
+        <span class="vr">all_items</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.[0] + .[1]'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"${all_items}"$'\n'"${data}"</span><span class="st">)</span>
+        (( count < <span class="nu">100</span> )) && <span class="kw">break</span>
+        (( page++ ))
+    <span class="kw">done</span>
+    <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$all_items"</span>
+}
+
+<span class="cm"># ── GitHub: list all repos and their star counts ──────────────</span>
+<span class="fn">github_repos</span>() {
+    <span class="kw">local</span> <span class="vr">org</span>=<span class="st">"$1"</span>
+    <span class="kw">local</span> <span class="vr">token</span>=<span class="st">"${GITHUB_TOKEN:-}"</span>
+    <span class="kw">local</span> <span class="vr">auth_header</span>=<span class="st">""</span>
+    [[ <span class="fl">-n</span> <span class="st">"$token"</span> ]] && <span class="vr">auth_header</span>=<span class="st">"-H 'Authorization: token $token'"</span>
+
+    <span class="cmd">curl</span> <span class="fl">-s</span> <span class="st">$auth_header</span> \
+         <span class="st">"https://api.github.com/orgs/${org}/repos?per_page=100&sort=stars"</span> \
+    | <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.[] | [.name, .stargazers_count, .language // "N/A"] | @tsv'</span>
+}
+<span class="cm"># @tsv formats an array as a tab-separated line — perfect for shell processing</span></code>
+    </div>
+  </div>
+
+  <h3>Output formats: @base64, @uri, @csv, @tsv, @html, @sh</h3>
+  <div class="platform-block">
+    <div class="pb-header">🔧 jq format strings for output encoding</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># @tsv — format array as TSV row (great for shell consumption)</span>
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.[] | [.name, .stars, .lang] | @tsv'</span>  repos.json
+<span class="out">→ alpha	142	Python</span>
+<span class="out">   beta	38	Go</span>
+
+<span class="cm"># @csv — format array as CSV row (quoted if needed)</span>
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.[] | [.name, .stars, .lang] | @csv'</span>  repos.json
+<span class="out">→ "alpha",142,"Python"</span>
+
+<span class="cm"># @sh — shell-quote values (safe to eval)</span>
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.name | @sh'</span>                          data.json
+<span class="out">→ 'Alice'   (safe even if name contained spaces or quotes)</span>
+
+<span class="cm"># @base64 / @base64d</span>
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'"hello world" | @base64'</span>
+<span class="out">→ aGVsbG8gd29ybGQ=</span>
+
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'"aGVsbG8gd29ybGQ=" | @base64d'</span>
+<span class="out">→ hello world</span>
+
+<span class="cm"># @uri — URL-encode a string</span>
+<span class="cmd">jq</span> <span class="fl">-rn</span> <span class="st">'"hello world" | @uri'</span>
+<span class="out">→ hello%20world</span>
+
+<span class="cm"># @html — HTML-escape</span>
+<span class="cmd">jq</span> <span class="fl">-rn</span> <span class="st">'"<b>bold</b> & \" quote" | @html'</span>
+<span class="out">→ &lt;b&gt;bold&lt;/b&gt; &amp; &quot; quote</span>
+
+<span class="cm"># ── Read @tsv output back into a while loop ───────────────────</span>
+<span class="kw">while</span> <span class="kw">IFS</span>=<span class="st">$'\t'</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">name</span> <span class="vr">stars</span> <span class="vr">lang</span>; <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">'%-15s %5s stars  (%s)\n'</span> <span class="st">"$name"</span> <span class="st">"$stars"</span> <span class="st">"$lang"</span>
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.[] | [.name, .stars, .lang] | @tsv'</span> repos.json<span class="op">)</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. STREAMING LARGE JSON / MULTIPLE DOCS
+  ═══════════════════════════════════════════ -->
+  <h2>7 — Streaming, Multiple Documents, and Compact Output</h2>
+
+  <div class="platform-block">
+    <div class="pb-header">🔧 Handling multiple JSON documents and large files</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── -s / --slurp: read all input into one array ───────────────</span>
+<span class="cm"># Useful when input is multiple JSON documents (one per line = JSONL)</span>
+<span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.'</span> file1.json file2.json    <span class="cm"># → [doc1, doc2]</span>
+<span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.[0] + .[1]'</span> a.json b.json  <span class="cm"># → merged array</span>
+
+<span class="cm"># ── JSONL (JSON Lines) — one JSON object per line ─────────────</span>
+<span class="cm"># Common in log files, streaming APIs, database exports</span>
+<span class="cm"># {"ts":"2026-06-09","level":"ERROR","msg":"disk full"}</span>
+<span class="cm"># {"ts":"2026-06-09","level":"INFO", "msg":"restarted"}</span>
+
+<span class="cm"># Process JSONL: each line is a separate document</span>
+<span class="cmd">jq</span> <span class="st">'.level'</span>                            app.jsonl   <span class="cm"># prints each level</span>
+<span class="cmd">jq</span> <span class="st">'select(.level == "ERROR")'</span>          app.jsonl   <span class="cm"># filter errors only</span>
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'[.ts, .level, .msg] | @tsv'</span>    app.jsonl   <span class="cm"># tabular output</span>
+
+<span class="cm"># Count errors by level:</span>
+<span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'group_by(.level) | map({(.[0].level): length}) | add'</span> app.jsonl
+
+<span class="cm"># ── Convert JSON array to JSONL ───────────────────────────────</span>
+<span class="cmd">jq</span> <span class="fl">-c</span> <span class="st">'.[]'</span>         repos.json     <span class="cm"># -c = compact, one object per line</span>
+
+<span class="cm"># ── Convert JSONL to JSON array ───────────────────────────────</span>
+<span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.'</span>           app.jsonl
+
+<span class="cm"># ── --stream for very large files (no slurp into memory) ──────</span>
+<span class="cm"># --stream outputs [path,value] pairs, one at a time</span>
+<span class="cmd">jq</span> <span class="fl">--stream</span> <span class="st">'select(.[0][-1] == "name") | .[1]'</span> huge.json
+
+<span class="cm"># ── -c compact: no whitespace — for writing back JSON files ───</span>
+<span class="cmd">jq</span> <span class="fl">-c</span> <span class="st">'.database.port = 5433'</span> config.json  <span class="cm"># compact single-line output</span>
+
+<span class="cm"># ── Combine multiple JSON files ───────────────────────────────</span>
+<span class="cm"># Merge all *.json files in a directory into one array</span>
+<span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.'</span> *.json
+
+<span class="cm"># Add a source filename to each document</span>
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> *.json; <span class="kw">do</span>
+    <span class="cmd">jq</span> <span class="fl">--arg</span> <span class="st">src</span> <span class="st">"$f"</span> <span class="st">'. + {_source: $src}'</span> <span class="st">"$f"</span>
+<span class="kw">done</span> | <span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.'</span>   <span class="cm"># collect into one array</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       8. QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>8 — Quick Reference</h2>
+
+  <table class="ref-table">
+    <thead><tr><th>Filter / flag</th><th>What it does</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><code>.</code></td><td>Identity / pretty-print</td><td class="out">jq '.' file.json</td></tr>
+      <tr><td><code>.key</code></td><td>Object field access</td><td class="out">.name → "Alice"</td></tr>
+      <tr><td><code>.a.b</code></td><td>Nested field</td><td class="out">.address.city</td></tr>
+      <tr><td><code>.arr[N]</code></td><td>Array index (negative OK)</td><td class="out">.scores[-1]</td></tr>
+      <tr><td><code>.arr[]</code></td><td>Iterate array</td><td class="out">one value per output</td></tr>
+      <tr><td><code>// default</code></td><td>Alternative if null/false</td><td class="out">.x // "N/A"</td></tr>
+      <tr><td><code>|</code></td><td>Pipe: chain filters</td><td class="out">.arr | length</td></tr>
+      <tr><td><code>,</code></td><td>Multiple outputs</td><td class="out">.a, .b</td></tr>
+      <tr><td><code>[f]</code></td><td>Collect outputs into array</td><td class="out">[.[] | select(…)]</td></tr>
+      <tr><td><code>{k: f}</code></td><td>Build new object</td><td class="out">{name, city: .address.city}</td></tr>
+      <tr><td><code>select(cond)</code></td><td>Keep if condition is true</td><td class="out">select(.age > 18)</td></tr>
+      <tr><td><code>map(f)</code></td><td>Apply filter to every element</td><td class="out">map(.name)</td></tr>
+      <tr><td><code>sort_by(f)</code></td><td>Sort array by key</td><td class="out">sort_by(.stars) | reverse</td></tr>
+      <tr><td><code>group_by(f)</code></td><td>Group array by key</td><td class="out">group_by(.lang)</td></tr>
+      <tr><td><code>unique_by(f)</code></td><td>Deduplicate by key</td><td></td></tr>
+      <tr><td><code>to_entries</code></td><td>Object → [{key,value}]</td><td class="out">to_entries[] | .key</td></tr>
+      <tr><td><code>from_entries</code></td><td>[{key,value}] → object</td><td></td></tr>
+      <tr><td><code>reduce A as $x (I; E)</code></td><td>Fold/accumulate</td><td class="out">reduce .[] as $n (0; .+$n)</td></tr>
+      <tr><td><code>.|= f</code></td><td>Update in place</td><td class="out">.age |= . + 1</td></tr>
+      <tr><td><code>del(.k)</code></td><td>Remove field</td><td></td></tr>
+      <tr><td><code>@tsv @csv @sh @base64 @uri</code></td><td>Output format encodings</td><td class="out">[.a,.b] | @tsv</td></tr>
+      <tr><td><code>-r</code></td><td>Raw string output (no quotes)</td><td></td></tr>
+      <tr><td><code>-c</code></td><td>Compact output (no whitespace)</td><td></td></tr>
+      <tr><td><code>-n</code></td><td>Null input (build from scratch)</td><td></td></tr>
+      <tr><td><code>-s</code></td><td>Slurp all input into array</td><td></td></tr>
+      <tr><td><code>--arg N V</code></td><td>Inject shell string as $N</td><td></td></tr>
+      <tr><td><code>--argjson N V</code></td><td>Inject JSON value as $N</td><td></td></tr>
+      <tr><td><code>-e</code></td><td>Exit 1 if output is null/false</td><td class="out">useful in if statements</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXERCISES
+  ═══════════════════════════════════════════ -->
+  <h2>✏️ Exercises</h2>
+  <p class="section-intro">All exercises use real-world patterns you'll encounter when scripting against APIs and JSON data stores.</p>
+
+  <!-- Exercise 1 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 1</div>
+    <div class="ex-task">Write a script called <code>json_report.sh</code> that reads a JSONL file of server log entries (each line: <code>{"ts":"…","host":"…","level":"INFO|WARN|ERROR","msg":"…","duration_ms":N}</code>) and produces a summary report showing: total entries, counts per level, the top 5 slowest requests (host + msg + duration), and average duration per log level. Accept the file path as an argument; default to stdin.</div>
+    <div class="ex-hint">Hint: use <code>jq -s</code> to slurp all lines into an array. Use <code>group_by(.level)</code> for per-level stats. For top-5 slowest use <code>sort_by(.duration_ms) | reverse | .[0:5]</code>. Use <code>reduce</code> or <code>map(.duration_ms) | add / length</code> for averages. Format the final output with multiple <code>jq</code> calls or a single large program with <code>def</code>.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># json_report.sh [JSONL_FILE]</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">FILE</span>=<span class="st">"${1:--}"</span>   <span class="cm"># default to stdin</span>
+
+<span class="cm"># Generate test data if no file given and stdin is a terminal</span>
+<span class="kw">if</span> [[ <span class="st">"$FILE"</span> == <span class="st">"-"</span> && <span class="fl">-t</span> <span class="nu">0</span> ]]; <span class="kw">then</span>
+    <span class="cmd">cat</span> <span class="op">&lt;&lt;</span><span class="st">'EOF'</span>
+<span class="st">{"ts":"2026-06-09T10:00:01","host":"web-1","level":"INFO", "msg":"GET /api/users",   "duration_ms":42}</span>
+<span class="st">{"ts":"2026-06-09T10:00:02","host":"web-2","level":"ERROR","msg":"GET /api/orders",  "duration_ms":1204}</span>
+<span class="st">{"ts":"2026-06-09T10:00:03","host":"web-1","level":"WARN", "msg":"POST /api/upload", "duration_ms":891}</span>
+<span class="st">{"ts":"2026-06-09T10:00:04","host":"web-3","level":"INFO", "msg":"GET /api/users",   "duration_ms":38}</span>
+<span class="st">{"ts":"2026-06-09T10:00:05","host":"web-2","level":"ERROR","msg":"DELETE /api/item",  "duration_ms":3201}</span>
+<span class="st">{"ts":"2026-06-09T10:00:06","host":"web-1","level":"INFO", "msg":"GET /healthz",     "duration_ms":5}</span>
+<span class="st">{"ts":"2026-06-09T10:00:07","host":"web-3","level":"WARN", "msg":"PUT /api/config",  "duration_ms":654}</span>
+<span class="st">EOF</span>
+    <span class="kw">exit</span> <span class="nu">0</span>
+<span class="kw">fi</span>
+
+<span class="cm"># All analysis in one jq program</span>
+<span class="cmd">jq</span> <span class="fl">-rs</span> <span class="st">'
+  # Summary stats
+  . as $all |
+  {
+    total: length,
+    levels: (group_by(.level) | map({
+      level:   .[0].level,
+      count:   length,
+      avg_ms:  (map(.duration_ms) | add / length | round),
+      max_ms:  map(.duration_ms) | max
+    })),
+    slowest: (sort_by(.duration_ms) | reverse | .[0:5] | map({
+      host,
+      msg,
+      level,
+      duration_ms
+    })),
+    overall_avg_ms: (map(.duration_ms) | add / length | round),
+    overall_max_ms: (map(.duration_ms) | max)
+  }
+'</span> <span class="st">"$FILE"</span> | <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'
+  "═══════════════════════════════════════",
+  "  LOG REPORT SUMMARY",
+  "═══════════════════════════════════════",
+  "  Total entries:  \(.total)",
+  "  Overall avg:    \(.overall_avg_ms)ms",
+  "  Overall max:    \(.overall_max_ms)ms",
+  "",
+  "  BY LEVEL:",
+  (.levels[] | "  \(.level)\t count=\(.count)\t avg=\(.avg_ms)ms\t max=\(.max_ms)ms"),
+  "",
+  "  TOP 5 SLOWEST REQUESTS:",
+  (.slowest[] | "  [\(.level)] \(.host) \(.msg) — \(.duration_ms)ms")
+'</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 2 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 2</div>
+    <div class="ex-task">Write a script called <code>json_diff.sh</code> that compares two JSON files and reports: keys present in file 1 but not file 2, keys present in file 2 but not file 1, and keys present in both but with different values. Work at the top level only (no deep recursion required). Accept both file paths as arguments.</div>
+    <div class="ex-hint">Hint: use <code>jq -s</code> to load both files into a two-element array. Use <code>keys</code> to get key sets, then set operations: <code>- </code> (difference) isn't built-in, but you can use <code>map(select(. as $k | other_keys | contains([$k]) | not))</code>. For value comparison, iterate keys that appear in both and compare with <code>.[0][$k] != .[1][$k]</code>.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># json_diff.sh FILE1 FILE2</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">F1</span>=<span class="st">"${1:?Usage: json_diff.sh FILE1 FILE2}"</span>
+<span class="vr">F2</span>=<span class="st">"${2:?file2 required}"</span>
+
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> <span class="st">"$F1"</span> <span class="st">"$F2"</span>; <span class="kw">do</span>
+    [[ <span class="fl">-f</span> <span class="st">"$f"</span> ]] || { <span class="cmd">printf</span> <span class="er">'Not found: %s\n'</span> <span class="st">"$f"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="kw">done</span>
+
+<span class="cmd">jq</span> <span class="fl">-rs</span> \
+  <span class="fl">--arg</span> <span class="st">f1</span> <span class="st">"$F1"</span> \
+  <span class="fl">--arg</span> <span class="st">f2</span> <span class="st">"$F2"</span> \
+  <span class="st">'
+  .[0] as $a | .[1] as $b |
+  ($a | keys) as $ka |
+  ($b | keys) as $kb |
+
+  # Keys only in file 1
+  ($ka | map(select(. as $k | $kb | contains([$k]) | not))) as $only_a |
+  # Keys only in file 2
+  ($kb | map(select(. as $k | $ka | contains([$k]) | not))) as $only_b |
+  # Keys in both but different values
+  ($ka | map(select(. as $k | $kb | contains([$k]))) |
+   map(select(. as $k | $a[$k] != $b[$k]))) as $changed |
+
+  "Comparing \($f1) vs \($f2)\n",
+
+  if ($only_a | length) > 0 then
+    "Only in \($f1):",
+    ($only_a[] | "  - \(.)  = \($a[.])")
+  else "Only in \($f1): (none)" end,
+  "",
+
+  if ($only_b | length) > 0 then
+    "Only in \($f2):",
+    ($only_b[] | "  + \(.)  = \($b[.])")
+  else "Only in \($f2): (none)" end,
+  "",
+
+  if ($changed | length) > 0 then
+    "Changed values:",
+    ($changed[] | "  ~ \(.)\n      was: \($a[.])\n      now: \($b[.])")
+  else "Changed values: (none)" end
+'</span> <span class="st">"$F1"</span> <span class="st">"$F2"</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 3 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 3</div>
+    <div class="ex-task">Write a function called <code>gh_repo_stats()</code> that calls the GitHub API to fetch statistics about a given <code>owner/repo</code>: stars, forks, open issues, language, last push date, and the 5 most recent open issues (title + created_at + labels). If <code>GITHUB_TOKEN</code> is set in the environment, use it for authentication. Format the output as a readable summary. Handle API errors gracefully — if the repo doesn't exist or the rate limit is hit, print a helpful message to stderr and return 1.</div>
+    <div class="ex-hint">Hint: make two curl calls — one to <code>/repos/owner/repo</code> and one to <code>/repos/owner/repo/issues?state=open&per_page=5&sort=created</code>. Check the HTTP status code with <code>-w '%{http_code}'</code>. For the issues list, use <code>jq -r '.[] | [.number, .title, .created_at, ([.labels[].name] | join(","))] | @tsv'</code>.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="fn">gh_repo_stats</span>() {
+    <span class="kw">local</span> <span class="vr">repo</span>=<span class="st">"${1:?Usage: gh_repo_stats owner/repo}"</span>
+    <span class="kw">local</span> <span class="vr">api</span>=<span class="st">"https://api.github.com"</span>
+    <span class="kw">local</span> <span class="vr">auth</span>=()
+    [[ <span class="fl">-n</span> <span class="st">"${GITHUB_TOKEN:-}"</span> ]] && \
+        <span class="vr">auth</span>=( <span class="fl">-H</span> <span class="st">"Authorization: Bearer $GITHUB_TOKEN"</span> )
+
+    <span class="fn">_gh_get</span>() {
+        <span class="kw">local</span> <span class="vr">url</span>=<span class="st">"$1"</span>
+        <span class="kw">local</span> <span class="vr">out</span>
+        <span class="vr">out</span>=<span class="st">$(</span><span class="cmd">curl</span> <span class="fl">-s</span> <span class="fl">-w</span> <span class="st">'\n%{http_code}'</span> \
+                   <span class="fl">-H</span> <span class="st">'Accept: application/vnd.github+json'</span> \
+                   <span class="st">"${auth[@]}"</span> <span class="st">"$url"</span><span class="st">)</span>
+        <span class="kw">local</span> <span class="vr">status</span>=<span class="st">"${out##*$'\n'}"</span>
+        <span class="kw">local</span> <span class="vr">body</span>=<span class="st">"${out%$'\n'*}"</span>
+
+        <span class="kw">if</span> [[ <span class="st">"$status"</span> == <span class="st">"404"</span> ]]; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="er">'Error: repository "%s" not found\n'</span> <span class="st">"$repo"</span> <span class="op">>&amp;2</span>
+            <span class="kw">return</span> <span class="nu">1</span>
+        <span class="kw">elif</span> [[ <span class="st">"$status"</span> == <span class="st">"403"</span> ]]; <span class="kw">then</span>
+            <span class="kw">local</span> <span class="vr">msg</span>; <span class="vr">msg</span>=<span class="st">$(</span><span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.message'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$body"</span><span class="st">)</span>
+            <span class="cmd">printf</span> <span class="er">'Error 403: %s\n'</span> <span class="st">"$msg"</span> <span class="op">>&amp;2</span>
+            <span class="kw">return</span> <span class="nu">1</span>
+        <span class="kw">elif</span> [[ <span class="st">"$status"</span> != <span class="st">"200"</span> ]]; <span class="kw">then</span>
+            <span class="cmd">printf</span> <span class="er">'HTTP error %s for %s\n'</span> <span class="st">"$status"</span> <span class="st">"$url"</span> <span class="op">>&amp;2</span>
+            <span class="kw">return</span> <span class="nu">1</span>
+        <span class="kw">fi</span>
+        <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"$body"</span>
+    }
+
+    <span class="cm"># Fetch repo metadata</span>
+    <span class="kw">local</span> <span class="vr">info</span>; <span class="vr">info</span>=<span class="st">$(</span><span class="fn">_gh_get</span> <span class="st">"${api}/repos/${repo}"</span><span class="st">)</span> || <span class="kw">return</span> <span class="nu">1</span>
+
+    <span class="cm"># Fetch recent open issues</span>
+    <span class="kw">local</span> <span class="vr">issues</span>; <span class="vr">issues</span>=<span class="st">$(</span><span class="fn">_gh_get</span> \
+        <span class="st">"${api}/repos/${repo}/issues?state=open&per_page=5&sort=created&direction=desc"</span>\
+    <span class="st">)</span> || <span class="kw">return</span> <span class="nu">1</span>
+
+    <span class="cm"># Print summary</span>
+    <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'
+      "╔══════════════════════════════════════════╗",
+      "║  " + .full_name + " "*( 40 - (.full_name|length)) + "║",
+      "╚══════════════════════════════════════════╝",
+      "  Stars:       \(.stargazers_count)",
+      "  Forks:       \(.forks_count)",
+      "  Open issues: \(.open_issues_count)",
+      "  Language:    \(.language // "N/A")",
+      "  Last push:   \(.pushed_at | split("T")[0])",
+      "  Description: \(.description // "(none)")"
+    '</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$info"</span>
+
+    <span class="cmd">printf</span> <span class="st">'\n  RECENT OPEN ISSUES:\n'</span>
+    <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'
+      if length == 0 then "  (none)"
+      else
+        .[] | "  #\(.number) \(.title)\n        Created: \(.created_at | split("T")[0])  Labels: \([.labels[].name] | if length > 0 then join(", ") else "none" end)"
+      end
+    '</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$issues"</span>
+}
+
+<span class="cm"># Usage:</span>
+<span class="cm"># gh_repo_stats stedolan/jq</span>
+<span class="cm"># GITHUB_TOKEN=ghp_... gh_repo_stats PhilipOsztromok/learning_blog</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 4 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 4</div>
+    <div class="ex-task">Write a script called <code>json_to_env.sh</code> that takes a JSON object (from a file or stdin) and outputs its key-value pairs as shell export statements, suitable for use with <code>eval</code> or <code>source</code>. Nested objects should be flattened with underscore-joined key names (e.g. <code>{"db":{"host":"localhost"}}</code> → <code>export DB_HOST='localhost'</code>). Arrays should be joined with commas. Keys should be uppercased. Handle values that contain single quotes safely.</div>
+    <div class="ex-hint">Hint: use <code>paths(scalars)</code> to get all leaf paths, then <code>getpath(path)</code> for each value. Join the path components with <code>_</code> and uppercase with <code>ascii_upcase</code>. For arrays, check <code>type == "array"</code> at the path's parent and use <code>join(",")</code>. Use <code>@sh</code> format to safely quote the value.</hint>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># json_to_env.sh [FILE]  — or pipe JSON on stdin</span>
+<span class="cm"># Outputs: export KEY='value' lines for all scalar leaf values</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">INPUT</span>=<span class="st">"${1:--}"</span>
+
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'
+  # Recurse through all paths, emitting key=value for each scalar leaf
+  # and for each array (join with comma)
+  def flatten_paths:
+    paths(scalars),
+    paths(arrays | length > 0 | not | not)  # non-empty arrays
+    | . ;
+
+  # Visit every scalar and array leaf
+  [paths(scalars), paths(arrays)] | unique[] as $p |
+  . as $root |
+  ($p | map(tostring) | join("_") | ascii_upcase) as $key |
+  ($root | getpath($p)) as $val |
+  if ($val | type) == "array" then
+    $key + "=" + ($val | map(tostring) | join(",") | @sh)
+  else
+    $key + "=" + ($val | tostring | @sh)
+  end |
+  "export " + .
+'</span> <span class="st">"$INPUT"</span>
+
+<span class="cm"># Example input:</span>
+<span class="cm"># {</span>
+<span class="cm">#   "db": {"host": "localhost", "port": 5432, "name": "myapp"},</span>
+<span class="cm">#   "app": {"debug": false, "workers": 4},</span>
+<span class="cm">#   "allowed_hosts": ["example.com", "api.example.com"]</span>
+<span class="cm"># }</span>
+<span class="cm">#</span>
+<span class="cm"># Output:</span>
+<span class="cm"># export ALLOWED_HOSTS='example.com,api.example.com'</span>
+<span class="cm"># export APP_DEBUG='false'</span>
+<span class="cm"># export APP_WORKERS='4'</span>
+<span class="cm"># export DB_HOST='localhost'</span>
+<span class="cm"># export DB_NAME='myapp'</span>
+<span class="cm"># export DB_PORT='5432'</span>
+<span class="cm">#</span>
+<span class="cm"># Usage:</span>
+<span class="cm"># eval "$(./json_to_env.sh config.json)"</span>
+<span class="cm"># echo "$DB_HOST"  → localhost</span></code>
+    </div>
+  </div>
+
+</div><!-- /lx-lesson -->

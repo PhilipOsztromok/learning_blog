@@ -1,0 +1,911 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #f97583; }
+  .st  { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw  { color: #f97583; }
+  .nu  { color: #ffab70; }
+  .sh  { color: #85e89d; }
+  .vr  { color: #ffab70; }
+  .op  { color: #e1e4e8; }
+  .er  { color: #f97583; font-weight: bold; }
+  .fn  { color: #b392f0; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 12 — Integrating Bash with Other Languages</h1>
+<p>Bash's real power in a polyglot world is not what it can do alone — it is
+how cleanly it can orchestrate everything else. Knowing when to hand off to
+Python, Node, Ruby, or awk, how to pass structured data across that boundary,
+and how to use another language as a persistent coprocess rather than a
+repeatedly-forked subprocess are the skills that separate
+throw-it-together shell scripts from production-grade automation. This final
+chapter covers every major integration pattern and ends with an honest decision
+framework for when to stop using Bash at all.</p>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>1 — The Fork-per-Call Tax</h2>
+
+<p>Every <span class="inline-code">$(python3 ...)</span> inside a loop pays a
+full fork+exec cost — typically 5–30 ms on a modern Linux system. For one-off
+calls this is irrelevant. For ten thousand iterations it is a 30-second wall
+clock bill you did not budget for.</p>
+
+<pre><span class="cm"># Expensive: one Python process per line</span>
+<span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  <span class="vr">result</span><span class="op">=</span>$(<span class="cmd">python3</span> <span class="fl">-c</span> <span class="st">"import sys; print(sys.stdin.read().upper())"</span> <span class="op"><<<</span> <span class="st">"<span class="vr">$line</span>"</span>)
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$result</span>"</span>
+<span class="kw">done</span> <span class="op"><</span> <span class="pth">bigfile.txt</span>
+
+<span class="cm"># Better: one process, all lines</span>
+<span class="cmd">python3</span> <span class="fl">-c</span> <span class="st">"import sys; sys.stdout.write(sys.stdin.read().upper())"</span> \
+  <span class="op"><</span> <span class="pth">bigfile.txt</span>
+
+<span class="cm"># Best for bidirectional work: a persistent coprocess (see Section 2)</span></pre>
+
+<table>
+  <tr><th>Pattern</th><th>Forks</th><th>Use when</th></tr>
+  <tr><td>One-shot call <code>$(python3 script.py)</code></td><td>1</td><td>Called once or rarely; simplest code</td></tr>
+  <tr><td>Batch stdin→stdout pipe</td><td>1</td><td>Large input, stateless transformation</td></tr>
+  <tr><td>Coprocess (persistent)</td><td>1</td><td>Many calls in a loop; stateful interpreter session</td></tr>
+  <tr><td>Background server + socket</td><td>1 + overhead</td><td>Multiple shell scripts sharing one interpreter</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>2 — Persistent Coprocesses</h2>
+
+<p>The coprocess pattern (introduced in Chapter 4) becomes especially valuable
+when the "other language" needs to be initialised once — loading libraries,
+connecting to a database, compiling a regex — and then serve many requests.</p>
+
+<h3>Python coprocess</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># A persistent Python worker that handles JSON requests over stdin/stdout</span>
+
+<span class="cm"># ── The Python worker script ─────────────────────────────────────</span>
+<span class="cmd">cat</span> <span class="op">></span> <span class="pth">/tmp/worker.py</span> <span class="op"><<</span><span class="st">'PYEOF'</span>
+import sys, json, hashlib, re
+
+<span class="cm"># One-time initialisation: compile regex, load lookup tables, etc.</span>
+PATTERN = re.compile(r'\b\w{4,}\b')
+
+for raw in sys.stdin:
+    raw = raw.strip()
+    if not raw:
+        continue
+    try:
+        req = json.loads(raw)
+        op  = req.get('op')
+
+        if op == 'hash':
+            result = hashlib.sha256(req['data'].encode()).hexdigest()
+        elif op == 'words':
+            result = PATTERN.findall(req['text'])
+        elif op == 'upper':
+            result = req['text'].upper()
+        else:
+            result = None
+
+        print(json.dumps({'ok': True,  'result': result}), flush=True)
+    except Exception as e:
+        print(json.dumps({'ok': False, 'error':  str(e)}),  flush=True)
+PYEOF
+
+<span class="cm"># ── Start the coprocess ──────────────────────────────────────────</span>
+<span class="kw">coproc</span> <span class="vr">PY</span> (<span class="cmd">python3</span> <span class="fl">-u</span> <span class="pth">/tmp/worker.py</span>)
+<span class="cm"># -u: unbuffered — critical, otherwise our writes are never read</span>
+
+<span class="fn">py_call</span>() {
+  <span class="cm"># Send a JSON request; read the JSON response</span>
+  <span class="kw">local</span> <span class="vr">request</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$request</span>"</span> <span class="op">>&</span><span class="st">"${PY[1]}"</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">response</span> <span class="op"><&</span><span class="st">"${PY[0]}"</span>
+  <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$response</span>"</span>
+}
+
+<span class="cm"># ── Use it in a loop — only one Python process throughout ─────────</span>
+<span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  <span class="vr">req</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'{"op":"hash","data":"%s"}'</span> \
+    "$(<span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$line</span>"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/"/\\"/g'</span>)")
+  <span class="vr">resp</span><span class="op">=</span>$(<span class="fn">py_call</span> <span class="st">"<span class="vr">$req</span>"</span>)
+  <span class="cmd">printf</span> <span class="st">'%s\t%s\n'</span> <span class="st">"<span class="vr">$line</span>"</span> <span class="st">"<span class="vr">$resp</span>"</span>
+<span class="kw">done</span> <span class="op"><</span> <span class="pth">input.txt</span>
+
+<span class="cm"># Shut down the worker</span>
+<span class="kw">kill</span> <span class="st">"<span class="vr">$PY_PID</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span>; <span class="cmd">wait</span> <span class="st">"<span class="vr">$PY_PID</span>"</span> <span class="nu">2</span><span class="op">>/dev/null</span></pre>
+
+<h3>Node.js coprocess</h3>
+<pre><span class="cmd">cat</span> <span class="op">></span> <span class="pth">/tmp/worker.js</span> <span class="op"><<</span><span class="st">'JSEOF'</span>
+const readline = require('readline');
+const crypto   = require('crypto');
+const rl = readline.createInterface({ input: process.stdin });
+
+rl.on('line', (raw) => {
+  try {
+    const req = JSON.parse(raw);
+    let result;
+    if      (req.op === 'md5')    result = crypto.createHash('md5').update(req.data).digest('hex');
+    else if (req.op === 'upper')  result = req.text.toUpperCase();
+    else if (req.op === 'slugify')result = req.text.toLowerCase().replace(/\s+/g, '-');
+    process.stdout.write(JSON.stringify({ ok: true, result }) + '\n');
+  } catch(e) {
+    process.stdout.write(JSON.stringify({ ok: false, error: e.message }) + '\n');
+  }
+});
+JSEOF
+
+<span class="kw">coproc</span> <span class="vr">JS</span> (<span class="cmd">node</span> <span class="pth">/tmp/worker.js</span>)
+
+<span class="fn">js_call</span>() {
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"$1"</span> <span class="op">>&</span><span class="st">"${JS[1]}"</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">REPLY</span> <span class="op"><&</span><span class="st">"${JS[0]}"</span>
+  <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$REPLY</span>"</span>
+}
+
+<span class="fn">js_call</span> <span class="st">'{"op":"slugify","text":"Hello World"}'</span>
+<span class="out"># {"ok":true,"result":"hello-world"}</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>3 — Passing Data Structures via JSON</h2>
+
+<p>JSON is the universal interchange format between Bash and other languages.
+<span class="inline-code">jq</span> is the standard tool for reading and writing
+it from shell scripts.</p>
+
+<pre><span class="cm"># ── Reading JSON in Bash ─────────────────────────────────────────</span>
+<span class="vr">json</span><span class="op">=</span><span class="st">'{"name":"alice","roles":["admin","user"],"meta":{"age":30}}'</span>
+
+<span class="cm"># Extract a scalar</span>
+<span class="vr">name</span><span class="op">=</span>$(<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.name'</span>         <span class="op"><<<</span> <span class="st">"<span class="vr">$json</span>"</span>)     <span class="cm"># -r = raw (no quotes)</span>
+<span class="vr">age</span><span class="op">=</span>$(<span class="cmd">jq</span>  <span class="fl">-r</span> <span class="st">'.meta.age'</span>     <span class="op"><<<</span> <span class="st">"<span class="vr">$json</span>"</span>)
+<span class="vr">role0</span><span class="op">=</span>$(<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.roles[0]'</span>    <span class="op"><<<</span> <span class="st">"<span class="vr">$json</span>"</span>)
+
+<span class="cm"># Read a JSON array into a Bash array</span>
+<span class="kw">mapfile</span> <span class="fl">-t</span> <span class="vr">roles</span> <span class="op"><</span> <(
+  <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.roles[]'</span> <span class="op"><<<</span> <span class="st">"<span class="vr">$json</span>"</span>
+)
+<span class="cmd">printf</span> <span class="st">'role: %s\n'</span> <span class="st">"${roles[@]}"</span>
+<span class="out"># role: admin
+# role: user</span>
+
+<span class="cm"># Iterate over JSON object keys</span>
+<span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span><span class="st">'='</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">key</span> <span class="vr">val</span>; <span class="kw">do</span>
+  <span class="cmd">printf</span> <span class="st">'%s → %s\n'</span> <span class="st">"<span class="vr">$key</span>"</span> <span class="st">"<span class="vr">$val</span>"</span>
+<span class="kw">done</span> <span class="op"><</span> <(<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.meta | to_entries[] | "\(.key)=\(.value)"'</span> <span class="op"><<<</span> <span class="st">"<span class="vr">$json</span>"</span>)
+<span class="out"># age → 30</span>
+
+<span class="cm"># ── Building JSON from Bash variables ────────────────────────────</span>
+<span class="cm"># WRONG: string interpolation breaks on special characters</span>
+<span class="cmd">printf</span> <span class="st">'{"name":"%s"}'</span> <span class="st">"<span class="vr">$name</span>"</span>    <span class="cm"># breaks if name contains " or \</span>
+
+<span class="cm"># RIGHT: let jq do the escaping via --arg</span>
+<span class="vr">payload</span><span class="op">=</span>$(<span class="cmd">jq</span> <span class="fl">-n</span> \
+  <span class="fl">--arg</span>   name  <span class="st">"<span class="vr">$name</span>"</span>   \
+  <span class="fl">--argjson</span> age <span class="st">"<span class="vr">$age</span>"</span>    \
+  <span class="st">'{"name":$name,"age":$age}'</span>)
+
+<span class="cm"># Build a JSON array from a Bash array</span>
+<span class="vr">tags</span><span class="op">=</span>(production europe tier-1)
+<span class="vr">json_tags</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${tags[@]}"</span> <span class="op">|</span> <span class="cmd">jq</span> <span class="fl">-R</span> <span class="st">'.'</span> <span class="op">|</span> <span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'.'</span>)
+<span class="cm"># → ["production","europe","tier-1"]</span>
+
+<span class="cm"># Build a JSON object from an associative array</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">env_vars</span><span class="op">=</span>([HOST]<span class="op">=</span>localhost [PORT]<span class="op">=</span><span class="nu">8080</span> [DB]<span class="op">=</span>mydb)
+<span class="vr">json_obj</span><span class="op">=</span>$(<span class="kw">for</span> <span class="vr">k</span> <span class="kw">in</span> <span class="st">"${!env_vars[@]}"</span>; <span class="kw">do</span>
+  <span class="cmd">jq</span> <span class="fl">-n</span> <span class="fl">--arg</span> k <span class="st">"<span class="vr">$k</span>"</span> <span class="fl">--arg</span> v <span class="st">"${env_vars[$k]}"</span> <span class="st">'{"key":$k,"value":$v}'</span>
+<span class="kw">done</span> <span class="op">|</span> <span class="cmd">jq</span> <span class="fl">-s</span> <span class="st">'from_entries'</span>)
+
+<span class="cm"># ── Streaming JSON (NDJSON / JSON Lines) ─────────────────────────</span>
+<span class="cm"># Each line is a self-contained JSON object — safe to pipe, grep, tail</span>
+<span class="cmd">jq</span> <span class="fl">-c</span> <span class="st">'.[]'</span> <span class="pth">big_array.json</span> <span class="op">|</span> <span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">obj</span>; <span class="kw">do</span>
+  <span class="vr">name</span><span class="op">=</span>$(<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.name'</span> <span class="op"><<<</span> <span class="st">"<span class="vr">$obj</span>"</span>)
+  <span class="cmd">printf</span> <span class="st">'Processing %s\n'</span> <span class="st">"<span class="vr">$name</span>"</span>
+<span class="kw">done</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>4 — Embedding Other Languages Inline</h2>
+
+<p>For short, self-contained logic that does not warrant a separate file, embed
+the other language directly in the shell script using a heredoc. The heredoc
+keeps related code together and avoids the file-management overhead of
+temporary scripts.</p>
+
+<pre><span class="cm"># ── Inline Python ────────────────────────────────────────────────</span>
+<span class="vr">result</span><span class="op">=</span>$(<span class="cmd">python3</span> <span class="op"><<</span><span class="st">'EOF'</span>
+import json, sys
+
+data = [{"id": i, "val": i**2} for i in range(1, 6)]
+print(json.dumps(data))
+EOF
+)
+<span class="cmd">echo</span> <span class="st">"<span class="vr">$result</span>"</span>
+<span class="out"># [{"id": 1, "val": 1}, {"id": 2, "val": 4}, ...]</span>
+
+<span class="cm"># ── Passing Bash variables into inline Python ─────────────────────</span>
+<span class="vr">threshold</span><span class="op">=</span><span class="nu">42</span>
+<span class="vr">label</span><span class="op">=</span><span class="st">"my label"</span>
+
+<span class="cm"># Method 1: environment variables (safe for any value)</span>
+<span class="kw">export</span> <span class="vr">THRESHOLD</span><span class="op">=</span><span class="st">"<span class="vr">$threshold</span>"</span>
+<span class="kw">export</span> <span class="vr">LABEL</span><span class="op">=</span><span class="st">"<span class="vr">$label</span>"</span>
+<span class="cmd">python3</span> <span class="op"><<</span><span class="st">'EOF'</span>
+import os
+print(f"threshold={os.environ['THRESHOLD']}, label={os.environ['LABEL']}")
+EOF
+
+<span class="cm"># Method 2: unquoted heredoc — Bash expands $vars before Python sees them</span>
+<span class="cm"># ONLY safe when the values are validated (no quotes, no backslashes)</span>
+[[ <span class="vr">$threshold</span> <span class="op">=~</span> <span class="rx">^[0-9]+$</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"bad threshold"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="cmd">python3</span> <span class="op"><<</span>EOF
+print("threshold is ${threshold}")
+EOF
+
+<span class="cm"># ── Inline Ruby ──────────────────────────────────────────────────</span>
+<span class="vr">csv_data</span><span class="op">=</span><span class="st">"alice,30,engineer
+bob,25,designer"</span>
+
+<span class="cmd">ruby</span> <span class="op"><<</span><span class="st">'EOF'</span>
+require 'csv'
+STDIN.each_line do |line|
+  row = CSV.parse_line(line.chomp)
+  puts "#{row[0].upcase} (#{row[2]}), age #{row[1]}"
+end
+EOF
+<span class="op"><<<</span> <span class="st">"<span class="vr">$csv_data</span>"</span>
+
+<span class="cm"># ── Inline Perl ──────────────────────────────────────────────────</span>
+<span class="cm"># Perl shines for complex text transformations</span>
+<span class="cmd">perl</span> <span class="fl">-00</span> <span class="fl">-ne</span> <span class="st">'print if /ERROR/i'</span> <span class="pth">/var/log/app.log</span>
+<span class="cm"># -00: paragraph mode (blank line = record separator)</span>
+<span class="cm"># -n: loop over input; -e: inline code</span>
+
+<span class="cm"># ── Inline awk — already in most scripts, mentioned for completeness</span>
+<span class="cmd">awk</span> <span class="st">'BEGIN{OFS="\t"} NR>1{sum+=$3} END{printf "total: %.2f\n", sum}'</span> data.csv</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>5 — Shell as Glue: Orchestrating Multi-Language Pipelines</h2>
+
+<p>Bash's most natural role in a polyglot system is as the top-level
+orchestrator: each stage of a pipeline is handled by the language best suited
+to it, and Bash wires them together.</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># A real-world ETL pipeline:
+# 1. Fetch raw data (curl)
+# 2. Validate and transform (Python)
+# 3. Aggregate stats (awk)
+# 4. Format report (jq)
+# 5. Upload result (curl)</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">API_URL</span><span class="op">=</span><span class="st">"https://api.example.com/events"</span>
+<span class="vr">TOKEN</span><span class="op">=</span>$(<span class="cmd">cat</span> <span class="pth">~/.config/myapp/token</span>)
+<span class="vr">DATE</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="fl">-u</span> <span class="st">'+%Y-%m-%d'</span>)
+<span class="vr">TMPDIR</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">-d</span>)
+<span class="kw">trap</span> <span class="st">'rm -rf "$TMPDIR"'</span> EXIT
+
+<span class="cm"># Stage 1: fetch</span>
+<span class="cmd">curl</span> <span class="fl">-sf</span> <span class="fl">-H</span> <span class="st">"Authorization: Bearer <span class="vr">$TOKEN</span>"</span> \
+  <span class="st">"<span class="vr">$API_URL</span>?date=<span class="vr">$DATE</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$TMPDIR</span>/raw.json"</span>
+
+<span class="cm"># Stage 2: validate and normalise (Python is best for this)</span>
+<span class="cmd">python3</span> <span class="op"><<</span><span class="st">'PY'</span> <span class="op"><</span> <span class="st">"<span class="vr">$TMPDIR</span>/raw.json"</span> <span class="op">></span> <span class="st">"<span class="vr">$TMPDIR</span>/clean.ndjson"</span>
+import sys, json, datetime
+
+for event in json.load(sys.stdin):
+    if not event.get('timestamp') or not event.get('user_id'):
+        continue
+    event['ts'] = datetime.datetime.fromisoformat(
+        event['timestamp']).strftime('%Y-%m-%dT%H:%M:%SZ')
+    print(json.dumps(event))
+PY
+
+<span class="cm"># Stage 3: aggregate per-user event counts (awk is ideal)</span>
+<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'"\(.user_id)\t\(.event_type)"'</span> <span class="st">"<span class="vr">$TMPDIR</span>/clean.ndjson"</span> \
+  <span class="op">|</span> <span class="cmd">sort</span> \
+  <span class="op">|</span> <span class="cmd">awk</span> <span class="fl">-F'\t'</span> <span class="st">'{counts[$1"/"$2]++}
+    END{for(k in counts) print k, counts[k]}'</span> \
+  <span class="op">></span> <span class="st">"<span class="vr">$TMPDIR</span>/counts.txt"</span>
+
+<span class="cm"># Stage 4: build final JSON report (jq)</span>
+<span class="cmd">jq</span> <span class="fl">-Rn</span> <span class="st">'[inputs | split(" ") |
+    {key: .[0], count: (.[1] | tonumber)}]'</span> \
+  <span class="st">"<span class="vr">$TMPDIR</span>/counts.txt"</span> <span class="op">></span> <span class="st">"<span class="vr">$TMPDIR</span>/report.json"</span>
+
+<span class="cm"># Stage 5: upload</span>
+<span class="cmd">curl</span> <span class="fl">-sf</span> <span class="fl">-X</span> POST \
+  <span class="fl">-H</span> <span class="st">"Authorization: Bearer <span class="vr">$TOKEN</span>"</span> \
+  <span class="fl">-H</span> <span class="st">"Content-Type: application/json"</span> \
+  <span class="fl">--data-binary</span> <span class="st">"@<span class="vr">$TMPDIR</span>/report.json"</span> \
+  <span class="st">"<span class="vr">$API_URL</span>/reports"</span>
+
+<span class="cmd">printf</span> <span class="st">'Report uploaded for %s\n'</span> <span class="st">"<span class="vr">$DATE</span>"</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>6 — Calling Bash from Other Languages</h2>
+
+<p>The integration runs both ways. Sometimes your Python, Node, or Go program
+needs to shell out, and knowing what Bash sees on the other end helps you
+design the interface cleanly.</p>
+
+<pre><span class="cm"># ── What your script should export for callers ───────────────────</span>
+<span class="cm"># Good script interface design:
+#   - Reads config from env vars (easy for any caller)
+#   - Takes structured input via stdin (JSON or line-delimited)
+#   - Produces structured output on stdout
+#   - Uses exit codes consistently (0 = success, non-zero = error)
+#   - Writes human errors to stderr only (callers ignore stderr)</span>
+
+<span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># bin/process_order.sh  — designed to be called from Python/Node/Go</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="cm"># Config from environment</span>
+<span class="vr">DB_HOST</span><span class="op">=</span><span class="st">"${DB_HOST:?DB_HOST required}"</span>
+<span class="vr">DB_PORT</span><span class="op">=</span><span class="st">"${DB_PORT:-5432}"</span>
+
+<span class="cm"># Input: JSON on stdin</span>
+<span class="vr">order</span><span class="op">=</span>$(<span class="cmd">cat</span>)
+<span class="vr">order_id</span><span class="op">=</span>$(<span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.id'</span>     <span class="op"><<<</span> <span class="st">"<span class="vr">$order</span>"</span>)
+<span class="vr">amount</span><span class="op">=</span>$(  <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.amount'</span> <span class="op"><<<</span> <span class="st">"<span class="vr">$order</span>"</span>)
+
+<span class="cm"># ... processing ...</span>
+
+<span class="cm"># Output: structured JSON on stdout</span>
+<span class="cmd">jq</span> <span class="fl">-n</span> <span class="fl">--arg</span> id <span class="st">"<span class="vr">$order_id</span>"</span> <span class="fl">--arg</span> status <span class="st">"processed"</span> \
+  <span class="st">'{"order_id":$id,"status":$status}'</span></pre>
+
+<pre><span class="cm"># ── Calling the script from Python ───────────────────────────────</span>
+import subprocess, json, os
+
+order = {"id": "ORD-001", "amount": 99.99}
+
+result = subprocess.run(
+    ["./bin/process_order.sh"],
+    input=json.dumps(order),
+    capture_output=True,
+    text=True,
+    env={**os.environ, "DB_HOST": "localhost"},
+    check=True            <span class="cm"># raises CalledProcessError on non-zero exit</span>
+)
+
+response = json.loads(result.stdout)
+print(response["status"])   <span class="cm"># → processed</span></pre>
+
+<pre><span class="cm"># ── Calling from Node.js ──────────────────────────────────────────</span>
+const { execFile } = require('child_process');
+const order = JSON.stringify({ id: 'ORD-002', amount: 49.99 });
+
+execFile('./bin/process_order.sh', [],
+  { env: { ...process.env, DB_HOST: 'localhost' } },
+  (err, stdout, stderr) => {
+    if (err) { console.error('Script failed:', stderr); process.exit(1); }
+    const resp = JSON.parse(stdout);
+    console.log(resp.status);
+  }
+);</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>7 — When to Stop Using Bash</h2>
+
+<p>The ability to hand off cleanly is as important as the ability to integrate.
+Continuing to grow a Bash script past its natural limits produces code that is
+harder to test, harder to reason about, and harder to hand to a colleague.
+Recognise the signals early.</p>
+
+<table>
+  <tr><th>Signal</th><th>What it means in practice</th><th>Language to reach for</th></tr>
+  <tr><td>You need real data structures (trees, graphs, objects)</td><td>Associative arrays and parallel indexed arrays no longer model the problem cleanly</td><td>Python, Go, Ruby</td></tr>
+  <tr><td>Error handling is more than <code>|| exit 1</code></td><td>You need try/catch, error types, retry logic with backoff</td><td>Python, Go</td></tr>
+  <tr><td>You are writing >200 lines of logic</td><td>A colleague cannot understand the script without running it</td><td>Python (fastest rewrite)</td></tr>
+  <tr><td>You need HTTP or a database</td><td><code>curl</code> + <code>jq</code> works up to a point; auth, retries, and pooling quickly exceed it</td><td>Python (requests/httpx), Go</td></tr>
+  <tr><td>You need concurrency beyond <code>&</code> + <code>wait</code></td><td>Proper thread pools, async I/O, or actor models</td><td>Go, Python (asyncio)</td></tr>
+  <tr><td>You want to unit-test the logic, not the plumbing</td><td>BATS covers the shell surface; complex logic belongs in a testable unit</td><td>Python, Go, Node</td></tr>
+  <tr><td>Someone else will maintain this in 6 months</td><td>The safe default is Python — it is on every server and universally readable</td><td>Python</td></tr>
+  <tr><td>You need a CLI with subcommands, flags, help text</td><td>Writing a clean CLI in Bash is possible but <code>argparse</code> / <code>cobra</code> are far faster</td><td>Python (Click/Typer), Go (cobra)</td></tr>
+</table>
+
+<h3>The handoff pattern — keep the shell entry point</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># bin/run.sh — thin shell wrapper; all logic is in Python
+# This is the right way to hand off: keep one entry point,
+# have it exec into the real implementation.</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="cm"># Guard: require Python 3.10+</span>
+<span class="vr">py</span><span class="op">=</span>$(<span class="cmd">command</span> <span class="fl">-v</span> python3 <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"python3 not found"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; })
+<span class="vr">ver</span><span class="op">=</span>$(<span class="st">"<span class="vr">$py</span>"</span> <span class="fl">-c</span> <span class="st">"import sys; print('%d%02d' % sys.version_info[:2])"</span>)
+(( <span class="vr">ver</span> <span class="op">>=</span> <span class="nu">310</span> )) <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"Python 3.10+ required (got $(<span class="vr">$py</span> --version))"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="cm"># Activate virtualenv if present</span>
+[[ <span class="fl">-f</span> <span class="st">"${VIRTUAL_ENV:-}/bin/activate"</span> ]] <span class="op">||</span> {
+  [[ <span class="fl">-f</span> <span class="pth">.venv/bin/activate</span> ]] <span class="op">&&</span> <span class="kw">source</span> <span class="pth">.venv/bin/activate</span>
+}
+
+<span class="cm"># exec replaces this shell with Python — no double-process overhead</span>
+<span class="kw">exec</span> <span class="st">"<span class="vr">$py</span>"</span> <span class="fl">-m</span> myapp <span class="st">"$@"</span></pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>8 — Practical Patterns Summary</h2>
+
+<table>
+  <tr><th>Task</th><th>Best tool</th><th>Notes</th></tr>
+  <tr><td>File/process orchestration</td><td>Bash</td><td>Its strongest domain</td></tr>
+  <tr><td>Text transformation (simple)</td><td>awk / sed</td><td>Already in every pipeline</td></tr>
+  <tr><td>JSON parsing/building</td><td>jq</td><td>Use <code>--arg</code> for safe value injection</td></tr>
+  <tr><td>Complex text / regex</td><td>Python / Perl</td><td>Inline heredoc for short snippets</td></tr>
+  <tr><td>Maths beyond integer arithmetic</td><td>Python / bc</td><td>bc for simple; Python for floats/complex</td></tr>
+  <tr><td>HTTP requests</td><td>curl + jq</td><td>Python requests/httpx for anything non-trivial</td></tr>
+  <tr><td>YAML / TOML / XML</td><td>yq / python3</td><td>Never parse with grep/sed</td></tr>
+  <tr><td>Stateful computation in a loop</td><td>Python coprocess</td><td>One process, many requests via stdin/stdout</td></tr>
+  <tr><td>Parallel I/O-bound work</td><td>GNU parallel / xargs -P</td><td>Built-in parallelism without code complexity</td></tr>
+  <tr><td>Long-running service / daemon</td><td>Python / Go + systemd</td><td>Use shell only for the entry-point wrapper</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — JSON-speaking Python coprocess</h4>
+  <p>Write a complete Bash script that uses a persistent Python coprocess to
+  perform three operations without spawning more than one Python process:</p>
+  <ul>
+    <li><strong>validate_email ADDRESS</strong> — returns <code>{"ok":true}</code>
+    or <code>{"ok":false,"reason":"..."}</code></li>
+    <li><strong>slugify TEXT</strong> — lowercases, replaces spaces and
+    non-alphanumeric characters with hyphens, collapses multiple hyphens</li>
+    <li><strong>word_freq TEXT</strong> — returns a JSON object of word →
+    count, sorted by count descending, top 5 only</li>
+  </ul>
+  <p>The shell script should read lines from stdin in the format
+  <code>OP ARG</code>, call the appropriate operation via the coprocess,
+  and print the result. Handle coprocess startup failure and include a clean
+  shutdown on EXIT.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="cm"># ── Python worker ────────────────────────────────────────────────</span>
+<span class="vr">WORKER</span><span class="op">=</span>$(<span class="cmd">mktemp</span> <span class="fl">--suffix</span><span class="op">=</span>.py)
+<span class="kw">trap</span> <span class="st">'rm -f "$WORKER"'</span> EXIT
+
+<span class="cmd">cat</span> <span class="op">></span> <span class="st">"<span class="vr">$WORKER</span>"</span> <span class="op"><<</span><span class="st">'PY'</span>
+import sys, json, re
+from collections import Counter
+
+EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]{2,}$')
+
+def validate_email(addr):
+    if EMAIL_RE.match(addr):
+        return {"ok": True}
+    return {"ok": False, "reason": "does not match email pattern"}
+
+def slugify(text):
+    s = text.lower()
+    s = re.sub(r'[^a-z0-9\s-]', '', s)
+    s = re.sub(r'[\s-]+', '-', s).strip('-')
+    return {"ok": True, "result": s}
+
+def word_freq(text):
+    words = re.findall(r'\b\w+\b', text.lower())
+    top = Counter(words).most_common(5)
+    return {"ok": True, "result": {w: c for w, c in top}}
+
+DISPATCH = {"validate_email": validate_email,
+            "slugify":        slugify,
+            "word_freq":      word_freq}
+
+for raw in sys.stdin:
+    raw = raw.strip()
+    if not raw:
+        continue
+    try:
+        req  = json.loads(raw)
+        fn   = DISPATCH.get(req["op"])
+        resp = fn(req["arg"]) if fn else {"ok": False, "reason": "unknown op"}
+    except Exception as e:
+        resp = {"ok": False, "reason": str(e)}
+    print(json.dumps(resp), flush=True)
+PY
+
+<span class="cm"># ── Start coprocess ──────────────────────────────────────────────</span>
+<span class="kw">coproc</span> <span class="vr">PY</span> (<span class="cmd">python3</span> <span class="fl">-u</span> <span class="st">"<span class="vr">$WORKER</span>"</span>)
+[[ <span class="fl">-n</span> <span class="st">"${PY_PID:-}"</span> ]] <span class="op">||</span> { <span class="cmd">echo</span> <span class="st">"Failed to start worker"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+<span class="kw">trap</span> <span class="st">'kill "$PY_PID" 2>/dev/null; wait "$PY_PID" 2>/dev/null'</span> EXIT
+
+<span class="cm"># ── Shell dispatch ────────────────────────────────────────────────</span>
+<span class="fn">py_call</span>() {
+  <span class="kw">local</span> <span class="vr">op</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">arg</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">req</span>
+  <span class="vr">req</span><span class="op">=</span>$(<span class="cmd">jq</span> <span class="fl">-n</span> <span class="fl">--arg</span> op <span class="st">"<span class="vr">$op</span>"</span> <span class="fl">--arg</span> arg <span class="st">"<span class="vr">$arg</span>"</span> <span class="st">'{"op":$op,"arg":$arg}'</span>)
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$req</span>"</span> <span class="op">>&</span><span class="st">"${PY[1]}"</span>
+  <span class="kw">local</span> <span class="vr">resp</span>
+  <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">resp</span> <span class="op"><&</span><span class="st">"${PY[0]}"</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"<span class="vr">$resp</span>"</span>
+}
+
+<span class="cm"># ── Read OP ARG from stdin ────────────────────────────────────────</span>
+<span class="kw">while</span> <span class="cmd">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+  [[ <span class="fl">-z</span> <span class="st">"<span class="vr">$line</span>"</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+  <span class="vr">op</span><span class="op">=</span><span class="st">"${line%% *}"</span>
+  <span class="vr">arg</span><span class="op">=</span><span class="st">"${line#* }"</span>
+  <span class="fn">py_call</span> <span class="st">"<span class="vr">$op</span>"</span> <span class="st">"<span class="vr">$arg</span>"</span>
+<span class="kw">done</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Multi-language ETL pipeline</h4>
+  <p>Write a Bash script that implements a five-stage pipeline processing a
+  CSV log file of web requests
+  (<code>timestamp,method,path,status,bytes,duration_ms</code>):</p>
+  <ol>
+    <li><strong>Validate</strong> (Python inline): skip rows where status is not
+    a 3-digit integer, duration is negative, or path contains
+    <code>..</code></li>
+    <li><strong>Enrich</strong> (awk): add a sixth field
+    <code>category</code> based on status (2xx=ok, 3xx=redirect,
+    4xx=client_error, 5xx=server_error)</li>
+    <li><strong>Aggregate</strong> (awk): count requests and sum bytes by
+    category</li>
+    <li><strong>Format</strong> (jq): emit a JSON summary object with
+    <code>date</code>, <code>total_requests</code>, and a
+    <code>by_category</code> breakdown</li>
+    <li><strong>Save</strong> (Bash): write the JSON to
+    <code>reports/YYYY-MM-DD.json</code>, creating the directory if needed</li>
+  </ol>
+  <p>All five stages should be connected in a single pipeline with no temporary
+  files. Include a sample input generator at the top for testing.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">DATE</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="fl">-u</span> <span class="st">'+%Y-%m-%d'</span>)
+<span class="vr">REPORT_DIR</span><span class="op">=</span><span class="st">"${REPORT_DIR:-reports}"</span>
+
+<span class="cm"># ── Generate sample input ────────────────────────────────────────</span>
+<span class="fn">sample_csv</span>() {
+  <span class="cmd">printf</span> <span class="st">'timestamp,method,path,status,bytes,duration_ms\n'</span>
+  <span class="cmd">printf</span> <span class="st">'2026-06-10T10:00:01Z,GET,/api/users,200,1234,42\n'</span>
+  <span class="cmd">printf</span> <span class="st">'2026-06-10T10:00:02Z,POST,/api/orders,201,890,118\n'</span>
+  <span class="cmd">printf</span> <span class="st">'2026-06-10T10:00:03Z,GET,/static/img,304,0,5\n'</span>
+  <span class="cmd">printf</span> <span class="st">'2026-06-10T10:00:04Z,GET,/../etc/passwd,400,200,-1\n'</span>  <span class="cm"># invalid: path + neg duration</span>
+  <span class="cmd">printf</span> <span class="st">'2026-06-10T10:00:05Z,GET,/api/products,404,320,30\n'</span>
+  <span class="cmd">printf</span> <span class="st">'2026-06-10T10:00:06Z,GET,/api/orders,500,450,9999\n'</span>
+  <span class="cmd">printf</span> <span class="st">'2026-06-10T10:00:07Z,DELETE,/api/users/1,204,0,55\n'</span>
+  <span class="cmd">printf</span> <span class="st">'bad,row,data\n'</span>  <span class="cm"># invalid: too few fields</span>
+}
+
+<span class="cm"># ── Pipeline ─────────────────────────────────────────────────────</span>
+<span class="fn">run_pipeline</span>() {
+  <span class="kw">local</span> <span class="vr">input</span><span class="op">=</span><span class="st">"$1"</span>
+
+  <span class="cm"># Stage 1: Validate (Python) ── skip header and bad rows</span>
+  <span class="cm"># Stage 2: Enrich (awk)       ── add category field</span>
+  <span class="cm"># Stage 3: Aggregate (awk)    ── count + sum by category</span>
+  <span class="cm"># Stage 4: Format (jq)        ── produce JSON</span>
+
+  <span class="cmd">python3</span> <span class="op"><<</span><span class="st">'PY'</span> <span class="op"><</span> <span class="st">"<span class="vr">$input</span>"</span> \
+  <span class="op">|</span> <span class="cmd">awk</span> <span class="fl">-F,</span> <span class="op"><<</span><span class="st">'AWK'</span> \
+  <span class="op">|</span> <span class="cmd">awk</span> <span class="fl">-F,</span> <span class="op"><<</span><span class="st">'AWK2'</span> \
+  <span class="op">|</span> <span class="cmd">jq</span> <span class="fl">-Rn</span> <span class="fl">--arg</span> date <span class="st">"<span class="vr">$DATE</span>"</span> <span class="op"><<</span><span class="st">'JQ'</span>
+import sys, csv
+
+r = csv.reader(sys.stdin)
+next(r)  # skip header
+for row in r:
+    if len(row) < 6:
+        continue
+    ts, method, path, status, byt, dur = row[:6]
+    if not status.isdigit() or len(status) != 3:
+        continue
+    if int(dur) < 0:
+        continue
+    if '..' in path:
+        continue
+    print(','.join(row[:6]))
+PY
+{
+    status = int($4)
+    if      (status >= 200 && status < 300) cat = "ok"
+    else if (status >= 300 && status < 400) cat = "redirect"
+    else if (status >= 400 && status < 500) cat = "client_error"
+    else                                    cat = "server_error"
+    print $0 "," cat
+}
+AWK
+{
+    cat = $7
+    counts[cat]++
+    bytes[cat] += $5
+}
+END {
+    for (c in counts)
+        print c "," counts[c] "," bytes[c]
+}
+AWK2
+[ inputs | split(",") |
+  { category: .[0], requests: (.[1]|tonumber), bytes: (.[2]|tonumber) } ] |
+{ date: $date,
+  total_requests: (map(.requests) | add),
+  by_category: (map({(.category): {requests:.requests, bytes:.bytes}}) | add)
+}
+JQ
+}
+
+<span class="cm"># ── Main ─────────────────────────────────────────────────────────</span>
+<span class="vr">INPUT</span><span class="op">=</span>$(<span class="cmd">mktemp</span>)
+<span class="kw">trap</span> <span class="st">'rm -f "$INPUT"'</span> EXIT
+<span class="fn">sample_csv</span> <span class="op">></span> <span class="st">"<span class="vr">$INPUT</span>"</span>
+
+<span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$REPORT_DIR</span>"</span>
+<span class="fn">run_pipeline</span> <span class="st">"<span class="vr">$INPUT</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$REPORT_DIR</span>/<span class="vr">$DATE</span>.json"</span>
+<span class="cmd">printf</span> <span class="st">'Report written to %s/%s.json\n'</span> <span class="st">"<span class="vr">$REPORT_DIR</span>"</span> <span class="st">"<span class="vr">$DATE</span>"</span>
+<span class="cmd">cat</span> <span class="st">"<span class="vr">$REPORT_DIR</span>/<span class="vr">$DATE</span>.json"</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Bash script designed to be called from Python</h4>
+  <p>Design and write a Bash script <code>bin/sys_info.sh</code> that is
+  intended to be called from Python using <code>subprocess.run</code>. The
+  script should:</p>
+  <ul>
+    <li>Accept a <code>--format</code> flag: <code>json</code> (default) or
+    <code>text</code></li>
+    <li>Collect: hostname, kernel version, uptime in seconds, load averages
+    (1/5/15 min), total/used/free memory in MB, and disk usage for
+    <code>/</code> (total/used/free in GB)</li>
+    <li>With <code>--format json</code>, output a single clean JSON object
+    using <span class="inline-code">jq -n --arg/--argjson</span> (never string
+    interpolation)</li>
+    <li>With <code>--format text</code>, output a human-readable summary</li>
+    <li>Exit 2 for unknown <code>--format</code> values</li>
+    <li>Write all errors to stderr; keep stdout clean for machine consumption</li>
+  </ul>
+  <p>Then write a Python snippet that calls the script, parses the JSON, and
+  prints a one-line health summary.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># bin/sys_info.sh</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">FORMAT</span><span class="op">=</span><span class="st">json</span>
+<span class="kw">while</span> (( <span class="vr">$#</span> )); <span class="kw">do</span>
+  <span class="kw">case</span> <span class="st">"$1"</span> <span class="kw">in</span>
+    <span class="fl">--format</span>) <span class="vr">FORMAT</span><span class="op">=</span><span class="st">"$2"</span>; <span class="kw">shift</span> <span class="nu">2</span> ;;
+    <span class="vr">*</span>) <span class="cmd">printf</span> <span class="st">'Unknown option: %s\n'</span> <span class="st">"$1"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">2</span> ;;
+  <span class="kw">esac</span>
+<span class="kw">done</span>
+
+[[ <span class="vr">$FORMAT</span> <span class="op">==</span> json <span class="op">||</span> <span class="vr">$FORMAT</span> <span class="op">==</span> text ]] <span class="op">||</span> {
+  <span class="cmd">printf</span> <span class="st">'Unknown format: %s (use json or text)\n'</span> <span class="st">"<span class="vr">$FORMAT</span>"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">2</span>
+}
+
+<span class="cm"># ── Collect data ─────────────────────────────────────────────────</span>
+<span class="vr">HOSTNAME_VAL</span><span class="op">=</span>$(<span class="cmd">hostname</span> <span class="fl">-f</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">||</span> <span class="cmd">hostname</span>)
+<span class="vr">KERNEL</span><span class="op">=</span>$(<span class="cmd">uname</span> <span class="fl">-r</span>)
+<span class="vr">UPTIME_S</span><span class="op">=</span>$(<span class="cmd">awk</span> <span class="st">'{printf "%d", $1}'</span> <span class="pth">/proc/uptime</span>)
+
+<span class="cm"># Load averages</span>
+<span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">LOAD1</span> <span class="vr">LOAD5</span> <span class="vr">LOAD15</span> <span class="vr">_rest</span> <span class="op"><</span> <span class="pth">/proc/loadavg</span>
+
+<span class="cm"># Memory in MB (from /proc/meminfo)</span>
+<span class="fn">memval</span>() { <span class="cmd">awk</span> <span class="fl">-v</span> <span class="vr">k</span><span class="op">=</span><span class="st">"$1"</span> <span class="st">'$1==k{printf "%d", int($2/1024)}'</span> <span class="pth">/proc/meminfo</span>; }
+<span class="vr">MEM_TOTAL</span><span class="op">=</span>$(<span class="fn">memval</span> MemTotal:)
+<span class="vr">MEM_AVAIL</span><span class="op">=</span>$(<span class="fn">memval</span> MemAvailable:)
+<span class="vr">MEM_USED</span><span class="op">=</span>$(( <span class="vr">MEM_TOTAL</span> <span class="op">-</span> <span class="vr">MEM_AVAIL</span> ))
+
+<span class="cm"># Disk usage for / in GB</span>
+<span class="kw">read</span> <span class="fl">-r</span> <span class="vr">DISK_TOTAL</span> <span class="vr">DISK_USED</span> <span class="vr">DISK_FREE</span> <span class="op"><<<</span> \
+  $(<span class="cmd">df</span> <span class="fl">-BG</span> <span class="pth">/</span> <span class="op">|</span> <span class="cmd">awk</span> <span class="st">'NR==2{gsub(/G/,""); print $2, $3, $4}'</span>)
+
+<span class="cm"># ── Output ───────────────────────────────────────────────────────</span>
+<span class="kw">if</span> [[ <span class="vr">$FORMAT</span> <span class="op">==</span> json ]]; <span class="kw">then</span>
+  <span class="cmd">jq</span> <span class="fl">-n</span> \
+    <span class="fl">--arg</span>     hostname   <span class="st">"<span class="vr">$HOSTNAME_VAL</span>"</span>  \
+    <span class="fl">--arg</span>     kernel     <span class="st">"<span class="vr">$KERNEL</span>"</span>       \
+    <span class="fl">--argjson</span> uptime_s   <span class="st">"<span class="vr">$UPTIME_S</span>"</span>    \
+    <span class="fl">--argjson</span> load1      <span class="st">"<span class="vr">$LOAD1</span>"</span>       \
+    <span class="fl">--argjson</span> load5      <span class="st">"<span class="vr">$LOAD5</span>"</span>       \
+    <span class="fl">--argjson</span> load15     <span class="st">"<span class="vr">$LOAD15</span>"</span>      \
+    <span class="fl">--argjson</span> mem_total  <span class="st">"<span class="vr">$MEM_TOTAL</span>"</span>   \
+    <span class="fl">--argjson</span> mem_used   <span class="st">"<span class="vr">$MEM_USED</span>"</span>    \
+    <span class="fl">--argjson</span> mem_free   <span class="st">"<span class="vr">$MEM_AVAIL</span>"</span>   \
+    <span class="fl">--argjson</span> disk_total <span class="st">"<span class="vr">$DISK_TOTAL</span>"</span>  \
+    <span class="fl">--argjson</span> disk_used  <span class="st">"<span class="vr">$DISK_USED</span>"</span>   \
+    <span class="fl">--argjson</span> disk_free  <span class="st">"<span class="vr">$DISK_FREE</span>"</span>   \
+    <span class="st">'{hostname:$hostname,kernel:$kernel,uptime_s:$uptime_s,
+      load:{one:$load1,five:$load5,fifteen:$load15},
+      memory:{total_mb:$mem_total,used_mb:$mem_used,free_mb:$mem_free},
+      disk:{total_gb:$disk_total,used_gb:$disk_used,free_gb:$disk_free}}'</span>
+<span class="kw">else</span>
+  <span class="cmd">printf</span> <span class="st">'Host    : %s (%s)\n'</span>     <span class="st">"<span class="vr">$HOSTNAME_VAL</span>"</span> <span class="st">"<span class="vr">$KERNEL</span>"</span>
+  <span class="cmd">printf</span> <span class="st">'Uptime  : %d s\n'</span>         <span class="st">"<span class="vr">$UPTIME_S</span>"</span>
+  <span class="cmd">printf</span> <span class="st">'Load    : %s %s %s\n'</span>     <span class="st">"<span class="vr">$LOAD1</span>"</span> <span class="st">"<span class="vr">$LOAD5</span>"</span> <span class="st">"<span class="vr">$LOAD15</span>"</span>
+  <span class="cmd">printf</span> <span class="st">'Memory  : %d / %d MB\n'</span>  <span class="st">"<span class="vr">$MEM_USED</span>"</span> <span class="st">"<span class="vr">$MEM_TOTAL</span>"</span>
+  <span class="cmd">printf</span> <span class="st">'Disk /  : %d / %d GB\n'</span>  <span class="st">"<span class="vr">$DISK_USED</span>"</span> <span class="st">"<span class="vr">$DISK_TOTAL</span>"</span>
+<span class="kw">fi</span></pre>
+<pre><span class="cm"># Python caller</span>
+import subprocess, json
+
+result = subprocess.run(
+    ["./bin/sys_info.sh", "--format", "json"],
+    capture_output=True, text=True, check=True
+)
+info = json.loads(result.stdout)
+
+mem_pct = info["memory"]["used_mb"] / info["memory"]["total_mb"] * 100
+disk_pct = info["disk"]["used_gb"]  / info["disk"]["total_gb"]   * 100
+
+print(
+    f"{info['hostname']}  "
+    f"load={info['load']['one']}  "
+    f"mem={mem_pct:.0f}%  "
+    f"disk={disk_pct:.0f}%"
+)</pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — The handoff: rewrite a Bash function in Python</h4>
+  <p>The following Bash function has grown beyond Bash's comfortable limits.
+  It parses a YAML-ish config file, resolves variable references
+  (<code>${VAR}</code> within values), validates required keys, and returns
+  results as environment variables. It is 60 lines, has two known edge-case
+  bugs, and cannot be unit-tested without mocking the filesystem.</p>
+<pre style="background:#0d0f1a; margin:0.5em 0; font-size:0.88rem;">load_config() {
+  local file="$1"; local -A cfg
+  while IFS='=' read -r k v; do
+    [[ $k =~ ^[[:space:]]*# ]] && continue
+    [[ -z $k ]] && continue
+    cfg["${k// /}"]="${v}"
+  done < "$file"
+  for k in DB_HOST DB_PORT APP_NAME; do
+    [[ -v cfg[$k] ]] || { echo "missing: $k" >&2; return 1; }
+  done
+  for k in "${!cfg[@]}"; do
+    local val="${cfg[$k]}"
+    val="${val//\$\{DB_HOST\}/${cfg[DB_HOST]:-}}"
+    val="${val//\$\{DB_PORT\}/${cfg[DB_PORT]:-}}"
+    export "$k"="$val"
+  done
+}</pre>
+  <p>Rewrite this as <code>bin/load_config.sh</code>: a thin Bash wrapper that
+  calls a Python implementation, passes the config file path as an argument,
+  and <code>eval</code>s the output to set the variables in the calling shell.
+  The Python implementation should: parse the file properly (handling
+  whitespace, inline comments, multi-word values), resolve
+  <span class="inline-code">${VAR}</span> references in topological order (a
+  variable can reference another defined earlier in the same file), validate
+  required keys, and emit <code>export KEY='VALUE'</code> lines using
+  <code>shlex.quote</code> so the output is safe to eval regardless of value
+  content.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># bin/load_config.sh
+# Usage: eval "$(load_config.sh path/to/config)"</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">CONFIG_FILE</span><span class="op">=</span><span class="st">"${1:?Usage: load_config.sh CONFIG_FILE}"</span>
+[[ <span class="fl">-f</span> <span class="st">"<span class="vr">$CONFIG_FILE</span>"</span> ]] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'File not found: %s\n'</span> <span class="st">"<span class="vr">$CONFIG_FILE</span>"</span> <span class="op">>&2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="cm"># Delegate entirely to Python; its stdout is safe to eval</span>
+<span class="kw">exec</span> <span class="cmd">python3</span> <span class="fl">-c</span> <span class="st">'
+import sys, re, shlex
+
+REQUIRED = {"DB_HOST", "DB_PORT", "APP_NAME"}
+REF_RE   = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+# ── Parse ────────────────────────────────────────────────────────
+cfg    = {}   # key -> raw value (preserving order, Python 3.7+)
+order  = []   # insertion order
+
+with open(sys.argv[1]) as fh:
+    for lineno, line in enumerate(fh, 1):
+        line = line.rstrip("\n")
+        line = re.sub(r"\s*#.*$", "", line)   # strip inline comments
+        line = line.strip()
+        if not line:
+            continue
+        if "=" not in line:
+            print(f"# warning: line {lineno} skipped (no =)", file=sys.stderr)
+            continue
+        k, _, v = line.partition("=")
+        k = k.strip()
+        v = v.strip()
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", k):
+            print(f"# warning: invalid key {k!r} on line {lineno}", file=sys.stderr)
+            continue
+        cfg[k] = v
+        if k not in order:
+            order.append(k)
+
+# ── Validate ─────────────────────────────────────────────────────
+missing = REQUIRED - set(cfg)
+if missing:
+    for m in sorted(missing):
+        print(f"echo Missing required key: {m} >&2", file=sys.stdout)
+    print("exit 1")
+    sys.exit(0)
+
+# ── Resolve variable references (single pass in definition order) ─
+resolved = {}
+for k in order:
+    def replacer(m, _r=resolved):
+        return _r.get(m.group(1), m.group(0))
+    resolved[k] = REF_RE.sub(replacer, cfg[k])
+
+# ── Emit safe export statements ───────────────────────────────────
+for k in order:
+    print(f"export {k}={shlex.quote(resolved[k])}")
+' -- "$CONFIG_FILE"</span></pre>
+<pre><span class="cm"># Example usage in another script:</span>
+<span class="cm">#   eval "$(bin/load_config.sh config/app.conf)"
+#   echo "Connecting to $DB_HOST:$DB_PORT"
+#
+# Example config/app.conf:
+#   DB_HOST = db.internal       # primary database
+#   DB_PORT = 5432
+#   APP_NAME = my-service
+#   DB_URL = postgres://${DB_HOST}:${DB_PORT}/mydb
+#   GREETING = Hello from ${APP_NAME}</span></pre>
+  </div>
+</div>
+
+</div>

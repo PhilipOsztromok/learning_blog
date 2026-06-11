@@ -1,0 +1,409 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-section { color: #7a8aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0.9em 0 0.3em 0; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; }
+  .lx-lesson .cmd-key { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 180px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  .lx-lesson .mode-badge {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    padding: 0.15em 0.55em; border-radius: 3px; margin-right: 0.3em; vertical-align: middle;
+  }
+  .lx-lesson .mode-normal  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }
+  .lx-lesson .mode-insert  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }
+  .lx-lesson .mode-command { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }
+  .lx-lesson .demo-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0;
+  }
+  .lx-lesson .demo-box h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.95rem; }
+  .lx-lesson .workflow-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0;
+  }
+  .lx-lesson .workflow-box h4 { color: #4f8ef7; margin: 0 0 0.7em 0; font-size: 0.95rem; }
+  .lx-lesson .workflow-step { display: flex; gap: 1em; align-items: baseline; padding: 0.4em 0; border-bottom: 1px solid #2a2d3e; }
+  .lx-lesson .workflow-step:last-child { border-bottom: none; }
+  .lx-lesson .step-num { color: #4f8ef7; font-family: 'Consolas', monospace; font-weight: bold; min-width: 1.5em; }
+  .lx-lesson .step-cmd { color: #ffab70; font-family: 'Consolas', monospace; min-width: 140px; }
+  .lx-lesson .step-desc { color: #c9d8ff; font-size: 0.92rem; }
+  .lx-lesson .marks-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin: 1em 0;
+  }
+  @media (max-width: 600px) { .lx-lesson .marks-grid { grid-template-columns: 1fr; } }
+  .lx-lesson .mark-card {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.1em;
+  }
+  .lx-lesson .mark-card h4 { margin: 0 0 0.5em 0; font-size: 0.9rem; font-family: 'Consolas', monospace; }
+  .lx-lesson .mark-local h4  { color: #79b8ff; }
+  .lx-lesson .mark-global h4 { color: #d2a8ff; }
+  .lx-lesson .mark-auto h4   { color: #85e89d; }
+  .lx-lesson .mark-card p { font-size: 0.9rem; margin: 0.3em 0; color: #b0b8cc; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #b392f0; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 5 — Marks</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Problem Marks Solve</h2>
+
+<p>As files grow longer, navigation becomes a two-part problem. The first part — getting to a known location quickly — is solved by search and line-number jumps (Chapter 3). The second part is subtler: <em>getting back to where you were.</em></p>
+
+<p>Imagine you are editing a configuration function on line 340. You need to check how a variable is defined on line 12, then verify a related function on line 580, then return to your original work. Without marks you have to remember three line numbers and type <code>:340</code>, <code>:12</code>, <code>:580</code>, <code>:340</code> repeatedly — and if you navigate elsewhere in between, you lose track entirely.</p>
+
+<p><strong>Marks</strong> are named bookmarks you can place at any position in a file (or across files). They remember both the line number and the column, and they survive navigation, edits, and even closing and reopening Vim. Combined with the jump list, they form a complete navigation history system.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Setting and Jumping to Marks</h2>
+
+<h3>Creating a mark</h3>
+
+<p>To set a mark, press <code>m</code> in Normal mode followed by a single letter — the mark's name:</p>
+
+<pre><span class="cmd">ma</span>    <span class="cm"># set mark 'a' at the current cursor position (line + column)</span>
+<span class="cmd">mB</span>    <span class="cm"># set mark 'B' (uppercase — works across files)</span>
+<span class="cmd">mz</span>    <span class="cm"># set mark 'z'</span></pre>
+
+<p>The mark is set silently — no confirmation appears. You can verify it was set with <code>:marks</code>.</p>
+
+<h3>Jumping to a mark</h3>
+
+<p>There are two jump commands, and the difference between them is important:</p>
+
+<table>
+  <tr><th>Command</th><th>Jumps to</th><th>Use when</th></tr>
+  <tr><td><code>'a</code> (single quote)</td><td>The <strong>beginning of the line</strong> containing mark <em>a</em></td><td>You want to work with the whole line</td></tr>
+  <tr><td><code>`a</code> (backtick)</td><td>The <strong>exact cursor position</strong> (line <em>and</em> column) of mark <em>a</em></td><td>You want to return to the precise character</td></tr>
+</table>
+
+<pre><span class="cm"># Set a mark, move away, return to it:</span>
+<span class="cmd">ma</span>          <span class="cm"># mark current position as 'a'</span>
+<span class="cmd">G</span>           <span class="cm"># jump to end of file</span>
+<span class="st">'a</span>          <span class="cm"># jump back to the LINE containing mark 'a'</span>
+<span class="st">`a</span>          <span class="cm"># jump back to the EXACT COLUMN of mark 'a'</span></pre>
+
+<div class="tip">
+  <strong>Backtick vs single quote in practice:</strong> Most of the time <code>'a</code> (single quote) is what you want — it puts you at the start of the relevant line, which is natural for editing. Use <code>`a</code> (backtick) when column precision matters, such as when returning to a specific character inside a long expression.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Types of Marks</h2>
+
+<div class="marks-grid">
+  <div class="mark-card mark-local">
+    <h4>a – z  &nbsp;·&nbsp; Local marks</h4>
+    <p>Set with <code>ma</code>–<code>mz</code>. Each mark is local to the buffer (file) it was set in. If you open a different file, <code>'a</code> still refers to the position in the original file — it will switch you back to that buffer. You have 26 of these available per file.</p>
+  </div>
+  <div class="mark-card mark-global">
+    <h4>A – Z  &nbsp;·&nbsp; Global marks</h4>
+    <p>Set with <code>mA</code>–<code>mZ</code>. Global marks work <em>across files</em>. Jumping to a global mark with <code>'A</code> will open the file containing that mark (if it is not already open) and jump to the position. Ideal for bookmarking key files you switch between frequently.</p>
+  </div>
+  <div class="mark-card mark-auto" style="grid-column: 1 / -1;">
+    <h4>Automatic marks — set by Vim itself</h4>
+    <p>These are always available without any setup. They are among the most useful marks in daily editing.</p>
+  </div>
+</div>
+
+<table>
+  <tr><th>Mark</th><th>Jump command</th><th>What it records</th></tr>
+  <tr><td><code>.</code></td><td><code>'.</code> or <code>`.</code></td><td>Position of the <strong>last change</strong> made to the file</td></tr>
+  <tr><td><code>`</code></td><td><code>``</code></td><td>Position <strong>before the last jump</strong> (a single backtick typed twice)</td></tr>
+  <tr><td><code>'</code></td><td><code>''</code></td><td>Line of the <strong>last jump</strong> (two single quotes)</td></tr>
+  <tr><td><code>[</code></td><td><code>'[</code></td><td>Start of the <strong>last changed or yanked text</strong></td></tr>
+  <tr><td><code>]</code></td><td><code>']</code></td><td>End of the <strong>last changed or yanked text</strong></td></tr>
+  <tr><td><code>&lt;</code></td><td><code>'&lt;</code></td><td>Start of the <strong>last Visual selection</strong></td></tr>
+  <tr><td><code>&gt;</code></td><td><code>'&gt;</code></td><td>End of the <strong>last Visual selection</strong></td></tr>
+  <tr><td><code>^</code></td><td><code>'^</code></td><td>Position where <strong>Insert mode was last exited</strong></td></tr>
+</table>
+
+<div class="note">
+  <strong>The dot mark <code>'.</code> is invaluable.</strong> After making an edit anywhere in the file — even after extensive navigation away — <code>`.</code> takes you back to the exact character you last changed. No need to remember line numbers. This is one of the first automatic marks to build into muscle memory.
+</div>
+
+<h3>The special <code>``</code> mark — jump back</h3>
+
+<p>The double backtick <code>``</code> (or double single quote <code>''</code> for line-level) is your instant "go back" command. Any time Vim performs a large jump — <code>G</code>, <code>gg</code>, <code>/{search}</code>, <code>:{line}</code>, a mark jump — it records your position before the jump. Pressing <code>``</code> returns you there.</p>
+
+<pre><span class="cmd">G</span>        <span class="cm"># jump to end of file</span>
+<span class="st">``</span>       <span class="cm"># jump back to where you were before pressing G</span>
+<span class="st">``</span>       <span class="cm"># jump forward again (toggles between the two positions)</span></pre>
+
+<p>This toggle behaviour — <code>``</code> bouncing between two locations — is extremely useful when comparing two distant parts of a file.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Managing Marks</h2>
+
+<h3>Viewing all marks</h3>
+
+<pre><span class="kw">:</span><span class="cmd">marks</span>          <span class="cm"># list all marks and their positions</span>
+<span class="kw">:</span><span class="cmd">marks abc</span>      <span class="cm"># list only marks a, b, and c</span></pre>
+
+<p>The output shows the mark letter, the line number, the column, and a snippet of the text at that position:</p>
+
+<pre><span class="out"> mark line  col file/text
+  'a    42    8 function processOrder(id) {
+  'B   103    0 ~/projects/config.yaml
+  '.    28   15 const result = calculateTotal(items)
+  ''   100    0 // End of configuration section</span></pre>
+
+<h3>Deleting marks</h3>
+
+<pre><span class="kw">:</span><span class="cmd">delmarks a</span>      <span class="cm"># delete mark 'a'</span>
+<span class="kw">:</span><span class="cmd">delmarks a-d</span>    <span class="cm"># delete marks a, b, c, and d</span>
+<span class="kw">:</span><span class="cmd">delmarks!</span>       <span class="cm"># delete all lowercase marks in the current buffer</span></pre>
+
+<h3>Using marks with operators</h3>
+
+<p>One of the most powerful and underused applications of marks: using them as <em>motion endpoints</em> with operators. Any operator (<code>d</code>, <code>y</code>, <code>c</code>, etc.) can take a mark as its motion target:</p>
+
+<pre><span class="cm"># Yank from current position to mark 'a':</span>
+<span class="cmd">y</span><span class="st">`a</span>      <span class="cm"># yank to exact position of mark a</span>
+<span class="cmd">y</span><span class="st">'a</span>      <span class="cm"># yank to start of line containing mark a (linewise)</span>
+
+<span class="cm"># Delete from current line to mark 'b':</span>
+<span class="cmd">d</span><span class="st">'b</span>
+
+<span class="cm"># Classic pattern: mark the start of a block, move to the end, operate:</span>
+<span class="cmd">ma</span>           <span class="cm"># mark the start of a function</span>
+<span class="kw">/</span><span class="st">^}</span>          <span class="cm"># search for the closing brace on its own line</span>
+<span class="cmd">d</span><span class="st">'a</span>          <span class="cm"># delete everything from mark 'a' to here</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Jump List</h2>
+
+<p>Marks are for positions you <em>explicitly</em> choose to remember. The jump list is different — it is an automatic record of every "large" movement you make, maintained by Vim without any action on your part.</p>
+
+<h3>What counts as a jump?</h3>
+
+<p>Not every cursor movement is recorded. Vim records a jump when you use:</p>
+
+<ul>
+  <li>File-level navigation: <code>G</code>, <code>gg</code>, <code>{n}G</code>, <code>:{n}</code></li>
+  <li>Search: <code>/pattern</code>, <code>?pattern</code>, <code>n</code>, <code>N</code>, <code>*</code>, <code>#</code></li>
+  <li>Mark jumps: <code>'a</code>, <code>`a</code></li>
+  <li>Paragraph/sentence jumps: <code>{</code>, <code>}</code>, <code>(</code>, <code>)</code></li>
+  <li>Opening a file: <code>:e</code>, <code>gf</code></li>
+</ul>
+
+<p>Character movement (HJKL, <code>w</code>, <code>b</code>, <code>e</code>) does <em>not</em> create jump entries.</p>
+
+<h3>Navigating the jump list</h3>
+
+<table>
+  <tr><th>Command</th><th>Action</th></tr>
+  <tr><td><code>Ctrl+O</code></td><td>Go to the <strong>older</strong> (previous) position in the jump list — jump backward through history</td></tr>
+  <tr><td><code>Ctrl+I</code></td><td>Go to the <strong>newer</strong> (next) position in the jump list — jump forward through history</td></tr>
+  <tr><td><code>:jumps</code></td><td>Display the complete jump history list</td></tr>
+</table>
+
+<pre><span class="cm"># Example session — the jump list builds up automatically:</span>
+<span class="kw">:</span><span class="cmd">100</span>        <span class="cm"># jump to line 100 (recorded)</span>
+<span class="kw">/</span><span class="st">function</span>   <span class="cm"># search for "function" (recorded)</span>
+<span class="cmd">G</span>           <span class="cm"># jump to end of file (recorded)</span>
+<span class="cmd">Ctrl+O</span>      <span class="cm"># back to where /function landed</span>
+<span class="cmd">Ctrl+O</span>      <span class="cm"># back to line 100</span>
+<span class="cmd">Ctrl+I</span>      <span class="cm"># forward to /function result again</span></pre>
+
+<div class="note">
+  <strong>Ctrl+O / Ctrl+I work across files.</strong> If you jump to a different file with <code>:e</code> or <code>gf</code> (go to file under cursor), Ctrl+O will take you back to the previous file at the position you left. This makes the jump list a cross-file navigation history, complementing global marks.
+</div>
+
+<h3>Viewing the jump list</h3>
+
+<pre><span class="kw">:</span><span class="cmd">jumps</span></pre>
+
+<pre><span class="out"> jump line  col file/text
+   4   340    0 function processOrder(id) {
+   3   100    0 // Configuration section
+   2    12    4 const BASE_URL = "https://...
+   1   580   12 function validateResult(x) {
+&gt;  0   340    0 function processOrder(id) {</span></pre>
+
+<p>The <code>&gt;</code> shows your current position in the list. Numbers on the left show how many <code>Ctrl+O</code> presses are needed to reach that entry.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Marks in a Multi-File Workflow</h2>
+
+<p>Global marks (A–Z) deserve a dedicated example because they fundamentally change how you work with projects containing multiple files.</p>
+
+<div class="workflow-box">
+  <h4>Workflow — jumping between project files with global marks</h4>
+  <div class="workflow-step">
+    <span class="step-num">1</span>
+    <span class="step-cmd">vim app.py</span>
+    <span class="step-desc">Open your main application file.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">2</span>
+    <span class="step-cmd">mA</span>
+    <span class="step-desc">Set global mark <code>A</code> here — "this is my main entry point".</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">3</span>
+    <span class="step-cmd">:e config.yaml</span>
+    <span class="step-desc">Switch to the config file.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">4</span>
+    <span class="step-cmd">mC</span>
+    <span class="step-desc">Set global mark <code>C</code> here — "this is the config file".</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">5</span>
+    <span class="step-cmd">:e tests/test_app.py</span>
+    <span class="step-desc">Switch to the test file.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">6</span>
+    <span class="step-cmd">mT</span>
+    <span class="step-desc">Set global mark <code>T</code> — "this is the test file".</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">7</span>
+    <span class="step-cmd">'A</span>
+    <span class="step-desc">Jump instantly back to app.py at the marked position — no <code>:e</code> needed.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">8</span>
+    <span class="step-cmd">'C  /  'T</span>
+    <span class="step-desc">Toggle freely between config and tests. These marks persist across sessions too.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Editing Workflow with Marks</h2>
+
+<p>Here is a realistic scenario that ties together marks, the jump list, and the editing commands from earlier chapters.</p>
+
+<h3>Editing a Markdown document with a table of contents</h3>
+
+<p>Suppose you have a long Markdown file where the table of contents at the top lists section headers, and you want to add content under each header. Marks make this vastly more efficient than scrolling back and forth:</p>
+
+<div class="workflow-box">
+  <h4>Workflow — table of contents to section content</h4>
+  <div class="workflow-step">
+    <span class="step-num">1</span>
+    <span class="step-cmd">gg / mT</span>
+    <span class="step-desc">Go to the top of the file and set mark <code>T</code> on the table of contents — your reference point.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">2</span>
+    <span class="step-cmd">'T + yy</span>
+    <span class="step-desc">Return to the TOC and yank a chapter title line you want to work on next.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">3</span>
+    <span class="step-cmd">/^## Chapter 2</span>
+    <span class="step-desc">Search for the corresponding section heading in the body of the document.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">4</span>
+    <span class="step-cmd">ms</span>
+    <span class="step-desc">Set mark <code>s</code> here — "this is the section I'm currently writing".</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">5</span>
+    <span class="step-cmd">o + (type content)</span>
+    <span class="step-desc">Open a new line below the heading and write the section content.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">6</span>
+    <span class="step-cmd">Esc / 'T</span>
+    <span class="step-desc">Finished writing? Jump back to the TOC instantly to pick the next section.</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">7</span>
+    <span class="step-cmd">`. (backtick-dot)</span>
+    <span class="step-desc">At any point, jump back to the exact character of the last edit — even if you have navigated far away.</span>
+  </div>
+</div>
+
+<h3>Navigating a large file by line number with marks</h3>
+
+<pre><span class="cm"># Sherlock.txt navigation with marks:</span>
+<span class="kw">:</span><span class="cmd">20</span>       <span class="cm"># jump to line 20</span>
+<span class="cmd">ms</span>        <span class="cm"># mark it as 's' (start of interesting section)</span>
+<span class="kw">:</span><span class="cmd">100</span>      <span class="cm"># jump to line 100</span>
+<span class="cmd">me</span>        <span class="cm"># mark it as 'e' (end of section)</span>
+
+<span class="cm"># Now operate between the two marks:</span>
+<span class="st">'s</span>        <span class="cm"># jump to mark s</span>
+<span class="cmd">y</span><span class="st">'e</span>       <span class="cm"># yank from here to mark e (linewise — whole lines)</span>
+<span class="cmd">G</span>         <span class="cm"># go to end of file</span>
+<span class="cmd">p</span>         <span class="cm"># paste the copied section at the end</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Commands Introduced in This Chapter</h2>
+
+<div class="cmd-ref">
+  <h4>Chapter 5 — Command Reference</h4>
+
+  <div class="cmd-section">Setting marks</div>
+  <div class="cmd-row"><span class="cmd-key">m{a-z}</span><span class="cmd-desc">Set a local mark (current buffer only)</span></div>
+  <div class="cmd-row"><span class="cmd-key">m{A-Z}</span><span class="cmd-desc">Set a global mark (works across files, persists across sessions)</span></div>
+
+  <div class="cmd-section">Jumping to marks</div>
+  <div class="cmd-row"><span class="cmd-key">'{mark}</span><span class="cmd-desc">Jump to the <strong>start of the line</strong> containing the mark</span></div>
+  <div class="cmd-row"><span class="cmd-key">`{mark}</span><span class="cmd-desc">Jump to the <strong>exact position</strong> (line and column) of the mark</span></div>
+  <div class="cmd-row"><span class="cmd-key">''</span><span class="cmd-desc">Jump back to line of last jump (toggle between two lines)</span></div>
+  <div class="cmd-row"><span class="cmd-key">``</span><span class="cmd-desc">Jump back to exact position before last large jump (toggle)</span></div>
+
+  <div class="cmd-section">Automatic marks</div>
+  <div class="cmd-row"><span class="cmd-key">`. (backtick-dot)</span><span class="cmd-desc">Jump to exact position of last change</span></div>
+  <div class="cmd-row"><span class="cmd-key">'.</span><span class="cmd-desc">Jump to line of last change</span></div>
+  <div class="cmd-row"><span class="cmd-key">`[ and `]</span><span class="cmd-desc">Start and end of last changed or yanked text</span></div>
+  <div class="cmd-row"><span class="cmd-key">`&lt; and `&gt;</span><span class="cmd-desc">Start and end of last Visual selection</span></div>
+  <div class="cmd-row"><span class="cmd-key">`^</span><span class="cmd-desc">Position where Insert mode was last exited</span></div>
+
+  <div class="cmd-section">Managing marks</div>
+  <div class="cmd-row"><span class="cmd-key">:marks</span><span class="cmd-desc">List all current marks</span></div>
+  <div class="cmd-row"><span class="cmd-key">:marks {letters}</span><span class="cmd-desc">List specific marks (e.g. <code>:marks abc</code>)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:delmarks {letter}</span><span class="cmd-desc">Delete a named mark</span></div>
+  <div class="cmd-row"><span class="cmd-key">:delmarks!</span><span class="cmd-desc">Delete all lowercase marks in the current buffer</span></div>
+
+  <div class="cmd-section">Marks as operator targets</div>
+  <div class="cmd-row"><span class="cmd-key">y`{mark}</span><span class="cmd-desc">Yank from cursor to exact position of mark</span></div>
+  <div class="cmd-row"><span class="cmd-key">d'{mark}</span><span class="cmd-desc">Delete from cursor to line of mark (linewise)</span></div>
+  <div class="cmd-row"><span class="cmd-key">c`{mark}</span><span class="cmd-desc">Change from cursor to exact position of mark</span></div>
+
+  <div class="cmd-section">The jump list</div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+O</span><span class="cmd-desc">Go to older (previous) position in jump list</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+I</span><span class="cmd-desc">Go to newer (next) position in jump list</span></div>
+  <div class="cmd-row"><span class="cmd-key">:jumps</span><span class="cmd-desc">Display the full jump history</span></div>
+</div>
+
+</div>

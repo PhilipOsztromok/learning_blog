@@ -1,0 +1,990 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #f97583; }
+  .st  { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw  { color: #f97583; }
+  .nu  { color: #ffab70; }
+  .sh  { color: #85e89d; }
+  .vr  { color: #ffab70; }
+  .op  { color: #e1e4e8; }
+  .er  { color: #f97583; font-weight: bold; }
+  .fn  { color: #b392f0; }
+  .rx  { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 8 — Advanced Testing with BATS</h1>
+<p>BATS (Bash Automated Testing System) turns shell scripts into first-class
+testable software. Where ad-hoc <span class="inline-code">if</span> checks give you
+fragile one-off verification, BATS gives you structured test suites with TAP
+output, fixtures, mocking, and CI integration. This chapter covers the full
+depth of BATS: test organisation, lifecycle hooks, filesystem fixtures, command
+mocking, testing scripts that modify the system, and wiring everything into a
+pipeline.</p>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>1 — BATS Architecture and Installation</h2>
+
+<p>Modern BATS is split across three repositories. You need all three for a
+complete setup.</p>
+
+<table>
+  <tr><th>Package</th><th>Provides</th></tr>
+  <tr><td><code>bats-core</code></td><td>The test runner, <code>@test</code> syntax, TAP output</td></tr>
+  <tr><td><code>bats-support</code></td><td>Helper functions: <code>fail</code>, <code>assert</code> output formatting</td></tr>
+  <tr><td><code>bats-assert</code></td><td>Assertion library: <code>assert_output</code>, <code>assert_success</code>, etc.</td></tr>
+  <tr><td><code>bats-file</code></td><td>Filesystem assertions: <code>assert_file_exists</code>, <code>assert_dir_empty</code>, etc.</td></tr>
+</table>
+
+<pre><span class="cm"># Install via git submodules (recommended for project-local install)</span>
+<span class="cmd">git</span> submodule add https://github.com/bats-core/bats-core    test/bats
+<span class="cmd">git</span> submodule add https://github.com/bats-core/bats-support  test/test_helper/bats-support
+<span class="cmd">git</span> submodule add https://github.com/bats-core/bats-assert   test/test_helper/bats-assert
+<span class="cmd">git</span> submodule add https://github.com/bats-core/bats-file     test/test_helper/bats-file
+
+<span class="cm"># Or via npm (if Node is available)</span>
+<span class="cmd">npm</span> install <span class="fl">--save-dev</span> bats
+
+<span class="cm"># Or via Homebrew / apt</span>
+<span class="cmd">brew</span> install bats-core
+<span class="cmd">apt-get</span> install bats
+
+<span class="cm"># Run a test file</span>
+<span class="cmd">bats</span> test/my_test.bats
+
+<span class="cm"># Run all .bats files recursively</span>
+<span class="cmd">bats</span> <span class="fl">--recursive</span> test/
+
+<span class="cm"># Parallel execution — run test files in parallel</span>
+<span class="cmd">bats</span> <span class="fl">--jobs</span> <span class="nu">4</span> <span class="fl">--recursive</span> test/
+
+<span class="cm"># Output formats</span>
+<span class="cmd">bats</span> <span class="fl">--formatter</span> tap        test/   <span class="cm"># TAP (default)</span>
+<span class="cmd">bats</span> <span class="fl">--formatter</span> pretty     test/   <span class="cm"># coloured human output</span>
+<span class="cmd">bats</span> <span class="fl">--formatter</span> junit      test/   <span class="cm"># JUnit XML for CI systems</span>
+<span class="cmd">bats</span> <span class="fl">--report-formatter</span> junit <span class="fl">--output</span> <span class="pth">reports/</span> test/</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>2 — Test File Structure</h2>
+
+<pre><span class="sh">#!/usr/bin/env bats</span>
+<span class="cm"># test/mylib.bats</span>
+
+<span class="cm"># Load helper libraries</span>
+<span class="fn">setup_file</span>() {
+  <span class="cm"># Runs ONCE before the first test in this file</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-assert/load'</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-file/load'</span>
+
+  <span class="cm"># Make the script under test available</span>
+  <span class="kw">export</span> <span class="vr">SCRIPT</span><span class="op">=</span><span class="st">"${BATS_TEST_DIRNAME}/../bin/myapp.sh"</span>
+  <span class="cm"># BATS_TEST_DIRNAME is the directory containing this .bats file</span>
+}
+
+<span class="fn">teardown_file</span>() {
+  <span class="cm"># Runs ONCE after the last test in this file</span>
+  <span class="cm"># Good for: removing shared DB state, stopping a server, etc.</span>
+  <span class="op">:</span>
+}
+
+<span class="fn">setup</span>() {
+  <span class="cm"># Runs before EVERY individual test</span>
+  <span class="cm"># BATS_TEST_TMPDIR is a per-test temp directory (auto-cleaned)</span>
+  <span class="vr">TEST_HOME</span><span class="op">=</span><span class="st">"${BATS_TEST_TMPDIR}/home"</span>
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$TEST_HOME</span>"</span>
+}
+
+<span class="fn">teardown</span>() {
+  <span class="cm"># Runs after EVERY individual test — even if the test failed</span>
+  <span class="cm"># BATS_TEST_TMPDIR is automatically removed after teardown</span>
+  <span class="op">:</span>
+}
+
+<span class="cm"># A basic test</span>
+<span class="rx">@test</span> <span class="st">"myapp exits 0 with valid input"</span> {
+  <span class="cmd">run</span> <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="fl">--input</span> <span class="st">"hello"</span>
+  <span class="fn">assert_success</span>
+}
+
+<span class="rx">@test</span> <span class="st">"myapp prints expected output"</span> {
+  <span class="cmd">run</span> <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="fl">--input</span> <span class="st">"hello"</span>
+  <span class="fn">assert_output</span> <span class="st">"HELLO"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"myapp exits 1 with empty input"</span> {
+  <span class="cmd">run</span> <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="fl">--input</span> <span class="st">""</span>
+  <span class="fn">assert_failure</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"input required"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>3 — The <code>run</code> Command and Assertions</h2>
+
+<p>The <span class="inline-code">run</span> command executes a command and captures its
+output and exit status without causing the test to fail. The results land in three
+variables: <span class="inline-code">$status</span>,
+<span class="inline-code">$output</span>, and
+<span class="inline-code">$lines</span> (array).</p>
+
+<pre><span class="rx">@test</span> <span class="st">"run captures status and output"</span> {
+  <span class="cmd">run</span> <span class="cmd">printf</span> <span class="st">'%s\n%s\n'</span> <span class="st">"line one"</span> <span class="st">"line two"</span>
+
+  <span class="cm"># $status — numeric exit code</span>
+  [ <span class="st">"<span class="vr">$status</span>"</span> <span class="fl">-eq</span> <span class="nu">0</span> ]
+
+  <span class="cm"># $output — full stdout as a single string</span>
+  [ <span class="st">"<span class="vr">$output</span>"</span> <span class="op">=</span> <span class="st">"line one</span>
+<span class="st">line two"</span> ]
+
+  <span class="cm"># $lines — indexed array of output lines</span>
+  [ <span class="st">"${lines[0]}"</span> <span class="op">=</span> <span class="st">"line one"</span> ]
+  [ <span class="st">"${lines[1]}"</span> <span class="op">=</span> <span class="st">"line two"</span> ]
+}
+
+<span class="cm"># run --separate-stderr (bats-core 1.5+): captures stdout and stderr separately</span>
+<span class="rx">@test</span> <span class="st">"stderr is separate from stdout"</span> {
+  <span class="cmd">run</span> <span class="fl">--separate-stderr</span> <span class="cmd">bash</span> <span class="fl">-c</span> <span class="st">'echo out; echo err >&2'</span>
+  <span class="fn">assert_output</span> <span class="st">"out"</span>
+  <span class="fn">assert_stderr</span> <span class="st">"err"</span>
+}
+
+<span class="cm"># bats-assert assertions</span>
+<span class="rx">@test</span> <span class="st">"assert_output variants"</span> {
+  <span class="cmd">run</span> <span class="cmd">echo</span> <span class="st">"The quick brown fox"</span>
+  <span class="fn">assert_output</span>                         <span class="cm"># non-empty</span>
+  <span class="fn">assert_output</span> <span class="st">"The quick brown fox"</span>    <span class="cm"># exact match</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"brown"</span>        <span class="cm"># substring</span>
+  <span class="fn">assert_output</span> <span class="fl">--regexp</span>  <span class="st">'quick .* fox'</span> <span class="cm"># ERE regex</span>
+  <span class="fn">refute_output</span> <span class="fl">--partial</span> <span class="st">"cat"</span>          <span class="cm"># must NOT contain</span>
+}
+
+<span class="rx">@test</span> <span class="st">"assert_line checks individual lines"</span> {
+  <span class="cmd">run</span> <span class="cmd">printf</span> <span class="st">'alpha\nbeta\ngamma\n'</span>
+  <span class="fn">assert_line</span> <span class="st">"alpha"</span>                    <span class="cm"># any line equals "alpha"</span>
+  <span class="fn">assert_line</span> <span class="fl">--index</span> <span class="nu">1</span> <span class="st">"beta"</span>           <span class="cm"># line[1] == "beta"</span>
+  <span class="fn">assert_line</span> <span class="fl">--partial</span> <span class="st">"amm"</span>            <span class="cm"># any line contains "amm"</span>
+  <span class="fn">refute_line</span> <span class="st">"delta"</span>                    <span class="cm"># "delta" must not appear</span>
+}
+
+<span class="cm"># assert_equal, assert_not_equal — direct value comparison</span>
+<span class="rx">@test</span> <span class="st">"assert_equal"</span> {
+  <span class="kw">local</span> <span class="vr">result</span>
+  <span class="vr">result</span><span class="op">=</span>$(<span class="cmd">echo</span> <span class="st">"hello"</span> <span class="op">|</span> <span class="cmd">tr</span> <span class="st">'a-z'</span> <span class="st">'A-Z'</span>)
+  <span class="fn">assert_equal</span> <span class="st">"<span class="vr">$result</span>"</span> <span class="st">"HELLO"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>4 — Fixtures and Test Isolation</h2>
+
+<p>BATS provides per-test isolation through
+<span class="inline-code">$BATS_TEST_TMPDIR</span> — a unique temporary directory
+created before each test and deleted after its teardown. Build all test filesystem
+state inside it.</p>
+
+<pre><span class="fn">setup</span>() {
+  <span class="kw">load</span> <span class="st">'test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-assert/load'</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-file/load'</span>
+
+  <span class="cm"># Build a reproducible directory structure for each test</span>
+  <span class="vr">FIXTURE_DIR</span><span class="op">=</span><span class="st">"${BATS_TEST_TMPDIR}/fixture"</span>
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>"</span>/{src,dest,logs}
+
+  <span class="cm"># Populate with known-content files</span>
+  <span class="cmd">printf</span> <span class="st">'line1\nline2\nline3\n'</span> <span class="op">></span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>/src/input.txt"</span>
+  <span class="cmd">printf</span> <span class="st">'ERROR: disk full\nINFO: started\nWARN: retry\n'</span> \
+    <span class="op">></span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>/logs/app.log"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"script copies file to dest"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/copy_files.sh</span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>/src"</span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>/dest"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_file_exists</span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>/dest/input.txt"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"script leaves source intact"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/copy_files.sh</span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>/src"</span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>/dest"</span>
+  <span class="fn">assert_file_exists</span>     <span class="st">"<span class="vr">$FIXTURE_DIR</span>/src/input.txt"</span>
+  <span class="fn">assert_file_not_empty</span>  <span class="st">"<span class="vr">$FIXTURE_DIR</span>/src/input.txt"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"log parser counts errors"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/parse_log.sh</span> <span class="st">"<span class="vr">$FIXTURE_DIR</span>/logs/app.log"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"errors: 1"</span>
+}</pre>
+
+<h3>Static fixture files</h3>
+<pre><span class="cm"># Store static fixture files alongside your tests
+# Conventional layout:</span>
+<span class="cm">#   test/
+#   ├── fixtures/
+#   │   ├── config_valid.conf
+#   │   ├── config_malformed.conf
+#   │   └── sample_data.csv
+#   └── myapp_test.bats</span>
+
+<span class="fn">setup</span>() {
+  <span class="cm"># BATS_TEST_DIRNAME always points to the directory of the .bats file</span>
+  <span class="vr">FIXTURES</span><span class="op">=</span><span class="st">"${BATS_TEST_DIRNAME}/fixtures"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"accepts valid config"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/myapp.sh</span> <span class="fl">--config</span> <span class="st">"<span class="vr">$FIXTURES</span>/config_valid.conf"</span>
+  <span class="fn">assert_success</span>
+}
+
+<span class="rx">@test</span> <span class="st">"rejects malformed config"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/myapp.sh</span> <span class="fl">--config</span> <span class="st">"<span class="vr">$FIXTURES</span>/config_malformed.conf"</span>
+  <span class="fn">assert_failure</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"invalid config"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>5 — Mocking Commands with PATH Manipulation</h2>
+
+<p>The cleanest way to mock an external command in BATS is to create a fake
+executable on a PATH that is prepended for the duration of the test. The real
+command is never called; your mock controls what happens.</p>
+
+<pre><span class="fn">setup</span>() {
+  <span class="kw">load</span> <span class="st">'test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-assert/load'</span>
+
+  <span class="cm"># Create a directory for mock executables, prepend to PATH</span>
+  <span class="vr">MOCK_DIR</span><span class="op">=</span><span class="st">"${BATS_TEST_TMPDIR}/mocks"</span>
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$MOCK_DIR</span>"</span>
+  <span class="kw">export</span> <span class="vr">PATH</span><span class="op">=</span><span class="st">"<span class="vr">$MOCK_DIR</span>:<span class="vr">$PATH</span>"</span>
+}
+
+<span class="cm"># Helper: create a mock that always succeeds and records its arguments</span>
+<span class="fn">make_mock</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="kw">local</span> <span class="vr">script</span><span class="op">=</span><span class="st">"${MOCK_DIR}/${name}"</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash\nprintf "%%s\n" "$*" >> "%s/%s.calls"\n%s\n'</span> \
+    <span class="st">"<span class="vr">$MOCK_DIR</span>"</span> <span class="st">"<span class="vr">$name</span>"</span> <span class="st">"${*:-exit 0}"</span> <span class="op">></span> <span class="st">"<span class="vr">$script</span>"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$script</span>"</span>
+}
+
+<span class="cm"># Helper: read recorded calls</span>
+<span class="fn">mock_calls</span>() {
+  <span class="cmd">cat</span> <span class="st">"${MOCK_DIR}/${1}.calls"</span> <span class="nu">2</span><span class="op">>/dev/null</span>
+}
+
+<span class="cm"># Helper: count how many times a command was called</span>
+<span class="fn">mock_call_count</span>() {
+  <span class="cmd">wc</span> <span class="fl">-l</span> <span class="op"><</span> <span class="st">"${MOCK_DIR}/${1}.calls"</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">||</span> <span class="cmd">echo</span> <span class="nu">0</span>
+}
+
+<span class="rx">@test</span> <span class="st">"deploy script calls systemctl reload"</span> {
+  <span class="fn">make_mock</span> systemctl
+  <span class="fn">make_mock</span> rsync
+
+  <span class="cmd">run</span> <span class="pth">../bin/deploy.sh</span> staging
+
+  <span class="fn">assert_success</span>
+  <span class="cm"># Verify rsync was called exactly once</span>
+  <span class="fn">assert_equal</span> "$(<span class="fn">mock_call_count</span> rsync)" <span class="st">"1"</span>
+  <span class="cm"># Verify systemctl was called with "reload nginx"</span>
+  <span class="cmd">run</span> <span class="fn">mock_calls</span> systemctl
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"reload nginx"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"deploy script handles rsync failure"</span> {
+  <span class="cm"># Mock rsync to fail</span>
+  <span class="fn">make_mock</span> rsync <span class="st">'exit 1'</span>
+  <span class="fn">make_mock</span> systemctl
+
+  <span class="cmd">run</span> <span class="pth">../bin/deploy.sh</span> staging
+  <span class="fn">assert_failure</span>
+  <span class="cm"># systemctl should NOT have been called after rsync failure</span>
+  <span class="fn">assert_equal</span> "$(<span class="fn">mock_call_count</span> systemctl)" <span class="st">"0"</span>
+}</pre>
+
+<h3>Mocking with output</h3>
+<pre><span class="cm"># Mock that prints specific output (useful for testing command substitutions)</span>
+<span class="fn">make_mock_output</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">output</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">exit_code</span><span class="op">=</span><span class="st">"${3:-0}"</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash\nprintf "%%s\n" %s\nexit %d\n'</span> \
+    "$(printf '%q' "<span class="vr">$output</span>")" <span class="st">"<span class="vr">$exit_code</span>"</span> <span class="op">></span> <span class="st">"${MOCK_DIR}/${name}"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"${MOCK_DIR}/${name}"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"script uses hostname in output"</span> {
+  <span class="fn">make_mock_output</span> hostname <span class="st">"testserver-01"</span>
+
+  <span class="cmd">run</span> <span class="pth">../bin/status.sh</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"testserver-01"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"script handles curl failure gracefully"</span> {
+  <span class="fn">make_mock_output</span> curl <span class="st">"Connection refused"</span> <span class="nu">7</span>   <span class="cm"># exit 7 = curl connect fail</span>
+
+  <span class="cmd">run</span> <span class="pth">../bin/health_check.sh</span>
+  <span class="fn">assert_failure</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"health check failed"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>6 — Testing Scripts That Modify the Filesystem</h2>
+
+<pre><span class="fn">setup</span>() {
+  <span class="kw">load</span> <span class="st">'test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-assert/load'</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-file/load'</span>
+
+  <span class="cm"># Every test gets its own isolated filesystem</span>
+  <span class="vr">FS_ROOT</span><span class="op">=</span><span class="st">"${BATS_TEST_TMPDIR}/fs"</span>
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$FS_ROOT</span>"</span>/{etc,var/log,home/alice,backup}
+
+  <span class="cm"># Point the script's config at our fake root</span>
+  <span class="kw">export</span> <span class="vr">APP_ROOT</span><span class="op">=</span><span class="st">"<span class="vr">$FS_ROOT</span>"</span>
+  <span class="kw">export</span> <span class="vr">CONFIG_DIR</span><span class="op">=</span><span class="st">"<span class="vr">$FS_ROOT</span>/etc"</span>
+  <span class="kw">export</span> <span class="vr">LOG_DIR</span><span class="op">=</span><span class="st">"<span class="vr">$FS_ROOT</span>/var/log"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"install creates config file with correct permissions"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/install.sh</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_file_exists</span>       <span class="st">"<span class="vr">$FS_ROOT</span>/etc/myapp.conf"</span>
+  <span class="fn">assert_file_permissions</span>  <span class="st">"<span class="vr">$FS_ROOT</span>/etc/myapp.conf"</span> <span class="nu">600</span>
+  <span class="fn">assert_file_owner</span>        <span class="st">"<span class="vr">$FS_ROOT</span>/etc/myapp.conf"</span> <span class="st">"<span class="vr">$USER</span>"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"backup script creates archive in backup dir"</span> {
+  <span class="cm"># Seed data to back up</span>
+  <span class="cmd">printf</span> <span class="st">'important data\n'</span> <span class="op">></span> <span class="st">"<span class="vr">$FS_ROOT</span>/var/log/app.log"</span>
+
+  <span class="cmd">run</span> <span class="pth">../bin/backup.sh</span> <span class="st">"<span class="vr">$FS_ROOT</span>/var/log"</span> <span class="st">"<span class="vr">$FS_ROOT</span>/backup"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_dir_not_empty</span> <span class="st">"<span class="vr">$FS_ROOT</span>/backup"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"cleanup script removes files older than 30 days"</span> {
+  <span class="cm"># Create a file with a known old timestamp</span>
+  <span class="kw">local</span> <span class="vr">old_file</span><span class="op">=</span><span class="st">"<span class="vr">$FS_ROOT</span>/var/log/old.log"</span>
+  <span class="kw">local</span> <span class="vr">new_file</span><span class="op">=</span><span class="st">"<span class="vr">$FS_ROOT</span>/var/log/new.log"</span>
+  <span class="cmd">touch</span> <span class="st">"<span class="vr">$old_file</span>"</span> <span class="st">"<span class="vr">$new_file</span>"</span>
+  <span class="cm"># Back-date old_file by 31 days using touch -d</span>
+  <span class="cmd">touch</span> <span class="fl">-d</span> <span class="st">'31 days ago'</span> <span class="st">"<span class="vr">$old_file</span>"</span>
+
+  <span class="cmd">run</span> <span class="pth">../bin/cleanup.sh</span> <span class="st">"<span class="vr">$FS_ROOT</span>/var/log"</span> <span class="fl">--days</span> <span class="nu">30</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_file_not_exist</span>  <span class="st">"<span class="vr">$old_file</span>"</span>
+  <span class="fn">assert_file_exists</span>     <span class="st">"<span class="vr">$new_file</span>"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"cleanup in dry-run mode does not delete anything"</span> {
+  <span class="kw">local</span> <span class="vr">old_file</span><span class="op">=</span><span class="st">"<span class="vr">$FS_ROOT</span>/var/log/old.log"</span>
+  <span class="cmd">touch</span> <span class="st">"<span class="vr">$old_file</span>"</span>
+  <span class="cmd">touch</span> <span class="fl">-d</span> <span class="st">'31 days ago'</span> <span class="st">"<span class="vr">$old_file</span>"</span>
+
+  <span class="cmd">run</span> <span class="pth">../bin/cleanup.sh</span> <span class="st">"<span class="vr">$FS_ROOT</span>/var/log"</span> <span class="fl">--days</span> <span class="nu">30</span> <span class="fl">--dry-run</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_file_exists</span>  <span class="st">"<span class="vr">$old_file</span>"</span>   <span class="cm"># must still be there</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"would delete"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>7 — Advanced Mocking Techniques</h2>
+
+<h3>Mocking functions within a sourced library</h3>
+<pre><span class="cm"># When testing a library (not a script), source it and override functions</span>
+<span class="fn">setup</span>() {
+  <span class="kw">load</span> <span class="st">'test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'test_helper/bats-assert/load'</span>
+  <span class="cm"># Source the library under test</span>
+  <span class="kw">source</span> <span class="st">"${BATS_TEST_DIRNAME}/../lib/deploy_lib.sh"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"notify_slack is called on success"</span> {
+  <span class="cm"># Override the real notify_slack with a mock in the same shell</span>
+  <span class="vr">SLACK_CALLED</span><span class="op">=</span><span class="nu">0</span>
+  <span class="fn">notify_slack</span>() { (( <span class="vr">SLACK_CALLED</span>++ )) <span class="op">||</span> <span class="kw">true</span>; }
+
+  <span class="cm"># Call the function under test (which internally calls notify_slack)</span>
+  <span class="cmd">run</span> deploy_app staging
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_equal</span> <span class="st">"<span class="vr">$SLACK_CALLED</span>"</span> <span class="st">"1"</span>
+}</pre>
+
+<h3>Stateful mocks — returning different values on successive calls</h3>
+<pre><span class="rx">@test</span> <span class="st">"retry logic calls command up to 3 times"</span> {
+  <span class="cm"># First two calls fail, third succeeds</span>
+  <span class="vr">CALL_COUNT</span><span class="op">=</span><span class="nu">0</span>
+  <span class="fn">flaky_service</span>() {
+    (( <span class="vr">CALL_COUNT</span>++ )) <span class="op">||</span> <span class="kw">true</span>
+    (( <span class="vr">CALL_COUNT</span> <span class="op"><</span> <span class="nu">3</span> )) <span class="op">&&</span> <span class="kw">return</span> <span class="nu">1</span>   <span class="cm"># fail first 2 times</span>
+    <span class="kw">return</span> <span class="nu">0</span>
+  }
+
+  <span class="cmd">run</span> retry_until_success <span class="nu">5</span> flaky_service
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_equal</span> <span class="st">"<span class="vr">$CALL_COUNT</span>"</span> <span class="st">"3"</span>
+}
+
+<span class="cm"># File-backed stateful mock (works for child-process mocks too)</span>
+<span class="fn">setup</span>() {
+  <span class="vr">MOCK_DIR</span><span class="op">=</span><span class="st">"${BATS_TEST_TMPDIR}/mocks"</span>
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$MOCK_DIR</span>"</span>
+  <span class="kw">export</span> <span class="vr">PATH</span><span class="op">=</span><span class="st">"<span class="vr">$MOCK_DIR</span>:<span class="vr">$PATH</span>"</span>
+  <span class="cm"># Mock that fails twice then succeeds — uses a counter file</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash
+COUNT_FILE="%s/ping.count"
+count=$(cat "$COUNT_FILE" 2>/dev/null || echo 0)
+echo $(( count + 1 )) > "$COUNT_FILE"
+(( count >= 2 )) && exit 0 || exit 1
+'</span> <span class="st">"<span class="vr">$MOCK_DIR</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$MOCK_DIR</span>/ping"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/ping"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"wait_for_host retries on ping failure"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/wait_for_host.sh</span> example.com
+  <span class="fn">assert_success</span>
+  <span class="cm"># ping should have been called 3 times (2 failures + 1 success)</span>
+  <span class="fn">assert_equal</span> "$(<span class="op"><</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/ping.count"</span>)" <span class="st">"3"</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>8 — Testing Edge Cases and Error Paths</h2>
+
+<pre><span class="cm"># Test that a script fails correctly — not just that it fails</span>
+<span class="rx">@test</span> <span class="st">"missing required argument prints usage"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/myapp.sh</span>   <span class="cm"># no args</span>
+  <span class="fn">assert_failure</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"Usage:"</span>
+  <span class="fn">assert_equal</span> <span class="st">"<span class="vr">$status</span>"</span> <span class="st">"1"</span>
+}
+
+<span class="cm"># Test specific exit codes</span>
+<span class="rx">@test</span> <span class="st">"file not found returns exit 2"</span> {
+  <span class="cmd">run</span> <span class="pth">../bin/myapp.sh</span> <span class="fl">--input</span> <span class="pth">/nonexistent/file</span>
+  <span class="fn">assert_equal</span> <span class="st">"<span class="vr">$status</span>"</span> <span class="st">"2"</span>
+}
+
+<span class="cm"># Test behaviour with unusual filenames (spaces, special chars)</span>
+<span class="rx">@test</span> <span class="st">"handles filename with spaces"</span> {
+  <span class="kw">local</span> <span class="vr">f</span><span class="op">=</span><span class="st">"<span class="vr">$BATS_TEST_TMPDIR</span>/file with spaces.txt"</span>
+  <span class="cmd">printf</span> <span class="st">'data\n'</span> <span class="op">></span> <span class="st">"<span class="vr">$f</span>"</span>
+  <span class="cmd">run</span> <span class="pth">../bin/process.sh</span> <span class="st">"<span class="vr">$f</span>"</span>
+  <span class="fn">assert_success</span>
+}
+
+<span class="rx">@test</span> <span class="st">"handles empty file"</span> {
+  <span class="kw">local</span> <span class="vr">f</span><span class="op">=</span><span class="st">"<span class="vr">$BATS_TEST_TMPDIR</span>/empty.txt"</span>
+  <span class="cmd">touch</span> <span class="st">"<span class="vr">$f</span>"</span>
+  <span class="cmd">run</span> <span class="pth">../bin/process.sh</span> <span class="st">"<span class="vr">$f</span>"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"0 lines processed"</span>
+}
+
+<span class="cm"># Skipping tests conditionally</span>
+<span class="rx">@test</span> <span class="st">"docker-based test"</span> {
+  <span class="fn">skip_if_missing</span> docker
+  <span class="cmd">run</span> <span class="pth">../bin/containerise.sh</span>
+  <span class="fn">assert_success</span>
+}
+
+<span class="cm"># skip_if_missing helper</span>
+<span class="fn">skip_if_missing</span>() {
+  <span class="cmd">command</span> <span class="fl">-v</span> <span class="st">"$1"</span> <span class="op">&>/dev/null</span> <span class="op">||</span> <span class="cmd">skip</span> <span class="st">"$1 not available"</span>
+}
+
+<span class="cm"># skip built-in — marks test as skipped rather than failed</span>
+<span class="rx">@test</span> <span class="st">"root-only operation"</span> {
+  (( <span class="vr">EUID</span> <span class="op">==</span> <span class="nu">0</span> )) <span class="op">||</span> <span class="cmd">skip</span> <span class="st">"requires root"</span>
+  <span class="cmd">run</span> <span class="pth">../bin/set_caps.sh</span>
+  <span class="fn">assert_success</span>
+}</pre>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>9 — CI/CD Integration</h2>
+
+<pre><span class="cm"># .github/workflows/test.yml</span>
+<span class="cm"># ── GitHub Actions ─────────────────────────────────────────────────</span></pre>
+<pre><span class="vr">name</span><span class="op">:</span> Tests
+<span class="vr">on</span><span class="op">:</span> [push, pull_request]
+<span class="vr">jobs</span><span class="op">:</span>
+  <span class="vr">bats</span><span class="op">:</span>
+    <span class="vr">runs-on</span><span class="op">:</span> ubuntu-latest
+    <span class="vr">steps</span><span class="op">:</span>
+      <span class="fl">-</span> <span class="vr">uses</span><span class="op">:</span> actions/checkout@v4
+        <span class="vr">with</span><span class="op">:</span>
+          <span class="vr">submodules</span><span class="op">:</span> recursive      <span class="cm"># fetch bats-* submodules</span>
+      <span class="fl">-</span> <span class="vr">name</span><span class="op">:</span> Install bats
+        <span class="vr">run</span><span class="op">:</span> <span class="st">sudo apt-get install -y bats</span>
+      <span class="fl">-</span> <span class="vr">name</span><span class="op">:</span> Run tests
+        <span class="vr">run</span><span class="op">:</span> <span class="st">bats --formatter junit --output reports/ --recursive test/</span>
+      <span class="fl">-</span> <span class="vr">name</span><span class="op">:</span> Publish results
+        <span class="vr">uses</span><span class="op">:</span> mikepenz/action-junit-report@v4
+        <span class="vr">if</span><span class="op">:</span> always()
+        <span class="vr">with</span><span class="op">:</span>
+          <span class="vr">report_paths</span><span class="op">:</span> <span class="st">'reports/*.xml'</span></pre>
+
+<pre><span class="cm"># Makefile targets for local development</span>
+<span class="vr">test</span><span class="op">:</span>
+	<span class="cmd">bats</span> <span class="fl">--recursive</span> test/
+
+<span class="vr">test-watch</span><span class="op">:</span>
+	<span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span> \
+	  <span class="cmd">inotifywait</span> <span class="fl">-qre</span> close_write bin/ lib/ test/ <span class="nu">2</span><span class="op">>/dev/null</span>; \
+	  <span class="cmd">clear</span>; <span class="cmd">bats</span> <span class="fl">--formatter</span> pretty <span class="fl">--recursive</span> test/; \
+	<span class="kw">done</span>
+
+<span class="vr">test-coverage</span><span class="op">:</span>
+	<span class="cm"># kcov is the closest thing to coverage for bash</span>
+	<span class="cmd">kcov</span> <span class="fl">--include-path</span><span class="op">=</span>bin/,lib/ coverage/ \
+	  <span class="cmd">bats</span> <span class="fl">--recursive</span> test/</pre>
+
+<div class="note">
+<strong>Recommended project layout:</strong>
+<pre style="margin:0.5em 0 0 0; background: #0d0f1a;">project/
+├── bin/                  ← scripts under test
+├── lib/                  ← sourced libraries under test
+├── test/
+│   ├── fixtures/         ← static input files
+│   ├── test_helper/      ← bats-support, bats-assert, bats-file (submodules)
+│   ├── unit/             ← tests for individual functions
+│   │   └── lib_utils.bats
+│   └── integration/      ← end-to-end script tests
+│       └── deploy.bats
+└── Makefile</pre>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Test a string utility library</h4>
+  <p>Given this library at <code>lib/strings.sh</code>:</p>
+<pre><span class="fn">str_trim</span>()  { <span class="kw">local</span> <span class="vr">s</span><span class="op">=</span><span class="st">"$1"</span>; <span class="vr">s</span><span class="op">=</span><span class="st">"${s#"${s%%[! $'\t']*}"}"</span>; <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"${s%"${s##*[! $'\t']}"}"</span>; }
+<span class="fn">str_upper</span>() { <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"${1^^}"</span>; }
+<span class="fn">str_lower</span>() { <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"${1,,}"</span>; }
+<span class="fn">str_contains</span>() { [[ <span class="st">"$1"</span> <span class="op">==</span> <span class="rx">*"$2"*</span> ]]; }
+<span class="fn">str_repeat</span>() { <span class="cmd">printf</span> <span class="st">"${1}%.0s"</span> $(seq 1 "$2"); }</pre>
+  <p>Write a complete BATS test file covering: normal cases for all five functions,
+  edge cases (empty string, single char, string that IS the needle), and at least
+  one failure case per function. Use <span class="inline-code">setup</span> to load
+  the library and helpers. Include a test for a deliberately broken behaviour — pick
+  one function to implement incorrectly, verify the test catches it, then fix it.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bats</span>
+<span class="cm"># test/unit/strings_test.bats</span>
+
+<span class="fn">setup</span>() {
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-assert/load'</span>
+  <span class="kw">source</span> <span class="st">"${BATS_TEST_DIRNAME}/../../lib/strings.sh"</span>
+}
+
+<span class="cm"># ── str_trim ──────────────────────────────────────────────────────</span>
+<span class="rx">@test</span> <span class="st">"str_trim: removes leading spaces"</span> {
+  <span class="cmd">run</span> str_trim <span class="st">"   hello"</span>
+  <span class="fn">assert_output</span> <span class="st">"hello"</span>
+}
+<span class="rx">@test</span> <span class="st">"str_trim: removes trailing spaces"</span> {
+  <span class="cmd">run</span> str_trim <span class="st">"hello   "</span>
+  <span class="fn">assert_output</span> <span class="st">"hello"</span>
+}
+<span class="rx">@test</span> <span class="st">"str_trim: removes both ends"</span> {
+  <span class="cmd">run</span> str_trim <span class="st">"  hello world  "</span>
+  <span class="fn">assert_output</span> <span class="st">"hello world"</span>
+}
+<span class="rx">@test</span> <span class="st">"str_trim: empty string returns empty"</span> {
+  <span class="cmd">run</span> str_trim <span class="st">""</span>
+  <span class="fn">assert_output</span> <span class="st">""</span>
+}
+<span class="rx">@test</span> <span class="st">"str_trim: all whitespace returns empty"</span> {
+  <span class="cmd">run</span> str_trim <span class="st">"     "</span>
+  <span class="fn">assert_output</span> <span class="st">""</span>
+}
+
+<span class="cm"># ── str_upper / str_lower ─────────────────────────────────────────</span>
+<span class="rx">@test</span> <span class="st">"str_upper: lowercases to uppercase"</span> {
+  <span class="cmd">run</span> str_upper <span class="st">"hello world"</span>
+  <span class="fn">assert_output</span> <span class="st">"HELLO WORLD"</span>
+}
+<span class="rx">@test</span> <span class="st">"str_upper: already uppercase is unchanged"</span> {
+  <span class="cmd">run</span> str_upper <span class="st">"HELLO"</span>
+  <span class="fn">assert_output</span> <span class="st">"HELLO"</span>
+}
+<span class="rx">@test</span> <span class="st">"str_lower: uppercases to lowercase"</span> {
+  <span class="cmd">run</span> str_lower <span class="st">"HELLO WORLD"</span>
+  <span class="fn">assert_output</span> <span class="st">"hello world"</span>
+}
+<span class="rx">@test</span> <span class="st">"str_lower: mixed case"</span> {
+  <span class="cmd">run</span> str_lower <span class="st">"HeLLo"</span>
+  <span class="fn">assert_output</span> <span class="st">"hello"</span>
+}
+
+<span class="cm"># ── str_contains ─────────────────────────────────────────────────</span>
+<span class="rx">@test</span> <span class="st">"str_contains: needle in middle"</span> {
+  <span class="cmd">run</span> str_contains <span class="st">"hello world"</span> <span class="st">"lo wo"</span>
+  <span class="fn">assert_success</span>
+}
+<span class="rx">@test</span> <span class="st">"str_contains: needle IS the string"</span> {
+  <span class="cmd">run</span> str_contains <span class="st">"hello"</span> <span class="st">"hello"</span>
+  <span class="fn">assert_success</span>
+}
+<span class="rx">@test</span> <span class="st">"str_contains: needle not present"</span> {
+  <span class="cmd">run</span> str_contains <span class="st">"hello"</span> <span class="st">"xyz"</span>
+  <span class="fn">assert_failure</span>
+}
+<span class="rx">@test</span> <span class="st">"str_contains: empty needle is always found"</span> {
+  <span class="cmd">run</span> str_contains <span class="st">"hello"</span> <span class="st">""</span>
+  <span class="fn">assert_success</span>
+}
+
+<span class="cm"># ── str_repeat ────────────────────────────────────────────────────</span>
+<span class="rx">@test</span> <span class="st">"str_repeat: repeats 3 times"</span> {
+  <span class="cmd">run</span> str_repeat <span class="st">"ab"</span> <span class="nu">3</span>
+  <span class="fn">assert_output</span> <span class="st">"ababab"</span>
+}
+<span class="rx">@test</span> <span class="st">"str_repeat: zero times returns empty"</span> {
+  <span class="cmd">run</span> str_repeat <span class="st">"x"</span> <span class="nu">0</span>
+  <span class="fn">assert_output</span> <span class="st">""</span>
+}
+<span class="rx">@test</span> <span class="st">"str_repeat: single char"</span> {
+  <span class="cmd">run</span> str_repeat <span class="st">"-"</span> <span class="nu">5</span>
+  <span class="fn">assert_output</span> <span class="st">"-----"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Mock-based deploy test</h4>
+  <p>Write a BATS test file for the following <code>bin/deploy.sh</code> script.
+  Use PATH-based mocks for <code>rsync</code>, <code>systemctl</code>, and
+  <code>curl</code>. Cover: happy path (all succeed), rsync failure (systemctl
+  not called), systemctl failure (curl still called for alert), and missing
+  argument.</p>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="vr">ENV</span><span class="op">=</span><span class="st">"${1:?Usage: deploy.sh ENV}"</span>
+<span class="fn">notify</span>() { <span class="cmd">curl</span> <span class="fl">-s</span> <span class="st">"$WEBHOOK_URL"</span> <span class="fl">-d</span> <span class="st">"status=$1"</span>; }
+<span class="fn">notify</span> starting
+<span class="cmd">rsync</span> <span class="fl">-a</span> <span class="pth">dist/</span> <span class="st">"deploy@${ENV}.example.com:/var/www/"</span>
+<span class="cmd">systemctl</span> <span class="fl">--host</span> <span class="st">"<span class="vr">$ENV</span>.example.com"</span> reload nginx
+<span class="fn">notify</span> done</pre>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="sh">#!/usr/bin/env bats</span>
+<span class="cm"># test/integration/deploy_test.bats</span>
+
+<span class="fn">setup</span>() {
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-assert/load'</span>
+
+  <span class="vr">MOCK_DIR</span><span class="op">=</span><span class="st">"${BATS_TEST_TMPDIR}/mocks"</span>
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$MOCK_DIR</span>"</span>
+  <span class="kw">export</span> <span class="vr">PATH</span><span class="op">=</span><span class="st">"<span class="vr">$MOCK_DIR</span>:<span class="vr">$PATH</span>"</span>
+  <span class="kw">export</span> <span class="vr">WEBHOOK_URL</span><span class="op">=</span><span class="st">"http://fake-webhook"</span>
+  <span class="vr">SCRIPT</span><span class="op">=</span><span class="st">"${BATS_TEST_DIRNAME}/../../bin/deploy.sh"</span>
+}
+
+<span class="fn">_make_mock</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">exit_code</span><span class="op">=</span><span class="st">"${2:-0}"</span>
+  <span class="kw">local</span> <span class="vr">calls_file</span><span class="op">=</span><span class="st">"<span class="vr">$MOCK_DIR</span>/<span class="vr">$name</span>.calls"</span>
+  <span class="cmd">printf</span> <span class="st">'#!/usr/bin/env bash\nprintf "%%s\n" "$*" >> "%s"\nexit %d\n'</span> \
+    <span class="st">"<span class="vr">$calls_file</span>"</span> <span class="st">"<span class="vr">$exit_code</span>"</span> <span class="op">></span> <span class="st">"<span class="vr">$MOCK_DIR</span>/<span class="vr">$name</span>"</span>
+  <span class="cmd">chmod</span> <span class="fl">+x</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/<span class="vr">$name</span>"</span>
+}
+
+<span class="fn">_call_count</span>() {
+  <span class="cmd">wc</span> <span class="fl">-l</span> <span class="op"><</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/<span class="vr">$1</span>.calls"</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">||</span> <span class="cmd">printf</span> <span class="st">'0'</span>
+}
+
+<span class="fn">_calls</span>() {
+  <span class="cmd">cat</span> <span class="st">"<span class="vr">$MOCK_DIR</span>/<span class="vr">$1</span>.calls"</span> <span class="nu">2</span><span class="op">>/dev/null</span> <span class="op">||</span> <span class="kw">true</span>
+}
+
+<span class="cm"># ── Tests ─────────────────────────────────────────────────────────</span>
+
+<span class="rx">@test</span> <span class="st">"happy path: all commands called in order"</span> {
+  <span class="fn">_make_mock</span> rsync
+  <span class="fn">_make_mock</span> systemctl
+  <span class="fn">_make_mock</span> curl
+
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> staging
+  <span class="fn">assert_success</span>
+
+  <span class="cm"># curl called twice (starting + done)</span>
+  <span class="fn">assert_equal</span> "$(<span class="fn">_call_count</span> curl)"       <span class="st">"2"</span>
+  <span class="fn">assert_equal</span> "$(<span class="fn">_call_count</span> rsync)"      <span class="st">"1"</span>
+  <span class="fn">assert_equal</span> "$(<span class="fn">_call_count</span> systemctl)"  <span class="st">"1"</span>
+
+  <span class="cm"># Verify notification content</span>
+  <span class="cmd">run</span> <span class="fn">_calls</span> curl
+  <span class="fn">assert_line</span> <span class="fl">--partial</span> <span class="st">"status=starting"</span>
+  <span class="fn">assert_line</span> <span class="fl">--partial</span> <span class="st">"status=done"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"rsync failure: systemctl not called"</span> {
+  <span class="fn">_make_mock</span> rsync <span class="nu">1</span>   <span class="cm"># rsync fails</span>
+  <span class="fn">_make_mock</span> systemctl
+  <span class="fn">_make_mock</span> curl
+
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> staging
+  <span class="fn">assert_failure</span>
+  <span class="fn">assert_equal</span> "$(<span class="fn">_call_count</span> systemctl)" <span class="st">"0"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"systemctl failure: curl still called for done/error"</span> {
+  <span class="fn">_make_mock</span> rsync
+  <span class="fn">_make_mock</span> systemctl <span class="nu">1</span>   <span class="cm"># systemctl fails</span>
+  <span class="fn">_make_mock</span> curl
+
+  <span class="cm"># set -e means the script exits after systemctl fails —
+  # 'done' notification is not sent; that is expected behaviour</span>
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> staging
+  <span class="fn">assert_failure</span>
+  <span class="cm"># 'starting' notification should have been sent</span>
+  <span class="cmd">run</span> <span class="fn">_calls</span> curl
+  <span class="fn">assert_line</span> <span class="fl">--partial</span> <span class="st">"status=starting"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"missing argument exits 1 with usage message"</span> {
+  <span class="fn">_make_mock</span> rsync
+  <span class="fn">_make_mock</span> systemctl
+  <span class="fn">_make_mock</span> curl
+
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span>   <span class="cm"># no ENV argument</span>
+  <span class="fn">assert_failure</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"Usage:"</span>
+  <span class="cm"># No commands should have been called</span>
+  <span class="fn">assert_equal</span> "$(<span class="fn">_call_count</span> curl)"  <span class="st">"0"</span>
+  <span class="fn">assert_equal</span> "$(<span class="fn">_call_count</span> rsync)" <span class="st">"0"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Filesystem mutation test</h4>
+  <p>Write a BATS test suite for a <code>bin/rotate_logs.sh LOGDIR MAX_DAYS</code>
+  script that deletes files older than MAX_DAYS and compresses files older than
+  half that age. Use <span class="inline-code">touch -d</span> to seed files with
+  specific ages. Test: files younger than MAX_DAYS/2 are untouched; files between
+  MAX_DAYS/2 and MAX_DAYS are compressed (renamed to <code>.gz</code>); files older
+  than MAX_DAYS are deleted; the script refuses to operate on a path outside
+  <code>/var/log</code> (when run against the real filesystem — mock this with an
+  environment variable override).</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bats</span>
+<span class="cm"># test/integration/rotate_logs_test.bats</span>
+
+<span class="fn">setup</span>() {
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-support/load'</span>
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-assert/load'</span>
+  <span class="kw">load</span> <span class="st">'../test_helper/bats-file/load'</span>
+
+  <span class="vr">LOGDIR</span><span class="op">=</span><span class="st">"${BATS_TEST_TMPDIR}/logs"</span>
+  <span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$LOGDIR</span>"</span>
+
+  <span class="cm"># Override the allowed base path for testing</span>
+  <span class="kw">export</span> <span class="vr">LOG_BASE_PATH</span><span class="op">=</span><span class="st">"<span class="vr">$BATS_TEST_TMPDIR</span>"</span>
+
+  <span class="vr">MAX_DAYS</span><span class="op">=</span><span class="nu">30</span>
+
+  <span class="cm"># Seed test files at specific ages</span>
+  <span class="cm"># young: 5 days old — should be untouched</span>
+  <span class="cmd">touch</span> <span class="fl">-d</span> <span class="st">'5 days ago'</span>  <span class="st">"<span class="vr">$LOGDIR</span>/young.log"</span>
+  <span class="cm"># middle: 20 days old — older than MAX/2 (15), should be compressed</span>
+  <span class="cmd">touch</span> <span class="fl">-d</span> <span class="st">'20 days ago'</span> <span class="st">"<span class="vr">$LOGDIR</span>/middle.log"</span>
+  <span class="cm"># old: 35 days old — older than MAX (30), should be deleted</span>
+  <span class="cmd">touch</span> <span class="fl">-d</span> <span class="st">'35 days ago'</span> <span class="st">"<span class="vr">$LOGDIR</span>/old.log"</span>
+  <span class="vr">SCRIPT</span><span class="op">=</span><span class="st">"${BATS_TEST_DIRNAME}/../../bin/rotate_logs.sh"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"young file is untouched"</span> {
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$LOGDIR</span>"</span> <span class="st">"<span class="vr">$MAX_DAYS</span>"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_file_exists</span>    <span class="st">"<span class="vr">$LOGDIR</span>/young.log"</span>
+  <span class="fn">assert_file_not_exist</span> <span class="st">"<span class="vr">$LOGDIR</span>/young.log.gz"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"middle-aged file is compressed"</span> {
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$LOGDIR</span>"</span> <span class="st">"<span class="vr">$MAX_DAYS</span>"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_file_not_exist</span> <span class="st">"<span class="vr">$LOGDIR</span>/middle.log"</span>
+  <span class="fn">assert_file_exists</span>    <span class="st">"<span class="vr">$LOGDIR</span>/middle.log.gz"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"old file is deleted"</span> {
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$LOGDIR</span>"</span> <span class="st">"<span class="vr">$MAX_DAYS</span>"</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_file_not_exist</span> <span class="st">"<span class="vr">$LOGDIR</span>/old.log"</span>
+  <span class="fn">assert_file_not_exist</span> <span class="st">"<span class="vr">$LOGDIR</span>/old.log.gz"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"path outside LOG_BASE_PATH is rejected"</span> {
+  <span class="cm"># Override to a strict base path that LOGDIR doesn't satisfy</span>
+  <span class="kw">export</span> <span class="vr">LOG_BASE_PATH</span><span class="op">=</span><span class="pth">/var/log</span>
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$LOGDIR</span>"</span> <span class="st">"<span class="vr">$MAX_DAYS</span>"</span>
+  <span class="fn">assert_failure</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"outside"</span>
+  <span class="cm"># Verify no files were touched</span>
+  <span class="fn">assert_file_exists</span> <span class="st">"<span class="vr">$LOGDIR</span>/old.log"</span>
+}
+
+<span class="rx">@test</span> <span class="st">"dry-run reports actions without modifying filesystem"</span> {
+  <span class="cmd">run</span> bash <span class="st">"<span class="vr">$SCRIPT</span>"</span> <span class="st">"<span class="vr">$LOGDIR</span>"</span> <span class="st">"<span class="vr">$MAX_DAYS</span>"</span> <span class="fl">--dry-run</span>
+  <span class="fn">assert_success</span>
+  <span class="fn">assert_file_exists</span> <span class="st">"<span class="vr">$LOGDIR</span>/old.log"</span>
+  <span class="fn">assert_file_exists</span> <span class="st">"<span class="vr">$LOGDIR</span>/middle.log"</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"would delete"</span>
+  <span class="fn">assert_output</span> <span class="fl">--partial</span> <span class="st">"would compress"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — CI configuration and Makefile</h4>
+  <p>Write a complete <code>Makefile</code> and <code>.github/workflows/test.yml</code>
+  for a project that has BATS tests. Requirements:</p>
+  <ul>
+    <li><code>make test</code> — runs all tests with pretty output</li>
+    <li><code>make test-ci</code> — runs with JUnit XML output to <code>reports/</code></li>
+    <li><code>make test-unit</code> and <code>make test-integration</code> — run subsets</li>
+    <li><code>make lint</code> — runs <code>shellcheck</code> on all <code>.sh</code> files</li>
+    <li><code>make test-watch</code> — re-runs tests on file change (using <code>inotifywait</code> or <code>fswatch</code>)</li>
+    <li>The GitHub Actions workflow runs lint then tests, publishes JUnit results,
+    and fails the workflow if any test fails</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="cm"># Makefile</span>
+<span class="vr">BATS</span>       <span class="op">:=</span> test/bats/bin/bats
+<span class="vr">TEST_DIR</span>   <span class="op">:=</span> test
+<span class="vr">REPORT_DIR</span> <span class="op">:=</span> reports
+<span class="vr">SHELL_SRC</span>  <span class="op">:=</span> $(shell find bin lib -name <span class="st">'*.sh'</span> <span class="nu">2</span><span class="op">>/dev/null</span>)
+
+<span class="vr">.PHONY</span><span class="op">:</span> test test-ci test-unit test-integration lint test-watch clean
+
+<span class="vr">test</span><span class="op">:</span>
+	$(BATS) --formatter pretty --recursive $(TEST_DIR)/
+
+<span class="vr">test-ci</span><span class="op">:</span> | $(REPORT_DIR)
+	$(BATS) --formatter junit --output $(REPORT_DIR) \
+	        --recursive $(TEST_DIR)/
+
+<span class="vr">test-unit</span><span class="op">:</span>
+	$(BATS) --formatter pretty --recursive $(TEST_DIR)/unit/
+
+<span class="vr">test-integration</span><span class="op">:</span>
+	$(BATS) --formatter pretty --recursive $(TEST_DIR)/integration/
+
+<span class="vr">lint</span><span class="op">:</span>
+	shellcheck $(SHELL_SRC)
+
+<span class="vr">test-watch</span><span class="op">:</span>
+	@<span class="kw">if</span> command -v inotifywait <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>; <span class="kw">then</span> \
+	  <span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span> \
+	    inotifywait -qre close_write bin/ lib/ $(TEST_DIR)/ <span class="nu">2</span><span class="op">/dev/null</span>; \
+	    clear; $(MAKE) test; \
+	  <span class="kw">done</span>; \
+	<span class="kw">elif</span> command -v fswatch <span class="op">>/dev/null</span> <span class="nu">2</span><span class="op">&1</span>; <span class="kw">then</span> \
+	  fswatch -o bin/ lib/ $(TEST_DIR)/ | xargs -n1 sh -c 'clear; $(MAKE) test'; \
+	<span class="kw">else</span> \
+	  <span class="cmd">echo</span> <span class="st">"Install inotify-tools (Linux) or fswatch (macOS)"</span>; <span class="kw">exit</span> <span class="nu">1</span>; \
+	<span class="kw">fi</span>
+
+$(REPORT_DIR)<span class="op">:</span>
+	mkdir -p $(REPORT_DIR)
+
+<span class="vr">clean</span><span class="op">:</span>
+	rm -rf $(REPORT_DIR)</pre>
+<pre><span class="cm"># .github/workflows/test.yml</span>
+<span class="vr">name</span><span class="op">:</span> CI
+
+<span class="vr">on</span><span class="op">:</span>
+  <span class="vr">push</span><span class="op">:</span>
+    <span class="vr">branches</span><span class="op">:</span> [main, <span class="st">'feature/**'</span>]
+  <span class="vr">pull_request</span><span class="op">:</span>
+
+<span class="vr">jobs</span><span class="op">:</span>
+  <span class="vr">lint-and-test</span><span class="op">:</span>
+    <span class="vr">runs-on</span><span class="op">:</span> ubuntu-latest
+
+    <span class="vr">steps</span><span class="op">:</span>
+      <span class="fl">-</span> <span class="vr">name</span><span class="op">:</span> Checkout
+        <span class="vr">uses</span><span class="op">:</span> actions/checkout@v4
+        <span class="vr">with</span><span class="op">:</span>
+          <span class="vr">submodules</span><span class="op">:</span> recursive
+
+      <span class="fl">-</span> <span class="vr">name</span><span class="op">:</span> Install dependencies
+        <span class="vr">run</span><span class="op">:</span> <span class="op">|</span>
+          sudo apt-get update -q
+          sudo apt-get install -y shellcheck
+
+      <span class="fl">-</span> <span class="vr">name</span><span class="op">:</span> Lint
+        <span class="vr">run</span><span class="op">:</span> make lint
+
+      <span class="fl">-</span> <span class="vr">name</span><span class="op">:</span> Run tests
+        <span class="vr">run</span><span class="op">:</span> make test-ci
+
+      <span class="fl">-</span> <span class="vr">name</span><span class="op">:</span> Publish test results
+        <span class="vr">uses</span><span class="op">:</span> mikepenz/action-junit-report@v4
+        <span class="vr">if</span><span class="op">:</span> always()
+        <span class="vr">with</span><span class="op">:</span>
+          <span class="vr">report_paths</span><span class="op">:</span> <span class="st">'reports/*.xml'</span>
+          <span class="vr">fail_on_failure</span><span class="op">:</span> <span class="kw">true</span></pre>
+  </div>
+</div>
+
+</div>

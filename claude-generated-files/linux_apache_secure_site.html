@@ -1,0 +1,1330 @@
+<!-- ============================================================
+     LINUX WEB SERVICES: Secure the Site and Control Access
+     Subject: Linux | Subtopic: Linux Web Services
+     Platforms: Debian/Bookworm (Pi) | Red Hat (RHEL/Rocky/Fedora)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+
+  /* ── Platform blocks ─────────────────────────────── */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 650px) { .platform-grid { grid-template-columns: 1fr; } }
+
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 4px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; }
+
+  .platform-block.deb { border-color: #2a4a6a; }
+  .platform-block.deb .pb-header { background: #1a2a3a; color: #7ab8ff; }
+  .platform-block.deb .pb-note   { color: #7ab8ff; opacity: 0.8; }
+
+  .platform-block.rh  { border-color: #5a2a1a; }
+  .platform-block.rh  .pb-header { background: #2a1a0a; color: #e8a87d; }
+  .platform-block.rh  .pb-note   { color: #e8a87d; opacity: 0.8; }
+
+  .platform-block.both { border-color: #2a3a2a; margin-bottom: 12px; }
+  .platform-block.both .pb-header { background: #1a2a1a; color: #7ecfa0; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin: 16px 0;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .tip-box .trap  { color: #f08080; font-style: normal; font-weight: bold; }
+
+  /* ── Concept cards ───────────────────────────────── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+
+  .concept-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: #4f8ef7; }
+  .concept-card .cc-type {
+    font-family: system-ui, sans-serif;
+    font-size: 0.7em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 3px;
+  }
+  .concept-card .cc-name {
+    font-family: system-ui, sans-serif;
+    font-size: 0.97em;
+    font-weight: 600;
+    color: #ffd580;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .concept-card .cc-desc { font-size: 0.87em; color: #a0a4b8; }
+
+  /* ── Example / section blocks ────────────────────── */
+  .example-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .example-block .ex-title {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #4f8ef7;
+    margin-bottom: 6px;
+  }
+  .example-block .ex-desc {
+    font-size: 0.87em;
+    color: #a0a4b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* ── Diff table ──────────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+
+  /* ── HTTP diagram ────────────────────────────────── */
+  .http-diagram {
+    display: flex;
+    align-items: center;
+    margin: 16px 0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.85em;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .hd-box {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .hd-box .hd-icon { font-size: 1.5em; display: block; }
+  .hd-box .hd-label { color: #e2e4ec; font-weight: 600; display: block; font-size: 0.9em; }
+  .hd-box .hd-sub   { color: #7a7f96; font-size: 0.78em; }
+  .hd-arrow { color: #4f8ef7; font-size: 1.4em; padding: 0 4px; display: flex; flex-direction: column; align-items: center; }
+  .hd-arrow .ha-label { font-size: 0.68em; color: #7a7f96; white-space: nowrap; }
+
+  /* ── Trouble cards ───────────────────────────────── */
+  .trouble-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .trouble-grid { grid-template-columns: 1fr; } }
+  .trouble-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #f08080;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 14px;
+  }
+  .trouble-card .tc-problem { font-family: system-ui, sans-serif; font-weight: 700; font-size: 0.88em; color: #f08080; margin-bottom: 4px; }
+  .trouble-card .tc-fix { font-size: 0.84em; color: #a0a4b8; }
+  .trouble-card code { font-family: 'Courier New', Consolas, monospace; font-size: 0.88em; color: #7ecfa0; background: #12141e; padding: 1px 4px; border-radius: 3px; }
+
+  /* ── Quiz ────────────────────────────────────────── */
+  .quiz-intro {
+    background: #1e2235;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-family: system-ui, sans-serif;
+  }
+  .quiz-intro strong { color: #4f8ef7; }
+
+  .quiz-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .quiz-card:hover { border-color: #3a3d4a; }
+
+  .quiz-q-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4f8ef7;
+    margin-bottom: 4px;
+  }
+  .quiz-q-text {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  @media (max-width: 500px) { .quiz-options { grid-template-columns: 1fr; } }
+
+  .quiz-option {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.85em;
+    color: #a0a4b8;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .quiz-option:hover { border-color: #4f8ef7; background: #1a1e2e; }
+  .quiz-option .opt-letter {
+    display: inline-block;
+    font-weight: 700;
+    color: #4f8ef7;
+    margin-right: 6px;
+    min-width: 14px;
+  }
+
+  /* Selected state */
+  .quiz-option.selected {
+    border-color: #4f8ef7;
+    background: #1e2235;
+    color: #e2e4ec;
+  }
+  .quiz-option.selected .opt-letter { color: #4f8ef7; }
+
+  /* After checking — correct answer */
+  .quiz-option.answer-correct {
+    background: #1a2a1a !important;
+    border-color: #7ecfa0 !important;
+    color: #7ecfa0 !important;
+    cursor: default;
+  }
+  .quiz-option.answer-correct .opt-letter { color: #7ecfa0 !important; }
+
+  /* After checking — wrong selection */
+  .quiz-option.answer-wrong {
+    background: #2a1a1a !important;
+    border-color: #f08080 !important;
+    color: #f08080 !important;
+    cursor: default;
+  }
+  .quiz-option.answer-wrong .opt-letter { color: #f08080 !important; }
+
+  /* Dim unselected options after check */
+  .quiz-card.revealed .quiz-option:not(.answer-correct):not(.answer-wrong) {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .quiz-card.revealed .quiz-option:hover { border-color: #2a2d3a; background: #12141e; }
+
+  .check-btn {
+    background: #1e2235;
+    border: 1px solid #4f8ef7;
+    border-radius: 5px;
+    color: #4f8ef7;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 600;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .check-btn:hover:not(:disabled) { background: #4f8ef7; color: #0f1117; }
+  .check-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .quiz-score-area {
+    background: #1e2235;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin-top: 24px;
+    font-family: system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .score-label {
+    font-size: 0.95em;
+    color: #a0a4b8;
+  }
+  .score-label strong { color: #e2e4ec; font-size: 1.1em; }
+  .score-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #4f8ef7;
+    line-height: 1;
+  }
+  .score-number span { font-size: 1rem; color: #7a7f96; font-weight: 400; }
+</style>
+
+<script>
+var quizScore = 0;
+
+function selectOption(el) {
+  var card = el.closest('.quiz-card');
+  if (card.classList.contains('revealed')) return;
+  card.querySelectorAll('.quiz-option').forEach(function(o) {
+    o.classList.remove('selected');
+  });
+  el.classList.add('selected');
+}
+
+function checkAnswer(btn) {
+  var card = btn.closest('.quiz-card');
+  if (card.classList.contains('revealed')) return;
+  var selected = card.querySelector('.quiz-option.selected');
+  if (!selected) {
+    btn.textContent = 'Select an answer first!';
+    setTimeout(function() { btn.textContent = 'Check Answer'; }, 1500);
+    return;
+  }
+
+  card.classList.add('revealed');
+  btn.disabled = true;
+  btn.textContent = '✓ Checked';
+
+  var correct = card.querySelector('.quiz-option.correct');
+
+  if (selected === correct) {
+    selected.classList.add('answer-correct');
+    quizScore++;
+    document.getElementById('score-display').textContent = quizScore;
+  } else {
+    selected.classList.add('answer-wrong');
+    correct.classList.add('answer-correct');
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>🔒 Secure the Site and Control Access</h2>
+  <p class="section-intro">A publicly accessible web server needs to be hardened before it is truly production-ready. This lesson covers the full security stack: encrypting traffic with SSL/TLS, obtaining certificates from a trusted authority, configuring HTTPS in Apache, and controlling who can access your content using <code>.htaccess</code> rules for both authentication and URL rewriting.</p>
+
+  <div class="info-box">
+    <strong>Platform note:</strong> Commands and file paths differ between Debian-based systems (Raspberry Pi / Ubuntu) and Red Hat-based systems (RHEL / Rocky / Fedora). Platform-specific blocks are clearly labelled throughout this lesson.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. SECURE ACCESS WITH SSL
+  ═══════════════════════════════════════════ -->
+  <h2>1 — Secure Access with SSL</h2>
+  <p class="section-intro">SSL (Secure Sockets Layer) and its modern successor TLS (Transport Layer Security) encrypt the connection between a browser and your web server, protecting data in transit from eavesdropping and tampering. In practice, the two terms are used interchangeably — when people say "SSL" they usually mean the modern TLS protocol.</p>
+
+  <p>Without HTTPS, all data sent between the browser and your server — including passwords, form submissions, and session tokens — travels as plain text across the network and can be intercepted by anyone on the same network path.</p>
+
+  <div class="http-diagram">
+    <div class="hd-box">
+      <span class="hd-icon">💻</span>
+      <span class="hd-label">Browser</span>
+      <span class="hd-sub">Client</span>
+    </div>
+    <div class="hd-arrow">
+      <span>→</span>
+      <span class="ha-label">Plain text<br>Port 80</span>
+    </div>
+    <div class="hd-box" style="border-color:#f08080;">
+      <span class="hd-icon">⚠️</span>
+      <span class="hd-label">HTTP</span>
+      <span class="hd-sub" style="color:#f08080;">Unencrypted</span>
+    </div>
+    <div class="hd-arrow" style="color:#7a7f96; padding: 0 16px;">
+      <span style="font-size:1.1em;">vs</span>
+    </div>
+    <div class="hd-box">
+      <span class="hd-icon">💻</span>
+      <span class="hd-label">Browser</span>
+      <span class="hd-sub">Client</span>
+    </div>
+    <div class="hd-arrow">
+      <span>→</span>
+      <span class="ha-label">Encrypted<br>Port 443</span>
+    </div>
+    <div class="hd-box" style="border-color:#7ecfa0;">
+      <span class="hd-icon">🔒</span>
+      <span class="hd-label">HTTPS</span>
+      <span class="hd-sub" style="color:#7ecfa0;">TLS Encrypted</span>
+    </div>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="cc-type">Encryption</div>
+      <span class="cc-name">Data in Transit</span>
+      <div class="cc-desc">TLS encrypts all data between the browser and server. Even if traffic is intercepted, it cannot be read without the private key. Passwords, cookies, and form data are all protected.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Authentication</div>
+      <span class="cc-name">Certificate Identity</span>
+      <div class="cc-desc">A TLS certificate proves that the server is who it claims to be. Browsers verify this against a list of trusted Certificate Authorities (CAs). This prevents man-in-the-middle attacks.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Integrity</div>
+      <span class="cc-name">Tamper Detection</span>
+      <div class="cc-desc">TLS includes a message authentication code (MAC) that detects if any data was altered in transit. The browser will reject a modified response before rendering it.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Apache Module</div>
+      <span class="cc-name">mod_ssl</span>
+      <div class="cc-desc">Apache implements TLS through <strong>mod_ssl</strong>. This module must be enabled and configured before Apache can serve HTTPS traffic on port 443. It handles the TLS handshake and certificate presentation.</div>
+    </div>
+  </div>
+
+  <h3>Enable mod_ssl</h3>
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian / Raspberry Pi</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Enable the SSL module</span>
+<span class="cmd">sudo a2enmod</span> ssl
+
+<span class="cm"># Enable the default SSL site (optional)</span>
+<span class="cmd">sudo a2ensite</span> default-ssl
+
+<span class="cm"># Reload Apache</span>
+<span class="cmd">sudo systemctl reload</span> apache2
+
+<span class="cm"># Confirm mod_ssl is loaded</span>
+<span class="cmd">apache2ctl</span> <span class="fl">-M</span> | grep ssl
+<span class="out">ssl_module (shared)</span></code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat / Rocky / Fedora</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Install mod_ssl (includes the module)</span>
+<span class="cmd">sudo dnf install</span> <span class="fl">-y</span> mod_ssl
+
+<span class="cm"># mod_ssl auto-loads via:</span>
+<span class="pth">/etc/httpd/conf.modules.d/00-ssl.conf</span>
+
+<span class="cm"># Reload Apache</span>
+<span class="cmd">sudo systemctl reload</span> httpd
+
+<span class="cm"># Confirm mod_ssl is loaded</span>
+<span class="cmd">httpd</span> <span class="fl">-M</span> | grep ssl
+<span class="out">ssl_module (shared)</span></code>
+        <div class="pb-note">On Red Hat, installing mod_ssl also creates a default self-signed certificate at /etc/pki/tls/.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>💡 HTTPS is now expected, not optional.</strong> Modern browsers mark HTTP sites as "Not Secure". Search engines rank HTTPS sites higher. Many browser APIs (geolocation, service workers, camera) are restricted to HTTPS-only contexts. There is no good reason to run a public-facing site without HTTPS in 2025.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. CREATE A SELF-SIGNED CERTIFICATE
+  ═══════════════════════════════════════════ -->
+  <h2>2 — Create a Self-Signed Certificate</h2>
+  <p class="section-intro">A self-signed certificate is one that you generate yourself, without involving a Certificate Authority. The certificate is signed with its own private key rather than by a trusted third party. Browsers will display a security warning because they cannot verify the issuer — but the traffic is still fully encrypted.</p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="cc-type">Use Case</div>
+      <span class="cc-name">Development &amp; Internal</span>
+      <div class="cc-desc">Self-signed certificates are appropriate for local development servers, internal tools, home lab projects, and testing TLS configuration before obtaining a real certificate. <strong>Not suitable for public-facing production sites.</strong></div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Browser Behaviour</div>
+      <span class="cc-name">Security Warning</span>
+      <div class="cc-desc">Browsers will display a "Your connection is not private" warning and require the user to manually accept the risk. This is expected and normal — the certificate is not trusted by the browser's built-in CA list.</div>
+    </div>
+  </div>
+
+  <h3>Generate a Self-Signed Certificate with OpenSSL</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Both Platforms — OpenSSL command</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Generate a private key and self-signed certificate in one command</span>
+<span class="cm"># This creates a certificate valid for 365 days using RSA 2048-bit key</span>
+<span class="cmd">sudo openssl req</span> <span class="fl">-x509 -nodes -days 365 -newkey rsa:2048</span> \
+    <span class="fl">-keyout</span> /etc/ssl/private/mysite.key \
+    <span class="fl">-out</span>    /etc/ssl/certs/mysite.crt
+
+<span class="cm"># You will be prompted for certificate details:</span>
+<span class="out">Country Name (2 letter code) [AU]: GB</span>
+<span class="out">State or Province Name: England</span>
+<span class="out">Locality Name: London</span>
+<span class="out">Organization Name: My Company</span>
+<span class="out">Organizational Unit Name: IT</span>
+<span class="out">Common Name (e.g. server FQDN): mysite.com</span>
+<span class="out">Email Address: admin@mysite.com</span></code>
+      <div class="pb-note">The <strong>Common Name</strong> must match the domain name you will use to access the server, otherwise browsers will show an additional hostname mismatch warning.</div>
+    </div>
+  </div>
+
+  <h3>OpenSSL Flag Breakdown</h3>
+  <table class="ref-table">
+    <thead><tr><th>Flag</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>req -x509</code></td><td>Create a self-signed certificate (skip the CA signing step)</td></tr>
+      <tr><td><code>-nodes</code></td><td>No DES — do not encrypt the private key with a passphrase (Apache needs to read it on startup without prompting)</td></tr>
+      <tr><td><code>-days 365</code></td><td>Certificate validity period in days</td></tr>
+      <tr><td><code>-newkey rsa:2048</code></td><td>Generate a new 2048-bit RSA private key at the same time</td></tr>
+      <tr><td><code>-keyout</code></td><td>Path to write the private key file</td></tr>
+      <tr><td><code>-out</code></td><td>Path to write the certificate file</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Secure the Private Key File</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Both Platforms</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># The private key must be readable only by root</span>
+<span class="cmd">sudo chmod</span> 600 /etc/ssl/private/mysite.key
+<span class="cmd">sudo chown</span> root:root /etc/ssl/private/mysite.key
+
+<span class="cm"># Verify permissions</span>
+<span class="cmd">ls</span> <span class="fl">-la</span> /etc/ssl/private/mysite.key
+<span class="out">-rw------- 1 root root 1704 Aug 15 10:00 mysite.key</span>
+
+<span class="cm"># Verify the certificate details</span>
+<span class="cmd">openssl x509</span> <span class="fl">-in</span> /etc/ssl/certs/mysite.crt <span class="fl">-text -noout</span> | head <span class="fl">-20</span></code>
+    </div>
+  </div>
+
+  <div class="warn-box">
+    <strong>⚠️ Never share your private key.</strong> The <code>.key</code> file must remain on the server and be readable only by root. If it is ever compromised, anyone who has it can impersonate your server. Revoke and replace the certificate immediately if a key is exposed.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. USE A CERTIFICATE FROM A CA
+  ═══════════════════════════════════════════ -->
+  <h2>3 — Use a Certificate from a Certificate Authority (CA)</h2>
+  <p class="section-intro">For any public-facing website, you need a certificate signed by a Certificate Authority (CA) that browsers already trust. <strong>Let's Encrypt</strong> is a free, automated, and open CA that has become the standard choice for most websites. The <strong>Certbot</strong> tool handles obtaining, installing, and automatically renewing Let's Encrypt certificates.</p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="cc-type">Certificate Authority</div>
+      <span class="cc-name">What a CA Does</span>
+      <div class="cc-desc">A CA verifies that you control the domain you are requesting a certificate for, then signs the certificate with its own private key. Browsers ship with a list of trusted CAs, so any certificate they sign is automatically trusted.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-type">Let's Encrypt</div>
+      <span class="cc-name">Free &amp; Automated</span>
+      <div class="cc-desc">Let's Encrypt issues certificates at no cost and automates the domain verification (ACME protocol). Certificates expire after <strong>90 days</strong> but Certbot handles automatic renewal so you rarely need to think about it.</div>
+    </div>
+  </div>
+
+  <h3>Install Certbot</h3>
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian / Raspberry Pi / Ubuntu</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Install Certbot and the Apache plugin</span>
+<span class="cmd">sudo apt update</span>
+<span class="cmd">sudo apt install</span> <span class="fl">-y</span> certbot python3-certbot-apache
+
+<span class="cm"># Verify installation</span>
+<span class="cmd">certbot</span> <span class="fl">--version</span>
+<span class="out">certbot 2.x.x</span></code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat / Rocky / Fedora</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Enable EPEL repository first (if not already enabled)</span>
+<span class="cmd">sudo dnf install</span> <span class="fl">-y</span> epel-release
+
+<span class="cm"># Install Certbot and Apache plugin</span>
+<span class="cmd">sudo dnf install</span> <span class="fl">-y</span> certbot python3-certbot-apache
+
+<span class="cm"># Verify installation</span>
+<span class="cmd">certbot</span> <span class="fl">--version</span></code>
+      </div>
+    </div>
+  </div>
+
+  <h3>Obtain a Certificate</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Both Platforms — Certbot with Apache plugin</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Obtain a certificate AND automatically configure Apache</span>
+<span class="cm"># Replace mysite.com with your actual domain</span>
+<span class="cmd">sudo certbot</span> <span class="fl">--apache</span> <span class="fl">-d</span> mysite.com <span class="fl">-d</span> www.mysite.com
+
+<span class="cm"># Certbot will:</span>
+<span class="cm">#  1. Verify you control the domain (HTTP challenge)</span>
+<span class="cm">#  2. Download the signed certificate</span>
+<span class="cm">#  3. Update your Apache virtual host config automatically</span>
+<span class="cm">#  4. Set up a redirect from HTTP to HTTPS</span>
+
+<span class="cm"># Certificates are stored at:</span>
+<span class="pth">/etc/letsencrypt/live/mysite.com/fullchain.pem</span>   <span class="cm"># certificate + chain</span>
+<span class="pth">/etc/letsencrypt/live/mysite.com/privkey.pem</span>      <span class="cm"># private key</span>
+<span class="pth">/etc/letsencrypt/live/mysite.com/cert.pem</span>         <span class="cm"># certificate only</span>
+<span class="pth">/etc/letsencrypt/live/mysite.com/chain.pem</span>        <span class="cm"># CA chain only</span></code>
+    </div>
+  </div>
+
+  <h3>Test and Automate Renewal</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Both Platforms</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Test that renewal would succeed (dry run — no changes made)</span>
+<span class="cmd">sudo certbot renew</span> <span class="fl">--dry-run</span>
+
+<span class="cm"># Certbot installs a systemd timer (or cron job) automatically</span>
+<span class="cm"># to renew certificates before they expire. Check it:</span>
+<span class="cmd">sudo systemctl status</span> certbot.timer
+
+<span class="cm"># Or check the cron job:</span>
+<span class="cmd">cat</span> /etc/cron.d/certbot
+
+<span class="cm"># Manually trigger renewal (if within 30 days of expiry)</span>
+<span class="cmd">sudo certbot renew</span>
+
+<span class="cm"># Check certificate expiry date</span>
+<span class="cmd">sudo certbot certificates</span>
+<span class="out">Found the following certs:</span>
+<span class="out">  Certificate Name: mysite.com</span>
+<span class="out">    Domains: mysite.com www.mysite.com</span>
+<span class="out">    Expiry Date: 2025-11-14 (VALID: 89 days)</span></code>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>Domain requirement:</strong> Let's Encrypt certificates require a publicly accessible domain name that resolves to your server's IP address. They cannot be issued for bare IP addresses, <code>localhost</code>, or internal hostnames. For those cases, use a self-signed certificate instead.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. ADD AN SSL CERTIFICATE TO YOUR SITE
+  ═══════════════════════════════════════════ -->
+  <h2>4 — Add an SSL Certificate to Your Site</h2>
+  <p class="section-intro">Once you have a certificate (self-signed or from a CA), you need to configure Apache to use it for your virtual host. This involves creating a VirtualHost block on port 443, pointing Apache to your certificate files, and redirecting HTTP traffic to HTTPS.</p>
+
+  <h3>HTTPS Virtual Host Configuration</h3>
+  <div class="example-block">
+    <div class="ex-title">Complete SSL VirtualHost — Both Platforms</div>
+    <div class="ex-desc">This configuration serves HTTPS on port 443. Use the correct certificate paths for your setup — paths differ between self-signed and Let's Encrypt certificates.</div>
+<code class="code-block"><span class="cm"># Port 443 — HTTPS virtual host</span>
+<span class="kw">&lt;VirtualHost</span> *:<span class="nu">443</span><span class="kw">&gt;</span>
+    <span class="kw">ServerName</span>   mysite.com
+    <span class="kw">ServerAlias</span>  www.mysite.com
+    <span class="kw">DocumentRoot</span> /var/www/mysite
+
+    <span class="cm"># Enable SSL for this virtual host</span>
+    <span class="kw">SSLEngine</span> on
+
+    <span class="cm"># --- Self-signed certificate paths ---</span>
+    <span class="kw">SSLCertificateFile</span>    /etc/ssl/certs/mysite.crt
+    <span class="kw">SSLCertificateKeyFile</span> /etc/ssl/private/mysite.key
+
+    <span class="cm"># --- Let's Encrypt certificate paths ---</span>
+    <span class="cm"># SSLCertificateFile    /etc/letsencrypt/live/mysite.com/fullchain.pem</span>
+    <span class="cm"># SSLCertificateKeyFile /etc/letsencrypt/live/mysite.com/privkey.pem</span>
+
+    <span class="kw">&lt;Directory</span> <span class="st">/var/www/mysite</span><span class="kw">&gt;</span>
+        <span class="kw">AllowOverride</span> All
+        <span class="kw">Require</span> all granted
+    <span class="kw">&lt;/Directory&gt;</span>
+
+    <span class="kw">ErrorLog</span>  <span class="pth">${APACHE_LOG_DIR}/mysite-ssl-error.log</span>
+    <span class="kw">CustomLog</span> <span class="pth">${APACHE_LOG_DIR}/mysite-ssl-access.log</span> combined
+<span class="kw">&lt;/VirtualHost&gt;</span></code>
+  </div>
+
+  <h3>Redirect HTTP to HTTPS</h3>
+  <div class="example-block">
+    <div class="ex-title">Force all HTTP traffic to HTTPS</div>
+    <div class="ex-desc">Add a second VirtualHost on port 80 that permanently redirects all traffic to the HTTPS version. Place this in the same config file, above the port 443 block.</div>
+<code class="code-block"><span class="cm"># Port 80 — redirect all HTTP to HTTPS</span>
+<span class="kw">&lt;VirtualHost</span> *:<span class="nu">80</span><span class="kw">&gt;</span>
+    <span class="kw">ServerName</span>  mysite.com
+    <span class="kw">ServerAlias</span> www.mysite.com
+
+    <span class="cm"># 301 = permanent redirect</span>
+    <span class="kw">Redirect</span> permanent / https://mysite.com/
+<span class="kw">&lt;/VirtualHost&gt;</span></code>
+  </div>
+
+  <h3>Enable and Activate the Configuration</h3>
+  <div class="platform-grid">
+    <div class="platform-block deb">
+      <div class="pb-header">🐧 Debian / Raspberry Pi</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Save config to sites-available</span>
+<span class="cmd">sudo nano</span> /etc/apache2/sites-available/mysite-ssl.conf
+
+<span class="cm"># Ensure mod_ssl is enabled</span>
+<span class="cmd">sudo a2enmod</span> ssl
+
+<span class="cm"># Enable the site</span>
+<span class="cmd">sudo a2ensite</span> mysite-ssl.conf
+
+<span class="cm"># Test and reload</span>
+<span class="cmd">sudo apache2ctl configtest</span>
+<span class="cmd">sudo systemctl reload</span> apache2
+
+<span class="cm"># Verify HTTPS is working</span>
+<span class="cmd">curl</span> <span class="fl">-Ik</span> https://mysite.com
+<span class="out">HTTP/2 200</span></code>
+      </div>
+    </div>
+    <div class="platform-block rh">
+      <div class="pb-header">🎩 Red Hat / Rocky</div>
+      <div class="pb-body">
+<code class="code-block"><span class="cm"># Save config to conf.d</span>
+<span class="cmd">sudo nano</span> /etc/httpd/conf.d/mysite-ssl.conf
+
+<span class="cm"># Ensure mod_ssl is installed</span>
+<span class="cmd">sudo dnf install</span> <span class="fl">-y</span> mod_ssl
+
+<span class="cm"># Open port 443 in firewall</span>
+<span class="cmd">sudo firewall-cmd</span> <span class="fl">--permanent --add-service=https</span>
+<span class="cmd">sudo firewall-cmd</span> <span class="fl">--reload</span>
+
+<span class="cm"># Test and reload</span>
+<span class="cmd">sudo apachectl configtest</span>
+<span class="cmd">sudo systemctl reload</span> httpd
+
+<span class="cm"># SELinux: allow Apache to read cert files</span>
+<span class="cmd">sudo restorecon</span> <span class="fl">-Rv</span> /etc/ssl/</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>💡 The <code>-k</code> flag in curl</strong> skips certificate verification — useful for testing self-signed certificates locally. Never use it in production scripts, as it defeats the purpose of HTTPS.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. PROTECT A SITE WITH .htaccess
+  ═══════════════════════════════════════════ -->
+  <h2>5 — Protect a Site with a .htaccess File</h2>
+  <p class="section-intro">A <code>.htaccess</code> file (hypertext access) is a per-directory configuration file that Apache reads on every request. It lets you add access controls, password protection, and redirects without editing the main Apache configuration. To use <code>.htaccess</code> files, <code>AllowOverride All</code> must be set in the Directory block for that path.</p>
+
+  <h3>Password Protection with Basic Authentication</h3>
+  <p>HTTP Basic Authentication challenges the user with a username/password dialog before serving any content from the protected directory. Credentials are stored in a flat <code>.htpasswd</code> file using a hashed format.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Both Platforms — Create the .htpasswd file</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Install apache2-utils (Debian) / httpd-tools (Red Hat) for htpasswd</span>
+<span class="cmd">sudo apt install</span> apache2-utils      <span class="cm"># Debian</span>
+<span class="cmd">sudo dnf install</span> httpd-tools        <span class="cm"># Red Hat</span>
+
+<span class="cm"># Create a new .htpasswd file with first user (-c creates the file)</span>
+<span class="cmd">sudo htpasswd</span> <span class="fl">-c</span> /etc/apache2/.htpasswd admin
+<span class="out">New password: ••••••••</span>
+<span class="out">Re-type new password: ••••••••</span>
+<span class="out">Adding password for user admin</span>
+
+<span class="cm"># Add additional users (omit -c or it will overwrite the file)</span>
+<span class="cmd">sudo htpasswd</span> /etc/apache2/.htpasswd philip
+
+<span class="cm"># View the file (passwords are hashed — not plain text)</span>
+<span class="cmd">cat</span> /etc/apache2/.htpasswd
+<span class="out">admin:$apr1$rBGHs...$XQm4...</span>
+<span class="out">philip:$apr1$tYKmn...$nWp5...</span>
+
+<span class="cm"># Delete a user from the file</span>
+<span class="cmd">sudo htpasswd</span> <span class="fl">-D</span> /etc/apache2/.htpasswd philip</code>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">.htaccess — Password Protect a Directory</div>
+    <div class="ex-desc">Place this <code>.htaccess</code> file inside the directory you want to protect (e.g. <code>/var/www/mysite/admin/.htaccess</code>).</div>
+<code class="code-block"><span class="cm"># Set the authentication type</span>
+<span class="kw">AuthType</span> Basic
+
+<span class="cm"># The name shown in the browser's password dialog</span>
+<span class="kw">AuthName</span> <span class="st">"Restricted Area — Authorised Users Only"</span>
+
+<span class="cm"># Point to the .htpasswd file (use an absolute path)</span>
+<span class="kw">AuthUserFile</span> /etc/apache2/.htpasswd
+
+<span class="cm"># Require a valid user from the .htpasswd file</span>
+<span class="kw">Require</span> valid-user</code>
+  </div>
+
+  <h3>IP-Based Access Control</h3>
+  <div class="example-block">
+    <div class="ex-title">.htaccess — Allow or Deny by IP Address</div>
+    <div class="ex-desc">Restrict access to specific IP addresses or ranges. Useful for admin areas that should only be accessible from a known office IP.</div>
+<code class="code-block"><span class="cm"># Allow only a specific IP — deny everyone else</span>
+<span class="kw">Require</span> ip 192.168.1.100
+
+<span class="cm"># Allow a subnet (CIDR notation)</span>
+<span class="kw">Require</span> ip 192.168.1.0/24
+
+<span class="cm"># Allow multiple IPs</span>
+<span class="kw">Require</span> ip 192.168.1.100 203.0.113.50
+
+<span class="cm"># Allow a specific IP OR a valid password user (either is sufficient)</span>
+<span class="kw">&lt;RequireAny&gt;</span>
+    <span class="kw">Require</span> ip 192.168.1.0/24
+    <span class="kw">Require</span> valid-user
+<span class="kw">&lt;/RequireAny&gt;</span>
+
+<span class="cm"># Block a specific IP, allow everyone else</span>
+<span class="kw">&lt;RequireAll&gt;</span>
+    <span class="kw">Require</span> all granted
+    <span class="kw">Require</span> not ip 203.0.113.99
+<span class="kw">&lt;/RequireAll&gt;</span></code>
+  </div>
+
+  <h3>Disable Directory Listing</h3>
+  <div class="example-block">
+    <div class="ex-title">.htaccess — Prevent Apache Listing Directory Contents</div>
+    <div class="ex-desc">By default, if no index file is found, Apache may display a list of all files in the directory. This is a security risk — disable it.</div>
+<code class="code-block"><span class="cm"># Remove the Indexes option — disables automatic directory listings</span>
+<span class="kw">Options</span> -Indexes
+
+<span class="cm"># Also deny direct access to sensitive file types</span>
+<span class="kw">&lt;FilesMatch</span> <span class="st">"\.(env|log|sql|bak|conf)$"</span><span class="kw">&gt;</span>
+    <span class="kw">Require</span> all denied
+<span class="kw">&lt;/FilesMatch&gt;</span></code>
+  </div>
+
+  <div class="warn-box">
+    <strong>⚠️ HTTP Basic Auth sends credentials Base64-encoded, not encrypted.</strong> Always combine Basic Authentication with HTTPS — over plain HTTP, usernames and passwords can be intercepted trivially. Basic Auth over HTTP is effectively no security at all.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. REWRITE A URL WITH .htaccess
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Rewrite a URL with a .htaccess File</h2>
+  <p class="section-intro"><code>mod_rewrite</code> is Apache's URL rewriting engine. It allows you to transform request URLs on the fly — redirecting HTTP to HTTPS, removing <code>www</code>, creating clean URLs, or routing all requests through a single entry point (as used by most PHP and Python web frameworks).</p>
+
+  <div class="info-box">
+    <strong>Prerequisite:</strong> <code>mod_rewrite</code> must be enabled and <code>AllowOverride All</code> must be set for the directory in the Apache configuration. Enable on Debian with <code>sudo a2enmod rewrite</code>; on Red Hat it is usually enabled by default.
+  </div>
+
+  <h3>RewriteRule Syntax</h3>
+  <div class="example-block">
+    <div class="ex-title">Understanding the RewriteRule Format</div>
+<code class="code-block"><span class="cm"># RewriteRule Pattern Substitution [Flags]</span>
+<span class="cm">#</span>
+<span class="cm"># Pattern     — a regex matched against the URL path (after the domain)</span>
+<span class="cm"># Substitution — what to rewrite the URL to</span>
+<span class="cm"># Flags        — modifiers in square brackets</span>
+
+<span class="cm"># Common flags:</span>
+<span class="cm">#   [L]       — Last rule: stop processing further rules if this matches</span>
+<span class="cm">#   [R=301]   — Redirect with HTTP 301 (permanent)</span>
+<span class="cm">#   [R=302]   — Redirect with HTTP 302 (temporary)</span>
+<span class="cm">#   [NC]      — No Case: case-insensitive pattern matching</span>
+<span class="cm">#   [QSA]     — Query String Append: keep original query string</span>
+<span class="cm">#   [P]       — Proxy: pass the request to a backend (requires mod_proxy)</span>
+<span class="cm">#   [F]       — Forbidden: return 403 for matching requests</span>
+<span class="cm">#   [G]       — Gone: return 410 for matching requests</span></code>
+  </div>
+
+  <h3>Common Rewrite Recipes</h3>
+  <div class="example-block">
+    <div class="ex-title">Recipe 1 — Force HTTPS (redirect all HTTP traffic)</div>
+<code class="code-block"><span class="kw">RewriteEngine</span> On
+
+<span class="cm"># Check if the connection is NOT already HTTPS</span>
+<span class="kw">RewriteCond</span> %{HTTPS} off
+
+<span class="cm"># Redirect everything to the HTTPS equivalent URL</span>
+<span class="kw">RewriteRule</span> ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Recipe 2 — Force www (or remove www)</div>
+<code class="code-block"><span class="kw">RewriteEngine</span> On
+
+<span class="cm"># Redirect non-www to www</span>
+<span class="kw">RewriteCond</span> %{HTTP_HOST} !^www\. [NC]
+<span class="kw">RewriteRule</span> ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+<span class="cm"># --- OR --- redirect www to non-www</span>
+<span class="kw">RewriteCond</span> %{HTTP_HOST} ^www\.(.+)$ [NC]
+<span class="kw">RewriteRule</span> ^ https://%1%{REQUEST_URI} [L,R=301]
+<span class="cm"># %1 captures the domain without www from the RewriteCond group</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Recipe 3 — Clean URLs (remove .html extension)</div>
+<code class="code-block"><span class="kw">RewriteEngine</span> On
+
+<span class="cm"># If the request is not for a real file or directory...</span>
+<span class="kw">RewriteCond</span> %{REQUEST_FILENAME} !-f
+<span class="kw">RewriteCond</span> %{REQUEST_FILENAME} !-d
+
+<span class="cm"># ...try adding .html and serve it silently (no redirect)</span>
+<span class="kw">RewriteRule</span> ^([^\.]+)$ $1.html [NC,L]
+
+<span class="cm"># Result: /about  →  serves /about.html (URL stays clean)</span></code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Recipe 4 — Single Entry Point (SPA / Framework routing)</div>
+<code class="code-block"><span class="kw">RewriteEngine</span> On
+<span class="kw">RewriteBase</span> /
+
+<span class="cm"># Don't rewrite actual files (CSS, JS, images)</span>
+<span class="kw">RewriteCond</span> %{REQUEST_FILENAME} !-f
+
+<span class="cm"># Don't rewrite actual directories</span>
+<span class="kw">RewriteCond</span> %{REQUEST_FILENAME} !-d
+
+<span class="cm"># Route everything else through index.html (React / Vue / etc.)</span>
+<span class="kw">RewriteRule</span> . /index.html [L]</code>
+  </div>
+
+  <div class="example-block">
+    <div class="ex-title">Recipe 5 — Permanent URL redirect (moved page)</div>
+<code class="code-block"><span class="kw">RewriteEngine</span> On
+
+<span class="cm"># Redirect an old page URL to a new one permanently</span>
+<span class="kw">RewriteRule</span> ^old-page\.html$ /new-page [R=301,L]
+
+<span class="cm"># Redirect an entire old directory to a new location</span>
+<span class="kw">RewriteRule</span> ^blog/(.*)$ /articles/$1 [R=301,L]
+<span class="cm"># Example: /blog/2024/post-1  →  /articles/2024/post-1</span></code>
+  </div>
+
+  <div class="tip-box">
+    <strong>💡 Test rewrites with curl, not your browser.</strong> Browsers aggressively cache 301 redirects. If a rewrite rule is not behaving as expected, always test with <code>curl -v http://yoursite.com/path</code> first — it shows the exact HTTP response headers including Location. Clear your browser cache or use a private window when testing redirects.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. CHAPTER QUIZ
+  ═══════════════════════════════════════════ -->
+  <h2>📝 Chapter Quiz</h2>
+
+  <div class="quiz-intro">
+    <strong>20 questions</strong> covering SSL/TLS, certificates, HTTPS configuration, .htaccess authentication, and URL rewriting. <strong>Click an answer</strong> to select it, then click <strong>Check Answer</strong> to see if you were right. Your score is tracked below.
+  </div>
+
+  <!-- Q1 -->
+  <div class="quiz-card" id="q1">
+    <div class="quiz-q-num">Question 1 of 20</div>
+    <div class="quiz-q-text">What port does HTTPS use by default?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>80</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>8080</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>443</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>8443</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-card" id="q2">
+    <div class="quiz-q-num">Question 2 of 20</div>
+    <div class="quiz-q-text">What does SSL stand for?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>Secure Shell Layer</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">B</span>Secure Sockets Layer</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>System Security Layer</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>Site Security Link</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-card" id="q3">
+    <div class="quiz-q-num">Question 3 of 20</div>
+    <div class="quiz-q-text">Which Apache module must be enabled to support HTTPS traffic?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>mod_https</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>mod_tls</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>mod_ssl</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>mod_secure</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-card" id="q4">
+    <div class="quiz-q-num">Question 4 of 20</div>
+    <div class="quiz-q-text">What is the main practical difference between a self-signed certificate and one from a CA?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>Self-signed certs use stronger encryption</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">B</span>Self-signed certs are not trusted by browsers by default</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>Self-signed certs expire faster</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>Self-signed certs only work on localhost</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-card" id="q5">
+    <div class="quiz-q-num">Question 5 of 20</div>
+    <div class="quiz-q-text">Which OpenSSL command generates a new private key and self-signed certificate together in one step?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>openssl genrsa -out mysite.key</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>openssl x509 -newcert mysite.crt</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>openssl req -x509 -nodes -newkey rsa:2048</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>openssl ca -selfsign -out mysite.crt</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-card" id="q6">
+    <div class="quiz-q-num">Question 6 of 20</div>
+    <div class="quiz-q-text">What file permissions should the Apache private key file have?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>644 (rw-r--r--)</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>755 (rwxr-xr-x)</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>600 (rw-------)</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>777 (rwxrwxrwx)</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-card" id="q7">
+    <div class="quiz-q-num">Question 7 of 20</div>
+    <div class="quiz-q-text">Which free Certificate Authority is most commonly used to obtain trusted SSL certificates for Apache?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>VeriSign</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>DigiCert</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>Let's Encrypt</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>Comodo</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-card" id="q8">
+    <div class="quiz-q-num">Question 8 of 20</div>
+    <div class="quiz-q-text">What tool is used to automatically obtain and renew Let's Encrypt certificates on Apache?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>openssl</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">B</span>certbot</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>acme-client</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>ssl-renew</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q9 -->
+  <div class="quiz-card" id="q9">
+    <div class="quiz-q-num">Question 9 of 20</div>
+    <div class="quiz-q-text">How long are Let's Encrypt certificates valid before they expire?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>1 year</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>6 months</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>90 days</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>2 years</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q10 -->
+  <div class="quiz-card" id="q10">
+    <div class="quiz-q-num">Question 10 of 20</div>
+    <div class="quiz-q-text">Which Apache directive enables SSL processing inside a VirtualHost block?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>SSLOn</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>SSLActive On</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>SSLEngine On</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>UseSSL On</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q11 -->
+  <div class="quiz-card" id="q11">
+    <div class="quiz-q-num">Question 11 of 20</div>
+    <div class="quiz-q-text">Which Apache directive specifies the path to the SSL certificate file?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>SSLCertFile</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">B</span>SSLCertificateFile</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>CertificatePath</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>SSLCert</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q12 -->
+  <div class="quiz-card" id="q12">
+    <div class="quiz-q-num">Question 12 of 20</div>
+    <div class="quiz-q-text">Which HTTP status code should a permanent HTTP-to-HTTPS redirect use?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>302</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">B</span>301</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>200</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>403</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q13 -->
+  <div class="quiz-card" id="q13">
+    <div class="quiz-q-num">Question 13 of 20</div>
+    <div class="quiz-q-text">Which command creates a new .htpasswd file and adds a user called "admin"?</div>
+    <div class="quiz-options">
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">A</span>sudo htpasswd -c /etc/apache2/.htpasswd admin</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>sudo htpasswd -n /etc/apache2/.htpasswd admin</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>sudo apache2 --adduser admin .htpasswd</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>sudo passwd --htaccess admin</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q14 -->
+  <div class="quiz-card" id="q14">
+    <div class="quiz-q-num">Question 14 of 20</div>
+    <div class="quiz-q-text">Which .htaccess directive points Apache to the file containing hashed user passwords?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>AuthPasswordFile</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>AuthFile</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>AuthUserFile</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>PasswordFile</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q15 -->
+  <div class="quiz-card" id="q15">
+    <div class="quiz-q-num">Question 15 of 20</div>
+    <div class="quiz-q-text">Which .htaccess directive allows access to any user with a valid entry in the .htpasswd file?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>Require user *</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>Allow authenticated</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>Require valid-user</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>AuthRequired on</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q16 -->
+  <div class="quiz-card" id="q16">
+    <div class="quiz-q-num">Question 16 of 20</div>
+    <div class="quiz-q-text">Which .htaccess directive restricts access to a specific IP address using Apache 2.4 syntax?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>Allow from 192.168.1.100</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>Require host 192.168.1.100</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>Require ip 192.168.1.100</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>DenyAll; AllowFrom 192.168.1.100</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q17 -->
+  <div class="quiz-card" id="q17">
+    <div class="quiz-q-num">Question 17 of 20</div>
+    <div class="quiz-q-text">Which Apache module must be enabled for URL rewriting rules in a .htaccess file to work?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>mod_alias</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">B</span>mod_redirect</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">C</span>mod_rewrite</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>mod_url</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q18 -->
+  <div class="quiz-card" id="q18">
+    <div class="quiz-q-num">Question 18 of 20</div>
+    <div class="quiz-q-text">What directive must appear before any RewriteRule in a .htaccess file?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>RewriteStart On</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">B</span>RewriteEngine On</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>RewriteBase /</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>RewriteOn</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q19 -->
+  <div class="quiz-card" id="q19">
+    <div class="quiz-q-num">Question 19 of 20</div>
+    <div class="quiz-q-text">Which RewriteCond checks that the current request is NOT already using HTTPS?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>RewriteCond %{SERVER_PORT} !443</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">B</span>RewriteCond %{HTTPS} off</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>RewriteCond %{HTTP} !secure</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>RewriteCond %{SSL} =off</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <!-- Q20 -->
+  <div class="quiz-card" id="q20">
+    <div class="quiz-q-num">Question 20 of 20</div>
+    <div class="quiz-q-text">In a RewriteRule, which flag combination causes a permanent redirect (as opposed to silently rewriting the URL internally)?</div>
+    <div class="quiz-options">
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">A</span>[R,L]</div>
+      <div class="quiz-option correct" onclick="selectOption(this)"><span class="opt-letter">B</span>[R=301,L]</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">C</span>[P,L]</div>
+      <div class="quiz-option" onclick="selectOption(this)"><span class="opt-letter">D</span>[F,L]</div>
+    </div>
+    <button class="check-btn" onclick="checkAnswer(this)">Check Answer</button>
+  </div>
+
+  <div class="quiz-score-area">
+    <div class="score-label">
+      Your score so far — answers are checked as you go.<br>
+      <strong>Select an option then click Check Answer for each question.</strong>
+    </div>
+    <div class="score-number"><span id="score-display">0</span> <span>/ 20</span></div>
+  </div>
+
+</div><!-- /lx-lesson -->

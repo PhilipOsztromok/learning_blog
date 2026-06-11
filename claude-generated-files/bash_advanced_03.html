@@ -1,0 +1,741 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 3 — Advanced Array Patterns</h1>
+<p>Bash arrays go far deeper than iteration and length. This chapter covers the patterns
+that turn arrays into real data structures: sparse indexing, simulated multidimensional
+layouts, associative-array techniques, set algebra, in-place sorting, and serialisation
+strategies that survive process boundaries. All examples assume Bash 4.2 or later.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — Indexed Array Internals: Sparse Arrays</h2>
+
+<p>Bash indexed arrays are <em>sparse</em> — indices need not be contiguous, and a large
+highest index does not allocate intermediate memory. This is different from arrays in
+most languages and enables some useful patterns but also some surprising traps.</p>
+
+<pre><span class="cm"># Sparse assignment — gaps are fine</span>
+<span class="vr">arr</span>[<span class="nu">0</span>]<span class="op">=</span>first
+<span class="vr">arr</span>[<span class="nu">100</span>]<span class="op">=</span>hundredth
+<span class="cmd">echo</span> <span class="st">"${#arr[@]}"</span>    <span class="cm"># 2 — counts ELEMENTS, not highest index</span>
+<span class="cmd">echo</span> <span class="st">"${!arr[@]}"</span>   <span class="cm"># 0 100 — the actual indices (keys)</span>
+
+<span class="cm"># Length vs highest index trap</span>
+<span class="vr">arr</span><span class="op">=</span>( a b c )
+<span class="vr">arr</span>[<span class="nu">99</span>]<span class="op">=</span>z
+<span class="cmd">echo</span> <span class="st">"${#arr[@]}"</span>    <span class="cm"># 4  — four elements</span>
+<span class="cmd">echo</span> <span class="st">"${arr[-1]}"</span>    <span class="cm"># z  — negative indices count from highest key (bash 4.3+)</span>
+
+<span class="cm"># Iterating sparse arrays safely — always use ${!arr[@]}</span>
+<span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> <span class="st">"${!arr[@]}"</span>; <span class="kw">do</span>
+  <span class="cmd">printf</span> <span class="st">'[%d] = %s\n'</span> <span class="st">"<span class="vr">$i</span>"</span> <span class="st">"${arr[$i]}"</span>
+<span class="kw">done</span>
+
+<span class="cm"># Dangerous: for (( i=0; i<${#arr[@]}; i++ )) skips sparse gaps</span>
+<span class="cm"># Safe: iterate keys with ${!arr[@]}</span>
+
+<span class="cm"># Compact a sparse array back to contiguous 0-based</span>
+<span class="vr">compact</span><span class="op">=</span>( <span class="st">"${arr[@]}"</span> )   <span class="cm"># re-index as 0,1,2,... — values preserved, gaps removed</span></pre>
+
+<h3>Unsetting and re-packing</h3>
+<pre><span class="vr">arr</span><span class="op">=</span>( a b c d e )
+<span class="kw">unset</span> <span class="st">'arr[2]'</span>          <span class="cm"># removes index 2 — array is now sparse: 0,1,3,4</span>
+<span class="cmd">echo</span> <span class="st">"${arr[@]}"</span>        <span class="cm"># a b d e  — gap is invisible in values</span>
+<span class="cmd">echo</span> <span class="st">"${!arr[@]}"</span>       <span class="cm"># 0 1 3 4</span>
+
+<span class="cm"># Remove element by value — filter into a new array</span>
+<span class="fn">array_remove_value</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__arr</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__target</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">__new</span><span class="op">=</span>()
+  <span class="kw">local</span> <span class="vr">__elem</span>
+  <span class="kw">for</span> <span class="vr">__elem</span> <span class="kw">in</span> <span class="st">"${__arr[@]}"</span>; <span class="kw">do</span>
+    [[ <span class="vr">$__elem</span> <span class="op">!=</span> <span class="st">"<span class="vr">$__target</span>"</span> ]] <span class="op">&&</span> <span class="vr">__new</span><span class="op">+=</span>( <span class="st">"<span class="vr">$__elem</span>"</span> )
+  <span class="kw">done</span>
+  <span class="vr">__arr</span><span class="op">=</span>( <span class="st">"${__new[@]}"</span> )
+}
+
+<span class="vr">fruits</span><span class="op">=</span>( apple banana cherry banana )
+<span class="fn">array_remove_value</span> fruits banana
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${fruits[@]}"</span>   <span class="cm"># apple  cherry</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — Simulating 2D Arrays</h2>
+
+<p>Bash has no multidimensional arrays. The standard workaround encodes two indices
+into a single key using a separator that cannot appear in the data.</p>
+
+<h3>Associative array with compound key</h3>
+<pre><span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">grid</span>
+
+<span class="cm"># Store grid[row,col] using comma as separator</span>
+<span class="fn">grid_set</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__g</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="vr">__g</span>[<span class="st">"${2},${3}"</span>]<span class="op">=</span><span class="st">"$4"</span>
+}
+<span class="fn">grid_get</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__g</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"${__g["${2},${3}"]}"</span>
+}
+
+<span class="fn">grid_set</span> grid <span class="nu">0</span> <span class="nu">0</span> <span class="st">'top-left'</span>
+<span class="fn">grid_set</span> grid <span class="nu">0</span> <span class="nu">1</span> <span class="st">'top-right'</span>
+<span class="fn">grid_set</span> grid <span class="nu">1</span> <span class="nu">0</span> <span class="st">'bottom-left'</span>
+
+<span class="fn">grid_get</span> grid <span class="nu">0</span> <span class="nu">1</span>   <span class="cm"># top-right</span>
+
+<span class="cm"># Iterate all cells: parse the compound key</span>
+<span class="kw">for</span> <span class="vr">key</span> <span class="kw">in</span> <span class="st">"${!grid[@]}"</span>; <span class="kw">do</span>
+  <span class="vr">row</span><span class="op">=</span><span class="st">"${key%%,*}"</span>
+  <span class="vr">col</span><span class="op">=</span><span class="st">"${key##*,}"</span>
+  <span class="cmd">printf</span> <span class="st">'grid[%s][%s] = %s\n'</span> <span class="st">"<span class="vr">$row</span>"</span> <span class="st">"<span class="vr">$col</span>"</span> <span class="st">"${grid[$key]}"</span>
+<span class="kw">done</span></pre>
+
+<h3>Maps of arrays via name-prefix convention</h3>
+<p>When you need a true map-of-arrays (e.g. a graph's adjacency list), use a naming
+convention to synthesise array names dynamically.</p>
+
+<pre><span class="cm"># Adjacency list: graph_edges_NODE is an array of neighbours</span>
+<span class="fn">graph_add_edge</span>() {
+  <span class="kw">local</span> <span class="vr">from</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">to</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">arrname</span><span class="op">=</span><span class="st">"graph_edges_${from}"</span>
+  <span class="kw">declare</span> <span class="fl">-ga</span> <span class="st">"<span class="vr">$arrname</span>"</span>    <span class="cm"># declare global array if not yet existing</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__edges</span><span class="op">=</span><span class="st">"<span class="vr">$arrname</span>"</span>
+  <span class="vr">__edges</span><span class="op">+=</span>( <span class="st">"<span class="vr">$to</span>"</span> )
+}
+
+<span class="fn">graph_neighbours</span>() {
+  <span class="kw">local</span> <span class="vr">arrname</span><span class="op">=</span><span class="st">"graph_edges_${1}"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__edges</span><span class="op">=</span><span class="st">"<span class="vr">$arrname</span>"</span>
+  <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${__edges[@]}"</span>
+}
+
+<span class="fn">graph_add_edge</span> A B
+<span class="fn">graph_add_edge</span> A C
+<span class="fn">graph_add_edge</span> B D
+<span class="fn">graph_neighbours</span> A    <span class="cm"># B  C</span>
+<span class="fn">graph_neighbours</span> B    <span class="cm"># D</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — Associative Array Techniques</h2>
+
+<h3>Default values and the <code>-v</code> test</h3>
+<pre><span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">counts</span>
+
+<span class="cm"># Increment a counter — works even if key doesn't exist yet</span>
+<span class="fn">counter_inc</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__map</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__key</span><span class="op">=</span><span class="st">"$2"</span>
+  (( <span class="vr">__map</span>[<span class="st">"<span class="vr">$__key</span>"</span>]<span class="op">++</span> )) <span class="op">||</span> <span class="kw">true</span>   <span class="cm"># || true: (()) exits 1 when result is 0</span>
+}
+
+<span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">word</span>; <span class="kw">do</span>
+  <span class="fn">counter_inc</span> counts <span class="st">"<span class="vr">$word</span>"</span>
+<span class="kw">done</span> <span class="op"><</span> <span class="pth">words.txt</span>
+
+<span class="cm"># Print sorted by count descending</span>
+<span class="kw">for</span> <span class="vr">word</span> <span class="kw">in</span> <span class="st">"${!counts[@]}"</span>; <span class="kw">do</span>
+  <span class="cmd">printf</span> <span class="st">'%d\t%s\n'</span> <span class="st">"${counts[$word]}"</span> <span class="st">"<span class="vr">$word</span>"</span>
+<span class="kw">done</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-rn</span>
+
+<span class="cm"># Test if a key exists (vs testing if value is empty)</span>
+[[ <span class="fl">-v</span> <span class="st">'counts[hello]'</span> ]] <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"key exists"</span>
+<span class="cm"># Note: quote the subscript to prevent glob expansion of the key</span></pre>
+
+<h3>Copying and merging associative arrays</h3>
+<pre><span class="cm"># Deep copy — no built-in; iterate and assign</span>
+<span class="fn">assoc_copy</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__src</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">__dst</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">__k</span>
+  <span class="kw">for</span> <span class="vr">__k</span> <span class="kw">in</span> <span class="st">"${!__src[@]}"</span>; <span class="kw">do</span>
+    <span class="vr">__dst</span>[<span class="st">"<span class="vr">$__k</span>"</span>]<span class="op">=</span><span class="st">"${__src[$__k]}"</span>
+  <span class="kw">done</span>
+}
+
+<span class="cm"># Merge b into a — b wins on key conflicts</span>
+<span class="fn">assoc_merge</span>() {
+  <span class="fn">assoc_copy</span> <span class="st">"$2"</span> <span class="st">"$1"</span>   <span class="cm"># copy src (b) into dst (a) — overwrites existing keys</span>
+}
+
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">defaults</span><span class="op">=</span>( [color]=blue [size]=medium [weight]=light )
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">overrides</span><span class="op">=</span>( [color]=red [extra]=yes )
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">config</span>
+<span class="fn">assoc_copy</span>  defaults  config
+<span class="fn">assoc_merge</span> config    overrides
+<span class="cm"># config: color=red size=medium weight=light extra=yes</span></pre>
+
+<h3>Inverting a map</h3>
+<pre><span class="fn">assoc_invert</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__src</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">__dst</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">__k</span>
+  <span class="kw">for</span> <span class="vr">__k</span> <span class="kw">in</span> <span class="st">"${!__src[@]}"</span>; <span class="kw">do</span>
+    <span class="vr">__dst</span>[<span class="st">"${__src[$__k]}"</span>]<span class="op">=</span><span class="st">"<span class="vr">$__k</span>"</span>
+  <span class="kw">done</span>
+}
+
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">code_to_name</span><span class="op">=</span>( [US]=<span class="st">'United States'</span> [DE]=Germany [JP]=Japan )
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">name_to_code</span>
+<span class="fn">assoc_invert</span> code_to_name name_to_code
+<span class="cmd">echo</span> <span class="st">"${name_to_code[Germany]}"</span>   <span class="cm"># DE</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — Set Operations</h2>
+
+<p>Treating arrays as mathematical sets — union, intersection, and difference —
+is a common need when comparing lists of servers, features, or packages.</p>
+
+<h3>Union</h3>
+<pre><span class="fn">array_union</span>() {
+  <span class="cm"># Stores union of arrays $1 and $2 into array $3</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">__b</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">__out</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">__seen</span>
+  <span class="kw">local</span> <span class="vr">__e</span>
+  <span class="vr">__out</span><span class="op">=</span>()
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__a[@]}"</span> <span class="st">"${__b[@]}"</span>; <span class="kw">do</span>
+    <span class="kw">if</span> [[ <span class="op">!</span> <span class="fl">-v</span> <span class="st">'__seen[$__e]'</span> ]]; <span class="kw">then</span>
+      <span class="vr">__out</span><span class="op">+=</span>( <span class="st">"<span class="vr">$__e</span>"</span> )
+      <span class="vr">__seen</span>[<span class="st">"<span class="vr">$__e</span>"</span>]<span class="op">=</span><span class="nu">1</span>
+    <span class="kw">fi</span>
+  <span class="kw">done</span>
+}</pre>
+
+<h3>Intersection</h3>
+<pre><span class="fn">array_intersect</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">__b</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">__out</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">__in_b</span>
+  <span class="kw">local</span> <span class="vr">__e</span>
+  <span class="vr">__out</span><span class="op">=</span>()
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__b[@]}"</span>; <span class="kw">do</span> <span class="vr">__in_b</span>[<span class="st">"<span class="vr">$__e</span>"</span>]<span class="op">=</span><span class="nu">1</span>; <span class="kw">done</span>
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__a[@]}"</span>; <span class="kw">do</span>
+    [[ <span class="fl">-v</span> <span class="st">'__in_b[$__e]'</span> ]] <span class="op">&&</span> <span class="vr">__out</span><span class="op">+=</span>( <span class="st">"<span class="vr">$__e</span>"</span> )
+  <span class="kw">done</span>
+}</pre>
+
+<h3>Difference (A minus B)</h3>
+<pre><span class="fn">array_diff</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">__b</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">__out</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">__in_b</span>
+  <span class="kw">local</span> <span class="vr">__e</span>
+  <span class="vr">__out</span><span class="op">=</span>()
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__b[@]}"</span>; <span class="kw">do</span> <span class="vr">__in_b</span>[<span class="st">"<span class="vr">$__e</span>"</span>]<span class="op">=</span><span class="nu">1</span>; <span class="kw">done</span>
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__a[@]}"</span>; <span class="kw">do</span>
+    [[ <span class="op">!</span> <span class="fl">-v</span> <span class="st">'__in_b[$__e]'</span> ]] <span class="op">&&</span> <span class="vr">__out</span><span class="op">+=</span>( <span class="st">"<span class="vr">$__e</span>"</span> )
+  <span class="kw">done</span>
+}
+
+<span class="cm"># Demonstration</span>
+<span class="vr">installed</span><span class="op">=</span>( curl wget git vim tmux )
+<span class="vr">required</span><span class="op">=</span>( git vim jq fzf )
+
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">missing</span> <span class="vr">common</span> <span class="vr">all_tools</span>
+<span class="fn">array_diff</span>      required  installed  missing
+<span class="fn">array_intersect</span> required  installed  common
+<span class="fn">array_union</span>     required  installed  all_tools
+
+<span class="cmd">printf</span> <span class="st">'Missing: %s\n'</span>   <span class="st">"${missing[@]}"</span>    <span class="cm"># jq  fzf</span>
+<span class="cmd">printf</span> <span class="st">'Common:  %s\n'</span>   <span class="st">"${common[@]}"</span>     <span class="cm"># git  vim</span>
+<span class="cmd">printf</span> <span class="st">'All:     %s\n'</span>   <span class="st">"${all_tools[@]}"</span>  <span class="cm"># git  vim  jq  fzf  curl  wget  tmux</span></pre>
+
+<div class="note">
+<strong>Using a temporary <code>declare -A</code> inside a function:</strong> the
+<span class="inline-code">-A</span> inside the set-operation functions is <em>local</em> because
+<span class="inline-code">declare</span> inside a function creates a local variable by default.
+The <span class="inline-code">-g</span> flag would make it global — do not add it here.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — In-Place Sorting</h2>
+
+<p>Bash provides no built-in sort for arrays. The idiomatic solution routes values
+through the external <span class="inline-code">sort</span> command; for pure-Bash sorting
+(no fork), use a simple insertion sort or use
+<span class="inline-code">readarray</span> + <span class="inline-code">sort</span>.</p>
+
+<h3>Sort via <code>sort</code> command — simple and fast</h3>
+<pre><span class="fn">array_sort</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__arr</span><span class="op">=</span><span class="st">"$1"</span>; <span class="kw">shift</span>
+  <span class="cm"># Pass remaining args to sort (e.g. -r -n -u)</span>
+  <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">__sorted</span>
+  <span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">__sorted</span> <span class="op"><</span> <span class="op"><</span>(<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${__arr[@]}"</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="st">"$@"</span>)
+  <span class="vr">__arr</span><span class="op">=</span>( <span class="st">"${__sorted[@]}"</span> )
+}
+
+<span class="vr">names</span><span class="op">=</span>( Charlie Alice Bob Delta Alice )
+<span class="fn">array_sort</span> names           <span class="cm"># ascending lexicographic</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${names[@]}"</span>
+<span class="cm"># Alice Alice Bob Charlie Delta</span>
+
+<span class="fn">array_sort</span> names <span class="fl">-ru</span>        <span class="cm"># reverse, unique</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${names[@]}"</span>
+<span class="cm"># Delta Charlie Bob Alice</span>
+
+<span class="vr">nums</span><span class="op">=</span>( <span class="nu">10</span> <span class="nu">3</span> <span class="nu">200</span> <span class="nu">45</span> <span class="nu">7</span> )
+<span class="fn">array_sort</span> nums <span class="fl">-n</span>          <span class="cm"># numeric sort</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${nums[@]}"</span>
+<span class="cm"># 3 7 10 45 200</span></pre>
+
+<h3>Sort by a derived key (Schwartzian transform in Bash)</h3>
+<pre><span class="cm"># Sort files by their size without calling stat repeatedly</span>
+<span class="fn">sort_files_by_size</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__arr</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">__tagged</span> <span class="vr">__sorted</span>
+  <span class="kw">local</span> <span class="vr">__f</span>
+  <span class="cm"># Tag each filename with its size: "SIZE\tFILENAME"</span>
+  <span class="kw">for</span> <span class="vr">__f</span> <span class="kw">in</span> <span class="st">"${__arr[@]}"</span>; <span class="kw">do</span>
+    <span class="vr">__tagged</span><span class="op">+=</span>( <span class="st">"$(stat -c '%s' "<span class="vr">$__f</span>" 2>/dev/null || echo 0)<span class="op">$'\t'</span><span class="vr">$__f</span>"</span> )
+  <span class="kw">done</span>
+  <span class="cm"># Sort numerically, then strip the tag</span>
+  <span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">__sorted</span> <span class="op"><</span> <span class="op"><</span>(
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${__tagged[@]}"</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="fl">-n</span> <span class="op">|</span> <span class="cmd">cut</span> <span class="fl">-f2</span>
+  )
+  <span class="vr">__arr</span><span class="op">=</span>( <span class="st">"${__sorted[@]}"</span> )
+}
+
+<span class="vr">files</span><span class="op">=</span>( <span class="pth">/etc/hostname</span> <span class="pth">/etc/passwd</span> <span class="pth">/etc/shells</span> )
+<span class="fn">sort_files_by_size</span> files
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${files[@]}"</span></pre>
+
+<h3>Pure-Bash insertion sort (no fork)</h3>
+<pre><span class="fn">array_isort</span>() {
+  <span class="cm"># In-place insertion sort — O(n²), use only for small arrays (&lt;100 elements)</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__i</span> <span class="vr">__j</span> <span class="vr">__key</span>
+  <span class="kw">for</span> (( <span class="vr">__i</span><span class="op">=</span><span class="nu">1</span>; <span class="vr">__i</span> <span class="op"><</span> <span class="st">"${#__a[@]}"</span>; <span class="vr">__i</span>++ )); <span class="kw">do</span>
+    <span class="vr">__key</span><span class="op">=</span><span class="st">"${__a[$__i]}"</span>
+    <span class="vr">__j</span><span class="op">=</span>$(( <span class="vr">__i</span> <span class="op">-</span> <span class="nu">1</span> ))
+    <span class="kw">while</span> (( <span class="vr">__j</span> <span class="op">>=</span> <span class="nu">0</span> )) <span class="op">&&</span> [[ <span class="st">"${__a[$__j]}"</span> <span class="op">></span> <span class="st">"<span class="vr">$__key</span>"</span> ]]; <span class="kw">do</span>
+      <span class="vr">__a</span>[$(( <span class="vr">__j</span> <span class="op">+</span> <span class="nu">1</span> ))]<span class="op">=</span><span class="st">"${__a[$__j]}"</span>
+      (( <span class="vr">__j</span>-- )) <span class="op">||</span> <span class="kw">true</span>
+    <span class="kw">done</span>
+    <span class="vr">__a</span>[$(( <span class="vr">__j</span> <span class="op">+</span> <span class="nu">1</span> ))]<span class="op">=</span><span class="st">"<span class="vr">$__key</span>"</span>
+  <span class="kw">done</span>
+}
+
+<span class="vr">words</span><span class="op">=</span>( banana apple cherry date elderberry )
+<span class="fn">array_isort</span> words
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${words[@]}"</span>
+<span class="cm"># apple banana cherry date elderberry</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — Array Serialisation and Deserialisation</h2>
+
+<p>Arrays exist only within a process. To pass them across process boundaries —
+into subshells, to other scripts, or into files — you must serialise them.
+There is no single universally correct format; choose based on what the data
+can contain.</p>
+
+<h3>Method 1: <code>declare -p</code> round-trip</h3>
+<pre><span class="cm"># declare -p produces valid Bash syntax that can be re-sourced</span>
+<span class="vr">arr</span><span class="op">=</span>( <span class="st">"hello world"</span> <span class="st">"foo's bar"</span> <span class="st">'line1\nline2'</span> )
+<span class="kw">declare</span> <span class="fl">-p</span> arr
+<span class="out">declare -a arr=([0]="hello world" [1]="foo's bar" [2]=$'line1\\nline2')</span>
+
+<span class="cm"># Save to file and restore in another script</span>
+<span class="kw">declare</span> <span class="fl">-p</span> arr <span class="op">></span> <span class="pth">/tmp/arr.bash</span>
+<span class="cm"># In another script:</span>
+<span class="kw">source</span> <span class="pth">/tmp/arr.bash</span>
+<span class="cm"># arr is now restored with identical contents</span>
+
+<span class="cm"># For associative arrays — identical pattern</span>
+<span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">map</span><span class="op">=</span>( [key1]=val1 [key2]=<span class="st">"with spaces"</span> )
+<span class="kw">declare</span> <span class="fl">-p</span> map <span class="op">></span> <span class="pth">/tmp/map.bash</span></pre>
+
+<div class="warn">
+<strong>Security:</strong> never <code>source</code> serialised data from an untrusted origin.
+<code>declare -p</code> output is executable shell code.
+Use NUL-delimited or JSON serialisation instead when the data comes from outside.
+</div>
+
+<h3>Method 2: NUL-delimited (safe for arbitrary content)</h3>
+<pre><span class="cm"># Serialise: print each element followed by NUL</span>
+<span class="fn">array_save_nul</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__file</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="cmd">printf</span> <span class="st">'%s\0'</span> <span class="st">"${__a[@]}"</span> <span class="op">></span> <span class="st">"<span class="vr">$__file</span>"</span>
+}
+
+<span class="cm"># Deserialise: read NUL-delimited elements</span>
+<span class="fn">array_load_nul</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__file</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="vr">__a</span><span class="op">=</span>()
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">__elem</span>; <span class="kw">do</span>
+    <span class="vr">__a</span><span class="op">+=</span>( <span class="st">"<span class="vr">$__elem</span>"</span> )
+  <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$__file</span>"</span>
+}
+
+<span class="vr">data</span><span class="op">=</span>( <span class="st">"element with spaces"</span> $<span class="st">'\twith\ttabs'</span> <span class="st">"line1</span>
+<span class="st">line2"</span> )
+<span class="fn">array_save_nul</span> data <span class="pth">/tmp/data.nul</span>
+
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">restored</span>
+<span class="fn">array_load_nul</span> restored <span class="pth">/tmp/data.nul</span>
+<span class="cmd">printf</span> <span class="st">'[%s]\n'</span> <span class="st">"${restored[@]}"</span>   <span class="cm"># identical to data</span></pre>
+
+<h3>Method 3: passing arrays across subshells via environment</h3>
+<pre><span class="cm"># Subshells inherit variables but NOT array contents directly.
+# Use declare -p to export, then eval to import.</span>
+
+<span class="fn">export_array</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__ref</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="cm"># Export as a string variable containing the declare -p output</span>
+  <span class="kw">export</span> <span class="st">"_EXPORTED_${name}"</span><span class="op">=</span><span class="st">"$(declare -p "<span class="vr">$name</span>")"</span>
+}
+
+<span class="fn">import_array</span>() {
+  <span class="kw">local</span> <span class="vr">name</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">varname</span><span class="op">=</span><span class="st">"_EXPORTED_${name}"</span>
+  <span class="kw">eval</span> <span class="st">"${!varname}"</span>   <span class="cm"># safe: we control the source (declare -p output)</span>
+}
+
+<span class="vr">myarr</span><span class="op">=</span>( one two three )
+<span class="fn">export_array</span> myarr
+<span class="cm"># In a child process (subshell, bash -c, etc.):</span>
+bash <span class="fl">-c</span> <span class="st">'source /dev/stdin &lt;&lt;&lt;"${_EXPORTED_myarr}"; printf "%s\n" "${myarr[@]}"'</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7 — Stack and Queue Patterns</h2>
+
+<pre><span class="cm"># Stack (LIFO) — push to end, pop from end</span>
+<span class="vr">stack</span><span class="op">=</span>()
+
+<span class="fn">stack_push</span>() { <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_s</span><span class="op">=</span><span class="st">"$1"</span>; <span class="vr">_s</span><span class="op">+=</span>( <span class="st">"$2"</span> ); }
+<span class="fn">stack_pop</span>()  {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_s</span><span class="op">=</span><span class="st">"$1"</span>
+  (( <span class="st">"${#_s[@]}"</span> <span class="op">></span> <span class="nu">0</span> )) <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"stack empty"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="cm"># Return value via a nameref</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_retval</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="vr">_retval</span><span class="op">=</span><span class="st">"${_s[-1]}"</span>
+  <span class="kw">unset</span> <span class="st">'_s[-1]'</span>
+}
+<span class="fn">stack_peek</span>() { <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_s</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">_r</span><span class="op">=</span><span class="st">"$2"</span>; <span class="vr">_r</span><span class="op">=</span><span class="st">"${_s[-1]}"</span>; }
+
+<span class="fn">stack_push</span> stack alpha
+<span class="fn">stack_push</span> stack beta
+<span class="fn">stack_push</span> stack gamma
+<span class="kw">declare</span> <span class="vr">top</span>
+<span class="fn">stack_pop</span>  stack top; <span class="cmd">echo</span> <span class="st">"popped: <span class="vr">$top</span>"</span>   <span class="cm"># gamma</span>
+<span class="fn">stack_pop</span>  stack top; <span class="cmd">echo</span> <span class="st">"popped: <span class="vr">$top</span>"</span>   <span class="cm"># beta</span>
+
+<span class="cm"># Queue (FIFO) — push to end, dequeue from front</span>
+<span class="vr">queue</span><span class="op">=</span>()
+<span class="fn">queue_enqueue</span>() { <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_q</span><span class="op">=</span><span class="st">"$1"</span>; <span class="vr">_q</span><span class="op">+=</span>( <span class="st">"$2"</span> ); }
+<span class="fn">queue_dequeue</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_q</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">_r</span><span class="op">=</span><span class="st">"$2"</span>
+  (( <span class="st">"${#_q[@]}"</span> <span class="op">></span> <span class="nu">0</span> )) <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"queue empty"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="vr">_r</span><span class="op">=</span><span class="st">"${_q[0]}"</span>
+  <span class="vr">_q</span><span class="op">=</span>( <span class="st">"${_q[@]:1}"</span> )   <span class="cm"># slice off first element — O(n)</span>
+}
+
+<span class="cm"># Note: queue_dequeue is O(n) due to the array re-assignment.
+# For high-throughput queues, track a head index instead:</span>
+<span class="vr">_queue_head</span><span class="op">=</span><span class="nu">0</span>
+<span class="fn">queue_dequeue_fast</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">_q</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">_r</span><span class="op">=</span><span class="st">"$2"</span>
+  (( <span class="vr">_queue_head</span> <span class="op"><</span> <span class="st">"${#_q[@]}"</span> )) <span class="op">||</span> { <span class="cmd">echo</span> <span class="er">"queue empty"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+  <span class="vr">_r</span><span class="op">=</span><span class="st">"${_q[$_queue_head]}"</span>
+  <span class="kw">unset</span> <span class="st">'_q[$_queue_head]'</span>
+  (( <span class="vr">_queue_head</span>++ )) <span class="op">||</span> <span class="kw">true</span>
+}</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Frequency map and top-N</h4>
+  <p>Write a function <code>top_n RETARRAY N FILE</code> that reads words from FILE
+  (one per line), counts their frequency using an associative array, and stores
+  the top N words (sorted by descending count) in RETARRAY as elements of the form
+  <code>COUNT:WORD</code>. Use only Bash built-ins plus <code>sort</code> — no <code>awk</code>,
+  <code>uniq</code>, or <code>cut</code>.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="fn">top_n</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__ret</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__n</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">local</span> <span class="vr">__file</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">__freq</span>
+  <span class="kw">local</span> <span class="vr">__word</span>
+
+  [[ <span class="fl">-f</span> <span class="st">"<span class="vr">$__file</span>"</span> ]] <span class="op">||</span> { <span class="cmd">printf</span> <span class="st">'top_n: file not found: %s\n'</span> <span class="st">"<span class="vr">$__file</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span>; }
+
+  <span class="kw">while</span> <span class="vr">IFS</span><span class="op">=</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">__word</span>; <span class="kw">do</span>
+    [[ <span class="fl">-z</span> <span class="st">"<span class="vr">$__word</span>"</span> ]] <span class="op">&&</span> <span class="kw">continue</span>
+    (( <span class="vr">__freq</span>[<span class="st">"<span class="vr">$__word</span>"</span>]<span class="op">++</span> )) <span class="op">||</span> <span class="kw">true</span>
+  <span class="kw">done</span> <span class="op"><</span> <span class="st">"<span class="vr">$__file</span>"</span>
+
+  <span class="cm"># Build "COUNT WORD" lines, sort numerically descending, take top N</span>
+  <span class="kw">local</span> <span class="fl">-a</span> <span class="vr">__lines</span>
+  <span class="kw">for</span> <span class="vr">__word</span> <span class="kw">in</span> <span class="st">"${!__freq[@]}"</span>; <span class="kw">do</span>
+    <span class="vr">__lines</span><span class="op">+=</span>( <span class="st">"${__freq[$__word]} <span class="vr">$__word</span>"</span> )
+  <span class="kw">done</span>
+
+  <span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="vr">__ret</span> <span class="op"><</span> <span class="op"><</span>(
+    <span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${__lines[@]}"</span> <span class="op">|</span>
+    <span class="cmd">sort</span> <span class="fl">-rn</span> <span class="op">|</span>
+    <span class="cmd">head</span> <span class="fl">-n</span> <span class="st">"<span class="vr">$__n</span>"</span> <span class="op">|</span>
+    <span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">__cnt</span> <span class="vr">__w</span>; <span class="kw">do</span>
+      <span class="cmd">printf</span> <span class="st">'%s:%s\n'</span> <span class="st">"<span class="vr">$__cnt</span>"</span> <span class="st">"<span class="vr">$__w</span>"</span>
+    <span class="kw">done</span>
+  )
+}
+
+<span class="cm"># Test</span>
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">result</span>
+<span class="fn">top_n</span> result <span class="nu">5</span> <span class="pth">/usr/share/dict/words</span>   <span class="cm"># or any word-per-line file</span>
+<span class="cmd">printf</span> <span class="st">'%s\n'</span> <span class="st">"${result[@]}"</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Symmetric difference and subset test</h4>
+  <p>Using the set-operation functions from section 4 as a starting point, implement:</p>
+  <ul>
+    <li><code>array_symdiff A B RESULT</code> — elements in A or B but not both</li>
+    <li><code>array_is_subset A B</code> — returns 0 if every element of A is in B, else 1</li>
+  </ul>
+  <p>Then demonstrate both with a server-role example:
+  <code>desired=(nginx certbot logrotate)</code> and
+  <code>installed=(nginx curl wget logrotate)</code>.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="fn">array_symdiff</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">__b</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">__out</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">__in_a</span> <span class="vr">__in_b</span>
+  <span class="kw">local</span> <span class="vr">__e</span>
+  <span class="vr">__out</span><span class="op">=</span>()
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__a[@]}"</span>; <span class="kw">do</span> <span class="vr">__in_a</span>[<span class="st">"<span class="vr">$__e</span>"</span>]<span class="op">=</span><span class="nu">1</span>; <span class="kw">done</span>
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__b[@]}"</span>; <span class="kw">do</span> <span class="vr">__in_b</span>[<span class="st">"<span class="vr">$__e</span>"</span>]<span class="op">=</span><span class="nu">1</span>; <span class="kw">done</span>
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__a[@]}"</span>; <span class="kw">do</span>
+    [[ <span class="op">!</span> <span class="fl">-v</span> <span class="st">'__in_b[$__e]'</span> ]] <span class="op">&&</span> <span class="vr">__out</span><span class="op">+=</span>( <span class="st">"<span class="vr">$__e</span>"</span> )
+  <span class="kw">done</span>
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__b[@]}"</span>; <span class="kw">do</span>
+    [[ <span class="op">!</span> <span class="fl">-v</span> <span class="st">'__in_a[$__e]'</span> ]] <span class="op">&&</span> <span class="vr">__out</span><span class="op">+=</span>( <span class="st">"<span class="vr">$__e</span>"</span> )
+  <span class="kw">done</span>
+}
+
+<span class="fn">array_is_subset</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">__b</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">__in_b</span>
+  <span class="kw">local</span> <span class="vr">__e</span>
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__b[@]}"</span>; <span class="kw">do</span> <span class="vr">__in_b</span>[<span class="st">"<span class="vr">$__e</span>"</span>]<span class="op">=</span><span class="nu">1</span>; <span class="kw">done</span>
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__a[@]}"</span>; <span class="kw">do</span>
+    [[ <span class="fl">-v</span> <span class="st">'__in_b[$__e]'</span> ]] <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">done</span>
+  <span class="kw">return</span> <span class="nu">0</span>
+}
+
+<span class="cm"># Demonstration</span>
+<span class="vr">desired</span><span class="op">=</span>( nginx certbot logrotate )
+<span class="vr">installed</span><span class="op">=</span>( nginx curl wget logrotate )
+
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">diff</span>
+<span class="fn">array_symdiff</span> desired installed diff
+<span class="cmd">printf</span> <span class="st">'Symmetric diff: %s\n'</span> <span class="st">"${diff[@]}"</span>
+<span class="cm"># certbot  curl  wget</span>
+
+<span class="kw">if</span> <span class="fn">array_is_subset</span> desired installed; <span class="kw">then</span>
+  <span class="cmd">echo</span> <span class="st">"All desired packages are installed"</span>
+<span class="kw">else</span>
+  <span class="cmd">echo</span> <span class="st">"Some desired packages are missing"</span>
+  <span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">missing</span>
+  <span class="fn">array_diff</span> desired installed missing   <span class="cm"># from section 4</span>
+  <span class="cmd">printf</span> <span class="st">'Install: %s\n'</span> <span class="st">"${missing[@]}"</span>
+<span class="kw">fi</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — Serialisation round-trip</h4>
+  <p>Write two functions <code>array_to_json ARRNAME</code> and
+  <code>json_to_array JSON ARRNAME</code> that serialise an indexed array to a
+  JSON array string and back. Requirements:</p>
+  <ul>
+    <li>Values may contain double quotes, backslashes, and newlines — escape them correctly</li>
+    <li>No external tools except <code>printf</code> (for serialisation); use
+    <code>jq</code> only for deserialisation</li>
+    <li>Demonstrate a round-trip: original array → JSON string → restored array,
+    verifying each element matches</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="fn">array_to_json</span>() {
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">__out</span><span class="op">=</span><span class="st">'['</span> <span class="vr">__sep</span><span class="op">=</span><span class="st">''</span> <span class="vr">__e</span> <span class="vr">__escaped</span>
+  <span class="kw">for</span> <span class="vr">__e</span> <span class="kw">in</span> <span class="st">"${__a[@]}"</span>; <span class="kw">do</span>
+    <span class="cm"># Escape: backslash first, then double-quote, then control chars</span>
+    <span class="vr">__escaped</span><span class="op">=</span><span class="st">"${__e//\\/\\\\}"</span>         <span class="cm"># \ → \\</span>
+    <span class="vr">__escaped</span><span class="op">=</span><span class="st">"${__escaped//\"/\\\"}"</span>   <span class="cm"># " → \"</span>
+    <span class="cm"># Replace literal newlines and tabs with JSON escapes</span>
+    <span class="vr">__escaped</span><span class="op">=</span><span class="st">"${__escaped//$'\n'/\\n}"</span>
+    <span class="vr">__escaped</span><span class="op">=</span><span class="st">"${__escaped//$'\t'/\\t}"</span>
+    <span class="vr">__out</span><span class="op">+=</span><span class="st">"${__sep}\"${__escaped}\""</span>
+    <span class="vr">__sep</span><span class="op">=</span><span class="st">','</span>
+  <span class="kw">done</span>
+  <span class="cmd">printf</span> <span class="st">'%s]\n'</span> <span class="st">"<span class="vr">$__out</span>"</span>
+}
+
+<span class="fn">json_to_array</span>() {
+  <span class="kw">local</span> <span class="vr">__json</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__a</span><span class="op">=</span><span class="st">"$2"</span>
+  <span class="cm"># jq -r outputs one element per line; handle newlines in values via NUL</span>
+  <span class="cmd">mapfile</span> <span class="fl">-t</span> <span class="fl">-d</span> <span class="st">''</span> <span class="vr">__a</span> <span class="op"><</span> <span class="op"><</span>(<span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$__json</span>"</span> <span class="op">|</span> <span class="cmd">jq</span> <span class="fl">-r</span> <span class="st">'.[] | . + " "'</span>)
+  <span class="cm"># Strip the trailing empty element mapfile adds</span>
+  [[ <span class="st">"${__a[-1]}"</span> <span class="op">==</span> <span class="st">''</span> ]] <span class="op">&&</span> <span class="kw">unset</span> <span class="st">'__a[-1]'</span>
+}
+
+<span class="cm"># Round-trip test</span>
+<span class="vr">original</span><span class="op">=</span>(
+  <span class="st">"simple"</span>
+  <span class="st">'with "quotes"'</span>
+  $<span class="st">'with\nnewline'</span>
+  $<span class="st">'back\\slash'</span>
+)
+
+<span class="vr">json</span><span class="op">=</span>$(<span class="fn">array_to_json</span> original)
+<span class="cmd">echo</span> <span class="st">"JSON: <span class="vr">$json</span>"</span>
+
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">restored</span>
+<span class="fn">json_to_array</span> <span class="st">"<span class="vr">$json</span>"</span> restored
+
+<span class="vr">ok</span><span class="op">=</span><span class="kw">true</span>
+<span class="kw">for</span> (( <span class="vr">i</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">i</span> <span class="op"><</span> <span class="st">"${#original[@]}"</span>; <span class="vr">i</span>++ )); <span class="kw">do</span>
+  <span class="kw">if</span> [[ <span class="st">"${original[$i]}"</span> <span class="op">!=</span> <span class="st">"${restored[$i]}"</span> ]]; <span class="kw">then</span>
+    <span class="cmd">printf</span> <span class="st">'MISMATCH at [%d]\n  orig: %q\n  rest: %q\n'</span> \
+      <span class="st">"<span class="vr">$i</span>"</span> <span class="st">"${original[$i]}"</span> <span class="st">"${restored[$i]}"</span>
+    <span class="vr">ok</span><span class="op">=</span><span class="kw">false</span>
+  <span class="kw">fi</span>
+<span class="kw">done</span>
+<span class="vr">$ok</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"Round-trip OK"</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Dependency resolver</h4>
+  <p>Using the adjacency-list pattern from section 2, implement a topological sort
+  function <code>topo_sort GRAPH_PREFIX NODES_ARRAY RESULT_ARRAY</code> that:</p>
+  <ul>
+    <li>Takes a name prefix for adjacency arrays (e.g. <code>deps_</code> so that
+    <code>deps_nginx=(openssl pcre)</code> means nginx depends on openssl and pcre)</li>
+    <li>Performs a depth-first topological sort (dependencies before dependents)</li>
+    <li>Detects cycles and prints an error, returning exit code 1</li>
+    <li>Stores the sorted install order in RESULT_ARRAY</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="fn">topo_sort</span>() {
+  <span class="kw">local</span> <span class="vr">__prefix</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__nodes</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">__result</span><span class="op">=</span><span class="st">"$3"</span>
+  <span class="kw">declare</span> <span class="fl">-A</span> <span class="vr">__visited</span>   <span class="cm"># 0=unvisited 1=in-progress 2=done</span>
+  <span class="vr">__result</span><span class="op">=</span>()
+
+  <span class="fn">__dfs</span>() {
+    <span class="kw">local</span> <span class="vr">__node</span><span class="op">=</span><span class="st">"$1"</span>
+    <span class="kw">case</span> <span class="st">"${__visited[$__node]:-0}"</span> <span class="kw">in</span>
+      <span class="nu">2</span>) <span class="kw">return</span> <span class="nu">0</span> ;;                          <span class="cm"># already processed</span>
+      <span class="nu">1</span>) <span class="cmd">printf</span> <span class="st">'topo_sort: cycle at %s\n'</span> <span class="st">"<span class="vr">$__node</span>"</span> <span class="op">>&2</span>; <span class="kw">return</span> <span class="nu">1</span> ;;
+    <span class="kw">esac</span>
+    <span class="vr">__visited</span>[<span class="st">"<span class="vr">$__node</span>"</span>]<span class="op">=</span><span class="nu">1</span>   <span class="cm"># mark in-progress</span>
+
+    <span class="cm"># Visit dependencies first</span>
+    <span class="kw">local</span> <span class="vr">__depname</span><span class="op">=</span><span class="st">"${__prefix}${__node}"</span>
+    <span class="kw">if</span> [[ -v <span class="st">"<span class="vr">$__depname</span>"</span> ]]; <span class="kw">then</span>
+      <span class="kw">local</span> <span class="fl">-n</span> <span class="vr">__deps</span><span class="op">=</span><span class="st">"<span class="vr">$__depname</span>"</span>
+      <span class="kw">local</span> <span class="vr">__dep</span>
+      <span class="kw">for</span> <span class="vr">__dep</span> <span class="kw">in</span> <span class="st">"${__deps[@]}"</span>; <span class="kw">do</span>
+        <span class="fn">__dfs</span> <span class="st">"<span class="vr">$__dep</span>"</span> <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+      <span class="kw">done</span>
+    <span class="kw">fi</span>
+
+    <span class="vr">__visited</span>[<span class="st">"<span class="vr">$__node</span>"</span>]<span class="op">=</span><span class="nu">2</span>
+    <span class="vr">__result</span><span class="op">+=</span>( <span class="st">"<span class="vr">$__node</span>"</span> )
+  }
+
+  <span class="kw">local</span> <span class="vr">__n</span>
+  <span class="kw">for</span> <span class="vr">__n</span> <span class="kw">in</span> <span class="st">"${__nodes[@]}"</span>; <span class="kw">do</span>
+    <span class="fn">__dfs</span> <span class="st">"<span class="vr">$__n</span>"</span> <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+  <span class="kw">done</span>
+}
+
+<span class="cm"># Define dependency graph via name-prefix arrays</span>
+<span class="vr">deps_nginx</span><span class="op">=</span>( openssl pcre zlib )
+<span class="vr">deps_certbot</span><span class="op">=</span>( openssl python3 )
+<span class="vr">deps_python3</span><span class="op">=</span>( zlib )
+<span class="vr">deps_openssl</span><span class="op">=</span>( zlib )
+<span class="vr">deps_zlib</span><span class="op">=</span>()
+<span class="vr">deps_pcre</span><span class="op">=</span>()
+
+<span class="vr">packages</span><span class="op">=</span>( nginx certbot )
+<span class="kw">declare</span> <span class="fl">-a</span> <span class="vr">install_order</span>
+<span class="fn">topo_sort</span> deps_ packages install_order
+<span class="cmd">printf</span> <span class="st">'Install order:\n'</span>
+<span class="cmd">printf</span> <span class="st">'  %s\n'</span> <span class="st">"${install_order[@]}"</span>
+<span class="cm"># zlib openssl pcre nginx python3 certbot</span></pre>
+  </div>
+</div>
+
+</div>

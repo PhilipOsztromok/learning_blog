@@ -1,0 +1,518 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 210px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  /* quantifier cards */
+  .q-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75em; margin: 1em 0; }
+  .q-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.8em 1em;
+  }
+  .q-card .qc-sym  { font-family: 'Consolas', monospace; font-size: 1.6rem; color: #ffa657; display: block; margin-bottom: 0.1em; }
+  .q-card .qc-name { color: #c9d8ff; font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 0.3em; }
+  .q-card .qc-desc { color: #7a8aaa; font-size: 0.83rem; line-height: 1.5; }
+  .q-card .qc-bre  { margin-top: 0.4em; font-family: 'Consolas', monospace; font-size: 0.78rem; color: #f0a040; }
+  /* greedy visualiser */
+  .greedy-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.9rem; line-height: 2.2;
+  }
+  .greedy-vis .gv-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4em; display: block; }
+  .gv-input   { color: #c9d8ff; }
+  .gv-match   { background: #2a3a1a; color: #85e89d; border-radius: 2px; padding: 0 0.1em; }
+  .gv-try     { background: #1a1a2e; color: #7a8aaa; border-radius: 2px; padding: 0 0.1em; text-decoration: line-through; }
+  .gv-ann     { color: #5a6a8a; font-size: 0.82rem; font-style: italic; margin-left: 1em; }
+  /* BRE/ERE comparison */
+  .bre-ere-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75em; margin: 1em 0; }
+  .bre-box, .ere-box {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.75em 1em; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2;
+  }
+  .bre-box .bhdr { color: #f0a040; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3em; display: block; }
+  .ere-box .ehdr { color: #3fb950; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3em; display: block; }
+  .bre-box .rx-s { color: #ffa657; }
+  .ere-box .rx-s { color: #ffa657; }
+  .bre-box .cx   { color: #5a6a8a; font-style: italic; font-size: 0.82rem; }
+  .ere-box .cx   { color: #5a6a8a; font-style: italic; font-size: 0.82rem; }
+  /* match demo rows */
+  .mdemo { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.65em 1em; margin: 0.5em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 1.9; }
+  .mdemo .md-lbl { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.2em; display: block; }
+  .md-yes { color: #85e89d; }
+  .md-no  { color: #f97583; }
+  /* portability */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.bre { color: #f0a040; }
+  .lx-lesson td.no  { color: #f97583; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 5 — Quantifiers: How Many Times?</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>What Are Quantifiers?</h2>
+
+<p>A <strong>quantifier</strong> tells the regex engine how many times the preceding element — a literal character, a dot, or a character class — must appear for a match to succeed. Without a quantifier, every element matches exactly once. Quantifiers unlock patterns like "one or more digits" or "between 2 and 5 letters".</p>
+
+<div class="q-grid">
+  <div class="q-card">
+    <span class="qc-sym">*</span>
+    <span class="qc-name">Zero or more</span>
+    <span class="qc-desc">The preceding element may appear any number of times — including zero. Always matches (even empty string).</span>
+    <span class="qc-bre">BRE: * (same)</span>
+  </div>
+  <div class="q-card">
+    <span class="qc-sym">+</span>
+    <span class="qc-name">One or more</span>
+    <span class="qc-desc">The preceding element must appear at least once. Fails if there is no match at all.</span>
+    <span class="qc-bre">BRE: \+ (GNU) or [x][x]* workaround</span>
+  </div>
+  <div class="q-card">
+    <span class="qc-sym">?</span>
+    <span class="qc-name">Zero or one (optional)</span>
+    <span class="qc-desc">The preceding element is optional — it may appear once or not at all. Used for optional parts of a pattern.</span>
+    <span class="qc-bre">BRE: \? (GNU) or (x|) workaround</span>
+  </div>
+  <div class="q-card">
+    <span class="qc-sym">{n}</span>
+    <span class="qc-name">Exactly n times</span>
+    <span class="qc-desc">The preceding element must appear exactly <em>n</em> times. No more, no less.</span>
+    <span class="qc-bre">BRE: \{n\}</span>
+  </div>
+  <div class="q-card">
+    <span class="qc-sym">{n,}</span>
+    <span class="qc-name">At least n times</span>
+    <span class="qc-desc">The preceding element must appear <em>n</em> or more times. No upper limit.</span>
+    <span class="qc-bre">BRE: \{n,\}</span>
+  </div>
+  <div class="q-card">
+    <span class="qc-sym">{n,m}</span>
+    <span class="qc-name">Between n and m times</span>
+    <span class="qc-desc">The preceding element must appear at least <em>n</em> and at most <em>m</em> times. Both bounds inclusive.</span>
+    <span class="qc-bre">BRE: \{n,m\}</span>
+  </div>
+</div>
+
+<p>Quantifiers apply to the single element immediately to their left. To quantify a group of characters, wrap them in parentheses (covered in Chapter 6): <code>(abc)+</code> matches one or more repetitions of <em>abc</em>.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>* — Zero or More</h2>
+
+<p><code>*</code> is the oldest and most common quantifier. It matches zero or more occurrences of the preceding element. Because it accepts zero occurrences, it <em>always</em> produces a match — even on an empty string or one where the element is absent.</p>
+
+<pre><span class="cm"># ab*c — 'b' appears zero or more times</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"ac\nabc\nabbc\nabbbc\nxc"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'ab*c'</span>
+<span class="out">ac</span>       <span class="cm"># zero b's</span>
+<span class="out">abc</span>      <span class="cm"># one b</span>
+<span class="out">abbc</span>     <span class="cm"># two b's</span>
+<span class="out">abbbc</span>    <span class="cm"># three b's</span>
+<span class="cm"># "xc" has no match — 'a' is required (not quantified)</span>
+
+<span class="cm"># .* — match any number of any characters (the wildcard pattern)</span>
+<span class="cmd">grep</span> <span class="st">'start.*end'</span> <span class="pth">file.txt</span>      <span class="cm"># "start" then anything then "end"</span>
+
+<span class="cm"># [0-9]* — zero or more digits (matches empty string too!)</span>
+<span class="cmd">echo</span> <span class="st">"abc"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[0-9]*'</span>
+<span class="out">           </span><span class="cm"># matches empty string before 'a', before 'b', before 'c', after 'c'</span>
+<span class="cm"># This is the "zero or more matches empty" gotcha — see below</span></pre>
+
+<div class="warn">
+  <strong>The zero-or-more trap.</strong> <code>[0-9]*</code> matches the empty string, so <code>grep -oE '[0-9]*'</code> on the string <code>abc</code> will match four empty strings — one between every character. This is almost never what you want. Use <code>+</code> (one or more) when you require at least one match.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>+ — One or More</h2>
+
+<p><code>+</code> requires at least one occurrence. It is the version of <code>*</code> you should reach for by default when you know the element must be present. In ERE (<code>grep -E</code>, <code>sed -E</code>, awk, <code>[[ =~ ]]</code>) write <code>+</code>; in BRE write <code>\+</code> (GNU extension).</p>
+
+<pre><span class="cm"># [0-9]+ — one or more digits (no empty-string problem)</span>
+<span class="cmd">echo</span> <span class="st">"order 42 items, total 199 units"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[0-9]+'</span>
+<span class="out">42</span>
+<span class="out">199</span>
+
+<span class="cm"># \w+ — one or more word characters (GNU grep)</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'\w+'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"hello_world 2026"</span>
+<span class="out">hello_world</span>
+<span class="out">2026</span>
+
+<span class="cm"># [[:alpha:]]+ — one or more letters (POSIX, portable)</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[[:alpha:]]+'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"error: code 42"</span>
+<span class="out">error</span>
+<span class="out">code</span>
+
+<span class="cm"># BRE equivalent (GNU extension — note \+)</span>
+<span class="cmd">grep</span> <span class="st">'[0-9]\+'</span> <span class="pth">data.txt</span>
+
+<span class="cm"># Validate non-empty input in a script</span>
+<span class="op">[[</span> <span class="fl">-z</span> <span class="st">"$input"</span> <span class="op">]]</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"empty!"</span> <span class="op">||</span> <span class="cmd">echo</span> <span class="st">"has content"</span>
+<span class="cm"># or with regex — must contain at least one non-space char:</span>
+<span class="op">[[</span> <span class="st">"$input"</span> <span class="op">=~</span> <span class="rx">[^[:space:]]+</span> <span class="op">]]</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"not blank"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>? — Zero or One (Optional)</h2>
+
+<p><code>?</code> makes the preceding element optional — it may appear once or not at all. It is perfect for handling optional characters like a sign, a delimiter, or a variant spelling. In BRE write <code>\?</code> (GNU extension).</p>
+
+<pre><span class="cm"># colou?r — the 'u' is optional</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"colour\ncolor\ncoluur"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'colou?r'</span>
+<span class="out">colour</span>
+<span class="out">color</span>
+<span class="cm"># "coluur" has no match — only ONE optional u is allowed</span>
+
+<span class="cm"># Match an optional leading minus sign on a number</span>
+<span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'-?[0-9]+'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"temps: -5 0 23 -18"</span>
+<span class="out">-5</span>
+<span class="out">0</span>
+<span class="out">23</span>
+<span class="out">-18</span>
+
+<span class="cm"># https? — match http or https</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'https?://'</span> <span class="pth">urls.txt</span>
+
+<span class="cm"># Match dates with optional separator: 20260611 or 2026-06-11 or 2026/06/11</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]{4}[-/]?[0-9]{2}[-/]?[0-9]{2}'</span> <span class="pth">dates.txt</span>
+
+<span class="cm"># BRE version (GNU sed)</span>
+<span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'/https\?:\/\//p'</span> <span class="pth">urls.txt</span>   <span class="cm"># \? in BRE</span></pre>
+
+<div class="mdemo">
+  <span class="md-lbl">Pattern: -?[0-9]+ applied to various inputs</span>
+  <span class="md-yes">-42     ✓  optional minus present, digits follow</span>
+  <span class="md-yes">42      ✓  optional minus absent, digits follow</span>
+  <span class="md-yes">0       ✓  zero is a valid digit</span>
+  <span class="md-no">-       ✗  minus present but no digits follow (+ requires at least one)</span>
+  <span class="md-no">abc     ✗  no digits at all</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>{n}, {n,}, {n,m} — Exact and Bounded Counts</h2>
+
+<p>Curly-brace quantifiers give you precise control over repetition counts. They are indispensable for matching fixed-length formats like dates, postal codes, credit card numbers, and phone numbers.</p>
+
+<pre><span class="cm"># {n} — exactly n occurrences</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]{4}'</span> <span class="pth">data.txt</span>        <span class="cm"># exactly 4 consecutive digits</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[A-Z]{3}'</span> <span class="pth">text.txt</span>        <span class="cm"># exactly 3 uppercase letters</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^.{80}$'</span> <span class="pth">file.txt</span>         <span class="cm"># lines that are exactly 80 characters</span>
+
+<span class="cm"># {n,} — n or more occurrences</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]{3,}'</span> <span class="pth">data.txt</span>       <span class="cm"># 3 or more consecutive digits</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[[:alpha:]]{8,}'</span> <span class="pth">words.txt</span> <span class="cm"># words with 8 or more letters</span>
+
+<span class="cm"># {n,m} — between n and m occurrences (inclusive)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]{2,4}'</span> <span class="pth">data.txt</span>      <span class="cm"># 2, 3, or 4 consecutive digits</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[[:alpha:]]{4,8}'</span> <span class="pth">words.txt</span><span class="cm"># words between 4 and 8 letters long</span>
+
+<span class="cm"># Practical: match a 4-digit year</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\b[0-9]{4}\b'</span> <span class="pth">text.txt</span>
+
+<span class="cm"># Practical: match a UK postcode pattern (simplified: A9 9AA or A99 9AA)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[A-Z]{1,2}[0-9]{1,2} [0-9][A-Z]{2}'</span> <span class="pth">addresses.txt</span>
+
+<span class="cm"># Practical: match lines longer than 120 characters</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'^.{121}'</span> <span class="pth">source.py</span>         <span class="cm"># 121+ chars means line exceeds 120</span></pre>
+
+<h3>BRE requires backslashes around braces</h3>
+
+<div class="bre-ere-grid">
+  <div class="bre-box">
+    <span class="bhdr">BRE — default grep / sed</span>
+    <span><span class="rx-s">[0-9]\{4\}</span>   <span class="cx"># exactly 4</span></span>
+    <span><span class="rx-s">[0-9]\{3,\}</span>  <span class="cx"># 3 or more</span></span>
+    <span><span class="rx-s">[0-9]\{2,4\}</span> <span class="cx"># 2 to 4</span></span>
+    <span><span class="rx-s">x\+</span>          <span class="cx"># one or more (GNU ext)</span></span>
+    <span><span class="rx-s">x\?</span>          <span class="cx"># zero or one (GNU ext)</span></span>
+    <span><span class="rx-s">\(abc\)</span>      <span class="cx"># group (see Ch 6)</span></span>
+  </div>
+  <div class="ere-box">
+    <span class="ehdr">ERE — grep -E / sed -E / awk</span>
+    <span><span class="rx-s">[0-9]{4}</span>    <span class="cx"># exactly 4</span></span>
+    <span><span class="rx-s">[0-9]{3,}</span>   <span class="cx"># 3 or more</span></span>
+    <span><span class="rx-s">[0-9]{2,4}</span>  <span class="cx"># 2 to 4</span></span>
+    <span><span class="rx-s">x+</span>          <span class="cx"># one or more</span></span>
+    <span><span class="rx-s">x?</span>          <span class="cx"># zero or one</span></span>
+    <span><span class="rx-s">(abc)</span>       <span class="cx"># group (see Ch 6)</span></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Greedy Matching — The Default Behaviour</h2>
+
+<p>All quantifiers in BRE and ERE are <strong>greedy</strong> — they consume as many characters as possible while still allowing the overall pattern to succeed. The engine tries the longest possible match first, then backtracks if needed.</p>
+
+<div class="greedy-vis">
+  <span class="gv-hdr">Pattern: &lt;.*&gt; on input: &lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;</span>
+  <span>Engine attempt: <span class="gv-match">&lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt;</span></span>
+  <span>  .* consumed everything from &lt;b&gt; to the last &gt;</span>
+  <span>  Result: ONE match — the entire string</span>
+  <span>&nbsp;</span>
+  <span>Pattern: &lt;[^&gt;]*&gt; on same input (negated class workaround):</span>
+  <span>  Match 1: <span class="gv-match">&lt;b&gt;</span> — stops at first &gt;</span>
+  <span>  Match 2: <span class="gv-match">&lt;/b&gt;</span></span>
+  <span>  Match 3: <span class="gv-match">&lt;i&gt;</span></span>
+  <span>  Match 4: <span class="gv-match">&lt;/i&gt;</span></span>
+</div>
+
+<pre><span class="cm"># Greedy: .* swallows as much as possible</span>
+<span class="cmd">echo</span> <span class="st">'[one] and [two] and [three]'</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'\[.*\]'</span>
+<span class="out">[one] and [two] and [three]</span>   <span class="cm"># one giant match</span>
+
+<span class="cm"># Fix with negated class — stop at the first ]</span>
+<span class="cmd">echo</span> <span class="st">'[one] and [two] and [three]'</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'\[[^]]*\]'</span>
+<span class="out">[one]</span>
+<span class="out">[two]</span>
+<span class="out">[three]</span>   <span class="cm"># three separate matches</span>
+
+<span class="cm"># Greedy with + on digits</span>
+<span class="cmd">echo</span> <span class="st">"abc12345def"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[0-9]+'</span>
+<span class="out">12345</span>   <span class="cm"># + is greedy — matches all 5 digits as one match, not 5 single ones</span>
+
+<span class="cm"># Greedy with {2,4}: takes 4 when it can</span>
+<span class="cmd">echo</span> <span class="st">"123456"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-oE</span> <span class="st">'[0-9]{2,4}'</span>
+<span class="out">1234</span>   <span class="cm"># takes 4 (the maximum) first, leaving "56" for the next match</span>
+<span class="out">56</span></pre>
+
+<h3>No lazy quantifiers in BRE/ERE — the workaround</h3>
+
+<p>Most modern regex flavours have a <em>lazy</em> (non-greedy) quantifier: <code>*?</code>, <code>+?</code>, <code>??</code>. These match as <em>few</em> characters as possible. <strong>BRE and ERE do not have lazy quantifiers.</strong> The standard workaround is to replace <code>.*</code> with a negated character class that stops at the boundary:</p>
+
+<table>
+  <tr><th>Greedy (wrong)</th><th>Intended behaviour</th><th>BRE/ERE workaround</th></tr>
+  <tr><td><code>&lt;.*&gt;</code></td><td>Each HTML tag individually</td><td><code>&lt;[^&gt;]*&gt;</code></td></tr>
+  <tr><td><code>".*"</code></td><td>Each quoted string individually</td><td><code>"[^"]*"</code></td></tr>
+  <tr><td><code>\(.*\)</code></td><td>Each parenthesised group</td><td><code>\([^)]*\)</code></td></tr>
+  <tr><td><code>\[.*\]</code></td><td>Each bracketed item</td><td><code>\[[^]]*\]</code></td></tr>
+  <tr><td><code>start.*end</code></td><td>Shortest start…end span</td><td><code>start[^e]*end</code> (if safe)</td></tr>
+</table>
+
+<div class="note">
+  <strong>grep -P has lazy quantifiers.</strong> If you genuinely need non-greedy matching and negated classes won't work, <code>grep -P</code> (PCRE) supports <code>.*?</code> and <code>.+?</code>. This is covered fully in Chapter 11.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quantifier Portability</h2>
+
+<table>
+  <tr>
+    <th>Quantifier</th>
+    <th>ERE meaning</th>
+    <th>grep (BRE)</th>
+    <th>grep -E</th>
+    <th>sed (BRE)</th>
+    <th>sed -E</th>
+    <th>awk</th>
+    <th>[[ =~ ]]</th>
+  </tr>
+  <tr>
+    <td><code>*</code></td><td>Zero or more</td>
+    <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+  </tr>
+  <tr>
+    <td><code>+</code></td><td>One or more</td>
+    <td class="bre">\+ GNU</td><td class="yes">✓</td><td class="bre">\+ GNU</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+  </tr>
+  <tr>
+    <td><code>?</code></td><td>Zero or one</td>
+    <td class="bre">\? GNU</td><td class="yes">✓</td><td class="bre">\? GNU</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+  </tr>
+  <tr>
+    <td><code>{n,m}</code></td><td>n to m times</td>
+    <td class="bre">\{n,m\}</td><td class="yes">✓</td><td class="bre">\{n,m\}</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+  </tr>
+  <tr>
+    <td><code>*?</code> <code>+?</code></td><td>Lazy (non-greedy)</td>
+    <td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Quantifier Recipes</h2>
+
+<h3>Matching structured formats</h3>
+<pre><span class="cm"># ISO date: YYYY-MM-DD</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\b[0-9]{4}-[0-9]{2}-[0-9]{2}\b'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Time HH:MM or HH:MM:SS</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\b[0-9]{2}:[0-9]{2}(:[0-9]{2})?\b'</span> <span class="pth">log.txt</span>
+
+<span class="cm"># IPv4 address (simplified — allows invalid ranges like 999.999.9.9)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Email address (simplified)</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}'</span> <span class="pth">contacts.txt</span>
+
+<span class="cm"># Version string: 1 to 3 dot-separated number groups</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'\b[0-9]+(\.[0-9]+){1,2}\b'</span> <span class="pth">changelog.txt</span></pre>
+
+<h3>Using quantifiers in sed substitutions</h3>
+<pre><span class="cm"># Replace any run of whitespace with a single space</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/[[:space:]]+/ /g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Remove all standalone numbers (whole words that are digits)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\b[0-9]+\b//g'</span> <span class="pth">text.txt</span>
+
+<span class="cm"># Truncate lines longer than 80 characters (keep first 80)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^(.{80}).*/\1/'</span> <span class="pth">file.txt</span>   <span class="cm"># capture 80 chars, drop the rest</span>
+
+<span class="cm"># Normalise multiple blank lines to one blank line</span>
+<span class="cmd">cat</span> <span class="fl">-s</span> <span class="pth">file.txt</span>   <span class="cm"># cat -s squeezes blank lines (easiest way)</span>
+<span class="cm"># or with sed:</span>
+<span class="cmd">sed</span> <span class="st">'/./,/^$/!d'</span> <span class="pth">file.txt</span></pre>
+
+<h3>Validation functions using quantifiers</h3>
+<pre><span class="cm"># Is this a valid port number (1-65535)?</span>
+<span class="fn">is_port</span>() {
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^[0-9]{1,5}$</span> <span class="op">]]</span> <span class="op">&&</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="fl">-ge</span> <span class="nu">1</span> <span class="op">]]</span> <span class="op">&&</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="fl">-le</span> <span class="nu">65535</span> <span class="op">]]</span>
+}
+<span class="cm"># regex checks format; arithmetic checks range</span>
+
+<span class="cm"># Is this a valid IPv4 octet (0-255)?</span>
+<span class="fn">is_octet</span>() {
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="rx">^[0-9]{1,3}$</span> <span class="op">]]</span> <span class="op">&&</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="fl">-le</span> <span class="nu">255</span> <span class="op">]]</span>
+}
+
+<span class="cm"># Does this filename have a valid extension (2-4 alpha chars)?</span>
+<span class="op">[[</span> <span class="st">"$file"</span> <span class="op">=~</span> <span class="rx">\.[[:alpha:]]{2,4}$</span> <span class="op">]]</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"has extension"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Common Quantifier Mistakes</h2>
+
+<table>
+  <tr><th>Mistake</th><th>Pattern</th><th>Problem</th><th>Fix</th></tr>
+  <tr>
+    <td>Using * when + is needed</td>
+    <td><code>[0-9]*</code></td>
+    <td>Matches empty string — passes validation even with no digits</td>
+    <td><code>[0-9]+</code></td>
+  </tr>
+  <tr>
+    <td>Greedy .* consuming too much</td>
+    <td><code>&lt;.*&gt;</code></td>
+    <td>Matches from first <code>&lt;</code> to last <code>&gt;</code></td>
+    <td><code>&lt;[^&gt;]*&gt;</code></td>
+  </tr>
+  <tr>
+    <td>Missing anchors with {n}</td>
+    <td><code>[0-9]{4}</code></td>
+    <td>Matches any 4 digits anywhere — including inside "123456"</td>
+    <td><code>\b[0-9]{4}\b</code> or <code>^[0-9]{4}$</code></td>
+  </tr>
+  <tr>
+    <td>BRE braces without backslash</td>
+    <td><code>grep '[0-9]{4}'</code></td>
+    <td>In BRE, <code>{4}</code> is literal — matches the characters <code>{</code>, <code>4</code>, <code>}</code></td>
+    <td><code>grep '[0-9]\{4\}'</code> or <code>grep -E '[0-9]{4}'</code></td>
+  </tr>
+  <tr>
+    <td>+ or ? unescaped in BRE</td>
+    <td><code>grep 'ab+c'</code></td>
+    <td>In BRE, <code>+</code> is a literal plus sign — matches <code>ab+c</code></td>
+    <td><code>grep 'ab\+c'</code> or <code>grep -E 'ab+c'</code></td>
+  </tr>
+  <tr>
+    <td>{n,m} with no comma for range</td>
+    <td><code>[0-9]{3}</code></td>
+    <td>Matches exactly 3 — if you want "3 to 5" you need a comma: <code>{3,5}</code></td>
+    <td><code>[0-9]{3,5}</code></td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 5</h2>
+
+<div class="cmd-ref">
+  <h4>Quantifiers — ERE syntax (grep -E, sed -E, awk, [[ =~ ]])</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">x*</span>
+    <span class="cmd-desc">Zero or more of x — always matches (even empty)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">x+</span>
+    <span class="cmd-desc">One or more of x — requires at least one occurrence</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">x?</span>
+    <span class="cmd-desc">Zero or one of x — makes x optional</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">x{n}</span>
+    <span class="cmd-desc">Exactly n occurrences of x</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">x{n,}</span>
+    <span class="cmd-desc">At least n occurrences of x</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">x{n,m}</span>
+    <span class="cmd-desc">Between n and m occurrences of x (inclusive)</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>BRE equivalents (default grep / sed)</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">x\+  x\?</span>
+    <span class="cmd-desc">One or more / zero or one (GNU extension)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">x\{n\}  x\{n,m\}</span>
+    <span class="cmd-desc">Exact and bounded counts (backslashes required)</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Greedy workaround</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">[^delimiter]*</span>
+    <span class="cmd-desc">Match up to (not including) the delimiter — the BRE/ERE lazy substitute</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -P '.*?'</span>
+    <span class="cmd-desc">True lazy/non-greedy quantifier — PCRE only (Chapter 11)</span>
+  </div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 6 covers grouping and alternation — using <code>(...)</code> to treat multiple characters as a single unit for quantifiers, and <code>|</code> to match one of several alternatives. It also covers backreferences: capturing what a group matched and reusing it in the pattern or the replacement string.
+</div>
+
+</div>

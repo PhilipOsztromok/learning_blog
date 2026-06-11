@@ -1,0 +1,534 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note  { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn  { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip   { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-section { color: #7a8aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0.9em 0 0.3em 0; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; }
+  .lx-lesson .cmd-key { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 220px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  .lx-lesson .mode-badge {
+    display: inline-block; font-family: 'Consolas', monospace; font-size: 0.78rem;
+    padding: 0.15em 0.55em; border-radius: 3px; margin-right: 0.3em; vertical-align: middle;
+  }
+  .lx-lesson .mode-normal  { background: #1a2a4a; color: #79b8ff; border: 1px solid #2a4a7a; }
+  .lx-lesson .mode-insert  { background: #1a3a1a; color: #85e89d; border: 1px solid #2a5a2a; }
+  .lx-lesson .mode-command { background: #2a1f10; color: #ffab70; border: 1px solid #4a3510; }
+  .lx-lesson .workflow-box {
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0;
+  }
+  .lx-lesson .workflow-box h4 { color: #4f8ef7; margin: 0 0 0.7em 0; font-size: 0.95rem; }
+  .lx-lesson .workflow-step { display: flex; gap: 1em; align-items: baseline; padding: 0.4em 0; border-bottom: 1px solid #2a2d3e; }
+  .lx-lesson .workflow-step:last-child { border-bottom: none; }
+  .lx-lesson .step-num { color: #4f8ef7; font-family: 'Consolas', monospace; font-weight: bold; min-width: 1.5em; }
+  .lx-lesson .step-cmd { color: #ffab70; font-family: 'Consolas', monospace; min-width: 200px; }
+  .lx-lesson .step-desc { color: #c9d8ff; font-size: 0.92rem; }
+  .lx-lesson .demo-box {
+    background: #0e1018; border: 1px solid #3a3d4e; border-radius: 6px;
+    padding: 1em 1.2em; margin: 1em 0; font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.88rem; line-height: 1.7;
+  }
+  .lx-lesson .demo-box .label { color: #7a8aaa; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5em; }
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #b392f0; }
+  .nu  { color: #f8c555; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning Vim</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 8 — Day to Day Vim</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Introduction</h2>
+
+<p>Vim is not just a text editor — it is a power tool for working with files, diffs, archives, and external programs, all without leaving the keyboard. This chapter covers the features you will reach for every day once you know they exist: startup options that automate editing tasks, a proper understanding of diff mode, editing files inside archives, jumping to files by name, and piping buffer content through external programs.</p>
+
+<p>Individually, none of these is complex. Together they turn Vim into a surprisingly versatile part of your shell workflow.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Command-Line Startup Options</h2>
+
+<p>When you open Vim from the command line you can pass instructions that run automatically the moment the file loads. This is Vim's scripting entry point — a way to drive the editor without interactive input.</p>
+
+<h3>The + prefix: jump to a line or pattern</h3>
+
+<p>Any argument beginning with <code>+</code> is a command Vim executes after opening the file.</p>
+
+<pre><span class="cm"># Open a file at a specific line number</span>
+vim <span class="pth">hello.go</span> <span class="nu">+8</span>            <span class="cm"># cursor lands on line 8</span>
+vim <span class="pth">notes.txt</span> <span class="nu">+42</span>          <span class="cm"># jump straight to line 42</span>
+vim <span class="pth">report.md</span> <span class="kw">+$</span>           <span class="cm"># open at last line of file</span>
+
+<span class="cm"># Search on open — jump to the first match</span>
+vim <span class="pth">sherlock.txt</span> <span class="nu">+/crumb</span>   <span class="cm"># positions cursor at first "crumb"</span>
+vim <span class="pth">app.log</span> <span class="nu">+/ERROR</span>        <span class="cm"># jump to first ERROR in a log file</span>
+vim <span class="pth">config.yaml</span> <span class="nu">+/host</span>    <span class="cm"># find the "host" key immediately</span></pre>
+
+<div class="note">
+  <strong>Why this matters for compiler errors:</strong> Most build systems print errors as <code>filename:line: message</code>. You can open the offending file directly at the error line from the shell: <code>vim src/main.c +47</code> — no scrolling required.
+</div>
+
+<h3>Multiple + commands: automated editing</h3>
+
+<p>You can chain several <code>+</code> commands. They execute in order, left to right, before you see the file. This makes Vim usable as a one-liner scriptable editor in shell pipelines.</p>
+
+<pre><span class="cm"># Delete lines 1–2 (header rows) then save and quit</span>
+vim <span class="kw">+</span><span class="st">"1,2d"</span> <span class="kw">+</span><span class="st">wq</span> <span class="pth">conway.txt</span>
+
+<span class="cm"># Delete line 4 and save</span>
+vim <span class="kw">+</span><span class="st">4d</span> <span class="kw">+</span><span class="st">wq</span> <span class="pth">time.txt</span>
+
+<span class="cm"># Replace all occurrences in a file without opening it interactively</span>
+vim <span class="kw">+</span><span class="st">"%s/localhost/prod.server.com/g"</span> <span class="kw">+</span><span class="st">wq</span> <span class="pth">config.txt</span>
+
+<span class="cm"># Append a line to the end of a file</span>
+vim <span class="kw">+</span><span class="st">"normal G"</span> <span class="kw">+</span><span class="st">"put ='# end of file'"</span> <span class="kw">+</span><span class="st">wq</span> <span class="pth">notes.md</span></pre>
+
+<div class="tip">
+  <strong>When to use this vs. <code>sed</code>:</strong> For simple one-off substitutions <code>sed -i</code> is often shorter. But for multi-step operations (delete a range, reformat, save), or when you want to preview the result first, Vim's <code>+</code> chain gives you the full power of the editor's command language in a single shell command.
+</div>
+
+<h3>Other useful startup flags</h3>
+
+<table>
+  <tr><th>Flag</th><th>Effect</th></tr>
+  <tr><td><code>vim +{n} file</code></td><td>Open at line n</td></tr>
+  <tr><td><code>vim +/{pattern} file</code></td><td>Open and jump to first match of pattern</td></tr>
+  <tr><td><code>vim -R file</code></td><td>Read-only mode — prevents accidental edits</td></tr>
+  <tr><td><code>vim -d file1 file2</code></td><td>Diff mode — compare two files side by side</td></tr>
+  <tr><td><code>vim -u NONE file</code></td><td>Skip vimrc — useful for diagnosing config issues</td></tr>
+  <tr><td><code>vim -n file</code></td><td>No swap file — faster for read-only browsing</td></tr>
+  <tr><td><code>vim -c "{cmd}" file</code></td><td>Equivalent to <code>+"{cmd}"</code> — run command after open</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Diff Mode</h2>
+
+<p>Diff mode is one of Vim's most powerful features and frequently overlooked. It opens two (or more) files in synchronised split windows, highlights every difference, and lets you move changes between files with single-key commands.</p>
+
+<h3>Opening diff mode</h3>
+
+<pre><span class="cm"># From the command line — the most common way</span>
+vim <span class="kw">-d</span> <span class="pth">road1.txt</span> <span class="pth">road2.txt</span>        <span class="cm"># horizontal split by default</span>
+vimdiff <span class="pth">road1.txt</span> <span class="pth">road2.txt</span>        <span class="cm"># alias — identical to vim -d</span>
+vimdiff <span class="pth">v1.py</span> <span class="pth">v2.py</span> <span class="pth">v3.py</span>          <span class="cm"># three-way diff is possible</span>
+
+<span class="cm"># From inside Vim, with a file already open</span>
+<span class="kw">:</span><span class="cmd">diffsplit</span> <span class="pth">road2.txt</span>              <span class="cm"># open road2 below in diff mode</span>
+<span class="kw">:</span><span class="cmd">vert diffsplit</span> <span class="pth">road2.txt</span>         <span class="cm"># open road2 to the right (vertical)</span></pre>
+
+<h3>Reading the diff display</h3>
+
+<div class="demo-box">
+  <div class="label">vimdiff road1.txt road2.txt</div>
+  <span style="color:#85e89d;">road1.txt</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;<span style="color:#85e89d;">road2.txt</span><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+  &nbsp;Two roads diverged&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;Two roads diverged<br>
+  <span style="color:#f97583; background:#2a1018;">&minus;&nbsp;in a yellow wood,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>│<span style="color:#85e89d; background:#0f2a18;">+&nbsp;in a yellow wood</span><br>
+  <span style="color:#ffab70;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>│<span style="color:#ffab70;">&nbsp;and looked down one</span><br>
+  &nbsp;And sorry I could not│&nbsp;And sorry I could not<br>
+</div>
+
+<p>Highlighted lines are differences. Fold-collapsed sections are identical text. The vertical bar separates the two windows.</p>
+
+<h3>Navigating between differences</h3>
+
+<pre><span class="kw">]</span><span class="cmd">c</span>          <span class="cm"># jump to next difference (change)</span>
+<span class="kw">[</span><span class="cmd">c</span>          <span class="cm"># jump to previous difference</span>
+<span class="kw">Ctrl+W</span> <span class="cmd">w</span>   <span class="cm"># move to the other diff window</span>
+<span class="kw">Ctrl+W</span> <span class="cmd">h/l</span> <span class="cm"># move left/right between windows explicitly</span></pre>
+
+<h3>Applying changes between files</h3>
+
+<p>This is the heart of diff mode. You can pull a change from the other file (<em>obtain</em>) or push your version to the other file (<em>put</em>) without copying and pasting.</p>
+
+<pre><span class="cmd">do</span>          <span class="cm"># diff Obtain — pull change from the OTHER file into THIS one</span>
+<span class="cmd">dp</span>          <span class="cm"># diff Put   — push change from THIS file into the OTHER one</span></pre>
+
+<div class="demo-box">
+  <div class="label">How do / dp work</div>
+  <span style="color:#7a8aaa;">You have two windows open side by side. Your cursor is on a highlighted difference.</span><br><br>
+  <span style="color:#ffab70;">do</span> → <span style="color:#85e89d;">copies the OTHER window's version of this diff block into YOUR window</span><br>
+  <span style="color:#ffab70;">dp</span> → <span style="color:#85e89d;">copies YOUR window's version of this diff block into the OTHER window</span><br><br>
+  <span style="color:#7a8aaa;">Think: "do = take" and "dp = give".</span>
+</div>
+
+<h3>Updating the diff after manual edits</h3>
+
+<pre><span class="kw">:</span><span class="cmd">diffupdate</span>     <span class="cm"># recalculate the diff (if the highlighting looks stale)</span>
+<span class="kw">:</span><span class="cmd">set diffopt+=iwhite</span>   <span class="cm"># ignore whitespace-only differences</span></pre>
+
+<h3>Making vertical diff the default</h3>
+
+<p>By default <code>vimdiff</code> opens a horizontal split. Most people find a vertical (side-by-side) layout easier to read. Add this to your <code>.vimrc</code>:</p>
+
+<pre><span class="cm">" In .vimrc — always use vertical (side-by-side) diff layout</span>
+set diffopt+=vertical</pre>
+
+<div class="tip">
+  <strong>Three-way merges:</strong> <code>vimdiff</code> supports up to eight files simultaneously. Git's <code>mergetool</code> integration uses three-way diff (local / base / remote) when you run <code>git mergetool</code> with Vim configured as the merge tool. This is a genuinely useful alternative to GUI merge tools once you are comfortable with <code>do</code> and <code>dp</code>.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Editing Files Inside Archives</h2>
+
+<p>Vim can open and edit files inside ZIP and TAR archives directly — without you needing to extract them first. This works through Vim's <em>netrw</em> and archive plugins, which are bundled with a standard Vim installation.</p>
+
+<h3>Opening a ZIP file</h3>
+
+<pre>vim <span class="pth">weather.zip</span>        <span class="cm"># shows a directory listing of the archive's contents</span></pre>
+
+<div class="demo-box">
+  <div class="label">vim weather.zip — what you see</div>
+  <span style="color:#4f8ef7;">" zip.vim version v28</span><br>
+  <span style="color:#4f8ef7;">" Browsing zipfile /home/user/weather.zip</span><br>
+  <span style="color:#4f8ef7;">" Select a file with cursor and press ENTER</span><br>
+  <br>
+  <span style="color:#b392f0;">weather/</span><br>
+  <span style="color:#9ecbff;">weather/forecast.txt</span><br>
+  <span style="color:#9ecbff;">weather/historical.csv</span><br>
+  <span style="color:#9ecbff;">weather/README.md</span><br>
+</div>
+
+<ul>
+  <li>Navigate the listing with <code>j</code> / <code>k</code></li>
+  <li>Press <code>Enter</code> to open a file for editing</li>
+  <li>Edit it as normal</li>
+  <li>Save with <code>:w</code> — changes are written back into the ZIP</li>
+  <li>Press <code>-</code> or <code>:bprevious</code> to return to the archive listing</li>
+</ul>
+
+<div class="note">
+  <strong>Platform requirements:</strong> On Linux and macOS, the <code>zip</code> and <code>unzip</code> utilities must be available in your PATH. They almost always are on macOS and most Linux distributions. On Windows, ensure that a ZIP utility is installed and accessible from the command line (Git Bash or WSL both provide this automatically).
+</div>
+
+<h3>TAR archives</h3>
+
+<p>The same workflow applies to <code>.tar</code>, <code>.tar.gz</code>, and <code>.tar.bz2</code> files. Vim detects the archive type automatically from the file extension and delegates to the appropriate utility.</p>
+
+<pre>vim <span class="pth">project.tar.gz</span>     <span class="cm"># shows contents of the tar archive</span>
+vim <span class="pth">backup.tar.bz2</span>     <span class="cm"># works the same way</span></pre>
+
+<div class="tip">
+  <strong>When is this useful?</strong> Typical use cases: quickly checking what is inside a downloaded archive, editing a config file buried in a deployment ZIP, or patching a single file in a release tarball without unpacking the entire thing. It is a surprisingly handy trick that most editors cannot match.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>File Navigation: gf and gF</h2>
+
+<p>The <code>gf</code> command is deceptively simple and enormously useful: it opens whatever filename or path is currently under the cursor. If you are reading code that imports another module, reviewing a config that references a path, or looking at a compiler error, <code>gf</code> jumps straight there.</p>
+
+<h3>gf — go to file</h3>
+
+<pre><span class="cm"># With cursor on the filename in any of these contexts:</span>
+
+<span class="cm"># Source code imports</span>
+<span class="st">require</span>(<span class="nu">'./utils/helper'</span>)    <span class="cm"># cursor on helper → gf opens the file</span>
+<span class="st">import</span> <span class="st">"config/settings.go"</span>  <span class="cm"># gf opens settings.go</span>
+<span class="kw">include</span> <span class="st">"auth.h"</span>             <span class="cm"># gf opens auth.h</span>
+
+<span class="cm"># Log and error output</span>
+<span class="out">main.py:47: NameError: name 'foo' not defined</span>
+<span class="cm"># cursor on main.py → gf opens main.py</span></pre>
+
+<pre><span class="cmd">gf</span>        <span class="cm"># open file under cursor (replaces current window)</span>
+<span class="kw">Ctrl+W</span> <span class="cmd">f</span> <span class="cm"># open file under cursor in a NEW horizontal split</span>
+<span class="kw">Ctrl+W</span> <span class="cmd">gf</span><span class="cm"># open file under cursor in a NEW TAB</span></pre>
+
+<div class="note">
+  <strong>Return from gf:</strong> After jumping with <code>gf</code>, press <code>Ctrl+O</code> to return to your previous position (it is a jump, so it lands in the jump list).
+</div>
+
+<h3>gF — go to file at line</h3>
+
+<p><code>gF</code> extends <code>gf</code> — it also reads a line number from the text under the cursor. This is the format that compilers, linters, and most error-reporting tools produce.</p>
+
+<pre><span class="cm"># Compiler / linter error format:  filename:line:column: message</span>
+<span class="out">src/parser.c:83:12: error: expected ';' before '}'</span>
+<span class="cm"># gF on src/parser.c:83:12 → opens parser.c AND moves cursor to line 83</span>
+
+<span class="cm"># Also works with just filename:line</span>
+<span class="out">app.py:47</span>
+<span class="cm"># gF jumps to app.py line 47</span>
+
+<span class="cm"># Or with :line syntax written inline</span>
+<span class="out">config/database.yml:2</span>
+<span class="cm"># gF opens database.yml at line 2</span></pre>
+
+<h3>Helping Vim find files: path setting</h3>
+
+<p>By default Vim looks for files relative to the current directory. If your imports use bare names without paths (common in C and Python projects), add the project source directories to Vim's <code>path</code> so <code>gf</code> can find them:</p>
+
+<pre><span class="cm">" In .vimrc or set interactively:</span>
+<span class="kw">:</span><span class="cmd">set path+=src/**</span>        <span class="cm"># search src/ and all subdirectories</span>
+<span class="kw">:</span><span class="cmd">set path+=include/**</span>    <span class="cm"># also search include/</span></pre>
+
+<h3>URL fetching with gf</h3>
+
+<p>If <code>wget</code> or <code>curl</code> is installed, Vim can use <code>gf</code> to fetch and display a URL directly in the buffer. With your cursor on a URL like <code>https://example.com/data.json</code>, pressing <code>gf</code> will download and display the content. This requires the <code>netrw</code> plugin to be active (it is by default).</p>
+
+<pre><span class="cm"># Cursor on any URL in the buffer:</span>
+<span class="out">https://raw.githubusercontent.com/user/repo/main/README.md</span>
+<span class="cm"># gf → downloads and displays the file content in Vim</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>External Command Integration</h2>
+
+<p>Vim's relationship with the shell goes beyond just running commands and viewing output. You can insert shell output directly into a buffer, and — crucially — you can pipe your entire buffer (or a range of lines) through an external program and replace it with the result. This makes Vim a composable part of your command-line toolkit.</p>
+
+<h3>Running shell commands from Vim</h3>
+
+<pre><span class="kw">:</span><span class="cmd">!</span><span class="st">date</span>           <span class="cm"># display the current date/time in a shell overlay</span>
+<span class="kw">:</span><span class="cmd">!</span><span class="st">ls -la</span>         <span class="cm"># list directory contents</span>
+<span class="kw">:</span><span class="cmd">!</span><span class="st">git status</span>     <span class="cm"># check git status without leaving Vim</span>
+<span class="kw">:</span><span class="cmd">!</span><span class="st">python3 %</span>      <span class="cm"># run the current file (% = current filename)</span>
+<span class="kw">:</span><span class="cmd">!</span><span class="st">make</span>           <span class="cm"># build the project</span></pre>
+
+<p>The output appears in a full-screen shell overlay. Press <code>Enter</code> to return to your buffer. Nothing is inserted into the file.</p>
+
+<h3>Reading command output into the buffer</h3>
+
+<p>The <code>:r !</code> form (<em>read from command</em>) inserts the stdout of a shell command below the cursor. This is for when you want the output to become part of the file.</p>
+
+<pre><span class="kw">:</span><span class="cmd">r !</span><span class="st">ls</span>                        <span class="cm"># insert file listing below cursor</span>
+<span class="kw">:</span><span class="cmd">r !</span><span class="st">date</span>                      <span class="cm"># insert current timestamp</span>
+<span class="kw">:</span><span class="cmd">r !</span><span class="st">ping -c 3 www.vim.org</span>    <span class="cm"># insert ping results</span>
+<span class="kw">:</span><span class="cmd">r !</span><span class="st">cat /etc/hosts</span>           <span class="cm"># insert hosts file content</span>
+<span class="kw">:</span><span class="cmd">r !</span><span class="st">curl -s https://api.example.com/data</span>  <span class="cm"># fetch and insert API response</span>
+
+<span class="cm"># Specify where to insert:</span>
+<span class="kw">:0r !</span><span class="st">date</span>                     <span class="cm"># insert at top of file (before line 1)</span>
+<span class="kw">:$r !</span><span class="st">date</span>                     <span class="cm"># insert at end of file</span></pre>
+
+<h3>Filtering buffer content through external programs</h3>
+
+<p>This is the most powerful form of external integration. The <code>:%!</code> command sends your entire buffer as <em>stdin</em> to an external program, then <strong>replaces</strong> the buffer with the program's stdout. You are using the external tool as a transformer — a formatter, a converter, a filter.</p>
+
+<pre><span class="cm"># Format / pretty-print</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">jq .</span>          <span class="cm"># format JSON with proper indentation (requires jq)</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">python3 -m json.tool</span>  <span class="cm"># format JSON with Python (no extra install)</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">tidy -xml -i</span>  <span class="cm"># format XML/HTML with tidy</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">xmllint --format -</span>  <span class="cm"># format XML with xmllint</span>
+
+<span class="cm"># Sort and deduplicate</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">sort</span>          <span class="cm"># sort all lines alphabetically</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">sort -u</span>       <span class="cm"># sort and remove duplicate lines</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">uniq</span>          <span class="cm"># remove consecutive duplicate lines</span>
+
+<span class="cm"># Binary / hex editing</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">xxd</span>           <span class="cm"># convert buffer to hex dump view</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">xxd -r</span>        <span class="cm"># convert hex dump back to binary (after editing)</span>
+
+<span class="cm"># Text processing</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">tr 'a-z' 'A-Z'</span>  <span class="cm"># convert all text to uppercase</span>
+<span class="kw">:</span><span class="vr">%</span><span class="cmd">!</span><span class="st">wc -l</span>         <span class="cm"># replace buffer with just the line count</span></pre>
+
+<h3>Filtering a range, not the whole file</h3>
+
+<p>You can filter just a selection of lines. This is useful for sorting a block, formatting a specific JSON object, or processing only part of a file.</p>
+
+<pre><span class="cm"># Range-based filtering:</span>
+<span class="kw">:</span><span class="nu">5,15</span><span class="cmd">!</span><span class="st">sort</span>      <span class="cm"># sort only lines 5 through 15</span>
+<span class="kw">:'&lt;,'&gt;!</span><span class="st">sort</span>    <span class="cm"># sort the current Visual selection</span>
+<span class="kw">:'&lt;,'&gt;!</span><span class="st">jq .</span>   <span class="cm"># format the selected JSON fragment</span></pre>
+
+<p>In Visual mode, after selecting lines with <code>V</code>, type <code>!</code> and Vim will automatically fill in <code>:'&lt;,'&gt;!</code> — just complete the command.</p>
+
+<div class="warn">
+  <strong><code>:%!</code> is destructive — back up first.</strong> If the external command fails or produces unexpected output, the buffer is replaced with the error message or empty output. Fortunately, this is a single undoable change — press <code>u</code> immediately to restore the original content. Always check your command works on a test input before running it on a file you care about.
+</div>
+
+<h3>The xxd hex editing workflow</h3>
+
+<p>The combination of <code>:%!xxd</code> and <code>:%!xxd -r</code> gives you a genuine hex editor inside Vim. This is how binary files (executables, images, compiled bytecode) can be edited:</p>
+
+<div class="workflow-box">
+  <h4>Binary editing with xxd</h4>
+  <div class="workflow-step">
+    <span class="step-num">1</span>
+    <span class="step-cmd">vim binaryfile.bin</span>
+    <span class="step-desc">Open the binary file</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">2</span>
+    <span class="step-cmd">:%!xxd</span>
+    <span class="step-desc">Convert to hex dump — you now see hex values and ASCII on the right</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">3</span>
+    <span class="step-desc" style="color:#85e89d;">Edit the hex values directly (only edit the hex column, not the ASCII column)</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">4</span>
+    <span class="step-cmd">:%!xxd -r</span>
+    <span class="step-desc">Convert the hex dump back to binary</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">5</span>
+    <span class="step-cmd">:w</span>
+    <span class="step-desc">Save — the file is written as binary</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Putting It All Together</h2>
+
+<h3>Practical workflow: fix a compiler error</h3>
+
+<div class="workflow-box">
+  <h4>From error message to fix without leaving the terminal</h4>
+  <div class="workflow-step">
+    <span class="step-num">1</span>
+    <span class="step-cmd">make 2>&amp;1 | tee errors.txt</span>
+    <span class="step-desc">Build and save compiler output to a file</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">2</span>
+    <span class="step-cmd">vim errors.txt</span>
+    <span class="step-desc">Open the error log in Vim</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">3</span>
+    <span class="step-desc" style="color:#c9d8ff;">Move cursor to the filename:line in an error line</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">4</span>
+    <span class="step-cmd">gF</span>
+    <span class="step-desc">Jump directly to the file at the exact error line</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">5</span>
+    <span class="step-desc" style="color:#c9d8ff;">Fix the error</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">6</span>
+    <span class="step-cmd">:!make</span>
+    <span class="step-desc">Rebuild without leaving Vim</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">7</span>
+    <span class="step-cmd">Ctrl+O</span>
+    <span class="step-desc">Return to errors.txt to check the next error</span>
+  </div>
+</div>
+
+<h3>Practical workflow: review and merge a diff</h3>
+
+<div class="workflow-box">
+  <h4>Compare two versions and merge selectively</h4>
+  <div class="workflow-step">
+    <span class="step-num">1</span>
+    <span class="step-cmd">vimdiff old.conf new.conf</span>
+    <span class="step-desc">Open both files in diff mode side by side</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">2</span>
+    <span class="step-cmd">]c</span>
+    <span class="step-desc">Jump to the first difference</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">3</span>
+    <span class="step-desc" style="color:#c9d8ff;">Review the change — decide which version to keep</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">4</span>
+    <span class="step-cmd">do</span>
+    <span class="step-desc">Obtain — accept the other file's version here</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">5</span>
+    <span class="step-cmd">dp</span>
+    <span class="step-desc">Put — push your version to the other file instead</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">6</span>
+    <span class="step-cmd">]c</span>
+    <span class="step-desc">Move to the next difference and repeat</span>
+  </div>
+  <div class="workflow-step">
+    <span class="step-num">7</span>
+    <span class="step-cmd">:wqa</span>
+    <span class="step-desc">Save all and quit when done</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Commands Introduced in This Chapter</h2>
+
+<div class="cmd-ref">
+  <h4>Chapter 8 — Command Reference</h4>
+
+  <div class="cmd-section">Startup flags</div>
+  <div class="cmd-row"><span class="cmd-key">vim +{n} file</span><span class="cmd-desc">Open file at line n</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim +/{pattern} file</span><span class="cmd-desc">Open file and jump to first match of pattern</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim +"{cmd}" file</span><span class="cmd-desc">Run a command after opening the file</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim -d file1 file2</span><span class="cmd-desc">Open two files in diff mode</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim -R file</span><span class="cmd-desc">Open file in read-only mode</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim -u NONE file</span><span class="cmd-desc">Open without loading vimrc</span></div>
+  <div class="cmd-row"><span class="cmd-key">vimdiff file1 file2</span><span class="cmd-desc">Alias for vim -d</span></div>
+
+  <div class="cmd-section">Diff mode</div>
+  <div class="cmd-row"><span class="cmd-key">:diffsplit {file}</span><span class="cmd-desc">Open file in diff mode (horizontal split)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:vert diffsplit {file}</span><span class="cmd-desc">Open file in diff mode (vertical split)</span></div>
+  <div class="cmd-row"><span class="cmd-key">]c</span><span class="cmd-desc">Jump to next difference</span></div>
+  <div class="cmd-row"><span class="cmd-key">[c</span><span class="cmd-desc">Jump to previous difference</span></div>
+  <div class="cmd-row"><span class="cmd-key">do</span><span class="cmd-desc">Diff Obtain — pull change from the other file into this one</span></div>
+  <div class="cmd-row"><span class="cmd-key">dp</span><span class="cmd-desc">Diff Put — push change from this file into the other one</span></div>
+  <div class="cmd-row"><span class="cmd-key">:diffupdate</span><span class="cmd-desc">Recalculate and refresh the diff highlights</span></div>
+  <div class="cmd-row"><span class="cmd-key">set diffopt+=vertical</span><span class="cmd-desc">Always use vertical (side-by-side) diff layout (vimrc)</span></div>
+  <div class="cmd-row"><span class="cmd-key">set diffopt+=iwhite</span><span class="cmd-desc">Ignore whitespace differences in diff</span></div>
+
+  <div class="cmd-section">Archive editing</div>
+  <div class="cmd-row"><span class="cmd-key">vim {file}.zip</span><span class="cmd-desc">Browse and edit files inside a ZIP archive</span></div>
+  <div class="cmd-row"><span class="cmd-key">vim {file}.tar.gz</span><span class="cmd-desc">Browse and edit files inside a TAR archive</span></div>
+
+  <div class="cmd-section">File navigation</div>
+  <div class="cmd-row"><span class="cmd-key">gf</span><span class="cmd-desc">Open file whose name is under the cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">gF</span><span class="cmd-desc">Open file under cursor at the line number also under cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W f</span><span class="cmd-desc">Open file under cursor in a new horizontal split</span></div>
+  <div class="cmd-row"><span class="cmd-key">Ctrl+W gf</span><span class="cmd-desc">Open file under cursor in a new tab</span></div>
+  <div class="cmd-row"><span class="cmd-key">:set path+=src/**</span><span class="cmd-desc">Add directories to the search path for gf</span></div>
+
+  <div class="cmd-section">External commands</div>
+  <div class="cmd-row"><span class="cmd-key">:! {cmd}</span><span class="cmd-desc">Run a shell command; show output in overlay</span></div>
+  <div class="cmd-row"><span class="cmd-key">:r ! {cmd}</span><span class="cmd-desc">Insert shell command output below cursor</span></div>
+  <div class="cmd-row"><span class="cmd-key">:0r ! {cmd}</span><span class="cmd-desc">Insert shell command output at top of file</span></div>
+  <div class="cmd-row"><span class="cmd-key">:%! {cmd}</span><span class="cmd-desc">Filter entire buffer through external command (replaces content)</span></div>
+  <div class="cmd-row"><span class="cmd-key">:{range}! {cmd}</span><span class="cmd-desc">Filter a line range through external command</span></div>
+  <div class="cmd-row"><span class="cmd-key">'&lt;,'&gt;! {cmd}</span><span class="cmd-desc">Filter Visual selection through external command</span></div>
+  <div class="cmd-row"><span class="cmd-key">:%!jq .</span><span class="cmd-desc">Format JSON with jq</span></div>
+  <div class="cmd-row"><span class="cmd-key">:%!sort</span><span class="cmd-desc">Sort all lines alphabetically</span></div>
+  <div class="cmd-row"><span class="cmd-key">:%!xxd</span><span class="cmd-desc">Convert buffer to hex dump</span></div>
+  <div class="cmd-row"><span class="cmd-key">:%!xxd -r</span><span class="cmd-desc">Convert hex dump back to binary</span></div>
+</div>
+
+</div>

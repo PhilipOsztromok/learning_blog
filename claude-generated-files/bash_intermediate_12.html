@@ -1,0 +1,715 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em; }
+  .lx-lesson .inline-code {
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .exercise { background: #111827; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  .lx-lesson .exercise h4 { color: #4f8ef7; margin: 0 0 0.5em 0; }
+  .lx-lesson .ex-solution { display: none; margin-top: 1em; border-top: 1px solid #2a2d3e; padding-top: 1em; }
+  .lx-lesson .toggle-btn {
+    background: #1c2a4a; color: #4f8ef7; border: 1px solid #4f8ef7;
+    padding: 0.3em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.88rem; margin-top: 0.7em;
+  }
+  .lx-lesson .toggle-btn:hover { background: #243460; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl { color: #f97583; }
+  .st { color: #9ecbff; }
+  .pth { color: #b392f0; }
+  .out { color: #85e89d; }
+  .kw { color: #f97583; }
+  .nu { color: #ffab70; }
+  .sh { color: #85e89d; }
+  .vr { color: #ffab70; }
+  .op { color: #e1e4e8; }
+  .er { color: #f97583; font-weight: bold; }
+  .fn { color: #b392f0; }
+  .rx { color: #9ecbff; }
+</style>
+
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  var btn = el.previousElementSibling;
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+    btn.textContent = 'Show sample solution';
+  } else {
+    el.style.display = 'block';
+    btn.textContent = 'Hide sample solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+<h1>Chapter 12 — Scripting for Cron and Systemd</h1>
+<p>A script that works perfectly when you run it interactively can silently fail when a scheduler
+runs it at 3 AM. The reasons are almost always environmental: missing PATH entries, no terminal,
+no home directory, or a second copy launched before the first one finished.
+This chapter covers everything you need to write scripts that behave correctly when run unattended.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1 — Cron Syntax and the Crontab</h2>
+
+<p>A crontab line has five time fields followed by the command:</p>
+
+<pre><span class="cm"># ┌──────────── minute        (0–59)</span>
+<span class="cm"># │  ┌─────────── hour          (0–23)</span>
+<span class="cm"># │  │  ┌────────── day of month  (1–31)</span>
+<span class="cm"># │  │  │  ┌───────── month         (1–12 or JAN–DEC)</span>
+<span class="cm"># │  │  │  │  ┌────────── day of week   (0–7, 0 and 7 = Sunday, or SUN–SAT)</span>
+<span class="cm"># │  │  │  │  │</span>
+<span class="cm"># *  *  *  *  *  command</span>
+
+<span class="cm"># Run at 02:30 every day</span>
+<span class="nu">30</span>  <span class="nu">2</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="pth">/opt/myapp/bin/</span>backup.sh
+
+<span class="cm"># Every 15 minutes</span>
+<span class="op">*/</span><span class="nu">15</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="pth">/opt/myapp/bin/</span>poll.sh
+
+<span class="cm"># 9 AM on weekdays only</span>
+<span class="nu">0</span>  <span class="nu">9</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="nu">1</span><span class="op">-</span><span class="nu">5</span>  <span class="pth">/opt/myapp/bin/</span>report.sh
+
+<span class="cm"># First day of every month at midnight</span>
+<span class="nu">0</span>  <span class="nu">0</span>  <span class="nu">1</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="pth">/opt/myapp/bin/</span>monthly.sh
+
+<span class="cm"># Multiple values with commas</span>
+<span class="nu">0</span>  <span class="nu">8</span>,<span class="nu">12</span>,<span class="nu">17</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="op">*</span>  <span class="pth">/opt/myapp/bin/</span>check.sh</pre>
+
+<h3>Managing crontabs</h3>
+<pre><span class="cm"># Edit your crontab interactively</span>
+<span class="cmd">crontab</span> <span class="fl">-e</span>
+
+<span class="cm"># List current crontab</span>
+<span class="cmd">crontab</span> <span class="fl">-l</span>
+
+<span class="cm"># Install from a file (replaces entire crontab)</span>
+<span class="cmd">crontab</span> crontab.txt
+
+<span class="cm"># Non-interactively add a line — safe even if crontab is empty</span>
+<span class="op">(</span> <span class="cmd">crontab</span> <span class="fl">-l</span> <span class="nu">2</span><span class="op">>/</span>dev/null; <span class="cmd">echo</span> <span class="st">"30 2 * * * /opt/myapp/bin/backup.sh"</span> <span class="op">)</span> <span class="op">|</span> <span class="cmd">crontab</span> <span class="fl">-</span>
+
+<span class="cm"># Remove a specific line (match and delete)</span>
+<span class="cmd">crontab</span> <span class="fl">-l</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-v</span> <span class="st">'backup.sh'</span> <span class="op">|</span> <span class="cmd">crontab</span> <span class="fl">-</span>
+
+<span class="cm"># Edit another user's crontab (as root)</span>
+<span class="cmd">crontab</span> <span class="fl">-u</span> deploy <span class="fl">-e</span>
+
+<span class="cm"># System-wide crontab — has an extra USER field</span>
+<span class="cm"># /etc/crontab and files in /etc/cron.d/:</span>
+<span class="cm"># 30 2 * * *  deploy  /opt/myapp/bin/backup.sh</span></pre>
+
+<div class="note">
+<strong>Tip:</strong> use <a href="https://crontab.guru" style="color:#4f8ef7">crontab.guru</a>
+to verify your schedule expressions interactively before deploying them.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2 — The Cron Environment Problem</h2>
+
+<p>Cron runs jobs with a minimal environment — typically just
+<span class="inline-code">HOME</span>, <span class="inline-code">LOGNAME</span>, and a very short
+<span class="inline-code">PATH</span> (often just <span class="inline-code">/usr/bin:/bin</span>).
+Everything your interactive shell loads — <span class="inline-code">~/.bashrc</span>,
+<span class="inline-code">nvm</span>, <span class="inline-code">pyenv</span>, <span class="inline-code">/usr/local/bin</span> — is absent.</p>
+
+<h3>The three defences</h3>
+
+<pre><span class="cm"># 1. Set PATH explicitly at the top of your crontab</span>
+<span class="vr">PATH</span><span class="op">=</span><span class="pth">/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</span>
+<span class="vr">MAILTO</span><span class="op">=</span><span class="st">ops@example.com</span>    <span class="cm"># send output/errors here; empty string = discard</span>
+<span class="vr">SHELL</span><span class="op">=</span><span class="pth">/bin/bash</span>
+
+<span class="nu">30</span> <span class="nu">2</span> <span class="op">*</span> <span class="op">*</span> <span class="op">*</span> backup.sh</pre>
+
+<pre><span class="cm"># 2. Use absolute paths for every binary inside the script</span>
+<span class="sh">#!/usr/bin/env bash</span>
+<span class="vr">PYTHON</span><span class="op">=</span><span class="pth">/usr/bin/python3</span>
+<span class="vr">RSYNC</span><span class="op">=</span><span class="pth">/usr/bin/rsync</span>
+<span class="vr">CURL</span><span class="op">=</span><span class="pth">/usr/bin/curl</span></pre>
+
+<pre><span class="cm"># 3. Source your profile at the top of the script (when you NEED its env)</span>
+<span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># Deliberately load the user environment — use sparingly</span>
+<span class="cm"># shellcheck source=/dev/null</span>
+[[ <span class="fl">-f</span> <span class="pth">/etc/profile</span> ]] <span class="op">&&</span> <span class="kw">source</span> <span class="pth">/etc/profile</span>
+[[ <span class="fl">-f</span> <span class="st">"${HOME}/.bashrc"</span> ]] <span class="op">&&</span> <span class="kw">source</span> <span class="st">"${HOME}/.bashrc"</span></pre>
+
+<h3>Diagnosing environment issues</h3>
+<pre><span class="cm"># Simulate the cron environment locally</span>
+<span class="cmd">env</span> <span class="fl">-i</span> <span class="vr">HOME</span><span class="op">=</span><span class="st">"<span class="vr">$HOME</span>"</span> <span class="vr">LOGNAME</span><span class="op">=</span><span class="st">"<span class="vr">$LOGNAME</span>"</span> <span class="vr">PATH</span><span class="op">=</span><span class="st">'/usr/bin:/bin'</span> \
+  <span class="vr">SHELL</span><span class="op">=</span><span class="pth">/bin/bash</span> bash <span class="fl">--norc</span> <span class="fl">--noprofile</span> <span class="pth">./myscript.sh</span>
+
+<span class="cm"># Dump the actual cron environment to a file for inspection</span>
+<span class="op">*</span> <span class="op">*</span> <span class="op">*</span> <span class="op">*</span> <span class="op">*</span> <span class="cmd">env</span> <span class="op">></span> <span class="pth">/tmp/cron-env.txt</span> <span class="nu">2</span><span class="op">&</span><span class="nu">1</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3 — Locking: Preventing Overlapping Runs</h2>
+
+<p>Without a lock, a slow job can still be running when cron starts the next instance.
+Two copies writing to the same file or database is rarely safe.</p>
+
+<h3>flock — the right tool for the job</h3>
+<pre><span class="cm"># Inline — entire script protected in one line from the crontab</span>
+<span class="op">*</span> <span class="op">*</span> <span class="op">*</span> <span class="op">*</span> <span class="op">*</span>  <span class="cmd">flock</span> <span class="fl">-n</span> <span class="pth">/var/lock/myjob.lock</span> <span class="pth">/opt/myapp/bin/</span>myjob.sh
+
+<span class="cm"># -n = non-blocking: exit immediately if lock is held (skip this run)</span>
+<span class="cm"># -w N = wait up to N seconds before giving up</span>
+<span class="cmd">flock</span> <span class="fl">-w</span> <span class="nu">10</span> <span class="pth">/var/lock/myjob.lock</span> <span class="pth">/opt/myapp/bin/</span>myjob.sh</pre>
+
+<h3>flock inside the script</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">LOCKFILE</span><span class="op">=</span><span class="pth">/var/lock/myjob.lock</span>
+
+<span class="cm"># Open the lock file on fd 9 and attempt an exclusive non-blocking lock</span>
+<span class="kw">exec</span> <span class="nu">9</span><span class="op">></span><span class="st">"<span class="vr">$LOCKFILE</span>"</span>
+<span class="kw">if</span> ! <span class="cmd">flock</span> <span class="fl">-n</span> <span class="nu">9</span>; <span class="kw">then</span>
+  <span class="cmd">echo</span> <span class="st">"Another instance is already running. Exiting."</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span>
+<span class="cm"># Lock is held for the rest of the script; released automatically on exit</span>
+
+<span class="cmd">echo</span> <span class="st">"Running job..."</span>
+<span class="cm"># … work …</span></pre>
+
+<div class="note">
+<strong>Why not PID files?</strong> Classic PID-file locking is race-prone and leaves stale files after
+crashes. <code>flock</code> uses kernel-level advisory locks that are automatically released when the
+process exits — no cleanup needed.
+</div>
+
+<h3>Logging with timestamps for unattended jobs</h3>
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="vr">LOGFILE</span><span class="op">=</span><span class="pth">/var/log/myapp/myjob.log</span>
+<span class="vr">MAXLOG</span><span class="op">=</span><span class="nu">10485760</span>   <span class="cm"># 10 MB — rotate when exceeded</span>
+
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$(date '+%Y-%m-%dT%H:%M:%S')"</span> <span class="st">"$*"</span>; }
+
+<span class="cm"># Rotate log if too large</span>
+<span class="kw">if</span> [[ <span class="fl">-f</span> <span class="vr">$LOGFILE</span> ]] <span class="op">&&</span> (( $(<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$LOGFILE</span>"</span>) <span class="op">></span> <span class="vr">MAXLOG</span> )); <span class="kw">then</span>
+  <span class="cmd">mv</span> <span class="st">"<span class="vr">$LOGFILE</span>"</span> <span class="st">"<span class="vr">$LOGFILE</span>.$(date +%Y%m%d%H%M%S)"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Redirect all output (stdout + stderr) to the log file</span>
+<span class="kw">exec</span> <span class="op">>></span><span class="st">"<span class="vr">$LOGFILE</span>"</span> <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>
+
+<span class="fn">log</span> <span class="st">"=== Job started (PID $$) ==="</span>
+<span class="cm"># … work …</span>
+<span class="fn">log</span> <span class="st">"=== Job finished ==="</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4 — Systemd Timer Units</h2>
+
+<p>Systemd timers are the modern alternative to cron. They offer better logging (via journald),
+dependency management, missed-run handling, and per-service resource controls.</p>
+
+<p>Every timer needs two files: a <strong>.service</strong> unit (what to run) and a
+<strong>.timer</strong> unit (when to run it).</p>
+
+<h3>The service unit</h3>
+<pre><span class="cm"># /etc/systemd/system/myjob.service</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>My scheduled job
+<span class="vr">After</span><span class="op">=</span>network-online.target
+<span class="vr">Wants</span><span class="op">=</span>network-online.target
+
+[Service]
+<span class="vr">Type</span><span class="op">=</span>oneshot
+<span class="vr">User</span><span class="op">=</span>deploy
+<span class="vr">Group</span><span class="op">=</span>deploy
+<span class="vr">WorkingDirectory</span><span class="op">=</span><span class="pth">/opt/myapp</span>
+<span class="vr">ExecStart</span><span class="op">=</span><span class="pth">/opt/myapp/bin/myjob.sh</span>
+<span class="vr">StandardOutput</span><span class="op">=</span>journal
+<span class="vr">StandardError</span><span class="op">=</span>journal
+<span class="vr">SyslogIdentifier</span><span class="op">=</span>myjob
+
+<span class="cm"># Resource limits — prevent runaway jobs</span>
+<span class="vr">TimeoutStartSec</span><span class="op">=</span>300
+<span class="vr">MemoryMax</span><span class="op">=</span>512M
+<span class="vr">CPUQuota</span><span class="op">=</span>50%
+
+[Install]
+<span class="vr">WantedBy</span><span class="op">=</span>multi-user.target</pre>
+
+<h3>The timer unit</h3>
+<pre><span class="cm"># /etc/systemd/system/myjob.timer</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>Run myjob daily at 02:30
+
+[Timer]
+<span class="cm"># Calendar expression — like cron but human-readable</span>
+<span class="vr">OnCalendar</span><span class="op">=</span><span class="op">*</span>-<span class="op">*</span>-<span class="op">*</span> 02:30:00
+
+<span class="cm"># If the system was off at the scheduled time, run ASAP on next boot</span>
+<span class="vr">Persistent</span><span class="op">=</span>true
+
+<span class="cm"># Spread load — randomise start within 5 minutes of the scheduled time</span>
+<span class="vr">RandomizedDelaySec</span><span class="op">=</span>5min
+
+[Install]
+<span class="vr">WantedBy</span><span class="op">=</span>timers.target</pre>
+
+<h3>Timer management commands</h3>
+<pre><span class="cm"># Enable and start the timer</span>
+<span class="cmd">sudo</span> systemctl daemon-reload
+<span class="cmd">sudo</span> systemctl enable <span class="fl">--now</span> myjob.timer
+
+<span class="cm"># Check timer status and next run time</span>
+<span class="cmd">systemctl</span> status myjob.timer
+<span class="cmd">systemctl</span> list-timers <span class="fl">--all</span>
+
+<span class="cm"># Run the job immediately (without waiting for the timer)</span>
+<span class="cmd">sudo</span> systemctl start myjob.service
+
+<span class="cm"># View recent logs</span>
+<span class="cmd">journalctl</span> <span class="fl">-u</span> myjob.service <span class="fl">-n</span> <span class="nu">50</span>
+
+<span class="cm"># Follow logs in real time</span>
+<span class="cmd">journalctl</span> <span class="fl">-u</span> myjob.service <span class="fl">-f</span>
+
+<span class="cm"># Logs since last run</span>
+<span class="cmd">journalctl</span> <span class="fl">-u</span> myjob.service <span class="fl">--since</span> <span class="st">"$(systemctl show myjob.service -p ExecMainStartTimestamp --value)"</span></pre>
+
+<h3>OnCalendar expressions</h3>
+<table>
+  <tr><th>Expression</th><th>Meaning</th></tr>
+  <tr><td><code>daily</code></td><td>Every day at midnight (shorthand)</td></tr>
+  <tr><td><code>hourly</code></td><td>Every hour at :00</td></tr>
+  <tr><td><code>weekly</code></td><td>Every Monday at midnight</td></tr>
+  <tr><td><code>monthly</code></td><td>First day of every month at midnight</td></tr>
+  <tr><td><code>*-*-* 02:30:00</code></td><td>Every day at 02:30</td></tr>
+  <tr><td><code>Mon..Fri *-*-* 09:00:00</code></td><td>Weekdays at 09:00</td></tr>
+  <tr><td><code>*-*-1 00:00:00</code></td><td>First of every month at midnight</td></tr>
+  <tr><td><code>*:0/15</code></td><td>Every 15 minutes</td></tr>
+</table>
+
+<pre><span class="cm"># Test a calendar expression without running anything</span>
+<span class="cmd">systemd-analyze</span> calendar <span class="st">'Mon..Fri *-*-* 09:00:00'</span>
+<span class="out">  Original form: Mon..Fri *-*-* 09:00:00
+Normalized form: Mon..Fri *-*-* 09:00:00
+    Next elapse: Mon 2026-06-09 09:00:00 UTC
+       (in UTC): Mon 2026-06-09 09:00:00 UTC</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5 — User Timers (No Root Required)</h2>
+
+<p>You don't need root to use systemd timers. User timers live under
+<span class="inline-code">~/.config/systemd/user/</span> and run as your own user.</p>
+
+<pre><span class="cm"># ~/.config/systemd/user/sync.service</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>Sync notes to remote
+
+[Service]
+<span class="vr">Type</span><span class="op">=</span>oneshot
+<span class="vr">ExecStart</span><span class="op">=</span><span class="pth">%h/bin/sync-notes.sh</span>   <span class="cm"># %h expands to $HOME</span>
+
+<span class="cm"># ~/.config/systemd/user/sync.timer</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>Sync notes every 30 minutes
+
+[Timer]
+<span class="vr">OnCalendar</span><span class="op">=</span><span class="op">*</span>:<span class="nu">0</span><span class="op">/</span><span class="nu">30</span>
+<span class="vr">Persistent</span><span class="op">=</span>true
+
+[Install]
+<span class="vr">WantedBy</span><span class="op">=</span>timers.target</pre>
+
+<pre><span class="cm"># Manage user timers — no sudo needed</span>
+<span class="cmd">systemctl</span> <span class="fl">--user</span> daemon-reload
+<span class="cmd">systemctl</span> <span class="fl">--user</span> enable <span class="fl">--now</span> sync.timer
+<span class="cmd">systemctl</span> <span class="fl">--user</span> list-timers
+<span class="cmd">journalctl</span> <span class="fl">--user</span> <span class="fl">-u</span> sync.service <span class="fl">-f</span>
+
+<span class="cm"># Allow user timers to run even when logged out</span>
+<span class="cmd">sudo</span> loginctl enable-linger <span class="st">"<span class="vr">$USER</span>"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6 — A Production-Ready Cron Script Template</h2>
+
+<p>This template handles every common unattended-job concern in one place:</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># =============================================================================</span>
+<span class="cm"># myjob.sh — nightly data export</span>
+<span class="cm"># Safe for cron and systemd. Run as: deploy user.</span>
+<span class="cm"># =============================================================================</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="cm"># ── Identity ──────────────────────────────────────────────────────────────────</span>
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "${BASH_SOURCE[0]}")"</span>
+<span class="vr">PIDSTR</span><span class="op">=</span><span class="st">"[<span class="vr">$$</span>]"</span>
+
+<span class="cm"># ── Environment ───────────────────────────────────────────────────────────────</span>
+<span class="vr">PATH</span><span class="op">=</span><span class="pth">/usr/local/bin:/usr/bin:/bin</span>
+
+<span class="cm"># ── Paths ─────────────────────────────────────────────────────────────────────</span>
+<span class="vr">APP_DIR</span><span class="op">=</span><span class="pth">/opt/myapp</span>
+<span class="vr">LOG_DIR</span><span class="op">=</span><span class="pth">/var/log/myapp</span>
+<span class="vr">LOCK_FILE</span><span class="op">=</span><span class="pth">/var/lock/myjob.lock</span>
+<span class="vr">LOG_FILE</span><span class="op">=</span><span class="st">"<span class="vr">$LOG_DIR</span>/myjob.log"</span>
+<span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$LOG_DIR</span>"</span>
+
+<span class="cm"># ── Logging ───────────────────────────────────────────────────────────────────</span>
+<span class="kw">exec</span> <span class="op">>></span><span class="st">"<span class="vr">$LOG_FILE</span>"</span> <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>
+<span class="fn">log</span>()  { <span class="cmd">printf</span> <span class="st">'[%s] %s %s\n'</span>    <span class="st">"$(date '+%Y-%m-%dT%H:%M:%S')"</span> <span class="st">"<span class="vr">$PIDSTR</span>"</span> <span class="st">"$*"</span>; }
+<span class="fn">warn</span>() { <span class="cmd">printf</span> <span class="st">'[%s] %s WARN %s\n'</span> <span class="st">"$(date '+%Y-%m-%dT%H:%M:%S')"</span> <span class="st">"<span class="vr">$PIDSTR</span>"</span> <span class="st">"$*"</span>; }
+
+<span class="cm"># ── Locking ───────────────────────────────────────────────────────────────────</span>
+<span class="kw">exec</span> <span class="nu">9</span><span class="op">></span><span class="st">"<span class="vr">$LOCK_FILE</span>"</span>
+<span class="kw">if</span> ! <span class="cmd">flock</span> <span class="fl">-n</span> <span class="nu">9</span>; <span class="kw">then</span>
+  <span class="fn">log</span> <span class="st">"Already running — skipping this invocation"</span>
+  <span class="kw">exit</span> <span class="nu">0</span>
+<span class="kw">fi</span>
+
+<span class="cm"># ── Traps ─────────────────────────────────────────────────────────────────────</span>
+<span class="fn">on_exit</span>() {
+  <span class="kw">local</span> <span class="vr">rc</span><span class="op">=</span><span class="vr">$?</span>
+  <span class="kw">if</span> (( <span class="vr">rc</span> <span class="op">!=</span> <span class="nu">0</span> )); <span class="kw">then</span>
+    <span class="fn">log</span> <span class="st">"=== Job FAILED (exit <span class="vr">$rc</span>) ==="</span>
+  <span class="kw">else</span>
+    <span class="fn">log</span> <span class="st">"=== Job finished OK ==="</span>
+  <span class="kw">fi</span>
+}
+<span class="kw">trap</span> on_exit EXIT
+
+<span class="cm"># ── Main ──────────────────────────────────────────────────────────────────────</span>
+<span class="fn">log</span> <span class="st">"=== Job started ==="</span>
+
+<span class="cm"># … your work here …</span>
+<span class="fn">log</span> <span class="st">"Exporting data..."</span>
+<span class="cm"># export_data ...</span>
+
+<span class="fn">log</span> <span class="st">"Done."</span></pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7 — Sending Alerts on Failure</h2>
+
+<p>Silent failures are the worst kind. Build notification into the job itself, not just the crontab's
+<span class="inline-code">MAILTO</span> setting (which requires a working MTA).</p>
+
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="vr">SLACK_WEBHOOK</span><span class="op">=</span><span class="st">"${SLACK_WEBHOOK_URL:?set SLACK_WEBHOOK_URL}"</span>
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "$0")"</span>
+<span class="vr">HOST</span><span class="op">=</span>$(<span class="cmd">hostname</span> <span class="fl">-s</span>)
+
+<span class="fn">notify_failure</span>() {
+  <span class="kw">local</span> <span class="vr">exit_code</span><span class="op">=</span><span class="st">"$1"</span>
+  <span class="kw">local</span> <span class="vr">message</span>
+  <span class="cmd">printf</span> <span class="fl">-v</span> <span class="vr">message</span> <span class="st">'*FAILED* `%s` on `%s` (exit %d) at %s'</span> \
+    <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"<span class="vr">$HOST</span>"</span> <span class="st">"<span class="vr">$exit_code</span>"</span> <span class="st">"$(date '+%Y-%m-%d %H:%M:%S')"</span>
+  <span class="cmd">curl</span> <span class="fl">-s</span> <span class="fl">-X</span> POST <span class="fl">-H</span> <span class="st">'Content-Type: application/json'</span> \
+    <span class="fl">--data</span> <span class="st">"{\"text\":\"${message}\"}"</span> \
+    <span class="st">"<span class="vr">$SLACK_WEBHOOK</span>"</span> <span class="op">||</span> <span class="kw">true</span>   <span class="cm"># never let alerting kill the job</span>
+}
+
+<span class="fn">on_exit</span>() {
+  <span class="kw">local</span> <span class="vr">rc</span><span class="op">=</span><span class="vr">$?</span>
+  (( <span class="vr">rc</span> <span class="op">!=</span> <span class="nu">0</span> )) <span class="op">&&</span> notify_failure <span class="st">"<span class="vr">$rc</span>"</span>
+}
+<span class="kw">trap</span> on_exit EXIT
+
+<span class="cm"># … rest of script …</span></pre>
+
+<h3>Using systemd OnFailure for alert routing</h3>
+<pre><span class="cm"># /etc/systemd/system/myjob.service</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>My job
+<span class="vr">OnFailure</span><span class="op">=</span>notify-failure@%n.service   <span class="cm"># %n = unit name</span>
+
+<span class="cm"># /etc/systemd/system/notify-failure@.service  (template unit)</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>Notify on failure for %i
+
+[Service]
+<span class="vr">Type</span><span class="op">=</span>oneshot
+<span class="vr">ExecStart</span><span class="op">=</span><span class="pth">/opt/myapp/bin/notify-failure.sh</span> %i</pre>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>8 — Cron vs Systemd Timers: Quick Comparison</h2>
+
+<table>
+  <tr><th>Feature</th><th>Cron</th><th>Systemd timer</th></tr>
+  <tr><td>Availability</td><td>Universal</td><td>Linux with systemd only</td></tr>
+  <tr><td>Logging</td><td>Email / redirect manually</td><td>journald — automatic, queryable</td></tr>
+  <tr><td>Missed runs</td><td>Silently skipped</td><td><code>Persistent=true</code> catches up</td></tr>
+  <tr><td>Dependencies</td><td>None</td><td>After=, Wants=, Requires=</td></tr>
+  <tr><td>Resource limits</td><td>None built-in</td><td>Memory, CPU, IO per unit</td></tr>
+  <tr><td>Overlapping runs</td><td>Requires manual locking</td><td>Default: one instance at a time</td></tr>
+  <tr><td>User jobs (no root)</td><td><code>crontab -e</code></td><td><code>~/.config/systemd/user/</code></td></tr>
+  <tr><td>Schedule syntax</td><td>5-field numeric</td><td>Human-readable calendar strings</td></tr>
+  <tr><td>Randomised jitter</td><td>Manual with sleep $RANDOM</td><td><code>RandomizedDelaySec=</code></td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>Exercises</h2>
+
+<!-- Exercise 1 -->
+<div class="exercise">
+  <h4>Exercise 1 — Hardened cron script</h4>
+  <p>Write <code>db_backup.sh</code> — a script meant to run daily from cron that:</p>
+  <ul>
+    <li>Sets an explicit <code>PATH</code> at the top</li>
+    <li>Uses <code>flock</code> on fd 9 to prevent overlapping runs</li>
+    <li>Redirects all output to <span class="inline-code">/var/log/myapp/db_backup.log</span> with timestamps</li>
+    <li>Rotates the log file when it exceeds 5 MB</li>
+    <li>Traps EXIT to log success or failure</li>
+    <li>The actual "backup" can be a stub (<code>sleep 2 &amp;&amp; echo "Backup complete"</code>)</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol1')">Show sample solution</button>
+  <div class="ex-solution" id="sol1">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">PATH</span><span class="op">=</span><span class="pth">/usr/local/bin:/usr/bin:/bin</span>
+
+<span class="vr">LOG_DIR</span><span class="op">=</span><span class="pth">/var/log/myapp</span>
+<span class="vr">LOG_FILE</span><span class="op">=</span><span class="st">"<span class="vr">$LOG_DIR</span>/db_backup.log"</span>
+<span class="vr">LOCK_FILE</span><span class="op">=</span><span class="pth">/var/lock/db_backup.lock</span>
+<span class="vr">MAX_LOG</span><span class="op">=</span><span class="nu">5242880</span>   <span class="cm"># 5 MB</span>
+
+<span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$LOG_DIR</span>"</span>
+
+<span class="cm"># Rotate log if needed</span>
+<span class="kw">if</span> [[ <span class="fl">-f</span> <span class="vr">$LOG_FILE</span> ]] <span class="op">&&</span> \
+   (( $(<span class="cmd">stat</span> <span class="fl">-c</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$LOG_FILE</span>"</span>) <span class="op">></span> <span class="vr">MAX_LOG</span> )); <span class="kw">then</span>
+  <span class="cmd">mv</span> <span class="st">"<span class="vr">$LOG_FILE</span>"</span> <span class="st">"<span class="vr">$LOG_FILE</span>.$(date +%Y%m%d%H%M%S)"</span>
+<span class="kw">fi</span>
+
+<span class="kw">exec</span> <span class="op">>></span><span class="st">"<span class="vr">$LOG_FILE</span>"</span> <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>
+
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'[%s] [%d] %s\n'</span> <span class="st">"$(date '+%Y-%m-%dT%H:%M:%S')"</span> <span class="st">"$$"</span> <span class="st">"$*"</span>; }
+
+<span class="cm"># Lock</span>
+<span class="kw">exec</span> <span class="nu">9</span><span class="op">></span><span class="st">"<span class="vr">$LOCK_FILE</span>"</span>
+<span class="kw">if</span> ! <span class="cmd">flock</span> <span class="fl">-n</span> <span class="nu">9</span>; <span class="kw">then</span>
+  <span class="fn">log</span> <span class="st">"Already running — skipping"</span>
+  <span class="kw">exit</span> <span class="nu">0</span>
+<span class="kw">fi</span>
+
+<span class="fn">on_exit</span>() {
+  <span class="kw">local</span> <span class="vr">rc</span><span class="op">=</span><span class="vr">$?</span>
+  <span class="kw">if</span> (( <span class="vr">rc</span> <span class="op">==</span> <span class="nu">0</span> )); <span class="kw">then</span>
+    <span class="fn">log</span> <span class="st">"=== FINISHED OK ==="</span>
+  <span class="kw">else</span>
+    <span class="fn">log</span> <span class="st">"=== FAILED (exit <span class="vr">$rc</span>) ==="</span>
+  <span class="kw">fi</span>
+}
+<span class="kw">trap</span> on_exit EXIT
+
+<span class="fn">log</span> <span class="st">"=== DB backup started ==="</span>
+<span class="cm"># Stub backup work</span>
+<span class="cmd">sleep</span> <span class="nu">2</span>
+<span class="fn">log</span> <span class="st">"Backup complete"</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 2 -->
+<div class="exercise">
+  <h4>Exercise 2 — Systemd timer unit</h4>
+  <p>Write a pair of systemd unit files for a weekly report generator:</p>
+  <ul>
+    <li><code>weekly-report.service</code> — runs <code>/opt/reports/generate.sh</code> as user
+    <code>reports</code>, depends on network being available, journals all output,
+    times out after 10 minutes</li>
+    <li><code>weekly-report.timer</code> — fires every Monday at 06:00, catches up on missed
+    runs, spreads load with up to 10 minutes of random jitter</li>
+  </ul>
+  <p>Also write the three <code>systemctl</code> commands needed to deploy and start the timer
+  without rebooting.</p>
+  <button class="toggle-btn" onclick="toggleSolution('sol2')">Show sample solution</button>
+  <div class="ex-solution" id="sol2">
+<pre><span class="cm"># /etc/systemd/system/weekly-report.service</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>Weekly report generator
+<span class="vr">After</span><span class="op">=</span>network-online.target
+<span class="vr">Wants</span><span class="op">=</span>network-online.target
+
+[Service]
+<span class="vr">Type</span><span class="op">=</span>oneshot
+<span class="vr">User</span><span class="op">=</span>reports
+<span class="vr">Group</span><span class="op">=</span>reports
+<span class="vr">ExecStart</span><span class="op">=</span><span class="pth">/opt/reports/generate.sh</span>
+<span class="vr">StandardOutput</span><span class="op">=</span>journal
+<span class="vr">StandardError</span><span class="op">=</span>journal
+<span class="vr">SyslogIdentifier</span><span class="op">=</span>weekly-report
+<span class="vr">TimeoutStartSec</span><span class="op">=</span>600
+
+[Install]
+<span class="vr">WantedBy</span><span class="op">=</span>multi-user.target</pre>
+
+<pre><span class="cm"># /etc/systemd/system/weekly-report.timer</span>
+[Unit]
+<span class="vr">Description</span><span class="op">=</span>Run weekly report every Monday at 06:00
+
+[Timer]
+<span class="vr">OnCalendar</span><span class="op">=</span>Mon <span class="op">*</span>-<span class="op">*</span>-<span class="op">*</span> 06:00:00
+<span class="vr">Persistent</span><span class="op">=</span>true
+<span class="vr">RandomizedDelaySec</span><span class="op">=</span>10min
+
+[Install]
+<span class="vr">WantedBy</span><span class="op">=</span>timers.target</pre>
+
+<pre><span class="cm"># Deploy commands</span>
+<span class="cmd">sudo</span> systemctl daemon-reload
+<span class="cmd">sudo</span> systemctl enable weekly-report.timer
+<span class="cmd">sudo</span> systemctl start  weekly-report.timer</pre>
+  </div>
+</div>
+
+<!-- Exercise 3 -->
+<div class="exercise">
+  <h4>Exercise 3 — crontab management script</h4>
+  <p>Write a script <code>cron-manage.sh</code> with subcommands:</p>
+  <ul>
+    <li><code>add SCHEDULE COMMAND</code> — add an entry if it doesn't already exist
+    (match on COMMAND to avoid duplicates)</li>
+    <li><code>remove PATTERN</code> — remove all entries whose command matches PATTERN</li>
+    <li><code>list</code> — pretty-print the current crontab, skipping comment lines</li>
+    <li><code>check</code> — verify every command path in the crontab exists and is executable</li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol3')">Show sample solution</button>
+  <div class="ex-solution" id="sol3">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+<span class="vr">PROG</span><span class="op">=</span><span class="st">"$(basename "$0")"</span>
+
+<span class="fn">cmd_add</span>() {
+  <span class="kw">local</span> <span class="vr">schedule</span><span class="op">=</span><span class="st">"${1:?add requires SCHEDULE}"</span>
+  <span class="kw">local</span> <span class="vr">command</span><span class="op">=</span><span class="st">"${2:?add requires COMMAND}"</span>
+  <span class="kw">local</span> <span class="vr">entry</span><span class="op">=</span><span class="st">"<span class="vr">$schedule</span> <span class="vr">$command</span>"</span>
+  <span class="kw">local</span> <span class="vr">current</span>
+  <span class="vr">current</span><span class="op">=</span>$(<span class="cmd">crontab</span> <span class="fl">-l</span> <span class="nu">2</span><span class="op">>/</span>dev/null <span class="op">||</span> <span class="kw">true</span>)
+
+  <span class="kw">if</span> <span class="cmd">grep</span> <span class="fl">-qF</span> <span class="st">"<span class="vr">$command</span>"</span> <span class="op"><<<</span><span class="st">"<span class="vr">$current</span>"</span> <span class="nu">2</span><span class="op">>/</span>dev/null; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Entry already exists for: <span class="vr">$command</span>"</span>
+    <span class="kw">return</span> <span class="nu">0</span>
+  <span class="kw">fi</span>
+
+  <span class="op">(</span> <span class="cmd">echo</span> <span class="st">"<span class="vr">$current</span>"</span>; <span class="cmd">echo</span> <span class="st">"<span class="vr">$entry</span>"</span> <span class="op">)</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-v</span> <span class="st">'^$'</span> <span class="op">|</span> <span class="cmd">crontab</span> <span class="fl">-</span>
+  <span class="cmd">echo</span> <span class="st">"Added: <span class="vr">$entry</span>"</span>
+}
+
+<span class="fn">cmd_remove</span>() {
+  <span class="kw">local</span> <span class="vr">pattern</span><span class="op">=</span><span class="st">"${1:?remove requires PATTERN}"</span>
+  <span class="cmd">crontab</span> <span class="fl">-l</span> <span class="nu">2</span><span class="op">>/</span>dev/null <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-v</span> <span class="st">"<span class="vr">$pattern</span>"</span> <span class="op">|</span> <span class="cmd">crontab</span> <span class="fl">-</span>
+  <span class="cmd">echo</span> <span class="st">"Removed entries matching: <span class="vr">$pattern</span>"</span>
+}
+
+<span class="fn">cmd_list</span>() {
+  <span class="cmd">crontab</span> <span class="fl">-l</span> <span class="nu">2</span><span class="op">>/</span>dev/null <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-v</span> <span class="rx">'^[[:space:]]*#'</span> <span class="op">|</span> \
+  <span class="cmd">grep</span> <span class="fl">-v</span> <span class="rx">'^[[:space:]]*$'</span> <span class="op">|</span> \
+  <span class="cmd">awk</span> <span class="st">'{ printf "%-40s %s\n", $1" "$2" "$3" "$4" "$5, substr($0, index($0,$6)) }'</span>
+}
+
+<span class="fn">cmd_check</span>() {
+  <span class="kw">local</span> <span class="vr">ok</span><span class="op">=</span><span class="nu">0</span> <span class="vr">bad</span><span class="op">=</span><span class="nu">0</span>
+  <span class="kw">while</span> <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">m</span> <span class="vr">h</span> <span class="vr">dom</span> <span class="vr">mon</span> <span class="vr">dow</span> <span class="vr">cmd</span> <span class="vr">rest</span><span class="op">...</span>; <span class="kw">do</span>
+    <span class="cm"># cmd is the first token after the 5 time fields</span>
+    <span class="kw">if</span> [[ <span class="fl">-x</span> <span class="st">"<span class="vr">$cmd</span>"</span> ]]; <span class="kw">then</span>
+      <span class="cmd">printf</span> <span class="st">'  OK:      %s\n'</span> <span class="st">"<span class="vr">$cmd</span>"</span>; (( <span class="vr">ok</span>++ ))
+    <span class="kw">else</span>
+      <span class="cmd">printf</span> <span class="st">'  MISSING: %s\n'</span> <span class="st">"<span class="vr">$cmd</span>"</span>; (( <span class="vr">bad</span>++ ))
+    <span class="kw">fi</span>
+  <span class="kw">done</span> <span class="op"><</span>(<span class="cmd">crontab</span> <span class="fl">-l</span> <span class="nu">2</span><span class="op">>/</span>dev/null <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-v</span> <span class="rx">'^[[:space:]]*[#$]'</span>)
+  <span class="cmd">printf</span> <span class="st">'%d OK, %d missing\n'</span> <span class="st">"<span class="vr">$ok</span>"</span> <span class="st">"<span class="vr">$bad</span>"</span>
+  (( <span class="vr">bad</span> <span class="op">==</span> <span class="nu">0</span> ))
+}
+
+<span class="vr">CMD</span><span class="op">=</span><span class="st">"${1:-list}"</span>; <span class="kw">shift</span> <span class="op">||</span> <span class="kw">true</span>
+<span class="kw">if</span> <span class="cmd">declare</span> <span class="fl">-f</span> <span class="st">"cmd_${CMD}"</span> <span class="op">>/</span>dev/null <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>; <span class="kw">then</span>
+  <span class="st">"cmd_${CMD}"</span> <span class="st">"$@"</span>
+<span class="kw">else</span>
+  <span class="cmd">printf</span> <span class="st">'%s: unknown command: %s\n'</span> <span class="st">"<span class="vr">$PROG</span>"</span> <span class="st">"<span class="vr">$CMD</span>"</span> <span class="op">>&2</span>
+  <span class="kw">exit</span> <span class="nu">1</span>
+<span class="kw">fi</span></pre>
+  </div>
+</div>
+
+<!-- Exercise 4 -->
+<div class="exercise">
+  <h4>Exercise 4 — Resilient job wrapper</h4>
+  <p>Write a general-purpose wrapper script <code>run-job.sh COMMAND [ARGS...]</code> that
+  can be used from both cron and systemd to wrap any command with:</p>
+  <ul>
+    <li>Exclusive locking based on a hash of the command path (so two different jobs don't share a lock)</li>
+    <li>Timestamped logging to <span class="inline-code">/var/log/jobs/JOBNAME.log</span>
+    where JOBNAME is the basename of the wrapped command</li>
+    <li>A timeout: <code>TIMEOUT</code> env var in seconds (default 3600) after which the job is killed</li>
+    <li>Exit code pass-through — the wrapper exits with the same code as the wrapped command</li>
+    <li>A summary line: <code>FINISHED|FAILED|TIMEOUT — duration Xs</code></li>
+  </ul>
+  <button class="toggle-btn" onclick="toggleSolution('sol4')">Show sample solution</button>
+  <div class="ex-solution" id="sol4">
+<pre><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">CMD</span><span class="op">=</span><span class="st">"${1:?usage: $0 COMMAND [ARGS...]}"</span>
+<span class="vr">JOBNAME</span><span class="op">=</span><span class="st">"$(basename "$CMD")"</span>
+<span class="vr">TIMEOUT</span><span class="op">=</span><span class="st">"${TIMEOUT:-3600}"</span>
+<span class="vr">LOG_DIR</span><span class="op">=</span><span class="pth">/var/log/jobs</span>
+<span class="vr">LOG_FILE</span><span class="op">=</span><span class="st">"<span class="vr">$LOG_DIR</span>/<span class="vr">$JOBNAME</span>.log"</span>
+
+<span class="cm"># Lock file based on the full command path (md5 to keep filename safe)</span>
+<span class="vr">LOCK_HASH</span><span class="op">=</span>$(<span class="cmd">printf</span> <span class="st">'%s'</span> <span class="st">"<span class="vr">$CMD</span>"</span> <span class="op">|</span> md5sum <span class="op">|</span> <span class="cmd">cut</span> <span class="fl">-c1-8</span>)
+<span class="vr">LOCK_FILE</span><span class="op">=</span><span class="st">"<span class="vr">/var/lock/job_${LOCK_HASH}.lock</span>"</span>
+
+<span class="cmd">mkdir</span> <span class="fl">-p</span> <span class="st">"<span class="vr">$LOG_DIR</span>"</span>
+<span class="kw">exec</span> <span class="op">>></span><span class="st">"<span class="vr">$LOG_FILE</span>"</span> <span class="nu">2</span><span class="op">&</span><span class="nu">1</span>
+
+<span class="fn">ts</span>()  { <span class="cmd">date</span> <span class="st">'+%Y-%m-%dT%H:%M:%S'</span>; }
+<span class="fn">log</span>() { <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$(ts)"</span> <span class="st">"$*"</span>; }
+
+<span class="kw">exec</span> <span class="nu">9</span><span class="op">></span><span class="st">"<span class="vr">$LOCK_FILE</span>"</span>
+<span class="kw">if</span> ! <span class="cmd">flock</span> <span class="fl">-n</span> <span class="nu">9</span>; <span class="kw">then</span>
+  <span class="fn">log</span> <span class="st">"LOCKED — <span class="vr">$JOBNAME</span> already running, skipping"</span>
+  <span class="kw">exit</span> <span class="nu">0</span>
+<span class="kw">fi</span>
+
+<span class="vr">START</span><span class="op">=</span>$(<span class="cmd">date</span> <span class="st">'+%s'</span>)
+<span class="fn">log</span> <span class="st">"START <span class="vr">$JOBNAME</span> (timeout=<span class="vr">${TIMEOUT}</span>s, pid=<span class="vr">$$</span>)"</span>
+
+<span class="vr">exit_code</span><span class="op">=</span><span class="nu">0</span>
+<span class="vr">timed_out</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="cm"># Run with timeout — timeout exits 124 on expiry</span>
+<span class="cmd">timeout</span> <span class="fl">--kill-after</span><span class="op">=</span><span class="nu">5</span> <span class="st">"<span class="vr">$TIMEOUT</span>"</span> <span class="st">"$@"</span> <span class="op">||</span> {
+  <span class="vr">exit_code</span><span class="op">=</span><span class="vr">$?</span>
+  (( <span class="vr">exit_code</span> <span class="op">==</span> <span class="nu">124</span> )) <span class="op">&&</span> <span class="vr">timed_out</span><span class="op">=</span><span class="nu">1</span>
+}
+
+<span class="vr">ELAPSED</span><span class="op">=</span>$(( $(<span class="cmd">date</span> <span class="st">'+%s'</span>) <span class="op">-</span> <span class="vr">START</span> ))
+
+<span class="kw">if</span> (( <span class="vr">timed_out</span> )); <span class="kw">then</span>
+  <span class="fn">log</span> <span class="st">"TIMEOUT — <span class="vr">$JOBNAME</span> killed after <span class="vr">${ELAPSED}</span>s"</span>
+<span class="kw">elif</span> (( <span class="vr">exit_code</span> <span class="op">!=</span> <span class="nu">0</span> )); <span class="kw">then</span>
+  <span class="fn">log</span> <span class="st">"FAILED — <span class="vr">$JOBNAME</span> exit <span class="vr">$exit_code</span> after <span class="vr">${ELAPSED}</span>s"</span>
+<span class="kw">else</span>
+  <span class="fn">log</span> <span class="st">"FINISHED — <span class="vr">$JOBNAME</span> OK in <span class="vr">${ELAPSED}</span>s"</span>
+<span class="kw">fi</span>
+
+<span class="kw">exit</span> <span class="st">"<span class="vr">$exit_code</span>"</span></pre>
+  </div>
+</div>
+
+</div>

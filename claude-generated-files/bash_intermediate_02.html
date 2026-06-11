@@ -1,0 +1,1059 @@
+<!-- ============================================================
+     BASH INTERMEDIATE: Topic 2 — Process Substitution and Advanced Redirection
+     Subject: Bash / Linux Shell Scripting (Intermediate)
+     ============================================================ -->
+
+<style>
+  .lx-lesson {
+    font-family: 'Georgia', serif;
+    color: #e2e4ec;
+    line-height: 1.75;
+  }
+  .lx-lesson h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: #fff;
+    border-bottom: 2px solid #4f8ef7;
+    padding-bottom: 8px;
+  }
+  .lx-lesson h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #c9a8ff;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .lx-lesson p { margin-bottom: 1rem; }
+  .lx-lesson .section-intro {
+    font-style: italic;
+    color: #7a7f96;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+  }
+  .lx-lesson ul, .lx-lesson ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .lx-lesson ul li, .lx-lesson ol li {
+    margin-bottom: 0.35rem;
+    color: #a0a4b8;
+    font-size: 0.95em;
+  }
+  .lx-lesson ul li strong, .lx-lesson ol li strong { color: #e2e4ec; }
+
+  /* ── Code blocks ─────────────────────────────────── */
+  .code-block {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #e2e4ec;
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+    margin: 8px 0 12px;
+  }
+  .cm  { color: #6a9153; font-style: italic; }
+  .cmd { color: #7ab8ff; }
+  .fl  { color: #a0a4b8; }
+  .st  { color: #7ecfa0; }
+  .pth { color: #ffd580; }
+  .out { color: #7a7f96; font-style: italic; }
+  .kw  { color: #c9a8ff; }
+  .nu  { color: #f08080; }
+  .sh  { color: #e8a87d; }
+  .vr  { color: #ffd580; }
+  .op  { color: #e8a87d; }
+  .er  { color: #e05c5c; }
+  .fn  { color: #7ab8ff; }
+  .rx  { color: #ff9eb5; }
+
+  /* ── Platform blocks ─────────────────────────────── */
+  .platform-block { border-radius: 6px; overflow: hidden; border: 1px solid #2a2d3a; margin-bottom: 12px; }
+  .pb-header {
+    padding: 8px 13px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .pb-body { padding: 12px 14px; }
+  .pb-body .code-block { margin-bottom: 0; font-size: 0.84em; }
+  .pb-note { font-family: system-ui, sans-serif; font-size: 0.75em; font-style: italic; margin-top: 6px; color: #7ab8ff; opacity: 0.8; }
+  .platform-block.both { border-color: #2a3a2a; }
+  .platform-block.both .pb-header { background: #1a2a1a; color: #7ecfa0; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .info-box {
+    background: #1a1d27;
+    border-left: 3px solid #4f8ef7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .info-box strong { color: #4f8ef7; }
+  .warn-box {
+    background: #2a1e0a;
+    border-left: 3px solid #e8a87d;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+    color: #a0a4b8;
+  }
+  .warn-box strong { color: #e8a87d; }
+  .tip-box {
+    background: #1a1d27;
+    border-left: 3px solid #7c5cbf;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin: 16px 0;
+    font-size: 0.88em;
+    color: #a0a4b8;
+    font-style: italic;
+  }
+  .tip-box strong { color: #4f8ef7; font-style: normal; }
+  .new-box {
+    background: #1a1e2a;
+    border-left: 3px solid #c9a8ff;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    font-size: 0.85em;
+    color: #a0a4b8;
+  }
+  .new-box strong { color: #c9a8ff; }
+  .diagram {
+    background: #0e1018;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82em;
+    color: #a0a4b8;
+    white-space: pre;
+    line-height: 1.6;
+    margin: 8px 0 14px;
+    overflow-x: auto;
+  }
+  .diagram .dh { color: #4f8ef7; font-weight: bold; }
+  .diagram .dk { color: #c9a8ff; }
+  .diagram .dv { color: #7ecfa0; }
+  .diagram .da { color: #e8a87d; }
+  .diagram .dc { color: #6a9153; font-style: italic; }
+
+  /* ── Reference table ─────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, sans-serif;
+    font-size: 0.87em;
+    margin: 10px 0 20px;
+  }
+  .ref-table th {
+    background: #1e2235;
+    color: #4f8ef7;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #2a2d3a;
+  }
+  .ref-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #2a2d3a;
+    color: #e2e4ec;
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #1a1d27; }
+  .ref-table tr:hover td { background: #1e2235; }
+  .ref-table code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.88em;
+    color: #7ecfa0;
+    background: #12141e;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .ref-table .note { font-size: 0.78em; color: #7a7f96; font-style: italic; }
+
+  /* ── Exercise blocks ─────────────────────────────── */
+  .exercise-block {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-left: 3px solid #7ecfa0;
+    border-radius: 0 6px 6px 0;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-block .ex-num {
+    font-family: system-ui, sans-serif;
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+  .exercise-block .ex-task {
+    font-size: 0.97em;
+    color: #e2e4ec;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .exercise-block .ex-hint {
+    font-size: 0.85em;
+    color: #a0a4b8;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-solution-toggle {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 5px;
+    color: #7ecfa0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .exercise-block .ex-solution-toggle:hover { background: #1e2235; }
+  .exercise-block .ex-solution { display: none; margin-top: 12px; }
+  .exercise-block .ex-solution.visible { display: block; }
+  .exercise-block .sol-label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7ecfa0;
+    margin-bottom: 4px;
+  }
+</style>
+
+<script>
+function toggleSolution(btn) {
+  var sol = btn.nextElementSibling;
+  if (sol.classList.contains('visible')) {
+    sol.classList.remove('visible');
+    btn.textContent = '▶ Show Sample Solution';
+  } else {
+    sol.classList.add('visible');
+    btn.textContent = '▼ Hide Solution';
+  }
+}
+</script>
+
+<div class="lx-lesson">
+
+  <h2>🔀 Intermediate Topic 2 — Process Substitution and Advanced Redirection</h2>
+  <p class="section-intro">The beginner course covered <code>&gt;</code>, <code>&gt;&gt;</code>, <code>&lt;</code>, <code>2&gt;&amp;1</code>, and pipelines. That's enough to get things done, but the moment you need to compare two command outputs, write to a log file <em>and</em> the terminal at the same time, or redirect inside a long-lived loop without closing and reopening files, you hit the limits of the basics. This chapter covers process substitution, named pipes, <code>exec</code>-based persistent file descriptors, and every redirection form bash supports — the machinery that serious scripts are built on.</p>
+
+
+  <!-- ═══════════════════════════════════════════
+       1. HOW REDIRECTION ACTUALLY WORKS
+  ═══════════════════════════════════════════ -->
+  <h2>1 — How Redirection Works Under the Hood</h2>
+
+  <p>Every process inherits three open file descriptors: <strong>stdin (0)</strong>, <strong>stdout (1)</strong>, and <strong>stderr (2)</strong>. A redirection operator doesn't move data — it <em>rewires</em> file descriptor numbers before the command starts, using the kernel's <code>dup2()</code> system call. Understanding this makes every redirection form predictable.</p>
+
+  <div class="diagram"><span class="dh">Without redirection:</span>
+  script ──FD 0──▶ /dev/pts/0  (keyboard)
+         ──FD 1──▶ /dev/pts/0  (terminal)
+         ──FD 2──▶ /dev/pts/0  (terminal)
+
+<span class="dh">After:  cmd &gt; file.txt 2&gt;&amp;1</span>
+  Step 1: open file.txt → FD 1  (stdout now points to file.txt)
+  Step 2: dup FD 1 to FD 2      (stderr now also points to file.txt)
+
+  cmd    ──FD 0──▶ /dev/pts/0  (keyboard, unchanged)
+         ──FD 1──▶ file.txt
+         ──FD 2──▶ file.txt    (FD 2 is a copy of FD 1's target)
+
+<span class="da">Order matters!</span>  <span class="dc">cmd 2&gt;&amp;1 &gt; file.txt  is WRONG — copies stderr→terminal THEN redirects stdout</span></div>
+
+  <div class="warn-box"><strong>The classic ordering mistake:</strong> <code>cmd 2&gt;&amp;1 &gt;file.txt</code> does <em>not</em> send both streams to the file. Redirections are processed left-to-right. At the moment <code>2&gt;&amp;1</code> is evaluated, FD 1 still points to the terminal, so stderr ends up on the terminal and only stdout goes to the file. Always write <code>cmd &gt;file.txt 2&gt;&amp;1</code> (redirect stdout first, then copy that to stderr).</div>
+
+  <h3>Every redirection form at a glance</h3>
+  <table class="ref-table">
+    <thead><tr><th>Syntax</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>cmd &gt; file</code></td><td>Redirect stdout to file (truncate)</td></tr>
+      <tr><td><code>cmd &gt;&gt; file</code></td><td>Redirect stdout to file (append)</td></tr>
+      <tr><td><code>cmd &lt; file</code></td><td>Read stdin from file</td></tr>
+      <tr><td><code>cmd 2&gt; file</code></td><td>Redirect stderr to file</td></tr>
+      <tr><td><code>cmd &amp;&gt; file</code></td><td>Redirect both stdout and stderr to file (bash shorthand)</td></tr>
+      <tr><td><code>cmd &amp;&gt;&gt; file</code></td><td>Append both stdout and stderr to file</td></tr>
+      <tr><td><code>cmd &gt; file 2&gt;&amp;1</code></td><td>Redirect stdout to file, then copy that to stderr (POSIX-safe form)</td></tr>
+      <tr><td><code>cmd 2&gt;&amp;1 &gt; file</code></td><td>Copy stderr to terminal, then redirect stdout to file (usually a bug)</td></tr>
+      <tr><td><code>cmd &gt; /dev/null</code></td><td>Discard stdout</td></tr>
+      <tr><td><code>cmd 2&gt; /dev/null</code></td><td>Discard stderr</td></tr>
+      <tr><td><code>cmd &amp;&gt; /dev/null</code></td><td>Discard all output</td></tr>
+      <tr><td><code>cmd &gt;&amp;2</code></td><td>Send stdout to wherever stderr currently points</td></tr>
+      <tr><td><code>cmd &lt;&lt; EOF ... EOF</code></td><td>Here-document: feed multi-line string as stdin</td></tr>
+      <tr><td><code>cmd &lt;&lt;&lt; "string"</code></td><td>Here-string: feed single string as stdin</td></tr>
+      <tr><td><code>cmd n&gt; file</code></td><td>Open file on file descriptor n for writing</td></tr>
+      <tr><td><code>cmd n&lt; file</code></td><td>Open file on file descriptor n for reading</td></tr>
+      <tr><td><code>cmd n&gt;&amp;m</code></td><td>Duplicate FD m to FD n</td></tr>
+      <tr><td><code>cmd n&gt;&amp;-</code></td><td>Close file descriptor n</td></tr>
+      <tr><td><code>cmd {var}&gt; file</code></td><td>Open file on a bash-chosen FD; store number in var (bash 4.1+)</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       2. HERE-DOCS AND HERE-STRINGS IN DEPTH
+  ═══════════════════════════════════════════ -->
+  <h2>2 — Here-Documents and Here-Strings</h2>
+
+  <p>Here-documents are the clean way to feed multi-line text to a command without a temporary file. There are four variations, each with different quoting and indentation behaviour.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 The four here-doc forms</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── 1. Standard: variable expansion IS performed ──────────────</span>
+<span class="vr">name</span>=<span class="st">"Alice"</span>
+<span class="cmd">cat</span> <span class="op">&lt;&lt; EOF</span>
+Hello, <span class="st">$name</span>!
+Today is <span class="st">$(date +%A)</span>.
+<span class="op">EOF</span>
+<span class="out">Hello, Alice!</span>
+<span class="out">Today is Monday.</span>
+
+<span class="cm"># ── 2. Quoted delimiter: NO expansion (literal text) ──────────</span>
+<span class="cmd">cat</span> <span class="op">&lt;&lt; 'EOF'</span>
+Hello, <span class="st">$name</span>!    <- this prints literally, no substitution
+<span class="op">EOF</span>
+<span class="out">Hello, $name!</span>
+
+<span class="cm"># ── 3. Indented form (<<-): strips leading TABS only ──────────</span>
+<span class="cm"># Use tabs (not spaces) for the heredoc lines</span>
+<span class="kw">if</span> <span class="kw">true</span>; <span class="kw">then</span>
+	<span class="cmd">cat</span> <span class="op">&lt;&lt;- EOF</span>
+	This line is indented with a tab — the tab is stripped.
+	So is this one.
+	<span class="op">EOF</span>
+<span class="kw">fi</span>
+<span class="out">This line is indented with a tab — the tab is stripped.</span>
+<span class="out">So is this one.</span>
+
+<span class="cm"># ── 4. Here-string: single value, no newlines ─────────────────</span>
+<span class="cm"># Avoids echo | cmd  which spawns a subshell</span>
+<span class="kw">read</span> <span class="fl">-r</span> <span class="vr">first</span> <span class="vr">rest</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"one two three"</span>
+<span class="cmd">echo</span> <span class="st">"first=$first  rest=$rest"</span>
+<span class="out">first=one  rest=two three</span>
+
+<span class="cm"># bc without a pipe</span>
+<span class="vr">result</span>=<span class="st">$(</span><span class="cmd">bc</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"scale=4; 355/113"</span><span class="st">)</span>
+<span class="cmd">echo</span> <span class="st">"$result"</span>             <span class="out">→ 3.1415</span>
+
+<span class="cm"># Passing a variable as stdin to a command expecting a file</span>
+<span class="vr">json</span>=<span class="st">'{"key":"value"}'</span>
+<span class="cmd">jq</span> <span class="st">'.key'</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"$json"</span>     <span class="out">→ "value"</span></code>
+      <div class="pb-note">Here-strings (<code>&lt;&lt;&lt;</code>) always append a newline to the string before feeding it to the command — most commands that read stdin expect this, but be aware if you're doing byte-level work.</div>
+    </div>
+  </div>
+
+  <h3>Here-docs for generating files and scripts</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Writing multi-line content to a file</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Write an entire config file in one heredoc</span>
+<span class="vr">db_host</span>=<span class="st">"db.example.com"</span>
+<span class="vr">db_port</span>=<span class="nu">5432</span>
+
+<span class="cmd">cat</span> <span class="op">&gt;</span> <span class="pth">/etc/myapp/config.ini</span> <span class="op">&lt;&lt; EOF</span>
+[database]
+host = <span class="st">${db_host}</span>
+port = <span class="st">${db_port}</span>
+name = myapp
+
+[server]
+port = 8080
+workers = 4
+<span class="op">EOF</span>
+
+<span class="cm"># Generate a script with literal dollar signs (quoted delimiter)</span>
+<span class="cmd">cat</span> <span class="op">&gt;</span> <span class="pth">/tmp/generated.sh</span> <span class="op">&lt;&lt; 'SCRIPT'</span>
+#!/usr/bin/env bash
+echo "Today is $(date)"
+echo "User: $USER"
+SCRIPT
+<span class="cmd">chmod</span> <span class="nu">+x</span> <span class="pth">/tmp/generated.sh</span>
+<span class="cm"># The $USER and $(date) will expand when generated.sh runs, not now</span>
+
+<span class="cm"># Append to a file using tee (allows both write and stdout if needed)</span>
+<span class="cmd">tee</span> <span class="fl">-a</span> <span class="pth">/var/log/myapp.log</span> <span class="op">&lt;&lt; EOF</span>
+[<span class="st">$(date -Is)</span>] Application started
+[<span class="st">$(date -Is)</span>] PID: $$
+<span class="op">EOF</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       3. PROCESS SUBSTITUTION
+  ═══════════════════════════════════════════ -->
+  <h2>3 — Process Substitution: <code>&lt;(cmd)</code> and <code>&gt;(cmd)</code></h2>
+
+  <p>Process substitution is one of bash's most powerful features and one of the least understood. It lets you use a command's output <em>as if it were a file</em>, without creating a temporary file. Bash runs the command in the background, connects it to a named file descriptor under <code>/dev/fd/</code>, and passes that path to the outer command.</p>
+
+  <div class="diagram"><span class="dh">How  diff &lt;(sort a.txt) &lt;(sort b.txt)  works:</span>
+
+  bash creates two processes:
+    [sort a.txt] ──writes──▶ /dev/fd/63  (a kernel pipe)
+    [sort b.txt] ──writes──▶ /dev/fd/62
+
+  diff is called as:
+    diff /dev/fd/63 /dev/fd/62
+
+  diff reads from those paths like files.
+  No temp files created.  All three processes run concurrently.</div>
+
+  <div class="info-box"><strong>Process substitution is bash-specific.</strong> It requires <code>#!/usr/bin/env bash</code> — it is not available in POSIX <code>sh</code>, <code>dash</code>, or BusyBox shells. If portability matters, use named pipes (covered in section 5) instead.</div>
+
+  <h3>Input process substitution — <code>&lt;(cmd)</code></h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Using command output as a file argument</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Compare two sorted files without modifying them ───────────</span>
+<span class="cmd">diff</span> <span class="op">&lt;(</span><span class="cmd">sort</span> old.txt<span class="op">)</span> <span class="op">&lt;(</span><span class="cmd">sort</span> new.txt<span class="op">)</span>
+
+<span class="cm"># ── Find lines present in one file but not another ────────────</span>
+<span class="cmd">comm</span> <span class="fl">-23</span> <span class="op">&lt;(</span><span class="cmd">sort</span> list_a.txt<span class="op">)</span> <span class="op">&lt;(</span><span class="cmd">sort</span> list_b.txt<span class="op">)</span>
+<span class="cm"># comm requires sorted input — process substitution sorts on-the-fly</span>
+
+<span class="cm"># ── Join two CSVs on a common field ───────────────────────────</span>
+<span class="cmd">join</span> <span class="fl">-t,</span> <span class="fl">-1</span> <span class="nu">1</span> <span class="fl">-2</span> <span class="nu">1</span> \
+    <span class="op">&lt;(</span><span class="cmd">sort</span> <span class="fl">-t,</span> <span class="fl">-k1,1</span> users.csv<span class="op">)</span> \
+    <span class="op">&lt;(</span><span class="cmd">sort</span> <span class="fl">-t,</span> <span class="fl">-k1,1</span> orders.csv<span class="op">)</span>
+
+<span class="cm"># ── Read from a process substitution with while ───────────────</span>
+<span class="cm"># This is the key fix for the "pipe loop loses variables" problem</span>
+<span class="cm"># (covered in depth in Topic 4 — Subshells)</span>
+<span class="vr">count</span>=<span class="nu">0</span>
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="st">(( count++ ))</span>
+<span class="kw">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">find</span> <span class="pth">/var/log</span> <span class="fl">-name</span> <span class="st">'*.log'</span><span class="op">)</span>
+<span class="cmd">echo</span> <span class="st">"Found $count log files"</span>
+<span class="cm"># Compare the broken version:  find ... | while ... done  ← $count resets to 0</span>
+
+<span class="cm"># ── Read output of two commands with a single while loop ──────</span>
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-u3</span> <span class="vr">a</span> && <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-u4</span> <span class="vr">b</span>; <span class="kw">do</span>
+    <span class="cmd">echo</span> <span class="st">"$a  |  $b"</span>
+<span class="kw">done</span> <span class="nu">3</span><span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">cat</span> file1.txt<span class="op">)</span> \
+     <span class="nu">4</span><span class="op">&lt;</span> <span class="op">&lt;(</span><span class="cmd">cat</span> file2.txt<span class="op">)</span></code>
+      <div class="pb-note">The space in <code>&lt; &lt;(cmd)</code> is required — the first <code>&lt;</code> is the stdin redirect; the second is the start of the process substitution. Without the space, bash sees <code>&lt;&lt;</code> which starts a here-document.</div>
+    </div>
+  </div>
+
+  <h3>Output process substitution — <code>&gt;(cmd)</code></h3>
+  <p>Less commonly used, output process substitution feeds a command's stdin from another command's stdout — allowing a command that only writes to stdout to be "directed" into multiple consumers simultaneously.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Writing to multiple destinations with tee + &gt;(cmd)</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Write to a file AND pass through to another command ───────</span>
+<span class="cm"># tee sends its stdin to both the file and the process substitution</span>
+<span class="cmd">generate_report</span> | <span class="cmd">tee</span> <span class="op">&gt;(</span><span class="cmd">gzip</span> <span class="op">&gt;</span> <span class="pth">report.gz</span><span class="op">)</span> | <span class="cmd">mail</span> <span class="fl">-s</span> <span class="st">"Report"</span> boss@example.com
+<span class="cm"># One pipeline: compress to file, AND email — data read only once</span>
+
+<span class="cm"># ── Split stderr and stdout to different log files ─────────────</span>
+<span class="vr">cmd</span>=<span class="st">"./my_script.sh"</span>
+<span class="st">$cmd</span> \
+    <span class="nu">1</span><span class="op">&gt;</span> <span class="op">&gt;(</span><span class="cmd">tee</span> <span class="fl">-a</span> <span class="pth">stdout.log</span><span class="op">)</span> \
+    <span class="nu">2</span><span class="op">&gt;</span> <span class="op">&gt;(</span><span class="cmd">tee</span> <span class="fl">-a</span> <span class="pth">stderr.log</span> <span class="op">>&amp;2</span><span class="op">)</span>
+<span class="cm"># stdout goes to stdout.log AND terminal; stderr to stderr.log AND terminal</span>
+
+<span class="cm"># ── Log with timestamps in real time ──────────────────────────</span>
+<span class="vr">LOGFILE</span>=<span class="st">"app.log"</span>
+<span class="fn">timestamp_logger</span>() {
+    <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+        <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$(date '+%H:%M:%S')"</span> <span class="st">"$line"</span>
+    <span class="kw">done</span>
+}
+
+<span class="st">./my_app</span> <span class="op">&gt;</span> <span class="op">&gt;(</span><span class="fn">timestamp_logger</span> <span class="op">&gt;</span> <span class="st">"$LOGFILE"</span><span class="op">)</span>
+
+<span class="cm"># ── Fan-out: send output to three places simultaneously ────────</span>
+<span class="st">./my_app</span> | <span class="cmd">tee</span> \
+    <span class="op">&gt;(</span><span class="cmd">grep</span> <span class="st">ERROR</span> <span class="op">&gt;</span> <span class="pth">errors.log</span><span class="op">)</span> \
+    <span class="op">&gt;(</span><span class="cmd">gzip</span> <span class="op">&gt;</span> <span class="pth">full_output.gz</span><span class="op">)</span> \
+    <span class="op">&gt;</span> <span class="pth">stdout.log</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       4. EXEC AND PERSISTENT FILE DESCRIPTORS
+  ═══════════════════════════════════════════ -->
+  <h2>4 — <code>exec</code> and Persistent File Descriptors</h2>
+
+  <p>When you write <code>cmd &gt; file</code>, the file is opened for the duration of that one command. If you're inside a loop that writes thousands of times, each iteration opens and closes the file. Using <code>exec</code> to redirect a file descriptor in the <em>current shell</em> keeps the file open for the entire script — dramatically faster for heavy I/O, and essential for any pattern that needs to interleave reading and writing.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 exec redirects — persistent FDs for the current shell</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># ── Redirect all stdout for the rest of the script ────────────</span>
+<span class="kw">exec</span> <span class="op">&gt;</span> <span class="pth">output.log</span>      <span class="cm"># everything printed after this goes to output.log</span>
+<span class="cmd">echo</span> <span class="st">"This goes to the file"</span>
+<span class="cmd">ls</span> <span class="fl">-la</span>                 <span class="cm"># stdout of ls also goes to the file</span>
+
+<span class="cm"># ── Redirect stderr to a log file for the rest of the script ──</span>
+<span class="kw">exec</span> <span class="nu">2</span><span class="op">&gt;</span> <span class="pth">errors.log</span>
+<span class="cmd">echo</span> <span class="st">"normal output"</span>   <span class="cm"># still to terminal (stdout unchanged)</span>
+<span class="cmd">ls</span> <span class="pth">/nonexistent</span>       <span class="cm"># error message goes to errors.log</span>
+
+<span class="cm"># ── Save and restore FDs — the classic pattern ─────────────────</span>
+<span class="cm"># Save current stdout to FD 3, redirect stdout to file, then restore</span>
+<span class="kw">exec</span> <span class="nu">3</span><span class="op">&gt;&amp;1</span>              <span class="cm"># save stdout (1) into FD 3</span>
+<span class="kw">exec</span> <span class="op">&gt;</span> <span class="pth">capture.log</span>     <span class="cm"># redirect stdout to file</span>
+<span class="cmd">echo</span> <span class="st">"in the file"</span>
+<span class="kw">exec</span> <span class="nu">1</span><span class="op">&gt;&amp;3</span>              <span class="cm"># restore stdout from FD 3</span>
+<span class="kw">exec</span> <span class="nu">3</span><span class="op">&gt;&amp;-</span>              <span class="cm"># close FD 3 (no longer needed)</span>
+<span class="cmd">echo</span> <span class="st">"back to terminal"</span>
+
+<span class="cm"># ── Open a file for reading on a custom FD ────────────────────</span>
+<span class="kw">exec</span> <span class="nu">4</span><span class="op">&lt;</span> <span class="pth">data.txt</span>        <span class="cm"># open data.txt for reading on FD 4</span>
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-u4</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="cm"># read -u4 reads from FD 4 instead of stdin</span>
+    <span class="cm"># stdin is still free for interactive prompts inside the loop</span>
+    <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-p</span> <span class="st">"Process '$line'? [y/n] "</span> <span class="vr">ans</span> <span class="op">&lt;</span> <span class="pth">/dev/tty</span>
+    [[ <span class="st">"$ans"</span> == <span class="st">"y"</span> ]] && <span class="cmd">echo</span> <span class="st">"Processing: $line"</span>
+<span class="kw">done</span>
+<span class="kw">exec</span> <span class="nu">4</span><span class="op">&lt;&amp;-</span>              <span class="cm"># close FD 4 when done</span></code>
+    </div>
+  </div>
+
+  <h3>Auto-assigned file descriptors — <code>{var}&gt; file</code></h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Let bash choose the FD number (bash 4.1+)</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Hard-coding FD numbers risks collision with FDs opened by bash itself</span>
+<span class="cm"># {var} lets bash pick a free number and stores it in var</span>
+<span class="kw">exec</span> {<span class="vr">logfd</span>}<span class="op">&gt;</span> <span class="pth">app.log</span>       <span class="cm"># bash chooses FD (typically 10+), stores in $logfd</span>
+<span class="cmd">echo</span> <span class="st">"Log FD is: $logfd"</span>  <span class="out">→ Log FD is: 10</span>
+
+<span class="cm"># Write to the log using the variable</span>
+<span class="cmd">echo</span> <span class="st">"Application starting"</span> <span class="op">&gt;&amp;</span><span class="st">$logfd</span>
+<span class="cmd">echo</span> <span class="st">"Another log line"</span>     <span class="op">&gt;&amp;</span><span class="st">$logfd</span>
+
+<span class="cm"># Close when done</span>
+<span class="kw">exec</span> {<span class="vr">logfd</span>}<span class="op">&gt;&amp;-</span>
+
+<span class="cm"># Practical: a logging function using a persistent FD</span>
+<span class="vr">LOGFILE</span>=<span class="st">"run_$(date +%Y%m%d_%H%M%S).log"</span>
+<span class="kw">exec</span> {<span class="vr">LOG</span>}<span class="op">&gt;&gt;</span> <span class="st">"$LOGFILE"</span>    <span class="cm"># append mode</span>
+
+<span class="fn">log</span>() {
+    <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$(date '+%T')"</span> <span class="st">"$*"</span> <span class="op">&gt;&amp;</span><span class="st">$LOG</span>
+}
+
+<span class="fn">log</span> <span class="st">"Script started"</span>
+<span class="fn">log</span> <span class="st">"Running as: $USER"</span>
+<span class="cm"># ... script body ...</span>
+<span class="kw">exec</span> {<span class="vr">LOG</span>}<span class="op">&gt;&amp;-</span>              <span class="cm"># close log at end</span></code>
+      <div class="pb-note">Using <code>{var}</code> is safer than picking a fixed number like <code>3</code> or <code>4</code> because bash uses higher-numbered FDs internally and won't assign one that's already in use.</div>
+    </div>
+  </div>
+
+  <h3>Swapping stdout and stderr</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 The three-step FD swap</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Swap stdout and stderr (send stdout to stderr and vice-versa)</span>
+<span class="cm"># Uses the same save/swap/restore pattern as a variable swap</span>
+<span class="st">{ some_command; }</span> <span class="nu">3</span><span class="op">&gt;&amp;1</span> <span class="nu">1</span><span class="op">&gt;&amp;2</span> <span class="nu">2</span><span class="op">&gt;&amp;3</span>
+<span class="cm"># Step 1: save stdout to FD 3        (3>&1)</span>
+<span class="cm"># Step 2: point stdout at stderr      (1>&2)</span>
+<span class="cm"># Step 3: point stderr at saved FD 3  (2>&3)</span>
+
+<span class="cm"># Practical: capture stderr into a variable while stdout passes through</span>
+<span class="vr">stderr_output</span>=<span class="st">$(</span> <span class="st">{ some_command; }</span> <span class="nu">2</span><span class="op">&gt;&amp;1</span> <span class="nu">1</span><span class="op">&gt;&amp;3</span> <span class="st">)</span> <span class="nu">3</span><span class="op">&gt;&amp;1</span>
+<span class="cm"># $() captures FD 1; the swap routes stderr there and stdout to the terminal</span>
+<span class="cmd">echo</span> <span class="st">"Captured stderr: $stderr_output"</span>
+
+<span class="cm"># Capture stdout AND stderr into separate variables simultaneously</span>
+<span class="kw">exec</span> {<span class="vr">stdout_fd</span>}<span class="op">&gt;</span><span class="pth">/tmp/stdout.$$</span>
+<span class="kw">exec</span> {<span class="vr">stderr_fd</span>}<span class="op">&gt;</span><span class="pth">/tmp/stderr.$$</span>
+some_command <span class="op">&gt;&amp;</span><span class="st">$stdout_fd</span> <span class="nu">2</span><span class="op">&gt;&amp;</span><span class="st">$stderr_fd</span>
+<span class="vr">rc</span>=<span class="st">$?</span>
+<span class="kw">exec</span> {<span class="vr">stdout_fd</span>}<span class="op">&gt;&amp;-</span>
+<span class="kw">exec</span> {<span class="vr">stderr_fd</span>}<span class="op">&gt;&amp;-</span>
+<span class="vr">out</span>=<span class="st">$(</span><span class="cmd">cat</span> <span class="pth">/tmp/stdout.$$</span><span class="st">)</span>
+<span class="vr">err</span>=<span class="st">$(</span><span class="cmd">cat</span> <span class="pth">/tmp/stderr.$$</span><span class="st">)</span>
+<span class="cmd">rm</span> <span class="fl">-f</span> <span class="pth">/tmp/stdout.$$</span> <span class="pth">/tmp/stderr.$$</span>
+<span class="cmd">echo</span> <span class="st">"Exit: $rc | Out: $out | Err: $err"</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       5. NAMED PIPES (FIFOs)
+  ═══════════════════════════════════════════ -->
+  <h2>5 — Named Pipes (FIFOs)</h2>
+
+  <p>A named pipe (FIFO — First In, First Out) is like a regular pipe but with a name in the filesystem. Unlike a <code>|</code> pipeline, a FIFO can connect processes that aren't related, or that start at different times. A write to a FIFO blocks until a reader opens it, and vice versa — this built-in synchronisation makes FIFOs useful for coordinating producer/consumer workflows.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 mkfifo — creating and using named pipes</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Create a named pipe</span>
+<span class="cmd">mkfifo</span> <span class="pth">/tmp/mypipe</span>
+<span class="cmd">ls</span> <span class="fl">-l</span> <span class="pth">/tmp/mypipe</span>
+<span class="out">prw-r--r-- 1 alice alice 0 Jun  9 09:00 /tmp/mypipe</span>
+<span class="cm"># The 'p' in 'prw-' means "pipe"</span>
+
+<span class="cm"># Terminal 1 — writer (blocks until reader connects)</span>
+<span class="cmd">echo</span> <span class="st">"hello from the other side"</span> <span class="op">&gt;</span> <span class="pth">/tmp/mypipe</span>
+
+<span class="cm"># Terminal 2 — reader</span>
+<span class="cmd">cat</span> <span class="pth">/tmp/mypipe</span>
+<span class="out">hello from the other side</span>
+
+<span class="cm"># Remove when done — FIFOs persist until deleted</span>
+<span class="cmd">rm</span> <span class="pth">/tmp/mypipe</span></code>
+    </div>
+  </div>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 FIFO as a portable alternative to process substitution</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Process substitution equivalent using a FIFO (POSIX-portable)</span>
+<span class="vr">fifo</span>=<span class="st">$(</span><span class="cmd">mktemp</span> <span class="fl">-u</span><span class="st">)</span>         <span class="cm"># generate a unique path without creating the file</span>
+<span class="cmd">mkfifo</span> <span class="st">"$fifo"</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$fifo"'</span> EXIT
+
+<span class="cm"># Start the producer in the background, writing to the FIFO</span>
+<span class="cmd">sort</span> input.txt <span class="op">&gt;</span> <span class="st">"$fifo"</span> &
+<span class="cm"># Consumer reads from the FIFO</span>
+<span class="cmd">uniq</span> <span class="st">"$fifo"</span>
+<span class="cm"># The FIFO synchronises them — uniq waits for sort to write</span>
+
+<span class="cm"># ── Multi-producer / single-consumer ──────────────────────────</span>
+<span class="cm"># Several background jobs write to the same FIFO; one reader collects</span>
+<span class="vr">results</span>=<span class="st">$(</span><span class="cmd">mktemp</span> <span class="fl">-u</span><span class="st">)</span>
+<span class="cmd">mkfifo</span> <span class="st">"$results"</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$results"'</span> EXIT
+
+<span class="kw">for</span> <span class="vr">host</span> <span class="kw">in</span> host1 host2 host3; <span class="kw">do</span>
+    <span class="st">(</span> <span class="cmd">ssh</span> <span class="st">"$host"</span> <span class="st">'uptime'</span>; <span class="cmd">echo</span> <span class="st">"$host done"</span> <span class="st">)</span> <span class="op">&gt;</span> <span class="st">"$results"</span> &
+<span class="kw">done</span>
+
+<span class="cm"># Collect all results — read until all writers are done</span>
+<span class="cmd">cat</span> <span class="st">"$results"</span>
+<span class="cmd">wait</span></code>
+      <div class="pb-note">A key difference from anonymous pipes: FIFOs have names so they can be opened multiple times by independent processes. Each open/close pair is independent, but data flows one way and in order, just like any pipe.</div>
+    </div>
+  </div>
+
+  <h3>Using a FIFO as a persistent input channel (log sink)</h3>
+  <div class="platform-block both">
+    <div class="pb-header">🐧 A log aggregator — multiple writers, one reader</div>
+    <div class="pb-body">
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># log_server.sh — reads from a FIFO and writes timestamped lines to a log</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">FIFO</span>=<span class="pth">/tmp/app_log.fifo</span>
+<span class="vr">LOGFILE</span>=<span class="pth">/var/log/app_combined.log</span>
+
+<span class="cmd">mkfifo</span> <span class="fl">-m</span> <span class="nu">600</span> <span class="st">"$FIFO"</span>
+<span class="kw">trap</span> <span class="st">'rm -f "$FIFO"'</span> EXIT INT TERM
+
+<span class="cm"># Open the FIFO for reading — keep it open even when no writer is connected</span>
+<span class="cm"># Opening with O_RDWR (/dev/stdin trick) prevents EOF when last writer leaves</span>
+<span class="kw">exec</span> {<span class="vr">fd</span>}<span class="op">&lt;&gt;</span> <span class="st">"$FIFO"</span>         <span class="cm"># &lt;&gt; opens for both read and write</span>
+
+<span class="cmd">echo</span> <span class="st">"Log server started. FIFO: $FIFO"</span>
+
+<span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="fl">-u</span><span class="st">"$fd"</span> <span class="vr">line</span>; <span class="kw">do</span>
+    <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$(date -Iseconds)"</span> <span class="st">"$line"</span> <span class="op">&gt;&gt;</span> <span class="st">"$LOGFILE"</span>
+<span class="kw">done</span>
+
+<span class="cm"># Writers send to the FIFO like this:</span>
+<span class="cm"># echo "worker A: job complete" > /tmp/app_log.fifo</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       6. /dev VIRTUAL PATHS
+  ═══════════════════════════════════════════ -->
+  <h2>6 — Special Paths: <code>/dev/stdin</code>, <code>/dev/fd/N</code>, <code>/dev/tcp</code></h2>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 Shell-special paths for redirection</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># /dev/stdin, /dev/stdout, /dev/stderr</span>
+<span class="cm"># Symbolic names for FDs 0, 1, 2 — useful when a command expects a filename</span>
+<span class="cmd">wc</span> <span class="fl">-l</span> <span class="pth">/dev/stdin</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"line 1\nline 2\nline 3"</span>
+<span class="out">3 /dev/stdin</span>
+
+<span class="cm"># Useful when a command requires a filename but you have a string</span>
+<span class="cmd">md5sum</span> <span class="pth">/dev/stdin</span> <span class="op">&lt;&lt;&lt;</span> <span class="st">"hash this"</span>
+
+<span class="cm"># /dev/null — the bitbucket</span>
+<span class="cm"># Redirect stderr to /dev/null to suppress error messages</span>
+<span class="cmd">ls</span> <span class="pth">/nonexistent</span> <span class="nu">2</span><span class="op">&gt;</span> <span class="pth">/dev/null</span>
+<span class="cm"># Run a command silently (discard all output)</span>
+<span class="cmd">some_noisy_cmd</span> <span class="op">&amp;&gt;</span> <span class="pth">/dev/null</span>
+
+<span class="cm"># /dev/fd/N — access any open file descriptor by number</span>
+<span class="cm"># Used automatically by process substitution: <(cmd) → /dev/fd/63</span>
+<span class="cmd">ls</span> <span class="fl">-la</span> <span class="pth">/dev/fd/</span>            <span class="cm"># see which FDs are open in the current shell</span>
+
+<span class="cm"># /dev/tcp/HOST/PORT — raw TCP connection (bash built-in, no netcat needed)</span>
+<span class="cm"># Opens a TCP socket; bash handles it as a regular file descriptor</span>
+<span class="kw">exec</span> <span class="nu">3</span><span class="op">&lt;&gt;</span> <span class="pth">/dev/tcp/example.com/80</span>
+<span class="cm"># Send an HTTP request</span>
+<span class="cmd">printf</span> <span class="st">'GET / HTTP/1.0\r\nHost: example.com\r\n\r\n'</span> <span class="op">&gt;&amp;3</span>
+<span class="cm"># Read the response</span>
+<span class="cmd">cat</span> <span class="op">&lt;&amp;3</span>
+<span class="kw">exec</span> <span class="nu">3</span><span class="op">&lt;&amp;-</span>
+
+<span class="cm"># Simple port-open check using /dev/tcp</span>
+<span class="fn">port_open</span>() {
+    <span class="kw">local</span> <span class="vr">host</span>=<span class="st">"$1"</span> <span class="vr">port</span>=<span class="st">"$2"</span>
+    (<span class="kw">exec</span> <span class="nu">3</span><span class="op">&lt;&gt;</span> <span class="pth">/dev/tcp/</span><span class="st">"${host}/${port}"</span>) <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>
+}
+<span class="kw">if</span> <span class="fn">port_open</span> <span class="st">"db.example.com"</span> <span class="nu">5432</span>; <span class="kw">then</span>
+    <span class="cmd">echo</span> <span class="st">"Database port is open"</span>
+<span class="kw">else</span>
+    <span class="cmd">echo</span> <span class="st">"Database unreachable"</span>
+<span class="kw">fi</span></code>
+      <div class="pb-note"><code>/dev/tcp</code> is a bash feature, not a real filesystem path. It only works in bash (not <code>sh</code>, <code>dash</code>, or <code>zsh</code>). Some security-hardened systems disable it at compile time.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       7. TEE AND MULTI-DESTINATION PATTERNS
+  ═══════════════════════════════════════════ -->
+  <h2>7 — <code>tee</code> and Multi-Destination Output</h2>
+
+  <p><code>tee</code> reads from stdin and writes to both stdout <em>and</em> one or more files simultaneously. Combined with process substitution and output FDs, it's the glue that makes fan-out pipelines possible.</p>
+
+  <div class="platform-block both">
+    <div class="pb-header">🐧 tee patterns — display AND capture, branching pipelines</div>
+    <div class="pb-body">
+<code class="code-block"><span class="cm"># Basic: show output on terminal and save to a file</span>
+<span class="cmd">./long_running_job</span> | <span class="cmd">tee</span> <span class="pth">job.log</span>
+
+<span class="cm"># Append to existing file</span>
+<span class="cmd">./job</span> | <span class="cmd">tee</span> <span class="fl">-a</span> <span class="pth">job.log</span>
+
+<span class="cm"># ── Capture output into a variable while still showing it ─────</span>
+<span class="vr">output</span>=<span class="st">$(</span><span class="cmd">./job</span> | <span class="cmd">tee</span> <span class="pth">/dev/tty</span><span class="st">)</span>
+<span class="cm"># /dev/tty is the controlling terminal — writes bypass stdout redirect</span>
+
+<span class="cm"># ── Fan out to multiple files ──────────────────────────────────</span>
+<span class="cmd">./job</span> | <span class="cmd">tee</span> <span class="pth">copy1.log</span> <span class="pth">copy2.log</span> <span class="pth">copy3.log</span> <span class="op">&gt;</span> <span class="pth">/dev/null</span>
+<span class="cm"># Writes to all three files; /dev/null discards the tee stdout</span>
+
+<span class="cm"># ── Pipeline inspection — "T" into the middle of a pipe ───────</span>
+<span class="cm"># See what's flowing through a pipeline at any point</span>
+<span class="cmd">cat</span> input.txt \
+    | <span class="cmd">tee</span> <span class="pth">/tmp/after_cat.log</span> \
+    | <span class="cmd">grep</span> <span class="st">'ERROR'</span> \
+    | <span class="cmd">tee</span> <span class="pth">/tmp/after_grep.log</span> \
+    | <span class="cmd">sort</span> <span class="fl">-u</span>
+
+<span class="cm"># ── Use tee to copy a download to multiple destinations ────────</span>
+<span class="cmd">curl</span> <span class="fl">-sL</span> https://example.com/bigfile.tar.gz \
+    | <span class="cmd">tee</span> <span class="pth">/backups/bigfile.tar.gz</span> \
+    | <span class="cmd">tar</span> <span class="fl">-xz</span> <span class="fl">-C</span> <span class="pth">/opt/app/</span>
+<span class="cm"># Saves the archive AND extracts it in one download pass</span>
+
+<span class="cm"># ── Fan-out with different processing per branch ───────────────</span>
+<span class="cmd">./my_app</span> | <span class="cmd">tee</span> \
+    <span class="op">&gt;(</span><span class="cmd">grep</span> <span class="fl">-i</span> <span class="st">'error\|warn'</span> <span class="op">&gt;&gt;</span> <span class="pth">alerts.log</span><span class="op">)</span> \
+    <span class="op">&gt;(</span><span class="cmd">gzip</span> <span class="fl">-9</span> <span class="op">&gt;</span> <span class="pth">full.log.gz</span><span class="op">)</span> \
+    <span class="op">&gt;(</span><span class="cmd">wc</span> <span class="fl">-l</span> <span class="op">&gt;</span> <span class="pth">line_count.txt</span><span class="op">)</span> \
+    <span class="op">&gt;</span> <span class="pth">/dev/null</span></code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       8. QUICK REFERENCE
+  ═══════════════════════════════════════════ -->
+  <h2>8 — Quick Reference</h2>
+
+  <h3>Process substitution forms</h3>
+  <table class="ref-table">
+    <thead><tr><th>Syntax</th><th>Description</th><th>Where cmd runs</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;(cmd)</code></td><td>Provide cmd's stdout as a readable file path</td><td>Background subshell</td></tr>
+      <tr><td><code>&gt;(cmd)</code></td><td>Provide a writable file path that feeds cmd's stdin</td><td>Background subshell</td></tr>
+      <tr><td><code>cmd1 | tee &gt;(cmd2)</code></td><td>Send cmd1 output to both cmd2 and stdout</td><td>cmd2 in background</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Key exec redirection patterns</h3>
+  <table class="ref-table">
+    <thead><tr><th>Pattern</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>exec &gt; file</code></td><td>Redirect all script stdout to file from this point</td></tr>
+      <tr><td><code>exec 2&gt; file</code></td><td>Redirect all script stderr to file from this point</td></tr>
+      <tr><td><code>exec 3&gt;&amp;1</code></td><td>Save FD 1 (stdout) into FD 3</td></tr>
+      <tr><td><code>exec 1&gt;&amp;3</code></td><td>Restore FD 1 from FD 3</td></tr>
+      <tr><td><code>exec 3&gt;&amp;-</code></td><td>Close FD 3</td></tr>
+      <tr><td><code>exec 4&lt; file</code></td><td>Open file for reading on FD 4</td></tr>
+      <tr><td><code>exec {fd}&gt; file</code></td><td>Open file on auto-chosen FD; number stored in $fd</td></tr>
+      <tr><td><code>exec 3&lt;&gt; file</code></td><td>Open file for both reading and writing on FD 3</td></tr>
+    </tbody>
+  </table>
+
+  <h3>FIFO quick reference</h3>
+  <table class="ref-table">
+    <thead><tr><th>Command</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>mkfifo /path/to/fifo</code></td><td>Create a named pipe</td></tr>
+      <tr><td><code>mkfifo -m 600 /path/to/fifo</code></td><td>Create with restricted permissions</td></tr>
+      <tr><td><code>mktemp -u</code></td><td>Generate a unique path without creating a file (use with mkfifo)</td></tr>
+      <tr><td><code>exec {fd}&lt;&gt; fifo</code></td><td>Keep FIFO open (prevents EOF when last writer disconnects)</td></tr>
+    </tbody>
+  </table>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXERCISES
+  ═══════════════════════════════════════════ -->
+  <h2>✏️ Exercises</h2>
+  <p class="section-intro">These exercises require combining multiple techniques from this chapter. Resist reaching for temporary files unless explicitly building one — the goal is fluency with pipelines, process substitution, and persistent file descriptors.</p>
+
+  <!-- Exercise 1 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 1</div>
+    <div class="ex-task">Write a script called <code>compare_dirs.sh</code> that accepts two directory paths as arguments and reports three things: (1) files present in the first directory but not the second, (2) files present in the second but not the first, and (3) files present in both. Use <code>comm</code> with process substitution — no temporary files. Handle the case where either path doesn't exist.</div>
+    <div class="ex-hint">Hint: <code>comm</code> requires sorted input. <code>find DIR -maxdepth 1 -type f -printf '%f\n' | sort</code> gives sorted filenames. Use <code>comm -23</code> for only-in-first, <code>comm -13</code> for only-in-second, <code>comm -12</code> for in-both.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># compare_dirs.sh  DIR1  DIR2</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">dir1</span>=<span class="st">"${1:?Usage: compare_dirs.sh DIR1 DIR2}"</span>
+<span class="vr">dir2</span>=<span class="st">"${2:?Usage: compare_dirs.sh DIR1 DIR2}"</span>
+
+[[ <span class="fl">-d</span> <span class="st">"$dir1"</span> ]] || { <span class="cmd">echo</span> <span class="er">"Error: '$dir1' is not a directory"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+[[ <span class="fl">-d</span> <span class="st">"$dir2"</span> ]] || { <span class="cmd">echo</span> <span class="er">"Error: '$dir2' is not a directory"</span> <span class="op">>&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; }
+
+<span class="cm"># Helper: sorted filenames in a directory (one per line)</span>
+<span class="fn">sorted_files</span>() {
+    <span class="cmd">find</span> <span class="st">"$1"</span> <span class="fl">-maxdepth</span> <span class="nu">1</span> <span class="fl">-type</span> f <span class="fl">-printf</span> <span class="st">'%f\n'</span> | <span class="cmd">sort</span>
+}
+
+<span class="cmd">printf</span> <span class="st">'\033[1mComparing:\033[0m\n  %s\n  %s\n\n'</span> <span class="st">"$dir1"</span> <span class="st">"$dir2"</span>
+
+<span class="cm"># Only in dir1</span>
+<span class="cmd">printf</span> <span class="st">'\033[33mOnly in %s:\033[0m\n'</span> <span class="st">"$dir1"</span>
+<span class="cmd">comm</span> <span class="fl">-23</span> <span class="op">&lt;(</span><span class="fn">sorted_files</span> <span class="st">"$dir1"</span><span class="op">)</span> <span class="op">&lt;(</span><span class="fn">sorted_files</span> <span class="st">"$dir2"</span><span class="op">)</span> \
+    | <span class="cmd">sed</span> <span class="st">'s/^/  /'</span>
+
+<span class="cm"># Only in dir2</span>
+<span class="cmd">printf</span> <span class="st">'\033[33mOnly in %s:\033[0m\n'</span> <span class="st">"$dir2"</span>
+<span class="cmd">comm</span> <span class="fl">-13</span> <span class="op">&lt;(</span><span class="fn">sorted_files</span> <span class="st">"$dir1"</span><span class="op">)</span> <span class="op">&lt;(</span><span class="fn">sorted_files</span> <span class="st">"$dir2"</span><span class="op">)</span> \
+    | <span class="cmd">sed</span> <span class="st">'s/^/  /'</span>
+
+<span class="cm"># In both</span>
+<span class="cmd">printf</span> <span class="st">'\033[32mIn both:\033[0m\n'</span>
+<span class="cmd">comm</span> <span class="fl">-12</span> <span class="op">&lt;(</span><span class="fn">sorted_files</span> <span class="st">"$dir1"</span><span class="op">)</span> <span class="op">&lt;(</span><span class="fn">sorted_files</span> <span class="st">"$dir2"</span><span class="op">)</span> \
+    | <span class="cmd">sed</span> <span class="st">'s/^/  /'</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 2 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 2</div>
+    <div class="ex-task">Write a function called <code>run_logged()</code> that executes any command passed to it and: (a) shows stdout in the terminal in real time, (b) simultaneously writes stdout to a timestamped log file, (c) captures stderr separately and prints a summary at the end if there were any errors, and (d) returns the original exit code of the command. Do not use temporary files for the main stdout flow — use process substitution and <code>tee</code>.</div>
+    <div class="ex-hint">Hint: use <code>tee &gt;(timestamp_fn &gt;&gt; logfile)</code> to simultaneously print and log. For stderr, redirect to a temp file (<code>mktemp</code>) so you can display it at the end. Use a subshell group to capture the exit code: <code>{ cmd; } ... ; rc=$?</code>.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="fn">run_logged</span>() {
+    <span class="kw">local</span> <span class="vr">logfile</span>=<span class="st">"run_$(date +%Y%m%d_%H%M%S)_$$.log"</span>
+    <span class="kw">local</span> <span class="vr">errfile</span>
+    <span class="vr">errfile</span>=<span class="st">$(</span><span class="cmd">mktemp</span><span class="st">)</span>
+
+    <span class="kw">local</span> <span class="vr">rc</span>=<span class="nu">0</span>
+
+    <span class="cm"># Timestamper: prepend HH:MM:SS to each line</span>
+    <span class="fn">_stamp</span>() {
+        <span class="kw">while</span> <span class="kw">IFS</span>= <span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">line</span>; <span class="kw">do</span>
+            <span class="cmd">printf</span> <span class="st">'[%s] %s\n'</span> <span class="st">"$(date '+%T')"</span> <span class="st">"$line"</span>
+        <span class="kw">done</span>
+    }
+
+    <span class="cmd">printf</span> <span class="st">'\033[36m[RUN]\033[0m %s\n'</span> <span class="st">"$*"</span>
+    <span class="cmd">printf</span> <span class="st">'\033[2m[LOG] → %s\033[0m\n'</span> <span class="st">"$logfile"</span>
+
+    <span class="cm"># Run command: stdout fans out to terminal + timestamped logfile</span>
+    <span class="cm">#              stderr goes to errfile</span>
+    <span class="st">"$@"</span> \
+        <span class="nu">2</span><span class="op">&gt;</span> <span class="st">"$errfile"</span> \
+        | <span class="cmd">tee</span> <span class="op">&gt;(</span><span class="fn">_stamp</span> <span class="op">&gt;&gt;</span> <span class="st">"$logfile"</span><span class="op">)</span> \
+        || <span class="vr">rc</span>=<span class="st">$?</span>
+
+    <span class="cm"># If there was stderr output, show it</span>
+    <span class="kw">if</span> [[ <span class="fl">-s</span> <span class="st">"$errfile"</span> ]]; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">'\n\033[31m[STDERR]\033[0m\n'</span> <span class="op">>&amp;2</span>
+        <span class="cmd">cat</span> <span class="st">"$errfile"</span> <span class="op">>&amp;2</span>
+        <span class="cm"># Also append stderr to log</span>
+        <span class="fn">_stamp</span> <span class="op">&lt;</span> <span class="st">"$errfile"</span> <span class="op">&gt;&gt;</span> <span class="st">"$logfile"</span>
+    <span class="kw">fi</span>
+    <span class="cmd">rm</span> <span class="fl">-f</span> <span class="st">"$errfile"</span>
+
+    <span class="kw">if</span> (( rc == <span class="nu">0</span> )); <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">'\033[32m[OK]\033[0m Exit 0\n'</span>
+    <span class="kw">else</span>
+        <span class="cmd">printf</span> <span class="st">'\033[31m[FAIL]\033[0m Exit %d\n'</span> <span class="st">"$rc"</span> <span class="op">>&amp;2</span>
+    <span class="kw">fi</span>
+    <span class="kw">return</span> <span class="st">$rc</span>
+}
+
+<span class="cm"># Test</span>
+<span class="fn">run_logged</span> <span class="cmd">ls</span> <span class="fl">-la</span> <span class="pth">/etc/hosts</span> <span class="pth">/nonexistent</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 3 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 3</div>
+    <div class="ex-task">Write a script called <code>multi_log.sh</code> that uses <code>exec</code> with auto-assigned file descriptors (<code>{var}&gt; file</code>) to open three log files at the start — <code>info.log</code>, <code>warn.log</code>, <code>error.log</code> — and a function <code>log LEVEL MESSAGE</code> that writes to the appropriate file descriptor based on the level. The script should process a list of simulated events, close all file descriptors when done, and print a summary of how many lines went to each log. Do not reopen the files inside the loop.</div>
+    <div class="ex-hint">Hint: store the FD numbers in variables <code>INFO_FD</code>, <code>WARN_FD</code>, <code>ERROR_FD</code> using <code>exec {INFO_FD}&gt; info.log</code>. In the log function, use <code>printf ... &gt;&amp;$INFO_FD</code> etc. Use a <code>case</code> statement to dispatch on level. For the count, use <code>wc -l</code> on each file after closing the FDs.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># multi_log.sh</span>
+<span class="kw">set</span> <span class="fl">-euo</span> pipefail
+
+<span class="vr">LOGDIR</span>=<span class="st">"$(mktemp -d)"</span>
+<span class="kw">trap</span> <span class="st">'echo "Logs in: $LOGDIR"'</span> EXIT
+
+<span class="cm"># Open three log files on auto-assigned FDs</span>
+<span class="kw">exec</span> {<span class="vr">INFO_FD</span>}<span class="op">&gt;</span>  <span class="st">"${LOGDIR}/info.log"</span>
+<span class="kw">exec</span> {<span class="vr">WARN_FD</span>}<span class="op">&gt;</span>  <span class="st">"${LOGDIR}/warn.log"</span>
+<span class="kw">exec</span> {<span class="vr">ERROR_FD</span>}<span class="op">&gt;</span> <span class="st">"${LOGDIR}/error.log"</span>
+
+<span class="fn">log</span>() {
+    <span class="kw">local</span> <span class="vr">level</span>=<span class="st">"${1^^}"</span>    <span class="cm"># uppercase the level</span>
+    <span class="kw">local</span> <span class="vr">msg</span>=<span class="st">"$2"</span>
+    <span class="kw">local</span> <span class="vr">ts</span>
+    <span class="vr">ts</span>=<span class="st">"$(date '+%H:%M:%S')"</span>
+
+    <span class="kw">case</span> <span class="st">"$level"</span> <span class="kw">in</span>
+        INFO)  <span class="cmd">printf</span> <span class="st">'[%s] INFO  %s\n'</span>  <span class="st">"$ts"</span> <span class="st">"$msg"</span> <span class="op">&gt;&amp;</span><span class="st">$INFO_FD</span>  ;;
+        WARN)  <span class="cmd">printf</span> <span class="st">'[%s] WARN  %s\n'</span>  <span class="st">"$ts"</span> <span class="st">"$msg"</span> <span class="op">&gt;&amp;</span><span class="st">$WARN_FD</span>  ;;
+        ERROR) <span class="cmd">printf</span> <span class="st">'[%s] ERROR %s\n'</span>  <span class="st">"$ts"</span> <span class="st">"$msg"</span> <span class="op">&gt;&amp;</span><span class="st">$ERROR_FD</span> ;;
+        *)     <span class="cmd">printf</span> <span class="st">'[%s] ??    %s\n'</span>  <span class="st">"$ts"</span> <span class="st">"$msg"</span> <span class="op">&gt;&amp;</span><span class="st">$INFO_FD</span>  ;;
+    <span class="kw">esac</span>
+}
+
+<span class="cm"># Simulated events — in a real script this would be a processing loop</span>
+<span class="fn">log</span> INFO  <span class="st">"Application starting"</span>
+<span class="fn">log</span> INFO  <span class="st">"Loading configuration"</span>
+<span class="fn">log</span> WARN  <span class="st">"Config file not found, using defaults"</span>
+<span class="fn">log</span> INFO  <span class="st">"Connected to database"</span>
+<span class="fn">log</span> INFO  <span class="st">"Processing 1000 records"</span>
+<span class="fn">log</span> WARN  <span class="st">"Record 42 has missing field 'email'"</span>
+<span class="fn">log</span> ERROR <span class="st">"Failed to insert record 99: duplicate key"</span>
+<span class="fn">log</span> INFO  <span class="st">"Batch complete"</span>
+<span class="fn">log</span> ERROR <span class="st">"Connection reset during final commit"</span>
+
+<span class="cm"># Close all file descriptors</span>
+<span class="kw">exec</span> {<span class="vr">INFO_FD</span>}<span class="op">&gt;&amp;-</span>
+<span class="kw">exec</span> {<span class="vr">WARN_FD</span>}<span class="op">&gt;&amp;-</span>
+<span class="kw">exec</span> {<span class="vr">ERROR_FD</span>}<span class="op">&gt;&amp;-</span>
+
+<span class="cm"># Summary</span>
+<span class="cmd">echo</span>
+<span class="cmd">printf</span> <span class="st">"%-12s %s\n"</span> <span class="st">"Log"</span> <span class="st">"Lines"</span>
+<span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">20</span>}; <span class="cmd">echo</span>
+<span class="kw">for</span> <span class="vr">f</span> <span class="kw">in</span> info warn error; <span class="kw">do</span>
+    <span class="vr">n</span>=<span class="st">$(</span><span class="cmd">wc</span> <span class="fl">-l</span> <span class="op">&lt;</span> <span class="st">"${LOGDIR}/${f}.log"</span><span class="st">)</span>
+    <span class="cmd">printf</span> <span class="st">"%-12s %d\n"</span> <span class="st">"${f}.log"</span> <span class="st">"$n"</span>
+<span class="kw">done</span></code>
+    </div>
+  </div>
+
+  <!-- Exercise 4 -->
+  <div class="exercise-block">
+    <div class="ex-num">Exercise 4</div>
+    <div class="ex-task">Write a script called <code>health_check.sh</code> that checks whether a set of services are reachable using <code>/dev/tcp</code>. It should accept a list of <code>host:port</code> pairs (either as arguments or from a here-string), check each one with a configurable timeout, and produce a report showing each service as UP or DOWN with response time in milliseconds. Use a FIFO or process substitution to feed the list if it comes from a here-doc.</div>
+    <div class="ex-hint">Hint: use <code>( exec 3&lt;&gt; /dev/tcp/"$host"/"$port" ) 2&gt;/dev/null</code> in a subshell so the socket closes on exit. Capture <code>$SECONDS</code> or <code>date +%s%N</code> before and after for timing. For timeout, wrap the subshell in a background job and <code>wait</code> with a timeout loop or use <code>timeout 2 bash -c "..."</code>.</div>
+    <button class="ex-solution-toggle" onclick="toggleSolution(this)">▶ Show Sample Solution</button>
+    <div class="ex-solution">
+      <div class="sol-label">Sample Solution</div>
+<code class="code-block"><span class="sh">#!/usr/bin/env bash</span>
+<span class="cm"># health_check.sh  [host:port ...]</span>
+<span class="kw">set</span> <span class="fl">-uo</span> pipefail
+
+<span class="vr">TIMEOUT</span>=<span class="st">${TIMEOUT:-3}</span>
+
+<span class="fn">check_service</span>() {
+    <span class="kw">local</span> <span class="vr">host</span>=<span class="st">"$1"</span> <span class="vr">port</span>=<span class="st">"$2"</span>
+    <span class="kw">local</span> <span class="vr">start_ns</span> <span class="vr">end_ns</span> <span class="vr">ms</span>
+
+    <span class="vr">start_ns</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s%N'</span><span class="st">)</span>
+
+    <span class="kw">if</span> <span class="cmd">timeout</span> <span class="st">"$TIMEOUT"</span> <span class="cmd">bash</span> <span class="fl">-c</span> \
+        <span class="st">"exec 3&lt;&gt; /dev/tcp/${host}/${port}"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span>; <span class="kw">then</span>
+        <span class="vr">end_ns</span>=<span class="st">$(</span><span class="cmd">date</span> <span class="st">'+%s%N'</span><span class="st">)</span>
+        <span class="vr">ms</span>=<span class="st">$(( (end_ns - start_ns) / 1000000 ))</span>
+        <span class="cmd">printf</span> <span class="st">'  \033[32m%-6s\033[0m %-30s %dms\n'</span> <span class="st">"UP"</span> <span class="st">"${host}:${port}"</span> <span class="st">"$ms"</span>
+    <span class="kw">else</span>
+        <span class="cmd">printf</span> <span class="st">'  \033[31m%-6s\033[0m %-30s (timeout ${TIMEOUT}s)\n'</span> <span class="st">"DOWN"</span> <span class="st">"${host}:${port}"</span>
+    <span class="kw">fi</span>
+}
+
+<span class="cmd">printf</span> <span class="st">'\033[1mService Health Check\033[0m  (timeout: %ss)\n'</span> <span class="st">"$TIMEOUT"</span>
+<span class="cmd">printf</span> <span class="st">'%.0s─'</span> {<span class="nu">1</span>..<span class="nu">50</span>}; <span class="cmd">echo</span>
+
+<span class="kw">if</span> (( $# > <span class="nu">0</span> )); <span class="kw">then</span>
+    <span class="cm"># Args mode: each arg is host:port</span>
+    <span class="kw">for</span> <span class="vr">svc</span> <span class="kw">in</span> <span class="st">"$@"</span>; <span class="kw">do</span>
+        <span class="vr">host</span>=<span class="st">"${svc%:*}"</span>
+        <span class="vr">port</span>=<span class="st">"${svc##*:}"</span>
+        <span class="fn">check_service</span> <span class="st">"$host"</span> <span class="st">"$port"</span>
+    <span class="kw">done</span>
+<span class="kw">else</span>
+    <span class="cm"># Stdin mode: read host:port from process substitution / pipe</span>
+    <span class="kw">while</span> <span class="kw">IFS</span>=<span class="st">: </span><span class="cmd">read</span> <span class="fl">-r</span> <span class="vr">host</span> <span class="vr">port</span>; <span class="kw">do</span>
+        [[ <span class="fl">-z</span> <span class="st">"$host"</span> || <span class="st">"$host"</span> == <span class="st">'#'</span>* ]] && <span class="kw">continue</span>
+        <span class="fn">check_service</span> <span class="st">"$host"</span> <span class="st">"$port"</span>
+    <span class="kw">done</span>
+<span class="kw">fi</span>
+
+<span class="out"><br></span>
+<span class="cm"># Usage examples:</span>
+<span class="cm"># ./health_check.sh google.com:443 github.com:22 localhost:5432</span>
+<span class="cm">#</span>
+<span class="cm"># Or feed a list via here-string:</span>
+<span class="cm"># ./health_check.sh &lt;&lt;&lt; $'google.com:80\ngoogle.com:443\nlocalhost:5432'</span>
+<span class="cm">#</span>
+<span class="cm"># Or via process substitution:</span>
+<span class="cm"># ./health_check.sh &lt; &lt;(grep -v '^#' services.txt)</span></code>
+    </div>
+  </div>
+
+</div><!-- /lx-lesson -->
