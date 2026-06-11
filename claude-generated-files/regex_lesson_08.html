@@ -1,0 +1,568 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 240px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  .fn  { color: #b392f0; }
+  /* anatomy diagram */
+  .anatomy {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 1rem; line-height: 2.4;
+  }
+  .anatomy .an-cmd  { color: #79b8ff; }
+  .anatomy .an-sep  { color: #5a6a8a; }
+  .anatomy .an-pat  { color: #ffa657; }
+  .anatomy .an-rep  { color: #85e89d; }
+  .anatomy .an-flg  { color: #d2a8ff; }
+  .anatomy .an-addr { color: #f97583; }
+  .anatomy .an-ann  { display: flex; gap: 0; font-size: 0.78rem; margin-top: -0.8em; margin-bottom: 0.4em; }
+  .anatomy .an-lbl  { color: #5a6a8a; text-align: center; }
+  /* flag cards */
+  .sflag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7em; margin: 1em 0; }
+  .sflag-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 0.95em;
+  }
+  .sflag-card .sf-flag { font-family: 'Consolas', monospace; font-size: 1.1rem; color: #d2a8ff; display: block; margin-bottom: 0.15em; }
+  .sflag-card .sf-name { color: #c9d8ff; font-size: 0.83rem; font-weight: bold; display: block; margin-bottom: 0.25em; }
+  .sflag-card .sf-desc { color: #7a8aaa; font-size: 0.81rem; line-height: 1.45; }
+  /* replacement special tokens */
+  .tok-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7em; margin: 1em 0; }
+  .tok-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.65em 0.95em;
+  }
+  .tok-card .tk-tok  { font-family: 'Consolas', monospace; font-size: 1rem; color: #85e89d; display: block; margin-bottom: 0.15em; }
+  .tok-card .tk-name { color: #c9d8ff; font-size: 0.82rem; font-weight: bold; display: block; margin-bottom: 0.2em; }
+  .tok-card .tk-desc { color: #7a8aaa; font-size: 0.8rem; line-height: 1.4; }
+  /* case modifier cards */
+  .case-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7em; margin: 1em 0; }
+  .case-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.65em 0.9em;
+  }
+  .case-card .cc-tok  { font-family: 'Consolas', monospace; font-size: 1.1rem; color: #ffa657; display: block; margin-bottom: 0.15em; }
+  .case-card .cc-name { color: #c9d8ff; font-size: 0.82rem; font-weight: bold; display: block; margin-bottom: 0.2em; }
+  .case-card .cc-desc { color: #7a8aaa; font-size: 0.79rem; line-height: 1.4; }
+  /* transform visualiser */
+  .xform-vis {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2;
+  }
+  .xv-hdr   { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.3em; }
+  .xv-in    { color: #c9d8ff; }
+  .xv-arrow { color: #5a6a8a; }
+  .xv-out   { color: #85e89d; }
+  .xv-cmd   { color: #ffab70; }
+  /* address types */
+  .addr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7em; margin: 1em 0; }
+  .addr-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 0.95em;
+  }
+  .addr-card .ac-tok  { font-family: 'Consolas', monospace; font-size: 0.95rem; color: #f97583; display: block; margin-bottom: 0.15em; }
+  .addr-card .ac-name { color: #c9d8ff; font-size: 0.82rem; font-weight: bold; display: block; margin-bottom: 0.2em; }
+  .addr-card .ac-desc { color: #7a8aaa; font-size: 0.8rem; line-height: 1.4; }
+  /* portability */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.gnu { color: #ffab70; }
+  .lx-lesson td.no  { color: #f97583; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 8 — sed and Regex in Depth</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The sed Substitute Command</h2>
+
+<p>The <code>s</code> command is the heart of sed. It finds a regex match on a line and replaces it with a replacement string. Understanding every part of its syntax — address, pattern, replacement, and flags — is what makes sed a powerful text transformation engine.</p>
+
+<div class="anatomy">
+  <div>
+    <span class="an-addr">3,/end/</span><span class="an-cmd">s</span><span class="an-sep">/</span><span class="an-pat">pattern</span><span class="an-sep">/</span><span class="an-rep">replacement</span><span class="an-sep">/</span><span class="an-flg">flags</span>
+  </div>
+  <div style="display:grid; grid-template-columns: 70px 16px 90px 16px 110px 16px 70px; font-size:0.78rem; color:#5a6a8a; margin-top:-0.6em; gap:0;">
+    <span style="color:#f97583;">address</span>
+    <span></span>
+    <span style="color:#ffa657;">regex pattern</span>
+    <span></span>
+    <span style="color:#85e89d;">replacement text</span>
+    <span></span>
+    <span style="color:#d2a8ff;">flags</span>
+  </div>
+</div>
+
+<ul>
+  <li><strong>Address</strong> — which lines to operate on (optional; if omitted, all lines)</li>
+  <li><strong>Pattern</strong> — BRE by default; ERE with <code>sed -E</code></li>
+  <li><strong>Replacement</strong> — literal text plus special tokens (<code>&amp;</code>, <code>\1</code>–<code>\9</code>, case modifiers)</li>
+  <li><strong>Flags</strong> — modify how the substitution behaves (<code>g</code>, <code>i</code>, <code>p</code>, <code>w</code>, <code>Nth</code>)</li>
+  <li><strong>Delimiter</strong> — <code>/</code> is conventional but any character works: <code>s|/usr|/opt|g</code></li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>BRE vs ERE in sed</h2>
+
+<p>By default sed uses BRE. The <code>-E</code> flag (GNU sed; also <code>-r</code> on some systems) switches to ERE — the same extended syntax that <code>grep -E</code> uses.</p>
+
+<pre><span class="cm"># BRE (default) — grouping and + need backslashes</span>
+<span class="cmd">sed</span> <span class="st">'s/\(foo\)\+/bar/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># ERE with -E — cleaner syntax, + and () work directly</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/(foo)+/bar/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># BRE alternation needs \|</span>
+<span class="cmd">sed</span> <span class="st">'s/cat\|dog/pet/g'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># ERE alternation — just |</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/cat|dog/pet/g'</span> <span class="pth">file.txt</span></pre>
+
+<table>
+  <tr><th>Feature</th><th>BRE (default)</th><th>ERE (<code>-E</code>)</th></tr>
+  <tr><td>Grouping</td><td><code>\(...\)</code></td><td><code>(...)</code></td></tr>
+  <tr><td>One or more</td><td><code>\+</code></td><td><code>+</code></td></tr>
+  <tr><td>Zero or one</td><td><code>\?</code></td><td><code>?</code></td></tr>
+  <tr><td>Alternation</td><td><code>\|</code></td><td><code>|</code></td></tr>
+  <tr><td>Backreference (pattern)</td><td><code>\1</code></td><td><code>\1</code></td></tr>
+  <tr><td>Backreference (replacement)</td><td><code>\1</code></td><td><code>\1</code></td></tr>
+  <tr><td><code>&amp;</code> whole match</td><td>Yes</td><td>Yes</td></tr>
+</table>
+
+<div class="tip">
+  <strong>Use <code>sed -E</code> for new scripts.</strong> The ERE syntax is less cluttered and more consistent with <code>grep -E</code> and <code>awk</code>. Reserve BRE-only syntax for scripts that must run on strictly POSIX systems without GNU sed.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Substitution Flags</h2>
+
+<div class="sflag-grid">
+  <div class="sflag-card">
+    <span class="sf-flag">g</span>
+    <span class="sf-name">Global</span>
+    <span class="sf-desc">Replace ALL occurrences on the line, not just the first. The most commonly used flag.</span>
+  </div>
+  <div class="sflag-card">
+    <span class="sf-flag">i  /  I</span>
+    <span class="sf-name">Case insensitive</span>
+    <span class="sf-desc">Match the pattern without regard to letter case. GNU sed extension.</span>
+  </div>
+  <div class="sflag-card">
+    <span class="sf-flag">N  (number)</span>
+    <span class="sf-name">Nth occurrence</span>
+    <span class="sf-desc">Replace only the Nth match on the line, e.g. <code>2</code> replaces the second match only.</span>
+  </div>
+  <div class="sflag-card">
+    <span class="sf-flag">Ng</span>
+    <span class="sf-name">Nth and beyond</span>
+    <span class="sf-desc">Replace from the Nth occurrence onwards. <code>2g</code> replaces second, third, fourth… matches.</span>
+  </div>
+  <div class="sflag-card">
+    <span class="sf-flag">p</span>
+    <span class="sf-name">Print</span>
+    <span class="sf-desc">Print the line if a substitution was made. Use with <code>sed -n</code> to print only changed lines.</span>
+  </div>
+  <div class="sflag-card">
+    <span class="sf-flag">w file</span>
+    <span class="sf-name">Write</span>
+    <span class="sf-desc">Write the substituted line to a file. Creates or truncates the file at start of script.</span>
+  </div>
+  <div class="sflag-card">
+    <span class="sf-flag">e</span>
+    <span class="sf-name">Execute</span>
+    <span class="sf-desc">Execute the replacement as a shell command and replace the line with its output. GNU only.</span>
+  </div>
+  <div class="sflag-card">
+    <span class="sf-flag">m  /  M</span>
+    <span class="sf-name">Multi-line</span>
+    <span class="sf-desc">Makes <code>^</code> and <code>$</code> match at the start/end of each embedded newline in the pattern space.</span>
+  </div>
+  <div class="sflag-card">
+    <span class="sf-flag">Combine</span>
+    <span class="sf-name">Mix freely</span>
+    <span class="sf-desc">Flags combine: <code>gi</code> = global case-insensitive; <code>2p</code> = print only if 2nd occurrence replaced.</span>
+  </div>
+</div>
+
+<pre><span class="cm"># g: replace all occurrences (default replaces only the first)</span>
+<span class="cmd">echo</span> <span class="st">"aaa bbb aaa"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/aaa/xxx/'</span>
+<span class="out">xxx bbb aaa</span>        <span class="cm"># only first replaced</span>
+<span class="cmd">echo</span> <span class="st">"aaa bbb aaa"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/aaa/xxx/g'</span>
+<span class="out">xxx bbb xxx</span>        <span class="cm"># all replaced</span>
+
+<span class="cm"># i: case-insensitive replacement</span>
+<span class="cmd">echo</span> <span class="st">"Error ERROR error"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/error/FAULT/gi'</span>
+<span class="out">FAULT FAULT FAULT</span>
+
+<span class="cm"># 2: replace only the second occurrence</span>
+<span class="cmd">echo</span> <span class="st">"cat and cat and cat"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/cat/dog/2'</span>
+<span class="out">cat and dog and cat</span>
+
+<span class="cm"># 2g: replace from the second occurrence onwards</span>
+<span class="cmd">echo</span> <span class="st">"cat and cat and cat"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/cat/dog/2g'</span>
+<span class="out">cat and dog and dog</span>
+
+<span class="cm"># p with -n: print ONLY lines where a substitution was made</span>
+<span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'s/ERROR/FAULT/p'</span> <span class="pth">app.log</span>
+
+<span class="cm"># w: write substituted lines to a separate file</span>
+<span class="cmd">sed</span> <span class="st">'s/ERROR/FAULT/gw /tmp/faults.txt'</span> <span class="pth">app.log</span>
+
+<span class="cm"># e: replace line with output of a shell command (GNU sed only)</span>
+<span class="cmd">echo</span> <span class="st">"date"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/.*/date/e'</span>         <span class="cm"># replaces "date" with the output of date(1)</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Replacement Special Tokens</h2>
+
+<div class="tok-grid">
+  <div class="tok-card">
+    <span class="tk-tok">&amp;</span>
+    <span class="tk-name">Whole match</span>
+    <span class="tk-desc">Inserts the entire matched text. Equivalent to <code>\0</code> in some flavours.</span>
+  </div>
+  <div class="tok-card">
+    <span class="tk-tok">\1 … \9</span>
+    <span class="tk-name">Capture group</span>
+    <span class="tk-desc">Inserts the text captured by group N. Requires <code>(...)</code> in ERE or <code>\(...\)</code> in BRE.</span>
+  </div>
+  <div class="tok-card">
+    <span class="tk-tok">\\</span>
+    <span class="tk-name">Literal backslash</span>
+    <span class="tk-desc">A literal <code>\</code> in the output. Use <code>\\</code> in the replacement to insert a real backslash.</span>
+  </div>
+  <div class="tok-card">
+    <span class="tk-tok">\n</span>
+    <span class="tk-name">Newline in output</span>
+    <span class="tk-desc">Inserts a newline into the replacement text, splitting the line in two.</span>
+  </div>
+</div>
+
+<pre><span class="cm"># &amp;: wrap the entire match in brackets</span>
+<span class="cmd">echo</span> <span class="st">"hello world"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/[a-z]*/[&amp;]/g'</span>
+<span class="out">[hello] [world]</span>
+
+<span class="cm"># \1 \2: reorder captured groups (date reformatting)</span>
+<span class="cmd">echo</span> <span class="st">"2026-06-11"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([0-9]{4})-([0-9]{2})-([0-9]{2})/\3\/\2\/\1/'</span>
+<span class="out">11/06/2026</span>
+
+<span class="cm"># Swap first and last name</span>
+<span class="cmd">echo</span> <span class="st">"Smith, John"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([A-Za-z]+), ([A-Za-z]+)/\2 \1/'</span>
+<span class="out">John Smith</span>
+
+<span class="cm"># Quote every word</span>
+<span class="cmd">echo</span> <span class="st">"one two three"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/[^ ]*/"\&amp;"/g'</span>
+<span class="out">"one" "two" "three"</span>
+
+<span class="cm"># Insert a newline: split "key=value" into two lines</span>
+<span class="cmd">echo</span> <span class="st">"name=Alice"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/=/\n/'</span>
+<span class="out">name</span>
+<span class="out">Alice</span>
+
+<span class="cm"># Escape & and \ when they must be literal in replacement</span>
+<span class="cmd">echo</span> <span class="st">"foo"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/foo/a\&amp;b/'</span>     <span class="cm"># output: a&b  (\& = literal &)</span>
+<span class="cmd">echo</span> <span class="st">"foo"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/foo/a\\b/'</span>     <span class="cm"># output: a\b  (\\ = literal \)</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Case Modifier Sequences (GNU sed)</h2>
+
+<p>GNU sed supports case-conversion sequences in the replacement string. These are not available in POSIX sed or BSD sed.</p>
+
+<div class="case-grid">
+  <div class="case-card">
+    <span class="cc-tok">\u</span>
+    <span class="cc-name">Uppercase next</span>
+    <span class="cc-desc">Capitalise the next character only.</span>
+  </div>
+  <div class="case-card">
+    <span class="cc-tok">\l</span>
+    <span class="cc-name">Lowercase next</span>
+    <span class="cc-desc">Lowercase the next character only.</span>
+  </div>
+  <div class="case-card">
+    <span class="cc-tok">\U</span>
+    <span class="cc-name">UPPERCASE rest</span>
+    <span class="cc-desc">Uppercase from here to end of replacement or <code>\E</code>.</span>
+  </div>
+  <div class="case-card">
+    <span class="cc-tok">\L</span>
+    <span class="cc-name">lowercase rest</span>
+    <span class="cc-desc">Lowercase from here to end of replacement or <code>\E</code>.</span>
+  </div>
+  <div class="case-card">
+    <span class="cc-tok">\E</span>
+    <span class="cc-name">End modifier</span>
+    <span class="cc-desc">Stop the <code>\U</code> or <code>\L</code> modifier — return to default case.</span>
+  </div>
+  <div class="case-card"></div>
+  <div class="case-card"></div>
+  <div class="case-card"></div>
+</div>
+
+<div class="xform-vis">
+  <span class="xv-hdr">Case modifier examples</span>
+  <span><span class="xv-cmd">s/\b\(.\)/\u\1/g</span>  — title-case every word</span>
+  <span><span class="xv-in">hello world</span>  <span class="xv-arrow">→</span>  <span class="xv-out">Hello World</span></span>
+  <span> </span>
+  <span><span class="xv-cmd">s/.*/\U&amp;/</span>  — uppercase the entire line</span>
+  <span><span class="xv-in">hello world</span>  <span class="xv-arrow">→</span>  <span class="xv-out">HELLO WORLD</span></span>
+  <span> </span>
+  <span><span class="xv-cmd">s/.*/\L&amp;/</span>  — lowercase the entire line</span>
+  <span><span class="xv-in">HELLO WORLD</span>  <span class="xv-arrow">→</span>  <span class="xv-out">hello world</span></span>
+  <span> </span>
+  <span><span class="xv-cmd">s/\b\([a-z]\)/\u\1/g</span>  — capitalise first letter of each word</span>
+  <span><span class="xv-in">the quick brown fox</span>  <span class="xv-arrow">→</span>  <span class="xv-out">The Quick Brown Fox</span></span>
+  <span> </span>
+  <span><span class="xv-cmd">s/\(ERROR\)/\L\1/g</span>  — lowercase the match only, then \E stops it</span>
+  <span><span class="xv-in">found ERROR in log</span>  <span class="xv-arrow">→</span>  <span class="xv-out">found error in log</span></span>
+</div>
+
+<pre><span class="cm"># Title-case: capitalise the first letter of every word (BRE)</span>
+<span class="cmd">echo</span> <span class="st">"the quick brown fox"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/\b\([a-z]\)/\u\1/g'</span>
+<span class="out">The Quick Brown Fox</span>
+
+<span class="cm"># Title-case with ERE</span>
+<span class="cmd">echo</span> <span class="st">"the quick brown fox"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\b([a-z])/\u\1/g'</span>
+<span class="out">The Quick Brown Fox</span>
+
+<span class="cm"># SCREAMING_SNAKE_CASE from lowercase</span>
+<span class="cmd">echo</span> <span class="st">"my variable name"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/ /_/g; s/.*/\U&amp;/'</span>
+<span class="out">MY_VARIABLE_NAME</span>
+
+<span class="cm"># Normalise HTTP method names (mixed case → uppercase)</span>
+<span class="cmd">echo</span> <span class="st">"method: Get"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/(GET|POST|PUT|DELETE|PATCH)/\U\1/gi'</span>
+<span class="out">method: GET</span>
+
+<span class="cm"># camelCase to snake_case: insert _ before each uppercase letter then lowercase all</span>
+<span class="cmd">echo</span> <span class="st">"camelCaseVariable"</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'s/\([A-Z]\)/_\L\1/g'</span>
+<span class="out">camel_case_variable</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Address-Targeted Substitution</h2>
+
+<p>Addresses restrict which lines a sed command applies to. This is one of sed's most powerful features — you can combine regex addresses with substitution commands to perform context-aware replacements.</p>
+
+<div class="addr-grid">
+  <div class="addr-card">
+    <span class="ac-tok">N</span>
+    <span class="ac-name">Line number</span>
+    <span class="ac-desc">Apply only to line N. <code>1</code> = first line; <code>$</code> = last line.</span>
+  </div>
+  <div class="addr-card">
+    <span class="ac-tok">N,M</span>
+    <span class="ac-name">Line range</span>
+    <span class="ac-desc">Apply to lines N through M inclusive.</span>
+  </div>
+  <div class="addr-card">
+    <span class="ac-tok">/regex/</span>
+    <span class="ac-name">Pattern address</span>
+    <span class="ac-desc">Apply to every line that matches the regex.</span>
+  </div>
+  <div class="addr-card">
+    <span class="ac-tok">/start/,/end/</span>
+    <span class="ac-name">Pattern range</span>
+    <span class="ac-desc">Apply from the line matching <code>start</code> to the line matching <code>end</code>, inclusive.</span>
+  </div>
+  <div class="addr-card">
+    <span class="ac-tok">first~step</span>
+    <span class="ac-name">Step address</span>
+    <span class="ac-desc">Apply to every Nth line starting at <code>first</code>. <code>0~2</code> = even; <code>1~2</code> = odd. GNU only.</span>
+  </div>
+  <div class="addr-card">
+    <span class="ac-tok">addr!</span>
+    <span class="ac-name">Negated address</span>
+    <span class="ac-desc">Apply to every line that does NOT match the address. <code>/pattern/!s/x/y/</code></span>
+  </div>
+</div>
+
+<pre><span class="cm"># Line number addresses</span>
+<span class="cmd">sed</span> <span class="st">'1s/^/# File header\n/'</span> <span class="pth">file.txt</span>          <span class="cm"># add comment before line 1</span>
+<span class="cmd">sed</span> <span class="st">'$s/$/\n# End of file/'</span> <span class="pth">file.txt</span>           <span class="cm"># add comment after last line</span>
+<span class="cmd">sed</span> <span class="st">'2,5s/^/    /'</span> <span class="pth">file.txt</span>                   <span class="cm"># indent lines 2–5</span>
+
+<span class="cm"># Pattern address: substitute only on lines matching a condition</span>
+<span class="cmd">sed</span> <span class="st">'/^Port/s/22/2222/'</span> <span class="pth">/etc/ssh/sshd_config</span>  <span class="cm"># change port only on Port lines</span>
+<span class="cmd">sed</span> <span class="st">'/ERROR/s/$/  &lt;&lt;&lt; ALERT/'</span> <span class="pth">app.log</span>          <span class="cm"># append ALERT to error lines</span>
+
+<span class="cm"># Pattern range: substitute within a block</span>
+<span class="cmd">sed</span> <span class="st">'/\[section\]/,/\[end\]/s/^ *//'</span> <span class="pth">config.ini</span> <span class="cm"># strip leading spaces in section</span>
+<span class="cmd">sed</span> <span class="st">'/^---/,/^---/s/\bFoo\b/Bar/g'</span> <span class="pth">file.md</span>    <span class="cm"># replace only inside front-matter</span>
+
+<span class="cm"># Negated address: substitute on every line EXCEPT those matching</span>
+<span class="cmd">sed</span> <span class="st">'/^#/!s/foo/bar/g'</span> <span class="pth">script.sh</span>             <span class="cm"># skip comment lines</span>
+<span class="cmd">sed</span> <span class="st">'/^$/!s/^/  /'</span> <span class="pth">file.txt</span>                  <span class="cm"># indent all non-empty lines</span>
+
+<span class="cm"># Step address: number every other line (GNU sed)</span>
+<span class="cmd">sed</span> <span class="st">'1~2s/^/&gt; /'</span> <span class="pth">file.txt</span>                   <span class="cm"># prefix odd lines with "> "</span>
+
+<span class="cm"># Combined: two addresses + substitution in a block</span>
+<span class="cmd">sed</span> <span class="st">'/^BEGIN/,/^END/ { s/\bold\b/new/g; s/foo/bar/g }'</span> <span class="pth">file.txt</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Alternate Delimiters</h2>
+
+<p>The delimiter does not have to be <code>/</code>. Any punctuation character can be used. This avoids the "leaning toothpick" problem when patterns or replacements contain slashes.</p>
+
+<pre><span class="cm"># Path substitution — using | as delimiter avoids escaping every /</span>
+<span class="cmd">sed</span> <span class="st">'s|/usr/local|/opt|g'</span> <span class="pth">Makefile</span>
+
+<span class="cm"># Compare: using / would require escaping all the slashes</span>
+<span class="cmd">sed</span> <span class="st">'s/\/usr\/local/\/opt/g'</span> <span class="pth">Makefile</span>   <span class="cm"># harder to read</span>
+
+<span class="cm"># URL rewriting with # as delimiter</span>
+<span class="cmd">sed</span> <span class="st">'s#https://old.example.com#https://new.example.com#g'</span> <span class="pth">links.txt</span>
+
+<span class="cm"># Pattern address with alternate delimiter — use \%..%</span>
+<span class="cmd">sed</span> <span class="st">'\%/usr/local%s/local/share/'</span> <span class="pth">config.txt</span>
+
+<span class="cm"># The rule: whatever character follows s is the delimiter</span>
+<span class="cmd">sed</span> <span class="st">'s,foo,bar,g'</span> <span class="pth">file.txt</span>     <span class="cm"># comma as delimiter</span>
+<span class="cmd">sed</span> <span class="st">'s@foo@bar@g'</span> <span class="pth">file.txt</span>     <span class="cm"># @ as delimiter</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical sed Recipes</h2>
+
+<h3>Config file management</h3>
+<pre><span class="cm"># Set a key to a new value (handles both "key value" and "key=value" forms)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^(MaxSessions\s*)=?\s*.*/\1= 20/'</span> <span class="pth">sshd_config</span>
+
+<span class="cm"># Uncomment a setting: remove leading # from lines matching a key</span>
+<span class="cmd">sed</span> <span class="st">'/^#.*Port /s/^#//'</span> <span class="pth">sshd_config</span>
+
+<span class="cm"># Comment out a setting</span>
+<span class="cmd">sed</span> <span class="st">'s/^PermitRootLogin/# PermitRootLogin/'</span> <span class="pth">sshd_config</span>
+
+<span class="cm"># In-place edit with backup (GNU sed)</span>
+<span class="cmd">sed</span> <span class="fl">-i.bak</span> <span class="st">'s/^Port 22/Port 2222/'</span> <span class="pth">/etc/ssh/sshd_config</span></pre>
+
+<h3>Data reformatting</h3>
+<pre><span class="cm"># ISO date (YYYY-MM-DD) to US format (MM/DD/YYYY)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([0-9]{4})-([0-9]{2})-([0-9]{2})/\2\/\3\/\1/g'</span> <span class="pth">dates.txt</span>
+
+<span class="cm"># CSV: quote unquoted fields (add quotes around each comma-separated value)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([^,]+)/"\1"/g'</span> <span class="pth">data.csv</span>
+
+<span class="cm"># Remove ANSI colour escape codes from terminal output</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\x1B\[[0-9;]*[mK]//g'</span> <span class="pth">coloured.log</span>
+
+<span class="cm"># Normalise multiple spaces to one</span>
+<span class="cmd">sed</span> <span class="st">'s/  */ /g'</span> <span class="pth">file.txt</span>           <span class="cm"># BRE: two or more spaces → one space</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/ {2,}/ /g'</span> <span class="pth">file.txt</span>     <span class="cm"># ERE: cleaner syntax</span>
+
+<span class="cm"># Strip leading and trailing whitespace</span>
+<span class="cmd">sed</span> <span class="st">'s/^[[:space:]]*//; s/[[:space:]]*$//'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Extract value from "key: value" format (print only the value)</span>
+<span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'/^Name:/s/^Name:[[:space:]]*//'</span><span class="fl">p</span> <span class="pth">record.txt</span></pre>
+
+<h3>Log and source code manipulation</h3>
+<pre><span class="cm"># Mask sensitive data: replace password values</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/(password=)[^ &amp;]*/\1[REDACTED]/gi'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Add line numbers as prefix</span>
+<span class="cmd">sed</span> <span class="op">=</span> <span class="pth">file.txt</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'N; s/\n/\t/'</span>
+
+<span class="cm"># Delete blank lines</span>
+<span class="cmd">sed</span> <span class="st">'/^[[:space:]]*$/d'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Delete comments (lines starting with #)</span>
+<span class="cmd">sed</span> <span class="st">'/^[[:space:]]*#/d'</span> <span class="pth">config.txt</span>
+
+<span class="cm"># Rename a variable across a source file</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'s/\bconnection_timeout\b/connect_timeout/g'</span> <span class="pth">config.py</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Portability — GNU sed vs BSD sed</h2>
+
+<table>
+  <tr><th>Feature</th><th>GNU sed (Linux)</th><th>BSD sed (macOS)</th></tr>
+  <tr><td><code>-E</code> flag</td><td class="yes">Yes</td><td class="yes">Yes (BSD also accepts <code>-E</code>)</td></tr>
+  <tr><td><code>-r</code> flag (same as -E)</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td><code>-i</code> in-place</td><td class="gnu"><code>sed -i</code> or <code>sed -i.bak</code></td><td class="gnu"><code>sed -i ''</code> or <code>sed -i .bak</code></td></tr>
+  <tr><td>Case modifiers (<code>\u \U \l \L</code>)</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td><code>i</code>/<code>I</code> flag (case insensitive)</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td><code>Nth</code> occurrence flag</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td><code>e</code> flag (execute)</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td>Step address (<code>first~step</code>)</td><td class="yes">Yes</td><td class="no">No</td></tr>
+  <tr><td><code>\w</code> shorthand in regex</td><td class="yes">Yes</td><td class="no">No — use <code>[[:alnum:]_]</code></td></tr>
+  <tr><td><code>\b</code> word boundary in regex</td><td class="yes">Yes</td><td class="no">No — use <code>\&lt;\&gt;</code></td></tr>
+</table>
+
+<div class="warn">
+  <strong>macOS <code>-i</code> gotcha:</strong> BSD sed requires a space between <code>-i</code> and the suffix argument: <code>sed -i .bak '...'</code> or <code>sed -i '' '...'</code> (empty string for no backup). GNU sed accepts <code>sed -i.bak</code> with no space. To write scripts that work on both, use: <code>sed -i.bak '...'</code> — the <code>.bak</code> immediately after <code>-i</code> works on both GNU and BSD.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 8</h2>
+
+<div class="cmd-ref">
+  <h4>Substitution Syntax</h4>
+  <div class="cmd-row"><span class="cmd-key">s/pat/rep/</span><span class="cmd-desc">Replace first match on each line</span></div>
+  <div class="cmd-row"><span class="cmd-key">s/pat/rep/g</span><span class="cmd-desc">Replace all matches on each line</span></div>
+  <div class="cmd-row"><span class="cmd-key">s/pat/rep/2</span><span class="cmd-desc">Replace only the 2nd occurrence</span></div>
+  <div class="cmd-row"><span class="cmd-key">s/pat/rep/gi</span><span class="cmd-desc">All matches, case-insensitive (GNU)</span></div>
+  <div class="cmd-row"><span class="cmd-key">s/pat/rep/p</span><span class="cmd-desc">Print if substitution made (use with <code>-n</code>)</span></div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Replacement Tokens</h4>
+  <div class="cmd-row"><span class="cmd-key">&amp;</span><span class="cmd-desc">Entire matched text</span></div>
+  <div class="cmd-row"><span class="cmd-key">\1 … \9</span><span class="cmd-desc">Capture group back-reference</span></div>
+  <div class="cmd-row"><span class="cmd-key">\u\1</span><span class="cmd-desc">Capitalise first char of group 1</span></div>
+  <div class="cmd-row"><span class="cmd-key">\U&amp;</span><span class="cmd-desc">Uppercase the entire match</span></div>
+  <div class="cmd-row"><span class="cmd-key">\L&amp;</span><span class="cmd-desc">Lowercase the entire match</span></div>
+  <div class="cmd-row"><span class="cmd-key">\n</span><span class="cmd-desc">Insert newline in replacement</span></div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Common Address Patterns</h4>
+  <div class="cmd-row"><span class="cmd-key">1s/...</span><span class="cmd-desc">First line only</span></div>
+  <div class="cmd-row"><span class="cmd-key">$s/...</span><span class="cmd-desc">Last line only</span></div>
+  <div class="cmd-row"><span class="cmd-key">/regex/s/...</span><span class="cmd-desc">Lines matching regex</span></div>
+  <div class="cmd-row"><span class="cmd-key">/start/,/end/s/...</span><span class="cmd-desc">Lines in a block</span></div>
+  <div class="cmd-row"><span class="cmd-key">/regex/!s/...</span><span class="cmd-desc">Lines NOT matching regex</span></div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 9 covers regex in <code>awk</code> — pattern-action rules, <code>/regex/ { action }</code>, field matching with <code>$0</code>–<code>$NF</code>, the <code>match()</code> function, <code>sub()</code> and <code>gsub()</code>, capturing groups in <code>gawk</code>, and practical awk recipes that combine regex with arithmetic and formatted output.
+</div>
+
+</div>

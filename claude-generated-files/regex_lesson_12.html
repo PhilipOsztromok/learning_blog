@@ -1,0 +1,467 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 260px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  .fn  { color: #b392f0; }
+  /* test harness output */
+  .th-pass { color: #85e89d; }
+  .th-fail { color: #f97583; }
+  .th-skip { color: #5a6a8a; }
+  /* tool-picker diagram */
+  .picker {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0;
+  }
+  .pk-q  { color: #c9d8ff; font-size: 0.9rem; margin: 0.5em 0 0.1em 0; }
+  .pk-a  { font-family: 'Consolas', monospace; color: #ffa657; font-size: 0.88rem; margin: 0 0 0.4em 1.5em; }
+  .pk-t  { font-family: 'Consolas', monospace; color: #79b8ff; font-size: 0.88rem; margin: 0 0 0 3em; }
+  /* reference card grid */
+  .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7em; margin: 1em 0; }
+  .ref-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.8em 1em;
+  }
+  .ref-card h5 { color: #4f8ef7; margin: 0 0 0.5em 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .ref-card .rr { display: flex; gap: 0.5em; margin: 0.18em 0; font-size: 0.82rem; }
+  .rr-k { font-family: 'Consolas', monospace; color: #ffa657; min-width: 120px; }
+  .rr-d { color: #7a8aaa; }
+  /* chapter index */
+  .ch-index { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; margin: 1em 0; }
+  .ch-row { background: #12141e; border: 1px solid #2a2d3e; border-radius: 4px; padding: 0.4em 0.8em; display: flex; gap: 0.6em; align-items: baseline; }
+  .ch-num { font-family: 'Consolas', monospace; color: #4f8ef7; font-size: 0.82rem; min-width: 28px; }
+  .ch-title { color: #c9d8ff; font-size: 0.83rem; }
+  /* completion badge */
+  .badge {
+    background: linear-gradient(135deg, #1a2540, #12141e);
+    border: 2px solid #4f8ef7; border-radius: 10px;
+    padding: 1.4em 2em; margin: 2em 0; text-align: center;
+  }
+  .badge-title { color: #4f8ef7; font-size: 1.3rem; font-weight: bold; display: block; margin-bottom: 0.2em; }
+  .badge-sub   { color: #7a8aaa; font-size: 0.9rem; display: block; margin-bottom: 0.6em; }
+  .badge-topics { color: #c9d8ff; font-size: 0.85rem; }
+  /* portability */
+  .lx-lesson td.yes { color: #85e89d; }
+  .lx-lesson td.no  { color: #f97583; }
+  .lx-lesson td.gnu { color: #ffab70; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 12 — Your Regex Toolkit: Patterns, Testing, and Real Pipelines</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Building a Personal Pattern Library</h2>
+
+<p>The most productive regex habit is maintaining a library of tested, annotated patterns you reach for repeatedly. Instead of rewriting <em>"what was that IPv4 pattern again?"</em> from scratch, you keep one authoritative version that you know works correctly — including the edge cases that bit you before.</p>
+
+<p>Below is a complete <code>regex_lib.sh</code> — source it in any script with <code>source regex_lib.sh</code>.</p>
+
+<pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="cm"># regex_lib.sh — tested, reusable regex patterns and validation functions</span>
+<span class="cm"># Usage: source regex_lib.sh</span>
+
+<span class="cm"># ── Anchored validation patterns ─────────────────────────────────────────</span>
+<span class="vr">RE_INTEGER</span><span class="op">=</span><span class="st">'^-?[0-9]+$'</span>
+<span class="vr">RE_POS_INT</span><span class="op">=</span><span class="st">'^[1-9][0-9]*$'</span>
+<span class="vr">RE_FLOAT</span><span class="op">=</span><span class="st">'^-?[0-9]+(\.[0-9]+)?$'</span>
+<span class="vr">RE_HEX</span><span class="op">=</span><span class="st">'^(0[xX])?[0-9a-fA-F]+$'</span>
+
+<span class="vr">RE_IPV4</span><span class="op">=</span><span class="st">'^([0-9]{1,3}\.){3}[0-9]{1,3}$'</span>
+<span class="vr">RE_IPV6</span><span class="op">=</span><span class="st">'^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$'</span>
+<span class="vr">RE_CIDR</span><span class="op">=</span><span class="st">'^([0-9]{1,3}\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'</span>
+<span class="vr">RE_MAC</span><span class="op">=</span><span class="st">'^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$'</span>
+
+<span class="vr">RE_EMAIL</span><span class="op">=</span><span class="st">'^[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}$'</span>
+<span class="vr">RE_URL</span><span class="op">=</span><span class="st">'^https?://[[:alnum:]._~:/?#\[\]@!$&amp;()*+,;=%-]+'</span>
+<span class="vr">RE_HOSTNAME</span><span class="op">=</span><span class="st">'^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'</span>
+
+<span class="vr">RE_ISO_DATE</span><span class="op">=</span><span class="st">'^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$'</span>
+<span class="vr">RE_TIME_24</span><span class="op">=</span><span class="st">'^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$'</span>
+<span class="vr">RE_SEMVER</span><span class="op">=</span><span class="st">'^[0-9]+\.[0-9]+\.[0-9]+(-[[:alnum:].-]+)?(\+[[:alnum:].-]+)?$'</span>
+
+<span class="vr">RE_SLUG</span><span class="op">=</span><span class="st">'^[a-z0-9]+(-[a-z0-9]+)*$'</span>
+<span class="vr">RE_HEX_COLOUR</span><span class="op">=</span><span class="st">'^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$'</span>
+<span class="vr">RE_UUID</span><span class="op">=</span><span class="st">'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'</span>
+<span class="vr">RE_BASE64</span><span class="op">=</span><span class="st">'^[A-Za-z0-9+/]+={0,2}$'</span>
+
+<span class="cm"># ── Validation functions ──────────────────────────────────────────────────</span>
+<span class="cm"># Each returns 0 (true) if valid, 1 (false) if not</span>
+
+<span class="fn">is_integer</span><span class="op">()</span>    <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_INTEGER</span>   <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_pos_int</span><span class="op">()</span>    <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_POS_INT</span>   <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_float</span><span class="op">()</span>      <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_FLOAT</span>     <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_email</span><span class="op">()</span>      <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_EMAIL</span>     <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_url</span><span class="op">()</span>        <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_URL</span>       <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_hostname</span><span class="op">()</span>   <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_HOSTNAME</span>  <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_iso_date</span><span class="op">()</span>   <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_ISO_DATE</span> <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_semver</span><span class="op">()</span>     <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_SEMVER</span>    <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_uuid</span><span class="op">()</span>       <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_UUID</span>      <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_hex_colour</span><span class="op">()</span> <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_HEX_COLOUR</span> <span class="op">]]</span>; <span class="op">}</span>
+<span class="fn">is_slug</span><span class="op">()</span>       <span class="op">{</span> <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_SLUG</span>      <span class="op">]]</span>; <span class="op">}</span>
+
+<span class="fn">is_ipv4</span><span class="op">()</span> <span class="op">{</span>
+    <span class="op">[[</span> <span class="st">"$1"</span> <span class="op">=~</span> <span class="vr">$RE_IPV4</span> <span class="op">]]</span> <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">local</span> <span class="vr">IFS</span><span class="op">=</span><span class="st">'.'</span> <span class="vr">octet</span>
+    <span class="kw">for</span> <span class="vr">octet</span> <span class="kw">in</span> <span class="vr">$1</span>; <span class="kw">do</span>
+        <span class="op">((</span> <span class="vr">octet</span> <span class="op">&gt;=</span> <span class="nu">0</span> <span class="op">&amp;&amp;</span> <span class="vr">octet</span> <span class="op">&lt;=</span> <span class="nu">255</span> <span class="op">))</span> <span class="op">||</span> <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">done</span>
+<span class="op">}</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>A Regex Test Harness</h2>
+
+<p>Every pattern in your library should have tests. This harness lets you declare positive cases (must match) and negative cases (must not match), then run them all and report failures — just like a unit test suite, but for regex.</p>
+
+<pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="cm"># test_regex.sh — regex unit test harness</span>
+<span class="kw">source</span> <span class="pth">regex_lib.sh</span>
+
+<span class="vr">PASS</span><span class="op">=</span><span class="nu">0</span>; <span class="vr">FAIL</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="fn">assert_match</span><span class="op">()</span> <span class="op">{</span>       <span class="cm"># assert_match "label" pattern "value"</span>
+    <span class="kw">local</span> <span class="vr">label</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">re</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">val</span><span class="op">=</span><span class="st">"$3"</span>
+    <span class="kw">if</span> <span class="op">[[</span> <span class="st">"$val"</span> <span class="op">=~</span> <span class="vr">$re</span> <span class="op">]]</span>; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">"  \e[32mPASS\e[0m  %s: '%s'\n"</span> <span class="st">"$label"</span> <span class="st">"$val"</span>
+        <span class="op">((</span> <span class="vr">PASS</span><span class="op">++</span> <span class="op">))</span>
+    <span class="kw">else</span>
+        <span class="cmd">printf</span> <span class="st">"  \e[31mFAIL\e[0m  %s: '%s' should match /%s/\n"</span> \
+               <span class="st">"$label"</span> <span class="st">"$val"</span> <span class="st">"$re"</span>
+        <span class="op">((</span> <span class="vr">FAIL</span><span class="op">++</span> <span class="op">))</span>
+    <span class="kw">fi</span>
+<span class="op">}</span>
+
+<span class="fn">assert_no_match</span><span class="op">()</span> <span class="op">{</span>   <span class="cm"># assert_no_match "label" pattern "value"</span>
+    <span class="kw">local</span> <span class="vr">label</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">re</span><span class="op">=</span><span class="st">"$2"</span> <span class="vr">val</span><span class="op">=</span><span class="st">"$3"</span>
+    <span class="kw">if</span> <span class="op">!</span> <span class="op">[[</span> <span class="st">"$val"</span> <span class="op">=~</span> <span class="vr">$re</span> <span class="op">]]</span>; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">"  \e[32mPASS\e[0m  %s: '%s' correctly rejected\n"</span> <span class="st">"$label"</span> <span class="st">"$val"</span>
+        <span class="op">((</span> <span class="vr">PASS</span><span class="op">++</span> <span class="op">))</span>
+    <span class="kw">else</span>
+        <span class="cmd">printf</span> <span class="st">"  \e[31mFAIL\e[0m  %s: '%s' should NOT match /%s/\n"</span> \
+               <span class="st">"$label"</span> <span class="st">"$val"</span> <span class="st">"$re"</span>
+        <span class="op">((</span> <span class="vr">FAIL</span><span class="op">++</span> <span class="op">))</span>
+    <span class="kw">fi</span>
+<span class="op">}</span>
+
+<span class="cm"># ── Tests ─────────────────────────────────────────────────────────────────</span>
+<span class="cmd">echo</span> <span class="st">"=== RE_ISO_DATE ==="</span>
+<span class="fn">assert_match</span>    <span class="st">"valid date"</span>         <span class="st">"$RE_ISO_DATE"</span>  <span class="st">"2026-06-11"</span>
+<span class="fn">assert_match</span>    <span class="st">"leap day"</span>           <span class="st">"$RE_ISO_DATE"</span>  <span class="st">"2024-02-29"</span>
+<span class="fn">assert_no_match</span> <span class="st">"month 13"</span>          <span class="st">"$RE_ISO_DATE"</span>  <span class="st">"2026-13-01"</span>
+<span class="fn">assert_no_match</span> <span class="st">"day 00"</span>            <span class="st">"$RE_ISO_DATE"</span>  <span class="st">"2026-06-00"</span>
+<span class="fn">assert_no_match</span> <span class="st">"US format"</span>         <span class="st">"$RE_ISO_DATE"</span>  <span class="st">"06/11/2026"</span>
+<span class="fn">assert_no_match</span> <span class="st">"partial"</span>           <span class="st">"$RE_ISO_DATE"</span>  <span class="st">"2026-06"</span>
+
+<span class="cmd">echo</span> <span class="st">"=== RE_EMAIL ==="</span>
+<span class="fn">assert_match</span>    <span class="st">"simple"</span>             <span class="st">"$RE_EMAIL"</span>     <span class="st">"user@example.com"</span>
+<span class="fn">assert_match</span>    <span class="st">"plus tag"</span>           <span class="st">"$RE_EMAIL"</span>     <span class="st">"user+tag@example.co.uk"</span>
+<span class="fn">assert_no_match</span> <span class="st">"no @"</span>              <span class="st">"$RE_EMAIL"</span>     <span class="st">"userexample.com"</span>
+<span class="fn">assert_no_match</span> <span class="st">"no TLD"</span>            <span class="st">"$RE_EMAIL"</span>     <span class="st">"user@example"</span>
+<span class="fn">assert_no_match</span> <span class="st">"spaces"</span>            <span class="st">"$RE_EMAIL"</span>     <span class="st">"user @example.com"</span>
+
+<span class="cmd">echo</span> <span class="st">"=== is_ipv4 (with octet check) ==="</span>
+<span class="fn">assert_match</span>    <span class="st">"valid"</span>              <span class="st">"$RE_IPV4"</span>      <span class="st">"192.168.1.100"</span>
+<span class="fn">assert_no_match</span> <span class="st">"octet 256 (regex)"</span> <span class="st">"$RE_IPV4"</span>      <span class="st">"999.1.1.1"</span>
+
+<span class="cm"># Summary</span>
+<span class="cmd">echo</span>
+<span class="cmd">printf</span> <span class="st">"Results: \e[32m%d passed\e[0m  \e[31m%d failed\e[0m\n"</span> <span class="st">"$PASS"</span> <span class="st">"$FAIL"</span>
+<span class="op">((</span> <span class="vr">FAIL</span> <span class="op">==</span> <span class="nu">0</span> <span class="op">))</span>   <span class="cm"># exit 0 if all passed, 1 if any failed</span></pre>
+
+<p>Sample output:</p>
+<pre><span class="out">=== RE_ISO_DATE ===</span>
+<span class="th-pass">  PASS  valid date: '2026-06-11'</span>
+<span class="th-pass">  PASS  leap day: '2024-02-29'</span>
+<span class="th-pass">  PASS  month 13 correctly rejected</span>
+<span class="th-pass">  PASS  day 00 correctly rejected</span>
+<span class="th-pass">  PASS  US format correctly rejected</span>
+<span class="th-pass">  PASS  partial correctly rejected</span>
+<span class="out">=== RE_EMAIL ===</span>
+<span class="th-pass">  PASS  simple: 'user@example.com'</span>
+<span class="th-pass">  PASS  plus tag: 'user+tag@example.co.uk'</span>
+<span class="th-pass">  PASS  no @ correctly rejected</span>
+<span class="th-pass">  PASS  no TLD correctly rejected</span>
+<span class="th-fail">  FAIL  spaces: 'user @example.com' should NOT match /^[[:alnum:]...</span>
+
+<span class="out">Results: 10 passed  1 failed</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Tool Picker — Choosing the Right Tool</h2>
+
+<div class="picker">
+  <div class="pk-q">Do you need to match/filter lines from a file or stream?</div>
+  <div class="pk-a">→ yes, single pattern</div>
+  <div class="pk-t">grep 'pattern' file</div>
+  <div class="pk-a">→ yes, ERE syntax (|, +, ?)</div>
+  <div class="pk-t">grep -E 'pat1|pat2' file</div>
+  <div class="pk-a">→ yes, extract only the matched text</div>
+  <div class="pk-t">grep -oE 'pattern' file</div>
+  <div class="pk-a">→ yes, PCRE (lookahead, lazy, named groups)</div>
+  <div class="pk-t">grep -P 'pattern' file   — or —   perl -ne 'print if /pat/'</div>
+
+  <div class="pk-q" style="margin-top:0.8em;">Do you need to transform / substitute text?</div>
+  <div class="pk-a">→ simple find-and-replace on every line</div>
+  <div class="pk-t">sed 's/old/new/g' file</div>
+  <div class="pk-a">→ ERE with capture groups, case modifiers</div>
+  <div class="pk-t">sed -E 's/(group)/\U\1/g' file</div>
+  <div class="pk-a">→ PCRE substitution (lazy, lookahead in pattern)</div>
+  <div class="pk-t">perl -pe 's/pattern/replacement/g' file</div>
+
+  <div class="pk-q" style="margin-top:0.8em;">Do you need to process fields, aggregate, or do arithmetic?</div>
+  <div class="pk-a">→ split on delimiter, match per-field</div>
+  <div class="pk-t">awk -F, '$3 ~ /pattern/ { print $1 }'</div>
+  <div class="pk-a">→ count, sum, group matches</div>
+  <div class="pk-t">awk '/ERROR/ { count++ } END { print count }'</div>
+
+  <div class="pk-q" style="margin-top:0.8em;">Are you validating a single variable inside a script?</div>
+  <div class="pk-a">→ no subprocess needed</div>
+  <div class="pk-t">[[ "$var" =~ ^pattern$ ]]</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Real Pipeline Scripts</h2>
+
+<h3>Script 1 — Log report: errors by hour</h3>
+<pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="cm"># hourly_errors.sh — count ERROR lines per hour from an app log</span>
+<span class="cm"># Input format: "2026-06-11 14:32:00 ERROR message..."</span>
+
+<span class="cmd">awk</span> <span class="st">'$3 == "ERROR" {
+    match($2, /^([0-9]{2})/, t)
+    hours[t[1]]++
+}
+END {
+    print "Hour  Errors"
+    print "----  ------"
+    for (h = 0; h < 24; h++) {
+        if (h in hours)
+            printf "%02d:00  %d\n", h, hours[h]
+    }
+}'</span> <span class="st">"${1:-app.log}"</span></pre>
+
+<h3>Script 2 — Deploy guard: validate all inputs before proceeding</h3>
+<pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="cm"># deploy.sh — validate arguments before running deployment</span>
+<span class="kw">source</span> <span class="pth">regex_lib.sh</span>
+
+<span class="fn">die</span><span class="op">()</span> <span class="op">{</span> <span class="cmd">echo</span> <span class="st">"ERROR: $*"</span> <span class="op">&gt;&amp;2</span>; <span class="kw">exit</span> <span class="nu">1</span>; <span class="op">}</span>
+
+<span class="vr">VERSION</span><span class="op">=</span><span class="st">"$1"</span>
+<span class="vr">HOST</span><span class="op">=</span><span class="st">"$2"</span>
+<span class="vr">PORT</span><span class="op">=</span><span class="st">"${3:-8080}"</span>
+
+<span class="fn">is_semver</span>  <span class="st">"$VERSION"</span> <span class="op">||</span> <span class="fn">die</span> <span class="st">"'$VERSION' is not a valid version (need MAJOR.MINOR.PATCH)"</span>
+<span class="fn">is_hostname</span> <span class="st">"$HOST"</span>   <span class="op">||</span> <span class="fn">is_ipv4</span> <span class="st">"$HOST"</span> <span class="op">||</span> <span class="fn">die</span> <span class="st">"'$HOST' is not a valid host"</span>
+<span class="fn">is_pos_int</span> <span class="st">"$PORT"</span>   <span class="op">||</span> <span class="fn">die</span> <span class="st">"'$PORT' is not a valid port"</span>
+<span class="op">((</span> <span class="vr">PORT</span> <span class="op">&lt;=</span> <span class="nu">65535</span> <span class="op">))</span>  <span class="op">||</span> <span class="fn">die</span> <span class="st">"Port $PORT exceeds 65535"</span>
+
+<span class="cmd">echo</span> <span class="st">"Deploying v$VERSION to $HOST:$PORT ..."</span>
+<span class="cm"># ... rest of deployment</span></pre>
+
+<h3>Script 3 — Config auditor: scan for insecure settings</h3>
+<pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="cm"># audit_config.sh — grep multiple files for security red flags</span>
+
+<span class="vr">TARGET_DIR</span><span class="op">=</span><span class="st">"${1:-/etc}"</span>
+<span class="vr">ISSUES</span><span class="op">=</span><span class="nu">0</span>
+
+<span class="fn">check</span><span class="op">()</span> <span class="op">{</span>
+    <span class="kw">local</span> <span class="vr">label</span><span class="op">=</span><span class="st">"$1"</span> <span class="vr">pattern</span><span class="op">=</span><span class="st">"$2"</span>
+    <span class="kw">shift</span> <span class="nu">2</span>
+    <span class="kw">local</span> <span class="vr">hits</span>
+    <span class="vr">hits</span><span class="op">=</span><span class="op">$(</span><span class="cmd">grep</span> <span class="fl">-rnE</span> <span class="fl">--include</span><span class="op">=</span><span class="st">'*.conf'</span> <span class="fl">--include</span><span class="op">=</span><span class="st">'*.cfg'</span> \
+              <span class="st">"$pattern"</span> <span class="st">"$@"</span> <span class="nu">2</span><span class="op">&gt;</span><span class="pth">/dev/null</span><span class="op">)</span>
+    <span class="kw">if</span> <span class="op">[[</span> <span class="fl">-n</span> <span class="st">"$hits"</span> <span class="op">]]</span>; <span class="kw">then</span>
+        <span class="cmd">printf</span> <span class="st">"\e[33mWARN\e[0m  %s\n%s\n\n"</span> <span class="st">"$label"</span> <span class="st">"$hits"</span>
+        <span class="op">((</span> <span class="vr">ISSUES</span><span class="op">++</span> <span class="op">))</span>
+    <span class="kw">fi</span>
+<span class="op">}</span>
+
+<span class="fn">check</span> <span class="st">"PermitRootLogin enabled"</span>     <span class="st">'^PermitRootLogin\s+yes'</span>        <span class="st">"$TARGET_DIR"</span>
+<span class="fn">check</span> <span class="st">"PasswordAuthentication on"</span>   <span class="st">'^PasswordAuthentication\s+yes'</span> <span class="st">"$TARGET_DIR"</span>
+<span class="fn">check</span> <span class="st">"Plaintext password in config"</span> <span class="st">'(?i)password\s*=\s*\S+'</span>        <span class="st">"$TARGET_DIR"</span>
+<span class="fn">check</span> <span class="st">"Hardcoded API key"</span>            <span class="st">'(?i)api.?key\s*=\s*["\x27]\S+'</span>  <span class="st">"$TARGET_DIR"</span>
+
+<span class="op">((</span> <span class="vr">ISSUES</span> <span class="op">==</span> <span class="nu">0</span> <span class="op">))</span> <span class="op">&amp;&amp;</span> <span class="cmd">echo</span> <span class="st">"No issues found."</span>
+<span class="kw">exit</span> <span class="op">$((</span> <span class="vr">ISSUES</span> <span class="op">&gt;</span> <span class="nu">0</span> <span class="op">))</span></pre>
+
+<h3>Script 4 — Access log analyser</h3>
+<pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="cm"># access_summary.sh — parse nginx/apache combined log format</span>
+<span class="cm"># Format: IP - - [date] "METHOD /path HTTP/x.x" STATUS bytes</span>
+
+<span class="cmd">awk</span> <span class="st">'{
+    # Extract status code (field 9) and request path
+    status = $9
+    match($7, /^\/[^?]*/, m)
+    path = m[0]
+
+    status_count[status]++
+    if (status ~ /^[45]/) {
+        errors[path]++
+    }
+    bytes += $10
+}
+END {
+    print "=== Status codes ==="
+    for (s in status_count)
+        printf "  %s  %d\n", s, status_count[s]
+
+    print "\n=== Top error paths ==="
+    for (p in errors)
+        printf "  %d  %s\n", errors[p], p
+    | "sort -rn | head -10"
+
+    printf "\n=== Total bytes: %.1f MB ===\n", bytes / 1024 / 1024
+}'</span> <span class="st">"${1:-/var/log/nginx/access.log}"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Complete Course Reference Card</h2>
+
+<div class="ref-grid">
+  <div class="ref-card">
+    <h5>Anchors</h5>
+    <div class="rr"><span class="rr-k">^</span><span class="rr-d">Start of line</span></div>
+    <div class="rr"><span class="rr-k">$</span><span class="rr-d">End of line</span></div>
+    <div class="rr"><span class="rr-k">\b</span><span class="rr-d">Word boundary (GNU)</span></div>
+    <div class="rr"><span class="rr-k">\&lt; \&gt;</span><span class="rr-d">Word boundary (POSIX)</span></div>
+    <div class="rr"><span class="rr-k">^...$</span><span class="rr-d">Whole-line / whole-string match</span></div>
+  </div>
+  <div class="ref-card">
+    <h5>Quantifiers</h5>
+    <div class="rr"><span class="rr-k">*   +   ?</span><span class="rr-d">0+, 1+, 0-or-1 (greedy)</span></div>
+    <div class="rr"><span class="rr-k">{n}  {n,}  {n,m}</span><span class="rr-d">Exact, at-least, between</span></div>
+    <div class="rr"><span class="rr-k">*?  +?  ??</span><span class="rr-d">Lazy (PCRE only)</span></div>
+    <div class="rr"><span class="rr-k">BRE: \+  \?</span><span class="rr-d">ERE + and ? in BRE context</span></div>
+  </div>
+  <div class="ref-card">
+    <h5>Character Classes</h5>
+    <div class="rr"><span class="rr-k">[abc]</span><span class="rr-d">Literal set</span></div>
+    <div class="rr"><span class="rr-k">[a-z]</span><span class="rr-d">Range</span></div>
+    <div class="rr"><span class="rr-k">[^abc]</span><span class="rr-d">Negated set</span></div>
+    <div class="rr"><span class="rr-k">[:alpha:] [:digit:]</span><span class="rr-d">POSIX classes (inside [])</span></div>
+    <div class="rr"><span class="rr-k">\w  \d  \s</span><span class="rr-d">GNU/PCRE shorthands</span></div>
+    <div class="rr"><span class="rr-k">.</span><span class="rr-d">Any char except newline</span></div>
+  </div>
+  <div class="ref-card">
+    <h5>Groups and Alternation</h5>
+    <div class="rr"><span class="rr-k">(...)</span><span class="rr-d">Capturing group — ERE/PCRE</span></div>
+    <div class="rr"><span class="rr-k">\(...\)</span><span class="rr-d">Capturing group — BRE</span></div>
+    <div class="rr"><span class="rr-k">(?:...)</span><span class="rr-d">Non-capturing group — PCRE</span></div>
+    <div class="rr"><span class="rr-k">(?P&lt;n&gt;...)</span><span class="rr-d">Named group — PCRE</span></div>
+    <div class="rr"><span class="rr-k">|  vs  \|</span><span class="rr-d">Alternation ERE / BRE</span></div>
+  </div>
+  <div class="ref-card">
+    <h5>PCRE Assertions</h5>
+    <div class="rr"><span class="rr-k">(?=pat)</span><span class="rr-d">Positive lookahead</span></div>
+    <div class="rr"><span class="rr-k">(?!pat)</span><span class="rr-d">Negative lookahead</span></div>
+    <div class="rr"><span class="rr-k">(?&lt;=pat)</span><span class="rr-d">Positive lookbehind</span></div>
+    <div class="rr"><span class="rr-k">(?&lt;!pat)</span><span class="rr-d">Negative lookbehind</span></div>
+    <div class="rr"><span class="rr-k">(?&gt;...)</span><span class="rr-d">Atomic group — no backtrack</span></div>
+  </div>
+  <div class="ref-card">
+    <h5>Back-references</h5>
+    <div class="rr"><span class="rr-k">\1 … \9</span><span class="rr-d">Group back-ref in pattern or replacement</span></div>
+    <div class="rr"><span class="rr-k">&amp;</span><span class="rr-d">Whole match in sed/awk replacement</span></div>
+    <div class="rr"><span class="rr-k">\u \U \l \L \E</span><span class="rr-d">Case modifiers in GNU sed replacement</span></div>
+    <div class="rr"><span class="rr-k">BASH_REMATCH[N]</span><span class="rr-d">Capture group N after [[ =~ ]]</span></div>
+  </div>
+  <div class="ref-card">
+    <h5>grep Flags</h5>
+    <div class="rr"><span class="rr-k">-E  -F  -P</span><span class="rr-d">ERE / fixed-string / PCRE mode</span></div>
+    <div class="rr"><span class="rr-k">-o  -n  -c</span><span class="rr-d">Only match / line nums / count</span></div>
+    <div class="rr"><span class="rr-k">-l  -L  -v</span><span class="rr-d">Files with / without / invert</span></div>
+    <div class="rr"><span class="rr-k">-r  -i  -w</span><span class="rr-d">Recursive / case-insensitive / word</span></div>
+    <div class="rr"><span class="rr-k">-q  -A  -B  -C</span><span class="rr-d">Quiet / after / before / context</span></div>
+  </div>
+  <div class="ref-card">
+    <h5>sed / awk / Bash</h5>
+    <div class="rr"><span class="rr-k">sed -E 's/pat/rep/g'</span><span class="rr-d">ERE substitution, all occurrences</span></div>
+    <div class="rr"><span class="rr-k">sed -i.bak '...'</span><span class="rr-d">In-place edit with backup</span></div>
+    <div class="rr"><span class="rr-k">awk '$N ~ /pat/'</span><span class="rr-d">Field N matches regex</span></div>
+    <div class="rr"><span class="rr-k">awk 'gsub(/p/,"r")'</span><span class="rr-d">Replace all matches in $0</span></div>
+    <div class="rr"><span class="rr-k">[[ "$v" =~ ^pat$ ]]</span><span class="rr-d">Native Bash ERE test, no subprocess</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Flavour Comparison — The One Table</h2>
+
+<table>
+  <tr><th>Feature</th><th>BRE</th><th>ERE</th><th>PCRE</th></tr>
+  <tr><td>One or more</td><td><code>\+</code></td><td><code>+</code></td><td><code>+</code></td></tr>
+  <tr><td>Zero or one</td><td><code>\?</code></td><td><code>?</code></td><td><code>?</code></td></tr>
+  <tr><td>Grouping</td><td><code>\(...\)</code></td><td><code>(...)</code></td><td><code>(...)</code></td></tr>
+  <tr><td>Alternation</td><td><code>\|</code></td><td><code>|</code></td><td><code>|</code></td></tr>
+  <tr><td>Intervals <code>{n,m}</code></td><td><code>\{n,m\}</code></td><td><code>{n,m}</code></td><td><code>{n,m}</code></td></tr>
+  <tr><td>Lazy quantifiers</td><td class="no">No</td><td class="no">No</td><td><code>*? +? ??</code></td></tr>
+  <tr><td>Non-capturing group</td><td class="no">No</td><td class="no">No</td><td><code>(?:...)</code></td></tr>
+  <tr><td>Lookahead / Lookbehind</td><td class="no">No</td><td class="no">No</td><td><code>(?=) (?&lt;=)</code></td></tr>
+  <tr><td>Named groups</td><td class="no">No</td><td class="no">No</td><td><code>(?P&lt;n&gt;...)</code></td></tr>
+  <tr><td>Tools (typical)</td><td>grep, sed (default)</td><td>grep -E, sed -E, awk</td><td>grep -P, perl</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Chapter Index</h2>
+
+<div class="ch-index">
+  <div class="ch-row"><span class="ch-num">01</span><span class="ch-title">What Are Regular Expressions — engines, flavours, first patterns</span></div>
+  <div class="ch-row"><span class="ch-num">02</span><span class="ch-title">Literals, the Dot, and Escaping — shell quoting, grep -F</span></div>
+  <div class="ch-row"><span class="ch-num">03</span><span class="ch-title">Anchors — ^, $, \b, \&lt;\&gt;, whole-line matching</span></div>
+  <div class="ch-row"><span class="ch-num">04</span><span class="ch-title">Character Classes — ranges, POSIX, \w \d \s shorthands</span></div>
+  <div class="ch-row"><span class="ch-num">05</span><span class="ch-title">Quantifiers — *, +, ?, {n,m}, greedy rules, ERE vs BRE</span></div>
+  <div class="ch-row"><span class="ch-num">06</span><span class="ch-title">Groups, Alternation, Back-references — BASH_REMATCH, &amp;, \1–\9</span></div>
+  <div class="ch-row"><span class="ch-num">07</span><span class="ch-title">grep and egrep in Depth — all flags, -o, -F, exit codes, pipelines</span></div>
+  <div class="ch-row"><span class="ch-num">08</span><span class="ch-title">sed and Regex — s flags, case modifiers, address targeting</span></div>
+  <div class="ch-row"><span class="ch-num">09</span><span class="ch-title">Regex in awk — ~, !~, match(), gsub(), gensub(), ERE</span></div>
+  <div class="ch-row"><span class="ch-num">10</span><span class="ch-title">Bash [[ =~ ]] — BASH_REMATCH, quoting rules, validation library</span></div>
+  <div class="ch-row"><span class="ch-num">11</span><span class="ch-title">PCRE — lookahead, lookbehind, lazy, named groups, perl -ne</span></div>
+  <div class="ch-row"><span class="ch-num">12</span><span class="ch-title">Your Toolkit — pattern library, test harness, real pipeline scripts</span></div>
+</div>
+
+<div class="badge">
+  <span class="badge-title">Regular Expressions in Bash — Complete</span>
+  <span class="badge-sub">12 chapters · grep · sed · awk · [[ =~ ]] · PCRE</span>
+  <span class="badge-topics">BRE · ERE · PCRE · anchors · quantifiers · character classes · groups · back-references · lookahead · lookbehind · lazy matching · named groups · BASH_REMATCH · validation library · test harness</span>
+</div>
+
+</div>

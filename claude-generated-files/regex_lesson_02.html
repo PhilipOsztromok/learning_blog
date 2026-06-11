@@ -1,0 +1,440 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 210px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  /* match anatomy diagram */
+  .match-anatomy {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace;
+    font-size: 0.92rem; line-height: 2.2;
+  }
+  .match-anatomy .ma-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em; display: block; }
+  .ma-input  { color: #c9d8ff; }
+  .ma-lit    { background: #2a3a1a; color: #85e89d; border-radius: 2px; padding: 0 0.1em; }
+  .ma-dot    { background: #1a2a3a; color: #79b8ff; border-radius: 2px; padding: 0 0.1em; }
+  .ma-none   { color: #5a6a8a; }
+  /* two-col demo grid */
+  .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75em; margin: 1em 0; }
+  .demo-box {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.7em 1em; font-family: 'Consolas', monospace; font-size: 0.87rem;
+  }
+  .demo-box .db-hdr { color: #4f8ef7; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4em; display: block; }
+  .demo-box .db-pat  { color: #ffa657; margin-bottom: 0.3em; display: block; }
+  .demo-box .db-yes  { color: #85e89d; }
+  .demo-box .db-no   { color: #f97583; }
+  .demo-box .db-ann  { color: #5a6a8a; font-style: italic; font-size: 0.82rem; }
+  /* escape table status colours */
+  .lx-lesson td.lit  { color: #85e89d; }
+  .lx-lesson td.sp   { color: #ffa657; }
+  .lx-lesson td.esc  { color: #d2a8ff; }
+  /* quoting layers diagram */
+  .quote-layers {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.9em 1.3em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2;
+  }
+  .quote-layers .ql-hdr { color: #5a6a8a; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4em; display: block; }
+  .ql-shell  { color: #f97583; }
+  .ql-regex  { color: #ffa657; }
+  .ql-literal { color: #85e89d; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Regular Expressions in Bash</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 2 — Literals, the Dot, and the Escape</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Literal Characters</h2>
+
+<p>The simplest possible regex is a sequence of <strong>literal characters</strong> — characters that match themselves exactly. Every letter, digit, and most punctuation marks are literals. The engine looks for that exact sequence anywhere in the input line.</p>
+
+<pre><span class="cm"># A literal pattern matches anywhere on the line</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"apple\napplesauce\npineapple\nbanana"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'apple'</span>
+<span class="out">apple</span>
+<span class="out">applesauce</span>
+<span class="out">pineapple</span>
+<span class="cm"># "banana" has no match — 'apple' must appear somewhere on the line</span>
+
+<span class="cm"># Matching is case-sensitive by default</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"Error\nerror\nERROR"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'error'</span>
+<span class="out">error</span>   <span class="cm"># only the exact lowercase version matches</span>
+
+<span class="cm"># Use -i for case-insensitive matching</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"Error\nerror\nERROR"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="fl">-i</span> <span class="st">'error'</span>
+<span class="out">Error</span>
+<span class="out">error</span>
+<span class="out">ERROR</span></pre>
+
+<div class="match-anatomy">
+  <span class="ma-hdr">Pattern: 'cat' — where does it match in each line?</span>
+  <span><span class="ma-lit">cat</span>          → match at position 0</span>
+  <span>con<span class="ma-lit">cat</span>enate  → match at position 3</span>
+  <span>the <span class="ma-lit">cat</span> sat  → match at position 4</span>
+  <span>dog          → <span class="ma-none">no match</span></span>
+</div>
+
+<h3>Digits and spaces are literals too</h3>
+<pre><span class="cm"># Digits match themselves</span>
+<span class="cmd">grep</span> <span class="st">'404'</span> <span class="pth">access.log</span>           <span class="cm"># lines containing "404"</span>
+<span class="cmd">grep</span> <span class="st">'2026'</span> <span class="pth">dates.txt</span>            <span class="cm"># lines containing "2026"</span>
+
+<span class="cm"># A space is a literal space</span>
+<span class="cmd">grep</span> <span class="st">'hello world'</span> <span class="pth">file.txt</span>      <span class="cm"># the space must be there</span>
+
+<span class="cm"># Multiple words: the whole string is one pattern</span>
+<span class="cmd">grep</span> <span class="st">'connection refused'</span> <span class="pth">syslog</span> <span class="cm"># all three words in sequence</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Dot — Matching Any Single Character</h2>
+
+<p>The dot <code>.</code> is the first metacharacter most people learn. It matches <strong>any single character except a newline</strong>. Think of it as a wildcard slot: put a <code>.</code> where any one character is acceptable.</p>
+
+<pre><span class="cm"># . matches exactly one character — any character</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"cat\nbat\nhat\nsat\nat"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'.at'</span>
+<span class="out">cat</span>
+<span class="out">bat</span>
+<span class="out">hat</span>
+<span class="out">sat</span>
+<span class="cm"># "at" alone has no match — . requires exactly one character before "at"</span>
+
+<span class="cm"># Two dots = two characters (any)</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"a1b\naxb\na b\nabc"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'a.b'</span>
+<span class="out">a1b</span>
+<span class="out">axb</span>
+<span class="out">a b</span>
+<span class="cm"># "abc" has no match — . requires exactly one char between a and b</span>
+
+<span class="cm"># .* means "any number of any characters" (very common pattern)</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"start-middle-end\nstart-end\nstart123end"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'start.*end'</span>
+<span class="out">start-middle-end</span>
+<span class="out">start-end</span>
+<span class="out">start123end</span></pre>
+
+<div class="demo-grid">
+  <div class="demo-box">
+    <span class="db-hdr">Pattern: c.t</span>
+    <span class="db-pat">grep 'c.t' &lt;&lt;&lt; "word"</span>
+    <span class="db-yes">cat   ✓   (c + a + t)</span>
+    <span class="db-yes">cut   ✓   (c + u + t)</span>
+    <span class="db-yes">c9t   ✓   (c + 9 + t)</span>
+    <span class="db-yes">c t   ✓   (c + space + t)</span>
+    <span class="db-no">ct    ✗   (nothing between c and t)</span>
+    <span class="db-no">coat  ✗   (two chars between c and t)</span>
+  </div>
+  <div class="demo-box">
+    <span class="db-hdr">Pattern: ....</span>
+    <span class="db-pat">grep -E '^....$' (exactly 4 chars)</span>
+    <span class="db-yes">cats  ✓   (4 characters)</span>
+    <span class="db-yes">1234  ✓   (4 characters)</span>
+    <span class="db-yes">r!@#  ✓   (4 characters)</span>
+    <span class="db-no">cat   ✗   (3 characters)</span>
+    <span class="db-no">hello ✗   (5 characters)</span>
+    <span class="db-ann">^ and $ anchor to full line</span>
+  </div>
+</div>
+
+<h3>The dot trap — matching when you mean a literal period</h3>
+<p>Because <code>.</code> matches any character, it will silently match things you didn't intend. This is the most common regex mistake in Bash scripts:</p>
+
+<pre><span class="cm"># Intended: match version "1.0" specifically</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"v1.0\nv1x0\nv100"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'1.0'</span>
+<span class="out">v1.0</span>
+<span class="out">v1x0</span>   <span class="cm"># oops — . matched x</span>
+
+<span class="cm"># Fix: escape the dot with \</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"v1.0\nv1x0\nv100"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'1\.0'</span>
+<span class="out">v1.0</span>   <span class="cm"># only the real version matches now</span>
+
+<span class="cm"># Real-world example: matching an IP address pattern safely</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"192.168.1.1\n192X168X1X1"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'192\.168\.'</span>
+<span class="out">192.168.1.1</span>   <span class="cm"># only the real IP</span>
+
+<span class="cm"># Matching a file extension: .txt must be a literal dot</span>
+<span class="cmd">ls</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'\.txt$'</span>   <span class="cm"># ends with a literal .txt</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Backslash Escape</h2>
+
+<p>The backslash <code>\</code> removes the special meaning from the character that follows it. After a backslash, a metacharacter becomes a literal. This is called <strong>escaping</strong>.</p>
+
+<table>
+  <tr>
+    <th>You write</th>
+    <th>Matches</th>
+    <th>Example input that matches</th>
+  </tr>
+  <tr><td><code>\.</code></td><td class="lit">A literal dot</td><td><code>file.txt</code>, <code>192.168.1.1</code></td></tr>
+  <tr><td><code>\*</code></td><td class="lit">A literal asterisk</td><td><code>5 * 3</code>, <code>footnote*</code></td></tr>
+  <tr><td><code>\+</code></td><td class="lit">A literal plus sign (in BRE)</td><td><code>a+b</code>, <code>C++</code></td></tr>
+  <tr><td><code>\?</code></td><td class="lit">A literal question mark (in BRE)</td><td><code>why?</code></td></tr>
+  <tr><td><code>\^</code></td><td class="lit">A literal caret</td><td><code>^start</code>, <code>a^b</code></td></tr>
+  <tr><td><code>\$</code></td><td class="lit">A literal dollar sign</td><td><code>$100</code>, <code>$VAR</code></td></tr>
+  <tr><td><code>\[</code></td><td class="lit">A literal opening bracket</td><td><code>[note]</code></td></tr>
+  <tr><td><code>\(</code></td><td class="lit">A literal opening paren (in ERE)</td><td><code>(optional)</code></td></tr>
+  <tr><td><code>\|</code></td><td class="lit">A literal pipe (in ERE)</td><td><code>a|b</code></td></tr>
+  <tr><td><code>\\</code></td><td class="lit">A literal backslash</td><td><code>C:\Users\</code></td></tr>
+  <tr><td><code>\n</code></td><td class="esc">Newline (in GNU tools)</td><td>Embedded newline in pattern space</td></tr>
+  <tr><td><code>\t</code></td><td class="esc">Tab character (in GNU tools)</td><td>Tab-separated data</td></tr>
+</table>
+
+<pre><span class="cm"># Escaping a dollar sign (common in shell scripts)</span>
+<span class="cmd">echo</span> <span class="st">'Price: $99.50'</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'\$[0-9]'</span>
+<span class="out">Price: $99.50</span>
+
+<span class="cm"># Matching a literal asterisk in text</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"5 * 3 = 15\n5 x 3 = 15"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'\*'</span>
+<span class="out">5 * 3 = 15</span>
+
+<span class="cm"># Matching a Windows-style path (literal backslashes)</span>
+<span class="cmd">echo</span> <span class="st">'C:\Users\emuba\file.txt'</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'Users\\emuba'</span>
+<span class="out">C:\Users\emuba\file.txt</span>
+
+<span class="cm"># Matching a literal question mark</span>
+<span class="cmd">echo</span> <span class="fl">-e</span> <span class="st">"Are you sure?\nAre you sure"</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'sure\?$'</span>
+<span class="out">Are you sure?</span>
+<span class="cm"># In BRE: \? is a literal ?  — in ERE: \? means "zero or one"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Double-Escape Problem — Shell Quoting and Regex</h2>
+
+<p>Here is where many Bash users get confused. When you write a regex on the command line, there are <strong>two layers of interpretation</strong>: first the shell processes the quoting, then the regex engine processes what remains.</p>
+
+<div class="quote-layers">
+  <span class="ql-hdr">Two layers: shell first, then regex engine</span>
+  <span>Command you type:  <span class="ql-shell">grep '</span><span class="ql-regex">192\.168</span><span class="ql-shell">'</span> file</span>
+  <span>Shell sees:        <span class="ql-shell">single quotes — passes everything through unchanged</span></span>
+  <span>Regex engine gets: <span class="ql-regex">192\.168</span>  → matches <span class="ql-literal">192.168</span></span>
+  <span>&nbsp;</span>
+  <span>Command you type:  <span class="ql-shell">grep "</span><span class="ql-regex">192\\.168</span><span class="ql-shell">"</span> file</span>
+  <span>Shell sees:        <span class="ql-shell">double quotes — \\ becomes \</span></span>
+  <span>Regex engine gets: <span class="ql-regex">192\.168</span>  → same result</span>
+  <span>&nbsp;</span>
+  <span>Command you type:  <span class="ql-shell">grep "</span><span class="ql-regex">192\.168</span><span class="ql-shell">"</span> file</span>
+  <span>Shell sees:        <span class="ql-shell">double quotes — \. stays as \. (\ not special before .)</span></span>
+  <span>Regex engine gets: <span class="ql-regex">192\.168</span>  → same result (this one usually works)</span>
+</div>
+
+<div class="tip">
+  <strong>Use single quotes for regex patterns.</strong> Single quotes prevent the shell from interpreting <em>anything</em> — no variable expansion, no backslash processing. The pattern reaches the regex engine exactly as written. Only switch to double quotes when you need to expand a shell variable inside the pattern.
+</div>
+
+<pre><span class="cm"># Single quotes: shell passes everything through literally (preferred)</span>
+<span class="cmd">grep</span> <span class="st">'\$[0-9]\+'</span> <span class="pth">file.txt</span>       <span class="cm"># shell does nothing; engine sees \$[0-9]\+</span>
+
+<span class="cm"># Double quotes: shell processes \\ → \ before the engine sees it</span>
+<span class="cmd">grep</span> <span class="st">"\\$[0-9]\\+"</span> <span class="pth">file.txt</span>     <span class="cm"># shell: \\ → \, then \$ → $, then \+ → \+... tricky</span>
+
+<span class="cm"># Double quotes needed when expanding a variable in the pattern</span>
+<span class="vr">TERM</span><span class="op">=</span><span class="st">"error"</span>
+<span class="cmd">grep</span> <span class="st">"<span class="vr">$TERM</span>"</span> <span class="pth">app.log</span>             <span class="cm"># $TERM expands to "error" — double quotes needed</span>
+
+<span class="cm"># Variable in pattern with special chars: escape the variable content</span>
+<span class="vr">TERM</span><span class="op">=</span><span class="st">"v1.0"</span>
+<span class="cm"># BAD: . inside $TERM is treated as regex metachar</span>
+<span class="cmd">grep</span> <span class="st">"<span class="vr">$TERM</span>"</span> <span class="pth">file.txt</span>            <span class="cm"># matches v1x0, v1.0, v100 etc.</span>
+<span class="cm"># BETTER: use grep -F for literal string search</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">"<span class="vr">$TERM</span>"</span> <span class="pth">file.txt</span>         <span class="cm"># -F = fixed string, no regex</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>grep -F — When You Don't Want Regex At All</h2>
+
+<p>Sometimes you have a search term that contains special characters and you want to match it <em>literally</em> — no regex processing at all. The <code>-F</code> flag (fixed string) tells <code>grep</code> to treat the entire pattern as plain text.</p>
+
+<pre><span class="cm"># Searching for a URL — slashes, dots, question marks all literal</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">'https://example.com/api?v=2'</span> <span class="pth">access.log</span>
+
+<span class="cm"># Searching for a literal asterisk or plus sign</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">'a+b=c'</span> <span class="pth">math.txt</span>
+
+<span class="cm"># Searching for a pattern that came from a variable (safest approach)</span>
+<span class="vr">SEARCH</span><span class="op">=</span><span class="st">"$100.00"</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">"<span class="vr">$SEARCH</span>"</span> <span class="pth">invoice.txt</span>    <span class="cm"># $ and . treated as literals</span>
+
+<span class="cm"># -F is also significantly faster on large files</span>
+<span class="cm"># because no regex engine compilation is needed</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">"Connection refused"</span> <span class="pth">/var/log/syslog</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Case Sensitivity</h2>
+
+<p>Regex is case-sensitive by default in all Bash tools. There are two ways to match regardless of case:</p>
+
+<pre><span class="cm"># -i flag: case-insensitive for grep</span>
+<span class="cmd">grep</span> <span class="fl">-i</span> <span class="st">'error'</span> <span class="pth">app.log</span>          <span class="cm"># matches Error, ERROR, error, ErRoR</span>
+
+<span class="cm"># -i flag: case-insensitive for sed (GNU sed)</span>
+<span class="cmd">sed</span> <span class="st">'s/error/FOUND/Ig'</span> <span class="pth">app.log</span>   <span class="cm"># I flag on s command</span>
+
+<span class="cm"># In regex: use a character class to be explicit about what you allow</span>
+<span class="cmd">grep</span> <span class="st">'[Ee]rror'</span> <span class="pth">app.log</span>          <span class="cm"># matches Error or error (not eRror)</span>
+<span class="cmd">grep</span> <span class="st">'[Ee][Rr][Rr][Oo][Rr]'</span> <span class="pth">app.log</span>  <span class="cm"># matches any capitalisation</span>
+
+<span class="cm"># In [[ =~ ]]: no -i flag — use character classes</span>
+<span class="vr">word</span><span class="op">=</span><span class="st">"ERROR"</span>
+<span class="op">[[</span> <span class="st">"$word"</span> <span class="op">=~</span> <span class="rx">[Ee][Rr][Rr][Oo][Rr]</span> <span class="op">]]</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"matched"</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Practical Patterns — Putting It Together</h2>
+
+<h3>Matching version numbers</h3>
+<pre><span class="cm"># Match "1.2.3" style version strings — escape all dots</span>
+<span class="cmd">grep</span> <span class="st">'[0-9]\+\.[0-9]\+\.[0-9]\+'</span> <span class="pth">changelog.txt</span>        <span class="cm"># BRE</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]+\.[0-9]+\.[0-9]+'</span> <span class="pth">changelog.txt</span>        <span class="cm"># ERE</span>
+
+<span class="cm"># Match a specific version literally</span>
+<span class="cmd">grep</span> <span class="fl">-F</span> <span class="st">'2.14.1'</span> <span class="pth">changelog.txt</span></pre>
+
+<h3>Matching file extensions</h3>
+<pre><span class="cm"># Files ending in .log (literal dot, then log, then end of line)</span>
+<span class="cmd">ls</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'\.log$'</span>
+
+<span class="cm"># Files ending in .tar.gz (two literal dots)</span>
+<span class="cmd">ls</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'\.tar\.gz$'</span>
+
+<span class="cm"># Any hidden file (starts with a dot)</span>
+<span class="cmd">ls</span> <span class="fl">-a</span> <span class="op">|</span> <span class="cmd">grep</span> <span class="st">'^\..'</span>   <span class="cm"># ^ then literal dot then any char (at least 2 char name)</span></pre>
+
+<h3>Matching decimal numbers</h3>
+<pre><span class="cm"># Match a decimal number like 3.14, 99.99, 0.5</span>
+<span class="cmd">grep</span> <span class="fl">-E</span> <span class="st">'[0-9]+\.[0-9]+'</span> <span class="pth">data.txt</span>
+
+<span class="cm"># Match in a sed substitution</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/[0-9]+\.[0-9]+/PRICE/g'</span> <span class="pth">invoice.txt</span>
+
+<span class="cm"># Test in [[ =~ ]] — is this string a decimal number?</span>
+<span class="vr">val</span><span class="op">=</span><span class="st">"3.14"</span>
+<span class="op">[[</span> <span class="st">"$val"</span> <span class="op">=~</span> <span class="rx">^[0-9]+\.[0-9]+$</span> <span class="op">]]</span> <span class="op">&&</span> <span class="cmd">echo</span> <span class="st">"is decimal"</span>
+<span class="out">is decimal</span></pre>
+
+<h3>Common traps and fixes</h3>
+<table>
+  <tr>
+    <th>Trap</th>
+    <th>Wrong pattern</th>
+    <th>Fixed pattern</th>
+    <th>Why</th>
+  </tr>
+  <tr>
+    <td>Unescaped dot in version</td>
+    <td><code>grep '2.0'</code></td>
+    <td><code>grep '2\.0'</code></td>
+    <td><code>.</code> matches any char</td>
+  </tr>
+  <tr>
+    <td>Dot in domain name</td>
+    <td><code>grep 'example.com'</code></td>
+    <td><code>grep 'example\.com'</code></td>
+    <td>Matches <code>exampleXcom</code> too</td>
+  </tr>
+  <tr>
+    <td>Dollar sign in price</td>
+    <td><code>grep '$99'</code></td>
+    <td><code>grep '\$99'</code> or <code>grep -F '$99'</code></td>
+    <td><code>$</code> is an anchor</td>
+  </tr>
+  <tr>
+    <td>Asterisk in maths expression</td>
+    <td><code>grep '3*4'</code></td>
+    <td><code>grep '3\*4'</code> or <code>grep -F '3*4'</code></td>
+    <td><code>*</code> is a quantifier</td>
+  </tr>
+  <tr>
+    <td>Dot in file extension check</td>
+    <td><code>grep '.txt$'</code></td>
+    <td><code>grep '\.txt$'</code></td>
+    <td>Matches <code>atxt</code> <code>1txt</code> etc.</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 2</h2>
+
+<div class="cmd-ref">
+  <h4>Literals and the Dot</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">a  b  c  0  9  space</span>
+    <span class="cmd-desc">All letters, digits, and spaces are literals — match themselves</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">.</span>
+    <span class="cmd-desc">Matches any single character except newline</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">\.</span>
+    <span class="cmd-desc">Matches a literal dot (escaped metacharacter)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">.*</span>
+    <span class="cmd-desc">Matches zero or more of any character (greedy)</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Escaping and Quoting</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">\</span>
+    <span class="cmd-desc">Escape — removes special meaning from the next character</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">'pattern'</span>
+    <span class="cmd-desc">Single quotes — shell passes pattern through unchanged (preferred)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">"$VAR"</span>
+    <span class="cmd-desc">Double quotes — use when you need variable expansion in the pattern</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -F 'literal'</span>
+    <span class="cmd-desc">Fixed string — no regex processing at all</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">grep -i 'pattern'</span>
+    <span class="cmd-desc">Case-insensitive match</span>
+  </div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 3 covers anchors — <code>^</code> (start of line), <code>$</code> (end of line), and word boundaries (<code>\b</code>, <code>\&lt;</code>, <code>\&gt;</code>). Anchors let you pin your pattern to a specific position in the line rather than matching it anywhere.
+</div>
+
+</div>

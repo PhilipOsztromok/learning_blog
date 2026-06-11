@@ -1,0 +1,542 @@
+<style>
+  .lx-lesson { font-family: 'Georgia', serif; max-width: 860px; margin: 0 auto; color: #e8e8e8; line-height: 1.7; }
+  .lx-lesson h1 { font-size: 2rem; color: #4f8ef7; margin-bottom: 0.2em; }
+  .lx-lesson h2 { font-size: 1.35rem; color: #c9d8ff; border-bottom: 2px solid #4f8ef7; padding-bottom: 0.3em; margin-top: 2em; }
+  .lx-lesson h3 { font-size: 1.1rem; color: #a0b8f0; margin-top: 1.5em; }
+  .lx-lesson p { margin: 0.7em 0; }
+  .lx-lesson ul, .lx-lesson ol { margin: 0.5em 0 0.8em 0; padding-left: 1.5em; }
+  .lx-lesson li { margin: 0.3em 0; }
+  .lx-lesson pre {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 1.1em 1.3em; overflow-x: auto; line-height: 1.6;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92rem;
+  }
+  .lx-lesson code {
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 0.92em;
+    background: #1c1f2e; border: 1px solid #2a2d3e; border-radius: 3px;
+    padding: 0.1em 0.4em;
+  }
+  .lx-lesson table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .lx-lesson th { background: #1c1f2e; color: #4f8ef7; padding: 0.5em 0.8em; text-align: left; border: 1px solid #2a2d3e; }
+  .lx-lesson td { padding: 0.45em 0.8em; border: 1px solid #2a2d3e; vertical-align: top; }
+  .lx-lesson tr:nth-child(even) td { background: #16192a; }
+  .lx-lesson .note { background: #1a1f35; border-left: 4px solid #4f8ef7; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .warn { background: #1f1a10; border-left: 4px solid #f0a040; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .tip  { background: #111f18; border-left: 4px solid #3fb950; padding: 0.7em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
+  .lx-lesson .cmd-ref { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 0.9em 1.2em; margin: 1em 0; }
+  .lx-lesson .cmd-ref h4 { color: #4f8ef7; margin: 0 0 0.6em 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Consolas', monospace; }
+  .lx-lesson .cmd-row { display: flex; gap: 1em; margin: 0.3em 0; align-items: baseline; flex-wrap: wrap; }
+  .lx-lesson .cmd-key  { color: #ffab70; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; min-width: 220px; }
+  .lx-lesson .cmd-desc { color: #c9d8ff; font-size: 0.9rem; }
+  /* syntax colours */
+  .cm  { color: #5a6a8a; font-style: italic; }
+  .cmd { color: #79b8ff; }
+  .fl  { color: #ffab70; }
+  .st  { color: #9ecbff; }
+  .kw  { color: #f97583; }
+  .vr  { color: #ffab70; }
+  .out { color: #85e89d; }
+  .pth { color: #79b8ff; }
+  .nu  { color: #b392f0; }
+  .op  { color: #f97583; }
+  .rx  { color: #ffa657; }
+  .er  { color: #f97583; font-style: italic; }
+  .lb  { color: #79b8ff; }   /* label */
+  /* recipe cards grid */
+  .recipe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75em; margin: 1em 0; }
+  .recipe-card {
+    background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px;
+    padding: 0.75em 1em;
+  }
+  .recipe-card .rc-title { color: #4f8ef7; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4em; display: block; font-family: 'Consolas', monospace; }
+  .recipe-card pre { margin: 0; padding: 0; background: none; border: none; font-size: 0.86rem; }
+  /* script file anatomy diagram */
+  .sf-anatomy { background: #12141e; border: 1px solid #2a2d3e; border-radius: 6px; padding: 1em 1.4em; margin: 1em 0; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 2; }
+  .sf-anatomy .sf-hdr { color: #5a6a8a; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3em; display: block; }
+  .sf-line { display: flex; gap: 1.5em; align-items: baseline; }
+  .sf-code { color: #9ecbff; min-width: 300px; }
+  .sf-ann  { color: #5a6a8a; font-size: 0.83rem; font-style: italic; }
+  /* section label pill */
+  .sec-pill { display: inline-block; background: #1c2540; color: #4f8ef7; border: 1px solid #2a4080; border-radius: 12px; padding: 0.15em 0.75em; font-size: 0.78rem; font-family: 'Consolas', monospace; letter-spacing: 0.05em; margin-bottom: 0.5em; }
+</style>
+
+<div class="lx-lesson">
+
+<h1>Learning SED</h1>
+<p style="color:#7a8aaa; font-style:italic; margin-top:0;">Chapter 11 — SED Scripts and Real-World Recipes</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>From One-Liners to Script Files</h2>
+
+<p>So far every example has used the <code>-e</code> flag or a single quoted string. For serious work — multi-step transformations, reusable utilities, version-controlled text processing tools — you write a <strong>SED script file</strong> and invoke it with <code>sed -f scriptfile.sed input.txt</code>.</p>
+
+<p>A script file is plain text. Each line is a SED command, exactly as you would write after <code>-e</code>, but without the quoting and with full freedom to use whitespace, blank lines, and comments.</p>
+
+<div class="sf-anatomy">
+  <span class="sf-hdr">anatomy of a sed script file (cleanup.sed)</span>
+  <div class="sf-line"><span class="sf-code"><span class="cm">#!/usr/bin/sed -f</span></span><span class="sf-ann">optional shebang — makes it self-executable</span></div>
+  <div class="sf-line"><span class="sf-code"><span class="cm"># ── normalise_config.sed ──────────────────</span></span><span class="sf-ann">comment: whole line starting with #</span></div>
+  <div class="sf-line"><span class="sf-code"><span class="cm"># Remove blank lines and comments</span></span><span class="sf-ann">describe intent, not mechanics</span></div>
+  <div class="sf-line"><span class="sf-code"><span class="rx">/^[[:space:]]*$/</span><span class="kw">d</span></span><span class="sf-ann">delete blank lines</span></div>
+  <div class="sf-line"><span class="sf-code"><span class="rx">/^[[:space:]]*#/</span><span class="kw">d</span></span><span class="sf-ann">delete comment lines</span></div>
+  <div class="sf-line"><span class="sf-code"></span><span class="sf-ann">blank lines are fine — improve readability</span></div>
+  <div class="sf-line"><span class="sf-code"><span class="cm"># Trim trailing whitespace</span></span></div>
+  <div class="sf-line"><span class="sf-code"><span class="kw">s</span><span class="op">/</span><span class="rx">[[:space:]]*$</span><span class="op">//</span></span><span class="sf-ann">strip trailing spaces / tabs</span></div>
+  <div class="sf-line"><span class="sf-code"></span></div>
+  <div class="sf-line"><span class="sf-code"><span class="cm"># Normalise multiple spaces to one</span></span></div>
+  <div class="sf-line"><span class="sf-code"><span class="kw">s</span><span class="op">/</span><span class="rx">[[:space:]]\+</span><span class="op">/</span> <span class="op">/</span><span class="fl">g</span></span><span class="sf-ann">collapse runs of whitespace</span></div>
+</div>
+
+<h3>Invoking a script file</h3>
+<pre><span class="cm"># Basic usage</span>
+<span class="cmd">sed</span> <span class="fl">-f</span> <span class="pth">normalise_config.sed</span> <span class="pth">input.conf</span>
+
+<span class="cm"># In-place edit</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="fl">-f</span> <span class="pth">normalise_config.sed</span> <span class="pth">*.conf</span>
+
+<span class="cm"># Combine a script file with an extra -e command</span>
+<span class="cmd">sed</span> <span class="fl">-f</span> <span class="pth">normalise_config.sed</span> <span class="fl">-e</span> <span class="st">'s/localhost/10.0.0.1/g'</span> <span class="pth">input.conf</span>
+
+<span class="cm"># ERE mode with a script file</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="fl">-f</span> <span class="pth">myscript.sed</span> <span class="pth">input.txt</span>
+
+<span class="cm"># Self-executable script (shebang must be first line)</span>
+<span class="cmd">chmod</span> <span class="nu">+x</span> <span class="pth">normalise_config.sed</span>
+<span class="pth">./normalise_config.sed</span> <span class="pth">input.conf</span></pre>
+
+<div class="note">
+  <strong>Comments in script files vs one-liners:</strong> The <code>#</code> comment character works in <code>-f</code> script files. In a <code>-e</code> expression, <code>#</code> is <em>not</em> a comment — it is a literal character or part of a regex delimiter. Only use comments in script files.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Structuring Complex Scripts</h2>
+
+<h3>Using braces for clarity</h3>
+<pre><span class="cm"># Group related commands under an address — visually clear in script files</span>
+<span class="rx">/^[[:space:]]*\[/</span> {
+    <span class="cm"># Lines that look like INI section headers</span>
+    <span class="kw">s</span><span class="op">/</span><span class="rx">[[:space:]]</span><span class="op">//</span><span class="fl">g</span>         <span class="cm"># strip all spaces</span>
+    <span class="kw">s</span><span class="op">/</span><span class="rx">\[</span><span class="op">/</span><span class="st">[</span><span class="op">/</span>              <span class="cm"># rewrite opening bracket (noop here but explicit)</span>
+    <span class="kw">y</span><span class="op">/</span><span class="st">abcdefghijklmnopqrstuvwxyz</span><span class="op">/</span><span class="st">ABCDEFGHIJKLMNOPQRSTUVWXYZ</span><span class="op">/</span>  <span class="cm"># uppercase</span>
+}
+
+<span class="cm"># Process lines NOT in the header range</span>
+<span class="rx">/^[[:space:]]*\[/</span><span class="kw">!</span> {
+    <span class="kw">s</span><span class="op">/</span><span class="rx">^[[:space:]]*</span><span class="op">//</span>       <span class="cm"># trim leading whitespace</span>
+    <span class="kw">s</span><span class="op">/</span><span class="rx">[[:space:]]*$</span><span class="op">//</span>       <span class="cm"># trim trailing whitespace</span>
+}</pre>
+
+<h3>Labels and branching for loops in scripts</h3>
+<pre><span class="cm"># Script: collapse repeated blank lines into a single blank line</span>
+<span class="cm"># Algorithm: join current line to next with N, check for blank+blank,</span>
+<span class="cm"># loop until no longer two consecutive blanks.</span>
+
+<span class="rx">/^$/</span> {
+    <span class="kw">N</span>
+    <span class="rx">/^\n$/</span><span class="kw">b</span> <span class="lb">blankloop</span>   <span class="cm"># if still blank after join, keep looping</span>
+    <span class="kw">P</span>
+    <span class="kw">D</span>
+}
+<span class="kw">b</span>                      <span class="cm"># non-blank line: fall through to default print</span>
+
+<span class="kw">:</span><span class="lb">blankloop</span>
+<span class="kw">N</span>
+<span class="rx">/^\n$/</span><span class="kw">b</span> <span class="lb">blankloop</span>
+<span class="kw">P</span>
+<span class="kw">D</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Log File Processing</h2>
+
+<span class="sec-pill">Real-World Recipe Category 1</span>
+
+<h3>Filter and extract from logs</h3>
+<pre><span class="cm"># Show only ERROR and FATAL lines (suppress everything else)</span>
+<span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'/\(ERROR\|FATAL\)/p'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Same in ERE</span>
+<span class="cmd">sed</span> <span class="fl">-En</span> <span class="st">'/(ERROR|FATAL)/p'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Delete DEBUG and TRACE lines in-place (quiet the noise)</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'/\(DEBUG\|TRACE\)/d'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Anonymise IP addresses (replace last two octets)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([0-9]{1,3}\.[0-9]{1,3})\.[0-9]{1,3}\.[0-9]{1,3}/\1.x.x/g'</span> <span class="pth">access.log</span>
+
+<span class="cm"># Extract just the timestamp column (first field before space)</span>
+<span class="cmd">sed</span> <span class="st">'s/[[:space:]].*//'</span> <span class="pth">app.log</span>
+
+<span class="cm"># Add a prefix to every log line for pipeline tagging</span>
+<span class="cmd">sed</span> <span class="st">'s/^/[APP] /'</span> <span class="pth">app.log</span></pre>
+
+<h3>Reformat Apache / Nginx combined log format</h3>
+<pre><span class="cm"># Combined log format:</span>
+<span class="cm"># IP - - [timestamp] "METHOD /path HTTP/1.1" status bytes</span>
+<span class="cm"># Extract: IP, status, path</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^([^ ]+) [^ ]+ [^ ]+ \[[^]]+\] "[^ ]+ ([^ ]+)[^"]*" ([0-9]+).*/\1 \3 \2/'</span> <span class="pth">access.log</span>
+
+<span class="cm"># Count each unique status code (pipe to sort | uniq -c for frequency)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^.* "[^"]*" ([0-9]{3}) .*/\1/'</span> <span class="pth">access.log</span> <span class="op">|</span> <span class="cmd">sort</span> <span class="op">|</span> <span class="cmd">uniq</span> <span class="fl">-c</span>
+
+<span class="cm"># Keep only 4xx and 5xx errors</span>
+<span class="cmd">sed</span> <span class="fl">-En</span> <span class="st">'/\" [45][0-9]{2} /p'</span> <span class="pth">access.log</span></pre>
+
+<h3>Multi-line log entry processing</h3>
+<pre><span class="cm"># Java stack traces span multiple lines — collect them</span>
+<span class="cm"># Strategy: when a line starts with "at " or "Caused by:", append it</span>
+<span class="cm"># to the previous line so the full trace stays together</span>
+
+<span class="cm"># Simple version: join lines beginning with whitespace (indented continuations)</span>
+<span class="cmd">sed</span> <span class="st">'/^[[:space:]]/{H;d}; /^[[:space:]]/!{x;s/\n/ /g;p}'</span> <span class="fl">-n</span> <span class="pth">app.log</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Config File Manipulation</h2>
+
+<span class="sec-pill">Real-World Recipe Category 2</span>
+
+<h3>INI / key=value files</h3>
+<pre><span class="cm"># Set a specific key to a new value (key=value format)</span>
+<span class="cmd">sed</span> <span class="st">'s/^\(max_connections\s*=\s*\).*/\1100/'</span> <span class="pth">db.conf</span>
+
+<span class="cm"># Same with ERE — cleaner</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^(max_connections\s*=\s*).*/\1100/'</span> <span class="pth">db.conf</span>
+
+<span class="cm"># Comment out a specific key (prepend #)</span>
+<span class="cmd">sed</span> <span class="st">'s/^\(listen_address\s*=\)/#\1/'</span> <span class="pth">db.conf</span>
+
+<span class="cm"># Uncomment a specific key (remove leading #)</span>
+<span class="cmd">sed</span> <span class="st">'s/^#\(listen_address\s*=\)/\1/'</span> <span class="pth">db.conf</span>
+
+<span class="cm"># Delete a key entirely</span>
+<span class="cmd">sed</span> <span class="st">'/^old_deprecated_key\s*=/d'</span> <span class="pth">db.conf</span>
+
+<span class="cm"># Append a new key after an existing one</span>
+<span class="cmd">sed</span> <span class="st">'/^max_connections/a new_param = 50'</span> <span class="pth">db.conf</span>
+
+<span class="cm"># Insert a key before an existing one</span>
+<span class="cmd">sed</span> <span class="st">'/^\[database\]/i # Database section begins here'</span> <span class="pth">db.conf</span></pre>
+
+<h3>Work safely within a specific section only</h3>
+<pre><span class="cm"># Only modify keys inside the [database] section</span>
+<span class="cm"># Strategy: range from section header to the next section header (or EOF)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'/^\[database\]/,/^\[/ s/^(host\s*=\s*).*/\1newhost/'</span> <span class="pth">app.conf</span>
+
+<span class="cm"># Caution: the closing /^\[/ also matches the NEXT section header line itself</span>
+<span class="cm"># To avoid modifying that line, negate it:</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'/^\[database\]/,/^\[/ { /^\[database\]/! { /^\[/! s/^(host\s*=\s*).*/\1newhost/ } }'</span> <span class="pth">app.conf</span></pre>
+
+<h3>XML / HTML attribute updates</h3>
+<pre><span class="cm"># Update a version attribute in a single-line XML tag</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/(version=")[^"]*/\11.2.3/'</span> <span class="pth">pom.xml</span>
+
+<span class="cm"># Replace a URL inside quotes (uses | as delimiter to avoid escaping /)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s|href="[^"]*"|href="https://new.example.com"|g'</span> <span class="pth">index.html</span>
+
+<span class="cm"># Remove a specific HTML attribute entirely</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/ style="[^"]*"//g'</span> <span class="pth">index.html</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>CSV and Tabular Data</h2>
+
+<span class="sec-pill">Real-World Recipe Category 3</span>
+
+<div class="warn">
+  <strong>SED is line-oriented and not CSV-aware.</strong> It does not understand quoted fields that contain commas or newlines. For production CSV with embedded commas, use <code>awk</code>, Python's <code>csv</code> module, or <code>miller</code>. The recipes below work reliably only on simple delimiter-separated data with no embedded delimiters.
+</div>
+
+<pre><span class="cm"># Extract the third comma-separated field</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^([^,]*,){2}([^,]*).*/\2/'</span> <span class="pth">data.csv</span>
+
+<span class="cm"># Delete the first field (up to and including the first comma)</span>
+<span class="cmd">sed</span> <span class="st">'s/[^,]*,//'</span> <span class="pth">data.csv</span>
+
+<span class="cm"># Replace comma delimiter with pipe</span>
+<span class="cmd">sed</span> <span class="st">'s/,/|/g'</span> <span class="pth">data.csv</span>
+
+<span class="cm"># Add a header line if the file lacks one</span>
+<span class="cmd">sed</span> <span class="st">'1i name,age,city'</span> <span class="pth">data.csv</span>
+
+<span class="cm"># Skip the header line and process only data rows</span>
+<span class="cmd">sed</span> <span class="st">'1d; s/,/ /g'</span> <span class="pth">data.csv</span>
+
+<span class="cm"># Surround every field with double quotes (simple CSV → quoted CSV)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/([^,]+)/"\1"/g'</span> <span class="pth">data.csv</span>
+
+<span class="cm"># Trim spaces around comma separators</span>
+<span class="cmd">sed</span> <span class="st">'s/[[:space:]]*,[[:space:]]*/,/g'</span> <span class="pth">data.csv</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Source Code Transformations</h2>
+
+<span class="sec-pill">Real-World Recipe Category 4</span>
+
+<h3>Rename a function or variable across a codebase</h3>
+<pre><span class="cm"># Safe rename: only match whole identifiers (not substrings)</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'s/\bgetUser\b/fetchUser/g'</span> <span class="pth">src/*.js</span>
+
+<span class="cm"># Rename across all .py files recursively (using find + xargs)</span>
+<span class="cmd">find</span> <span class="pth">.</span> <span class="fl">-name</span> <span class="st">'*.py'</span> <span class="op">|</span> <span class="cmd">xargs</span> <span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'s/\bold_func\b/new_func/g'</span></pre>
+
+<h3>Add / remove language constructs</h3>
+<pre><span class="cm"># Add a semicolon to every non-blank, non-comment line (JS minification prep)</span>
+<span class="cmd">sed</span> <span class="st">'/^[[:space:]]*$/d; /^[[:space:]]*\/\//d; s/$/;/'</span> <span class="pth">code.js</span>
+
+<span class="cm"># Remove C-style single-line comments (// to end of line)</span>
+<span class="cmd">sed</span> <span class="st">'s|//.*$||'</span> <span class="pth">code.c</span>
+
+<span class="cm"># Add "export " prefix to every function declaration</span>
+<span class="cmd">sed</span> <span class="st">'/^function /s/^/export /'</span> <span class="pth">module.js</span>
+
+<span class="cm"># Indent every line by 4 spaces (e.g. when inserting into another file)</span>
+<span class="cmd">sed</span> <span class="st">'s/^/    /'</span> <span class="pth">snippet.py</span>
+
+<span class="cm"># Remove all indentation (dedent)</span>
+<span class="cmd">sed</span> <span class="st">'s/^[[:space:]]*//'</span> <span class="pth">snippet.py</span>
+
+<span class="cm"># Convert tabs to 4 spaces</span>
+<span class="cmd">sed</span> <span class="st">'s/\t/    /g'</span> <span class="pth">code.py</span>
+
+<span class="cm"># Remove trailing whitespace (common pre-commit hook fix)</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'s/[[:space:]]*$//'</span> <span class="pth">*.py</span></pre>
+
+<h3>Version number bumping</h3>
+<pre><span class="cm"># Bump patch version X.Y.Z → X.Y.Z+1 is tricky without arithmetic</span>
+<span class="cm"># But you can replace a known version string precisely:</span>
+<span class="cmd">sed</span> <span class="st">'s/version = "1.2.3"/version = "1.2.4"/'</span> <span class="pth">pyproject.toml</span>
+
+<span class="cm"># Replace any version string matching the pattern (capture major.minor, replace patch)</span>
+<span class="cm"># Note: SED cannot do arithmetic — only string replacement</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/(version = ")([0-9]+\.[0-9]+\.)[0-9]+/\11.2.4/'</span> <span class="pth">pyproject.toml</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Text Formatting and Document Processing</h2>
+
+<span class="sec-pill">Real-World Recipe Category 5</span>
+
+<h3>Line spacing</h3>
+<pre><span class="cm"># Double-space a file (add a blank line after every line)</span>
+<span class="cmd">sed</span> <span class="st">'G'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Remove all blank lines</span>
+<span class="cmd">sed</span> <span class="st">'/^[[:space:]]*$/d'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Remove consecutive blank lines (leave at most one blank line)</span>
+<span class="cmd">sed</span> <span class="st">'/./,/^$/!d'</span> <span class="pth">file.txt</span>   <span class="cm"># classical one-liner</span>
+
+<span class="cm"># Number every line</span>
+<span class="cmd">sed</span> <span class="st">'='</span> <span class="pth">file.txt</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'N; s/\n/\t/'</span>
+
+<span class="cm"># Number only non-blank lines</span>
+<span class="cmd">sed</span> <span class="st">'/./='</span> <span class="pth">file.txt</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'/./N; s/\n/\t/'</span></pre>
+
+<h3>Reverse a file (tac equivalent)</h3>
+<pre><span class="cm"># Pure SED tac: accumulate all lines in hold space, then print reversed</span>
+<span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'1!G; h; $p'</span> <span class="pth">file.txt</span>
+<span class="cm"># 1!G  — on every line except the first: prepend hold space to pattern space</span>
+<span class="cm"># h    — copy pattern space to hold space</span>
+<span class="cm"># $p   — on the last line: print (now contains all lines reversed)</span></pre>
+
+<h3>Prepend and append boilerplate</h3>
+<pre><span class="cm"># Insert a copyright header at the very top of a file</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'1i # Copyright 2024 Example Corp. All rights reserved.'</span> <span class="pth">*.py</span>
+
+<span class="cm"># Append a footer line at the very end</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'$a # End of file'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Replace lines 1-3 (existing header) with a new header</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'1,3c\# New header line 1\n# New header line 2'</span> <span class="pth">file.txt</span>
+
+<span class="cm"># Wrap entire file content in XML tags</span>
+<span class="cmd">sed</span> <span class="st">'1i &lt;document&gt;; $a &lt;/document&gt;'</span> <span class="pth">content.txt</span></pre>
+
+<h3>Markdown and plain-text utilities</h3>
+<pre><span class="cm"># Convert Markdown headings to HTML</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/^### (.+)/&lt;h3&gt;\1&lt;\/h3&gt;/;
+         s/^## (.+)/&lt;h2&gt;\1&lt;\/h2&gt;/;
+         s/^# (.+)/&lt;h1&gt;\1&lt;\/h1&gt;/'</span> <span class="pth">doc.md</span>
+
+<span class="cm"># Convert *word* to &lt;em&gt;word&lt;/em&gt;</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\*([^*]+)\*/&lt;em&gt;\1&lt;\/em&gt;/g'</span> <span class="pth">doc.md</span>
+
+<span class="cm"># Remove all Markdown emphasis markers (strip * and _)</span>
+<span class="cmd">sed</span> <span class="st">'s/[*_]//g'</span> <span class="pth">doc.md</span>
+
+<span class="cm"># Centre-align text within 72 characters (approximate)</span>
+<span class="cmd">sed</span> <span class="st">'s/^/                                    /; s/^\(.\{36\}\)\(.*\)/\1\2/'</span> <span class="pth">title.txt</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Data Masking and Security</h2>
+
+<span class="sec-pill">Real-World Recipe Category 6</span>
+
+<pre><span class="cm"># Mask credit card numbers (keep last 4 digits)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/\b([0-9]{4}[- ]?){3}([0-9]{4})\b/****-****-****-\2/g'</span> <span class="pth">report.txt</span>
+
+<span class="cm"># Redact email addresses</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}/[REDACTED]/g'</span> <span class="pth">data.txt</span>
+
+<span class="cm"># Mask all but the first and last character of a password field</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/(password=")([^"])(.*)(.")(\s*")/\1\2***\4\5/g'</span> <span class="pth">config.xml</span>
+
+<span class="cm"># Remove any line containing an API key pattern</span>
+<span class="cmd">sed</span> <span class="fl">-i</span> <span class="st">'/api[_-]key\s*[:=]/Id'</span> <span class="pth">config.txt</span>   <span class="cm"># I flag = case-insensitive (GNU)</span>
+
+<span class="cm"># Scrub phone numbers (various formats)</span>
+<span class="cmd">sed</span> <span class="fl">-E</span> <span class="st">'s/(\+?1[-. ]?)?(\(?\d{3}\)?[-. ]?)(\d{3}[-. ]?\d{4})/[PHONE]/g'</span> <span class="pth">data.txt</span></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>The Essential SED One-Liner Library</h2>
+
+<p>These are the most referenced SED one-liners — memorise or bookmark them:</p>
+
+<div class="recipe-grid">
+  <div class="recipe-card">
+    <span class="rc-title">Delete blank lines</span>
+    <pre><span class="cmd">sed</span> <span class="st">'/^$/d'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Remove trailing whitespace</span>
+    <pre><span class="cmd">sed</span> <span class="st">'s/[[:space:]]*$//'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Remove leading whitespace</span>
+    <pre><span class="cmd">sed</span> <span class="st">'s/^[[:space:]]*//'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Trim both ends</span>
+    <pre><span class="cmd">sed</span> <span class="st">'s/^[[:space:]]*//; s/[[:space:]]*$//'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Print lines 5 to 10</span>
+    <pre><span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'5,10p'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Print last line</span>
+    <pre><span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'$p'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Double-space</span>
+    <pre><span class="cmd">sed</span> <span class="st">'G'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Number lines</span>
+    <pre><span class="cmd">sed</span> <span class="st">'='</span> <span class="op">|</span> <span class="cmd">sed</span> <span class="st">'N;s/\n/\t/'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Reverse file (tac)</span>
+    <pre><span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'1!G;h;$p'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Print between patterns</span>
+    <pre><span class="cmd">sed</span> <span class="fl">-n</span> <span class="st">'/START/,/END/p'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Delete between patterns</span>
+    <pre><span class="cmd">sed</span> <span class="st">'/START/,/END/d'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Remove duplicate adjacent lines</span>
+    <pre><span class="cmd">sed</span> <span class="st">'$!N;/^\(.*\)\n\1$/!P;D'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">In-place backup edit</span>
+    <pre><span class="cmd">sed</span> <span class="fl">-i.bak</span> <span class="st">'s/foo/bar/g'</span> <span class="pth">file</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Prepend text to every line</span>
+    <pre><span class="cmd">sed</span> <span class="st">'s/^/PREFIX: /'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Convert Windows line endings</span>
+    <pre><span class="cmd">sed</span> <span class="st">'s/\r$//'</span></pre>
+  </div>
+  <div class="recipe-card">
+    <span class="rc-title">Replace Nth occurrence on a line</span>
+    <pre><span class="cmd">sed</span> <span class="st">'s/foo/bar/2'</span>  <span class="cm"># 2nd only</span></pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Building Reusable SED Libraries</h2>
+
+<p>For teams or personal toolkits, it pays to organise frequently used SED scripts as self-documenting files:</p>
+
+<pre><span class="cm">#!/usr/bin/sed -Ef</span>
+<span class="cm"># ──────────────────────────────────────────────────────</span>
+<span class="cm"># sanitise_csv.sed</span>
+<span class="cm"># Purpose : Normalise a messy CSV before import</span>
+<span class="cm"># Usage   : sed -Ef sanitise_csv.sed input.csv > output.csv</span>
+<span class="cm"># Requires: GNU sed (uses \s, -E, -f together)</span>
+<span class="cm"># ──────────────────────────────────────────────────────</span>
+
+<span class="cm"># 1. Remove UTF-8 BOM if present (first line, first three bytes = EF BB BF)</span>
+<span class="kw">1s</span><span class="op">/</span><span class="rx">^\xef\xbb\xbf</span><span class="op">//</span>
+
+<span class="cm"># 2. Normalise Windows CRLF to LF</span>
+<span class="kw">s</span><span class="op">/</span><span class="rx">\r$</span><span class="op">//</span>
+
+<span class="cm"># 3. Trim whitespace around each comma</span>
+<span class="kw">s</span><span class="op">/</span><span class="rx">[[:space:]]*,[[:space:]]*</span><span class="op">/</span><span class="st">,</span><span class="op">/</span><span class="fl">g</span>
+
+<span class="cm"># 4. Remove trailing comma if present</span>
+<span class="kw">s</span><span class="op">/</span><span class="rx">,$</span><span class="op">//</span>
+
+<span class="cm"># 5. Remove completely empty lines</span>
+<span class="rx">/^$/</span><span class="kw">d</span></pre>
+
+<div class="tip">
+  <strong>Good script file habits:</strong> Always include a usage comment, document the GNU/POSIX requirements, group related commands with a blank line and comment, and name script files with a <code>.sed</code> extension so editors apply syntax highlighting.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>Quick Reference — Chapter 11</h2>
+
+<div class="cmd-ref">
+  <h4>Script File Invocation</h4>
+  <div class="cmd-row">
+    <span class="cmd-key">sed -f script.sed file</span>
+    <span class="cmd-desc">Run a SED script file against a file</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">sed -i -f script.sed file</span>
+    <span class="cmd-desc">In-place edit using a script file</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">sed -E -f script.sed file</span>
+    <span class="cmd-desc">ERE mode with a script file</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">sed -f s1.sed -f s2.sed file</span>
+    <span class="cmd-desc">Chain multiple script files</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">sed -f script.sed -e 's/x/y/'</span>
+    <span class="cmd-desc">Script file plus inline expression</span>
+  </div>
+</div>
+
+<div class="cmd-ref">
+  <h4>Script File Best Practices</h4>
+  <div class="cmd-row">
+    <span class="cmd-key"># comment text</span>
+    <span class="cmd-desc">Whole-line comments — only work in -f files, not -e</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">#!/usr/bin/sed -f</span>
+    <span class="cmd-desc">Shebang for self-executable scripts (first line only)</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">Blank lines between groups</span>
+    <span class="cmd-desc">Ignored by SED — use them freely for readability</span>
+  </div>
+  <div class="cmd-row">
+    <span class="cmd-key">.sed extension</span>
+    <span class="cmd-desc">Convention — enables editor syntax highlighting</span>
+  </div>
+</div>
+
+<div class="note">
+  <strong>What is coming next:</strong> Chapter 12 — the final chapter — covers SED in shell scripts and pipelines: building robust wrappers, using SED inside functions, combining SED with grep/awk/cut in production pipelines, performance on large files, error handling, and when to stop using SED and reach for a different tool.
+</div>
+
+</div>
